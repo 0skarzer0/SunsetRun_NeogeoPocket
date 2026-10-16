@@ -18,6 +18,7 @@ void id_road_flat(void);
 u8 id_road_dma_state(void);
 u16 id_road_xy_at(u8 line);
 void id_road_dma_pause(void);
+void id_road_reload_maps(void);
 void id_road_dma_resume(void);
 void id_road_rearm(void);
 void id_road_reload(void);

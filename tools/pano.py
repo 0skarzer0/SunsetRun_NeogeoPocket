@@ -115,6 +115,69 @@ def cumulus(img, base, top, seed, white, shade, deep=None, count=14):
                 img.putpixel((u + rep, y), c12(col))
 
 
+def cloud_field(img, seed, clouds, white, light, shade, deep):
+    """separate cauliflower cumulus (periodic in PERIOD).
+    clouds: list of (centre x, base y, width, height).  Each cloud is a dome
+    of small round puffs: lit tops, a shaded rim under every puff (so the
+    lobes read separately), a flat shadowed base and sky all around."""
+    rnd = random.Random(seed)
+    for cx0, base, w, h in clouds:
+        puffs_ = []
+        # dome outline: puffs along an arch, then a few inner ones
+        n = max(4, w // 5)
+        for i in range(n):
+            t = i / (n - 1.0)
+            r = rnd.uniform(3.2, 5.2) + 1.5 * math.sin(math.pi * t)
+            top = base - 2 - (h - 2) * math.sin(math.pi * t) ** 0.7
+            puffs_.append((cx0 - w / 2.0 + t * w, top + r, r))
+        for i in range(n // 2):
+            t = rnd.uniform(0.25, 0.75)
+            r = rnd.uniform(4.0, 6.0)
+            top = base - 2 - (h - 2) * math.sin(math.pi * t) ** 0.7
+            puffs_.append((cx0 - w / 2.0 + t * w, top + r + rnd.uniform(2, 5), r))
+        # fill under the arch so the cloud is solid down to its base
+        def owner(x, y):
+            if y > base:
+                return -1
+            best = -1
+            for k, (pcx, pcy, r) in enumerate(puffs_):
+                dx = x - pcx
+                if dx * dx + (y - pcy) ** 2 <= r * r:
+                    best = k
+            if best < 0:
+                # body: between the outer puffs and below their centres
+                if cx0 - w / 2.0 <= x <= cx0 + w / 2.0:
+                    t = (x - (cx0 - w / 2.0)) / float(w)
+                    top = base - 2 - (h - 2) * math.sin(math.pi * t) ** 0.7
+                    if y >= top + 4:
+                        return len(puffs_)
+            return best
+        x0, x1 = int(cx0 - w / 2 - 8), int(cx0 + w / 2 + 8)
+        for y in range(max(0, base - h - 2), base + 1):
+            for x in range(x0, x1):
+                k = owner(x, y)
+                if k < 0:
+                    continue
+                if k == len(puffs_):
+                    col = light
+                else:
+                    pcx, pcy, r = puffs_[k]
+                    nx, ny = (x - pcx) / r, (y - pcy) / r
+                    lum = -0.45 * nx - 0.9 * ny
+                    col = white if lum > -0.1 else light
+                    # rim: the lower edge of each puff over the one behind
+                    kb = owner(x, y + 1)
+                    if ny > 0.55 and kb != k:
+                        col = shade
+                if base - y < 3:
+                    col = shade if base - y else deep
+                elif base - y < 5 and (x + y) % 2 == 0:
+                    col = shade
+                px(img, x, y, col)
+                if PERIOD < W:
+                    px(img, x + PERIOD, y, col)
+
+
 def puffs(img, seed, y0, y1, n, white, shade):
     """small fair-weather clouds (periodic)"""
     rnd = random.Random(seed)
@@ -170,8 +233,11 @@ def theme_beach():
     """azure sky, a towering cumulus bank on the sea, islets and sails"""
     img = Image.new('RGB', (W, H))
     band_sky(img, ['18E', '2AF', '4BF', '7CF'], 0, 80)
-    cumulus(img, 80, 26, 11, 'FFF', 'ACE', count=18)
-    puffs(img, 12, 8, 24, 3, 'FFF', 'ACE')
+    # separate towering clouds over the sea, with sky between them
+    cloud_field(img, 11, [(14, 79, 34, 30), (58, 79, 24, 19), (101, 79, 36, 40)],
+                'FFF', 'DEF', 'ACE', '9BD')
+    cloud_field(img, 13, [(40, 36, 22, 10), (80, 18, 18, 8), (124, 46, 14, 7)],
+                'FFF', 'DEF', 'ACE', 'ACE')
     for rep in (0, PERIOD):
         islet(img, 36 + rep, 80, 13, 5, '2A5', '2A5')
         islet(img, 98 + rep, 80, 7, 3, '2A5', '2A5')

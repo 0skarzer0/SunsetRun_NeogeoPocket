@@ -32,10 +32,24 @@ void banner_init(void)
     for (i = 0u; i < (u8)(GFX_BANNER_TILES * 8u); i++) {
         dst[i] = gfx_banner_tiles[i];
     }
-    ngpc_gfx_set_palette(GFX_SCR1, PAL_BANNER, 0u, 0x0112u, 0x022Du, 0x0FFFu);
-    ngpc_gfx_set_palette(GFX_SPR, PAL_LETTERS, 0u, 0x0000u, 0x0AAAu, 0x0FFFu);
+    banner_style(DIFF_HARD);
     car_d = id_road_distance_at_line(ID_CAR_WHEEL);
     b_on = 0u;
+}
+
+/* the gantry wears the colours of the difficulty:
+ * EASY green / white letters, NORMAL white / red letters,
+ * HARD red / white letters, FREE blue / white letters */
+static const u16 b_edge[DIFF_COUNT] = { 0x0131u, 0x0444u, 0x0112u, 0x0410u };
+static const u16 b_band[DIFF_COUNT] = { 0x03B3u, 0x0FFFu, 0x022Du, 0x0E52u };
+static const u16 b_text[DIFF_COUNT] = { 0x0FFFu, 0x022Eu, 0x0FFFu, 0x0FFFu };
+static const u16 b_shad[DIFF_COUNT] = { 0x0000u, 0x0006u, 0x0000u, 0x0000u };
+
+void banner_style(u8 diff)
+{
+    if (diff >= DIFF_COUNT) diff = DIFF_EASY;
+    ngpc_gfx_set_palette(GFX_SCR1, PAL_BANNER, 0u, b_edge[diff], b_band[diff], 0x0FFFu);
+    ngpc_gfx_set_palette(GFX_SPR, PAL_LETTERS, 0u, b_shad[diff], 0x0AAAu, b_text[diff]);
 }
 
 static void erase(void)

@@ -26,6 +26,9 @@
 #include "../GraphX/gfx_logo.h"
 #include "../GraphX/gfx_extra.h"
 #include "audio/music_data.h"
+#include "../GraphX/gfx_title.h"
+#include "../GraphX/gfx_sprites.h"
+#include "ngpc_flash.h"
 
 #ifndef AUTOPILOT
 #define AUTOPILOT 0
@@ -35,9 +38,14 @@
 #endif
 
 /* ---- tuning ----------------------------------------------------------- */
-#define START_TIME       74u
 #define TIME_MAX         99u
-static const u8 extend_time[GFX_STAGES] = { 70u, 58u, 56u, 54u, 52u };
+/* seconds given for each stage (stage 1 at the start, the others at the
+ * checkpoints): EASY, then NORMAL / HARD (3 s less per stage).  FREE uses
+ * NORMAL scaled by how long the generated leg takes to drive. */
+static const u8 stage_time[2][GFX_STAGES] = {
+    { 74u, 58u, 56u, 54u, 52u },
+    { 71u, 55u, 53u, 51u, 49u }
+};
 #define DECIDE_BEFORE   850u      /* fork choice is locked this far before the leg end */
 #define START_LINE      120     /* the START gantry, this far ahead of the grid */
 #define START_CROWD     900
@@ -65,8 +73,13 @@ static u8 station;
 static const char *const station_name[MUSIC_RADIO] = { MUSIC_NAMES };
 static u8 last_fork_zone;
 static u8 goal_reached;
-static u32 hiscore = 1000000ul;
+static u32 hiscore[DIFF_COUNT] = { 1000000ul, 1000000ul, 1000000ul, 1000000ul };
+static u16 title_frames;
+static u16 pano_tiles_at, trf_tiles_at;
+static const char *const diff_name[DIFF_COUNT] = { "EASY", "NORMAL", "HARD", "FREE" };
+static const u8 diff_pal[DIFF_COUNT] = { 8u, 0u, 2u, 15u };    /* SCR1 text colours */
 u16 dbg_updates;
+u8 dbg_cp[6];                     /* time left at each checkpoint (tests) */
 u8 dbg_crashes, dbg_scn, dbg_off;
 
 /* Same bounded projection sampler as the full engine; no per-line division. */
@@ -149,6 +162,25 @@ static void reset_car(void)
     skid = skid_t = 0u;
 }
 
+/* time for the stage just loaded (course.c sets next_leg_cost) */
+static u8 leg_time(void)
+{
+    u16 t = stage_time[difficulty == DIFF_EASY ? 0u : 1u][cur_stage];
+    if (difficulty == DIFF_FREE) {
+        u16 ref = gfx_leg_ref_cost[cur_stage];
+        t = (u16)(((u32)t * next_leg_cost + (ref >> 1)) / ref + 1u);   /* +1: an unknown road */
+        if (t < 35u) t = 35u;
+        if (t > 90u) t = 90u;
+    }
+    return (u8)t;
+}
+
+static void stage_traffic(void)
+{
+    u8 extra = (u8)((difficulty == DIFF_HARD) ? 2u : 0u);
+    traffic_reset((u8)(2u + cur_stage + extra), (u8)(3u + cur_stage + extra));
+}
+
 static void new_game(void)
 {
     reset_car();
@@ -162,10 +194,12 @@ static void new_game(void)
 #endif
     theme_apply(cur_leg);
     traffic_clear();
-    traffic_reset(gfx_legs[cur_leg].traffic_min, gfx_legs[cur_leg].traffic_max);
+    traffic_set_hard((u8)(difficulty == DIFF_HARD));
+    stage_traffic();
+    banner_style(difficulty);
     id_scenery_init(0u, 0u);
     scenery_mode(SCN_MODE_CROWD);         /* fans at the start line */
-    time_left = START_TIME;
+    time_left = leg_time();
     score = 0ul;
     hud_score_reset();
     sec_acc = 0u;
@@ -263,6 +297,7 @@ static void leg_end(void)
 {
     u8 shift;
     if (course_is_last_stage()) {
+        dbg_cp[cur_stage] = time_left;
         state = ST_GOAL;
         state_timer = 0u;
         goal_reached = 1u;
@@ -271,11 +306,12 @@ static void leg_end(void)
         hud_clear_message(3u);
         return;
     }
+    dbg_cp[cur_stage] = time_left;
     course_pos = (u16)(course_pos - leg_len);
     shift = course_next_leg();
     seg_index = (u8)(seg_index - shift);
     {
-        u16 t = (u16)time_left + extend_time[cur_stage];
+        u16 t = (u16)time_left + leg_time();
         time_left = (u8)((t > TIME_MAX) ? TIME_MAX : t);
     }
     flash_step = 1u;
@@ -293,7 +329,7 @@ static void tick_flash(void)
     }
     if (flash_step == 5u) {
         theme_apply(cur_leg);
-        traffic_reset(gfx_legs[cur_leg].traffic_min, gfx_legs[cur_leg].traffic_max);
+        stage_traffic();
     }
     theme_flash(lv[flash_step - 1u]);
     flash_step++;
@@ -361,60 +397,221 @@ static void print_score7(u8 x, u8 y, u32 s, u8 pal)
     ngpc_text_print_dec(GFX_SCR1, pal, (u8)(x + 3u), y, lo, 4u);
 }
 
-static void title_option(u8 row, const char *text)
+/* ------------------------------------------------------------- save */
+/* One 256-byte record in the cartridge flash (NgpCraft two-bank journal):
+ * the records of the four modes, the radio station, the mode and the seed.
+ * It is written on a screen change only, with the road raster paused. */
+#define SAVE_VERSION 1u
+static u8 save_buf[SAVE_SIZE];
+static u8 save_dirty;
+
+static void put32(u8 at, u32 v)
 {
-    u8 n = 0u;
-    while (text[n] != 0) n++;
+    u8 i;
+    for (i = 0u; i < 4u; i++) save_buf[(u8)(at + i)] = (u8)(v >> (i * 8u));
+}
+
+static u32 get32(u8 at)
+{
+    return (u32)save_buf[at] | ((u32)save_buf[(u8)(at + 1u)] << 8)
+         | ((u32)save_buf[(u8)(at + 2u)] << 16) | ((u32)save_buf[(u8)(at + 3u)] << 24);
+}
+
+static void save_load(void)
+{
+    u8 i;
+    ngpc_flash_init();
+    if (!ngpc_flash_exists()) {
+        return;
+    }
+    ngpc_flash_load(save_buf);
+    if (save_buf[4] != SAVE_VERSION) {
+        return;
+    }
+    if (save_buf[5] < MUSIC_RADIO) station = save_buf[5];
+    if (save_buf[6] < DIFF_COUNT) difficulty = save_buf[6];
+    for (i = 0u; i < DIFF_COUNT; i++) {
+        u32 h = get32((u8)(8u + i * 4u));
+        if (h != 0ul && h < 10000000ul) hiscore[i] = h;
+    }
+    free_seed = (u16)(save_buf[24] | ((u16)save_buf[25] << 8));
+}
+
+static void save_commit(void)
+{
+    u16 k;
+    u8 i;
+    if (!save_dirty) {
+        return;
+    }
+    for (k = 0u; k < SAVE_SIZE; k++) save_buf[k] = 0u;
+    save_buf[0] = 0xCAu; save_buf[1] = 0xFEu; save_buf[2] = 0x20u; save_buf[3] = 0x26u;
+    save_buf[4] = SAVE_VERSION;
+    save_buf[5] = station;
+    save_buf[6] = difficulty;
+    for (i = 0u; i < DIFF_COUNT; i++) put32((u8)(8u + i * 4u), hiscore[i]);
+    save_buf[24] = (u8)free_seed;
+    save_buf[25] = (u8)(free_seed >> 8);
+    if (ngpc_flash_save(save_buf)) {
+        save_dirty = 0u;           /* else keep it and retry on the next screen change */
+    }
+}
+
+/* ------------------------------------------------------------- title screen */
+/* The race is hidden: the road raster is paused and SCR2 shows the emblem
+ * (sunset, sea, road), SCR1 the palm and the lettering, sprites the car.
+ * The art borrows the panorama, traffic and object characters, which
+ * new_game() / title_leave() load back. */
+static u16 title_slot(u16 i)
+{
+    if (i < (u16)GFX_PANO_MAX_TILES) return (u16)(pano_tiles_at + i);
+    i = (u16)(i - GFX_PANO_MAX_TILES);
+    if (i < gfx_traffic_tiles_count) return (u16)(trf_tiles_at + i);
+    i = (u16)(i - gfx_traffic_tiles_count);
+    if (i < (u16)(TILE_OBJ_LOW_END - TILE_OBJ_LOW)) return (u16)(TILE_OBJ_LOW + i);
+    i = (u16)(i - (TILE_OBJ_LOW_END - TILE_OBJ_LOW));
+    return (u16)(TILE_OBJ_LOW2 + i);
+}
+
+typedef char title_fits[(GFX_TITLE_TILES <= GFX_PANO_MAX_TILES + 70 + 30 + 24) ? 1 : -1];
+
+static const u8 emblem_pal_slot[13] = { 2u, 3u, 4u, 5u, 6u, 8u, 9u, 10u, 11u, 12u, 13u, 14u, 15u };
+static const u8 over_pal_slot[8] = { 4u, 5u, 6u, 10u, 11u, 12u, 13u, 14u };
+
+static void title_option(u8 row, const char *text, u8 pal, u16 left, u16 right)
+{
+    u8 n = 0u, x;
+    while (text[n] != 0 && n < 16u) n++;
+    x = (u8)((20u - n) / 2u);
     hud_clear_message(row);
-    ngpc_gfx_put_tile(GFX_SCR1, 1u, row, 0x62u, 0u);
-    ngpc_gfx_put_tile(GFX_SCR1, 18u, row, 0x63u, 0u);
-    ngpc_text_print(GFX_SCR1, 1u, (u8)((20u - n) / 2u), row, text);
+    ngpc_gfx_put_tile(GFX_SCR1, (u8)(x - 2u), row, left, 0u);
+    ngpc_gfx_put_tile(GFX_SCR1, (u8)(x + n + 1u), row, right, 0u);
+    ngpc_text_print(GFX_SCR1, pal, x, row, text);
 }
 
-static void title_station_text(void)
+static void hex4(char *d, u16 v)
 {
-    title_option(9u, station_name[station]);
+    u8 i;
+    for (i = 0u; i < 4u; i++) {
+        u8 n = (u8)((v >> (12u - i * 4u)) & 15u);
+        d[i] = (char)(n < 10u ? '0' + n : 'A' + n - 10u);
+    }
+    d[4] = 0;
 }
 
-static void title_gear_text(void)
+static void title_texts(void)
 {
-    ngpc_text_print(GFX_SCR1, 0u, 2u, 10u, "UP:LOW  DOWN:HIGH");
+    char sd[16];
+    title_option(14u, diff_name[difficulty], diff_pal[difficulty],
+                 title_slot(GFX_TITLE_ARROW_UP), title_slot(GFX_TITLE_ARROW_DN));
+    title_option(15u, station_name[station], 1u, (u16)0x62u, (u16)0x63u);
+    hud_clear_message(16u);
+    hud_clear_message(17u);
+    hud_clear_message(18u);
+    ngpc_text_print(GFX_SCR1, 0u, 5u, 17u, "HI");
+    print_score7(8u, 17u, hiscore[difficulty], 1u);
+    if (difficulty == DIFF_FREE) {
+        sd[0] = 'S'; sd[1] = 'E'; sd[2] = 'E'; sd[3] = 'D'; sd[4] = ' ';
+        hex4(&sd[5], free_seed);
+        ngpc_text_print(GFX_SCR1, 15u, 2u, 18u, sd);
+        ngpc_text_print(GFX_SCR1, 0u, 13u, 18u, "B:NEW");
+    }
+}
+
+static void new_seed(void)
+{
+    u16 s = (u16)(title_frames * 0x6255u + 0x3619u) ^ (u16)((u16)g_vb_counter << 8);
+    free_seed = s ? s : 0x5EEDu;
 }
 
 static void title_screen(void)
 {
-    u16 i;
+    u16 i, k;
     u8 x, y;
+    id_road_dma_pause();
+    save_commit();                       /* a new record from the race just ended */
+    ending_stop();
+    banner_hide();
+    id_spr_hide_range(0u, 64u);
     hud_clear_top();
     clear_hud_rows(15u, 18u);
-    /* logo characters borrow the low object pool until the race starts */
-    for (i = 0u; i < GFX_LOGO_TILES * 8u; i++) {
-        ((volatile u16 *)(0xA000u + (u32)TILE_OBJ_LOW * 16u))[i] = gfx_logo_tiles[i];
+    HW_SCR2_OFS_X = 0u;
+    HW_SCR2_OFS_Y = 0u;
+    for (k = 0u; k < 1024u; k++) HW_SCR2_MAP[k] = 0u;
+    ngpc_gfx_set_bg_color(GFX_TITLE_BG);
+    for (i = 0u; i < (u16)GFX_TITLE_TILES; i++) {
+        volatile u16 *dst = (volatile u16 *)(0xA000u + (u32)title_slot(i) * 16u);
+        const u16 *src = &gfx_title_tiles[i * 8u];
+        u8 w;
+        for (w = 0u; w < 8u; w++) dst[w] = src[w];
     }
-    ngpc_gfx_set_palette(GFX_SCR1, 4u, 0u, 0x0303u, 0x00FFu, 0x0FFFu);
-    ngpc_gfx_set_palette(GFX_SCR1, 5u, 0u, 0x0303u, 0x008Fu, 0x00FFu);
-    ngpc_gfx_set_palette(GFX_SCR1, 6u, 0u, 0x0303u, 0x084Fu, 0x008Fu);
-    for (y = 0u; y < 3u; y++) {
-        for (x = 0u; x < 20u; x++) {
-            u8 t = gfx_logo_map[y * 20u + x];
-            HW_SCR1_MAP[(u16)(y + 2u) * 32u + x] = t ? (u16)((TILE_OBJ_LOW + t) | ((u16)(4u + y) << 9)) : 0u;
+    for (i = 0u; i < 13u; i++) {
+        const u16 *p = &gfx_emblem_pals[i * 4u];
+        ngpc_gfx_set_palette(GFX_SCR2, emblem_pal_slot[i], 0u, p[1], p[2], p[3]);
+    }
+    for (i = 0u; i < 8u; i++) {
+        const u16 *p = &gfx_over_pals[i * 4u];
+        ngpc_gfx_set_palette(GFX_SCR1, over_pal_slot[i], 0u, p[1], p[2], p[3]);
+    }
+    ngpc_gfx_set_palette(GFX_SCR1, 15u, 0u, 0x0000u, 0x0A62u, 0x0FC7u);   /* FREE blue */
+    for (y = 0u; y < GFX_EMBLEM_H; y++) {
+        for (x = 0u; x < GFX_EMBLEM_W; x++) {
+            u16 m = gfx_emblem_map[y * GFX_EMBLEM_W + x];
+            HW_SCR2_MAP[(u16)y * 32u + (u16)(x + 1u)] = (m == 0xFFFFu) ? 0u
+                : (u16)(title_slot(m) | ((u16)emblem_pal_slot[gfx_emblem_pal[y * GFX_EMBLEM_W + x]] << 9));
         }
     }
-    ngpc_text_print(GFX_SCR1, 3u, 2u, 5u, "ON THE ROAD AGAIN");
-    title_station_text();
-    title_gear_text();
-    banner_hide();
-    ngpc_text_print(GFX_SCR1, 0u, 4u, 11u, "HI");
-    print_score7(7u, 11u, hiscore, 1u);
-    id_spr_hide_range((u8)SPR_TRF_0, (u8)SPR_SCN_END);
+    for (y = 0u; y < GFX_OVER_H; y++) {
+        for (x = 0u; x < GFX_OVER_W; x++) {
+            u16 m = gfx_over_map[y * GFX_OVER_W + x];
+            HW_SCR1_MAP[(u16)y * 32u + x] = (m == 0xFFFFu) ? 0u
+                : (u16)(title_slot(m) | ((u16)over_pal_slot[gfx_over_pal[y * GFX_OVER_W + x]] << 9));
+        }
+    }
+    title_texts();
 }
 
-static void title_blink(u8 t)
+/* the race comes back: road map and palettes, traffic characters, raster */
+static void title_leave(void)
+{
+    u16 i;
+    save_commit();                       /* mode / station / seed */
+    hud_clear_top();
+    clear_hud_rows(15u, 18u);
+    id_spr_hide_range(0u, 64u);
+    id_road_reload_maps();
+    for (i = 0u; i < gfx_traffic_tiles_count * 8u; i++) {
+        ((volatile u16 *)(0xA000u + (u32)trf_tiles_at * 16u))[i] = gfx_traffic_tiles[i];
+    }
+    id_road_dma_resume();
+}
+
+/* the convertible in the emblem, kicking up sand */
+static void title_car(u8 t)
+{
+    u8 top = (u8)(87u - id_car_height());
+    s16 x = 64;
+    u8 k, f = (u8)((t >> 2) & 1u);
+    id_car_draw_at(x, top);
+    for (k = 0u; k < 2u; k++) {
+        u8 spr = (u8)(SPR_SMOKE_0 + k * 2u);
+        s16 px = (k == 0u) ? (s16)(x - 13 - (s16)f) : (s16)(x + 29 + (s16)f);
+        u8 h;
+        for (h = 0u; h < 2u; h++) {
+            static const u8 tsm[4] = { TILE_SMOKE_0, TILE_SMOKE_1, TILE_SMOKE_2, TILE_SMOKE_3 };
+            u8 half = (u8)(k ? (u8)(1u - h) : h);
+            ID_SPR_PUT((u8)(spr + h), (u8)(px + (s16)(h * 8u)), (u8)(top + 15u - f),
+                       (u16)tsm[(u8)(((f + k) & 1u) * 2u + half)], PAL_SMOKE, (u8)(k ? SPR_HFLIP : 0u));
+        }
+    }
+}
+
+static void title_blink(u8 t, u8 row)
 {
     if ((t & 31u) == 0u) {
-        ngpc_text_print(GFX_SCR1, 1u, 2u, 13u, "PRESS A TO START");
+        ngpc_text_print(GFX_SCR1, 0u, 2u, row, "PRESS A TO START");
     } else if ((t & 31u) == 20u) {
-        hud_clear_message(13u);
+        hud_clear_message(row);
     }
 }
 
@@ -447,6 +644,20 @@ static void result_screen(void)
     hud_clear_top();
     clear_hud_rows(15u, 18u);
     hud_message(2u, goal_reached ? "YOU MADE IT!" : "GAME OVER");
+    {
+        /* the mode (and the seed of a FREE run) under the headline */
+        char sd[12];
+        const char *n = diff_name[difficulty];
+        u8 k = 0u;
+        while (n[k] != 0) { sd[k] = n[k]; k++; }
+        if (difficulty == DIFF_FREE) {
+            sd[k++] = ' ';
+            hex4(&sd[k], free_seed);
+        } else {
+            sd[k] = 0;
+        }
+        ngpc_text_print(GFX_SCR1, diff_pal[difficulty], (u8)((20u - (k + (difficulty == DIFF_FREE ? 4u : 0u))) / 2u), 4u, sd);
+    }
     ngpc_text_print(GFX_SCR1, 0u, 3u, 5u, "SCORE");
     print_score7(10u, 5u, score, 1u);
     ngpc_text_print(GFX_SCR1, 0u, 3u, 7u, "ROUTE");
@@ -457,15 +668,17 @@ static void result_screen(void)
             ngpc_gfx_put_tile(GFX_SCR1, (u8)(11u + i * 2u), 7u, (u16)'-', 0u);
         }
     }
-    if (score > hiscore) {
-        hiscore = score;
+    if (score > hiscore[difficulty]) {
+        hiscore[difficulty] = score;
+        save_dirty = 1u;                 /* written when the title comes back */
         hud_message(9u, "NEW HIGH SCORE!");
     }
     banner_hide();
     id_spr_hide_range((u8)SPR_TRF_0, (u8)SPR_SCN_END);
     if (goal_reached) {
         trophy_load();
-        ending_start(route_hist[cur_stage]);   /* goal A..E: its own celebration */
+        /* goal A..E: its own celebration; FREE has one of its own */
+        ending_start(difficulty == DIFF_FREE ? 5u : route_hist[cur_stage]);
     }
 }
 
@@ -582,18 +795,40 @@ static void game_tick(u8 delta)
 #if AUTOPILOT
         ngpc_pad_pressed = PAD_A;
 #endif
-        title_blink(state_timer);
+        title_blink(state_timer, 12u);
         state_timer++;
+        title_frames++;
         if (ngpc_pad_pressed & (PAD_LEFT | PAD_RIGHT)) {
             if (ngpc_pad_pressed & PAD_RIGHT) {
                 station = (u8)((station + 1u) % MUSIC_RADIO);
             } else {
                 station = (u8)((station + MUSIC_RADIO - 1u) % MUSIC_RADIO);
             }
-            title_station_text();
+            save_dirty = 1u;
+            title_texts();
             music_play(station);
         }
+        if (ngpc_pad_pressed & (PAD_UP | PAD_DOWN)) {
+            if (ngpc_pad_pressed & PAD_DOWN) {
+                difficulty = (u8)((difficulty + 1u) % DIFF_COUNT);
+            } else {
+                difficulty = (u8)((difficulty + DIFF_COUNT - 1u) % DIFF_COUNT);
+            }
+            if (difficulty == DIFF_FREE) {
+                new_seed();              /* a fresh journey each time FREE is picked */
+            }
+            save_dirty = 1u;
+            sfx(SFX_BEEP);
+            title_texts();
+        }
+        if ((ngpc_pad_pressed & PAD_B) && difficulty == DIFF_FREE) {
+            new_seed();
+            save_dirty = 1u;
+            sfx(SFX_BEEP);
+            title_texts();
+        }
         if (ngpc_pad_pressed & PAD_A) {
+            title_leave();
             new_game();
             state = ST_COUNT;
             state_timer = 0u;
@@ -603,12 +838,13 @@ static void game_tick(u8 delta)
     } else if (state == ST_RESULT) {
         if ((ngpc_pad_pressed & PAD_A) && state_timer > 30u) {
             state = ST_TITLE;
+            state_timer = 0u;
             new_game();
             title_screen();
             music_play(station);
         }
         if (state_timer < 255u) state_timer++;
-        if (state_timer > 30u) title_blink(state_timer);
+        if (state_timer > 30u) title_blink(state_timer, 13u);
         ngpc_pad_held = 0u;
         ngpc_pad_pressed = 0u;
     } else if (ngpc_pad_pressed & PAD_OPTION) {
@@ -786,10 +1022,12 @@ void main(void)
     id_road_dma_pause();
     next = (u16)(ID_TILE_BASE + id_road_char_count());
     pano_base = next;
+    pano_tiles_at = next;
     next = (u16)(next + GFX_PANO_MAX_TILES);
     id_car_select(0u);
     id_car_init(next, 0u);
     next = (u16)(next + id_car_char_count(0u));
+    trf_tiles_at = next;
     traffic_init(next);
     next = (u16)(next + gfx_traffic_tiles_count);
     obj_base = next;
@@ -804,6 +1042,19 @@ void main(void)
         grade_tab[(u8)(g + 6)] = (s8)(g * room / 6);
     }
     traffic_set_car_line(ID_CAR_WHEEL);
+    save_load();
+#ifdef TEST_DIFF
+    difficulty = (u8)TEST_DIFF;
+#endif
+#ifdef TEST_SEED
+    free_seed = (u16)TEST_SEED;
+#endif
+#ifdef TEST_HI
+    {
+        u8 i;
+        for (i = 0u; i < DIFF_COUNT; i++) hiscore[i] = TEST_HI;
+    }
+#endif
     new_game();
     state = ST_TITLE;
     title_screen();
@@ -842,6 +1093,11 @@ void main(void)
             if (t == 0u) {
                 ngpc_pad_pressed = 0u;
             }
+        }
+        if (state == ST_TITLE) {
+            title_car(state_timer);
+            player_engine_off();
+            continue;
         }
         render_road();
         tick_flash();

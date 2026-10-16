@@ -8,7 +8,7 @@
 #include "spr_cells.h"
 #include "../GraphX/gfx_sprites.h"
 
-#define TRF_MAX       6u
+#define TRF_MAX       7u         /* HARD; the other modes stop at 6 */
 #define TRF_SPAWN_D   1450u      /* distance ahead where cars appear     */
 #define TRF_FAR_D     1600u
 #define HIT_FRONT     (14 * 16)  /* rel window for a hit, 1/16 units     */
@@ -33,6 +33,13 @@ static u8  half_wheel;
 static u8  dens_min, dens_max, target;
 static u8  cooldown;
 static u16 rng = 0x1D2Bu;
+static u8 hard, trf_cap = 6u;
+
+void traffic_set_hard(u8 on)
+{
+    hard = on;
+    trf_cap = (u8)(on ? TRF_MAX : 6u);
+}
 
 static u8 rnd8(void)
 {
@@ -75,8 +82,9 @@ void traffic_clear(void)
 
 void traffic_reset(u8 dmin, u8 dmax)
 {
+    if (dmin > trf_cap) dmin = trf_cap;
     dens_min = dmin;
-    dens_max = (dmax > TRF_MAX) ? (u8)TRF_MAX : dmax;
+    dens_max = (dmax > trf_cap) ? trf_cap : dmax;
     target = dens_min;
     cooldown = 30u;
 }
@@ -130,7 +138,8 @@ static void spawn(void)
     c->active = 1u;
     c->kind = (u8)(rnd8() % GFX_TRAFFIC_KINDS);
     c->pal = (u8)(PAL_TRF_0 + rnd8() % GFX_TRAFFIC_PALS);
-    c->speed = (u8)(55u + (rnd8() % 70u));
+    /* HARD: slower cars, so there are more of them to get through */
+    c->speed = (u8)((hard ? 42u : 55u) + (rnd8() % 70u));
     if (c->kind == TRAFFIC_TRUCK) {
         c->speed = (u8)(c->speed - 15u);
     }
@@ -167,7 +176,7 @@ void traffic_update(u8 player_speed, u8 spawning)
                 c->lat = (s16)(c->lat - 8);
                 if (c->lat < c->drift) c->lat = c->drift;
             }
-        } else if (rnd8() < 2u) {
+        } else if (rnd8() < (u8)(hard ? 6u : 2u)) {
             u8 lane = lane_of(c->lat);
             if (lane == 0u) {
                 lane = 1u;
@@ -189,7 +198,7 @@ void traffic_update(u8 player_speed, u8 spawning)
     }
     if (spawning && n < target && cooldown == 0u && player_speed > 50u) {
         spawn();
-        cooldown = (u8)(25u + (rnd8() & 31u));
+        cooldown = (u8)((hard ? 16u : 25u) + (rnd8() & 31u));
         if (dens_max > dens_min) {
             target = (u8)(dens_min + rnd8() % (u8)(dens_max - dens_min + 1u));
         }

@@ -28,12 +28,13 @@ typedef struct {
     u8 fx;
 } Ending;
 
-static const Ending endings[5] = {
+static const Ending endings[6] = {
     { "AUTOBAHN ACE",      "TOP SPEED, TOP RANK!", { 0x0444u, 0x0AAAu, 0x0FFFu }, FX_CONFETTI },
     { "CANYON CONQUEROR",  "NOTHING STOPS YOU!",   { 0x0024u, 0x037Bu, 0x08CFu }, FX_FIREWORKS },
     { "LAKESIDE DREAM",    "A PERFECT SUNSET RUN", { 0x0942u, 0x0FC7u, 0x0FFEu }, FX_BALLOONS },
     { "SEASIDE PARTY",     "THE TOWN CHEERS YOU!", { 0x0046u, 0x02BDu, 0x09FFu }, FX_STARS },
     { "LEGEND OF THE RUIN", "THE ANCIENT CUP!",    { 0x0104u, 0x033Du, 0x0AAFu }, FX_FIREWORKS },
+    { "JOURNEY COMPLETE",  "A ROAD NOBODY KNEW",   { 0x0055u, 0x00CFu, 0x0AFFu }, FX_FIREWORKS },  /* FREE */
 };
 
 static s16 px[P_COUNT], py[P_COUNT], vx[P_COUNT], vy[P_COUNT];
@@ -55,7 +56,7 @@ void ending_start(u8 which)
     const Ending *e;
     u16 i;
     u8 k;
-    if (which > 4u) which = 4u;
+    if (which > 5u) which = 5u;
     e = &endings[which];
     for (i = 0u; i < 24u; i++) {
         ((volatile u16 *)(0xA000u + (u32)P_TILE * 16u))[i] = gfx_particle_tiles[i];

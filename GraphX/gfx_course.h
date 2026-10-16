@@ -10,13 +10,20 @@ typedef struct { u16 span; s16 bend; s8 slope; } Segment;
 #endif
 #define GFX_LEG_COUNT 15
 #define GFX_STAGES 5
+#define GFX_THEME_COUNT 15
 #define LEG_FORK_LEN 2400
 #define LEG_START_LEN 900
 #define LEG_SHARP_MIN 52
+#define LEG_LEN 11700
+#define LEG_MAX_PRE_FORK 30
+typedef struct { const Segment *seg; u8 count; u8 theme; } LegInfo;
 typedef struct {
-    const Segment *seg; u8 count; u8 pano; u8 obj_left; u8 obj_right;
-    u16 asphalt; u16 line; u16 band[4]; u8 traffic_min; u8 traffic_max;
-} LegInfo;
+    u8 pano; u8 obj_left; u8 obj_right;
+    u16 asphalt; u16 line; u16 band[4];
+    u8 bscale10; u8 hills; u8 pstraight;      /* road style (gen_course.py STYLE) */
+} ThemeInfo;
 extern const LegInfo gfx_legs[GFX_LEG_COUNT];
+extern const ThemeInfo gfx_themes[GFX_THEME_COUNT];
+extern const u16 gfx_leg_ref_cost[GFX_STAGES];   /* mean leg_cost / 16 per stage */
 #define LEG_ID(stage, branch) ((u8)(((stage) * ((stage) + 1u)) / 2u + (branch)))
 #endif

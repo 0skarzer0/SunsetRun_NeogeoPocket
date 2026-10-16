@@ -15,6 +15,7 @@ P2BIN = os.environ.get('P2BIN', '/root/asl/p2bin')
 HEADER = ['_Licensed', '_EntryPoint', '_CartID', '_CartSystem', '_CartTitle', '_CartReserved']
 RAM_BASE = 0x4000
 RAM_END = 0x6C00
+PAD_TO = 0
 
 def convert_asm900(path):
     out = []
@@ -201,6 +202,13 @@ def assemble(lines, out, workdir, ncode):
     if p.returncode:
         print(p.stdout, p.stderr)
         raise SystemExit('p2bin failed')
+    if PAD_TO:
+        # pad with erased flash (0xFF): a 4 Mbit image, so the save blocks of
+        # the cartridge (offset 0x78000-0x7BFFF) exist in emulators too
+        data = open(out, 'rb').read()
+        if len(data) > PAD_TO - 0x8000:
+            raise SystemExit('ROM too big for the save area')
+        open(out, 'wb').write(data + b'\xff' * (PAD_TO - len(data)))
     print('Built %s (%d bytes)' % (out, os.path.getsize(out)))
 
 def main():
@@ -209,8 +217,11 @@ def main():
     ap.add_argument('-I', action='append', default=[])
     ap.add_argument('-D', action='append', default=[])
     ap.add_argument('--work', default=None)
+    ap.add_argument('--pad', default='0x80000', help='pad the ROM to this size (0 = no padding)')
     ap.add_argument('files', nargs='+')
     a = ap.parse_args()
+    global PAD_TO
+    PAD_TO = int(a.pad, 0)
     work = os.path.abspath(a.work or os.path.join(os.path.dirname(os.path.abspath(a.o)), 'build900'))
     os.makedirs(work, exist_ok=True)
     try:

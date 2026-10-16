@@ -99,7 +99,7 @@ static void set_spr_pal(u8 pal, u8 kind, u8 slot)
 
 void theme_apply(u8 leg)
 {
-    const LegInfo *L = &gfx_legs[leg];
+    const ThemeInfo *L = &gfx_themes[leg_theme[leg]];
     const PanoArt *P = &gfx_pano[L->pano];
     u16 i;
     u8 x, y;

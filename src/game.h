@@ -47,6 +47,15 @@ extern u8 cur_stage, cur_branch, cur_leg;
 extern u16 leg_len;               /* driving length of the current leg (incl. fork zone) */
 extern u8 fork_choice;            /* 0 undecided, 1 left, 2 right */
 extern u8 route_hist[GFX_STAGES]; /* branch taken per stage */
+extern u8 leg_theme[GFX_LEG_COUNT];  /* scenery of each leg (shuffled in FREE) */
+extern u16 next_leg_cost;         /* driving-time estimate of the leg loaded last */
+#define DIFF_EASY   0u
+#define DIFF_NORMAL 1u
+#define DIFF_HARD   2u
+#define DIFF_FREE   3u
+#define DIFF_COUNT  4u
+extern u8 difficulty;
+extern u16 free_seed;
 void course_start(void);
 u8   course_fork_zone(u16 pos);   /* 1 while in the fork run-out */
 u8   course_start_zone(u16 pos);  /* 1 right after a checkpoint */
@@ -67,6 +76,7 @@ u8   theme_obj_kind_right(void);
 /* ---- traffic (traffic.c) ------------------------------------------- */
 void traffic_init(u16 tile_base);
 void traffic_reset(u8 density_min, u8 density_max);
+void traffic_set_hard(u8 on);     /* HARD: denser, slower, lane-changing traffic */
 void traffic_clear(void);
 void traffic_update(u8 player_speed, u8 spawning);
 void traffic_draw(void);
@@ -84,6 +94,7 @@ void scenery_mode(u8 mode);
 
 /* ---- start / finish gantry (banner.c) ------------------------------ */
 void banner_init(void);
+void banner_style(u8 diff);       /* colours of the gantry for the difficulty */
 void banner_show(s16 d, u8 finish, const char *text);
 void banner_hide(void);
 void banner_dirty(void);

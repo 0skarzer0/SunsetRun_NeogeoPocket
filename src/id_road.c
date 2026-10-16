@@ -419,6 +419,8 @@ static void id_load_maps_rally(void)
     }
 }
 static void id_load_maps(void) { id_load_maps_rally(); }
+/* SUNSET RUN: the title screen borrows SCR2; this puts the road back */
+void id_road_reload_maps(void) { id_load_palettes(); id_load_maps_rally(); }
 static void id_build_shear_limits(void)
 {
     u8 k;

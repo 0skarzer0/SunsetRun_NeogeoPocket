@@ -107,10 +107,6 @@ u8 id_car_wheel_dx(void)
 {
     return car_wheel_dx;
 }
-u8 id_car_height(void)
-{
-    return body.height;
-}
 void id_car_init(u16 tile_base, u8 all)
 {
     u16 tile;
@@ -216,6 +212,7 @@ void id_car_portrait(u8 px, u8 py, u8 spr0)
     }
     id_spr_hide_range(spr, (u8)ID_CAR_PORTRAIT_MAX);
 }
+static s16 car_at_x = 0x7FFF;
 static void car_layer(const IdCarCell *cells, u8 first, u8 n, u8 w,
                       u8 mirror, s16 lat, u8 pal, u8 spr, u8 last, u8 top,
                       u8 wheel, u8 lift)
@@ -225,6 +222,7 @@ static void car_layer(const IdCarCell *cells, u8 first, u8 n, u8 w,
     j.map = 0;
     j.base = car_tile_base;
     j.x = (s16)(id_road_centre_at(wheel) - (s16)(w * 4u) + lat);
+    if (car_at_x != 0x7FFF) j.x = car_at_x;
     j.y = (u8)(top - lift);
     j.n = n;
     j.wm1 = (u8)(w - 1u);
@@ -358,3 +356,21 @@ void id_car_draw(s16 lat, s8 lean, u8 rough)
     id_spr_hide_range((u8)ID_CAR_SPR2_0, (u8)ID_CAR_SPR2_MAX);
 }
 
+/* SUNSET RUN title: the car standing still at (x, top), straight pose */
+void id_car_draw_at(s16 x, u8 top)
+{
+    car_at_x = x;
+    if (body.layers > 1u) {
+        car_layer(body.cells, body.pose_first[body.poses], body.pose_cells[body.poses],
+                  body.pose_w[body.poses], 0u, 0, (u8)CAR_PAL2,
+                  (u8)ID_CAR_SPR_0, (u8)ID_CAR_SPR_MAX, top, 0u, 0u);
+    }
+    car_layer(body.cells, body.pose_first[0], body.pose_cells[0], body.pose_w[0],
+              0u, 0, (u8)CAR_PAL, (u8)ID_CAR_SPR2_0, (u8)ID_CAR_SPR2_MAX, top, 0u, 0u);
+    car_at_x = 0x7FFF;
+}
+
+u8 id_car_height(void)
+{
+    return body.height;
+}

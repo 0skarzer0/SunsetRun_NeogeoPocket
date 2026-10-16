@@ -17,9 +17,9 @@ flashcart.
 | Botón | Carrera | Título |
 |---|---|---|
 | A | Acelerar | Empezar |
-| B | Frenar | – |
+| B | Frenar | En modo FREE: nueva semilla |
 | Izquierda / Derecha | Girar | Cambiar emisora de radio (la última, SILENCIO, deja solo el motor) |
-| Arriba / Abajo | Marcha LOW / HIGH | – |
+| Arriba / Abajo | Marcha LOW / HIGH | Elegir modo: EASY, NORMAL, HARD, FREE |
 | OPTION | Pausa | – |
 
 * Cambio de dos marchas, como el arcade: **LOW** acelera muy rápido hasta unos 180 km/h;
@@ -31,7 +31,7 @@ flashcart.
   derrapan (humo blanco y chirrido) y la fuerza centrífuga te saca hacia el exterior,
   contra las palmeras, rocas o señales. Levanta el pie o frena.
 * Al elegir bifurcación, el siguiente tramo empieza con una curva hacia ese lado.
-* Empiezas con 74 s. Cada checkpoint suma tiempo (*EXTENDED PLAY*).
+* Cada checkpoint suma tiempo (*EXTENDED PLAY*). El tiempo depende del modo (abajo).
 * Al final de cada tramo la carretera se bifurca: las señales y el aviso en
   pantalla marcan la elección. Mantente a la **izquierda o a la derecha** del carril central
   antes de llegar al final; la elección se fija unos metros antes del cruce.
@@ -39,7 +39,34 @@ flashcart.
   velocidad te hace trompear; a poca velocidad solo te frena. La arena / hierba te frena.
 * La puntuación sube con la velocidad; al llegar a la meta el tiempo sobrante da bonus.
 
-## Mapa de rutas
+## Modos de juego
+
+Se eligen en la pantalla de título con Arriba / Abajo. Cada modo tiene su propio
+récord, y el color de las pancartas START y FINISH indica el modo.
+
+| Modo | Tiempo | Tráfico | Pancarta |
+|---|---|---|---|
+| EASY | 74 s de salida; +58, +56, +54, +52 en los checkpoints | normal | verde, letras blancas |
+| NORMAL | 3 s menos por etapa (71; +55, +53, +51, +49) | normal | blanca, letras rojas |
+| HARD | como NORMAL | más coches, más lentos y que cambian de carril más a menudo | roja, letras blancas |
+| FREE | calculado para cada tramo según su longitud y sus curvas, al nivel de NORMAL | normal | azul, letras blancas |
+
+**FREE**: la pirámide de 15 tramos se mantiene, pero los paisajes se reparten al azar y
+cada tramo (rectas, curvas, curvas en S, cuestas) se construye en el momento a partir
+de una **semilla** de 4 cifras hexadecimales que se ve en el título (y en la pantalla
+final). La misma semilla da siempre el mismo viaje: si un recorrido te gusta, vuelve a
+jugarlo o pásale la semilla a otra persona. B en el título genera una nueva. Las metas
+de FREE tienen su propio final (*JOURNEY COMPLETE*).
+
+## Récords guardados
+
+Los récords de los cuatro modos, el último modo, la emisora y la semilla se guardan
+en la memoria flash del cartucho (en un emulador, en su fichero de partida guardada).
+Se escribe solo al cambiar de pantalla (al empezar una carrera o al volver al título),
+con el driver de guardado de dos bancos de NgpCraft. La ROM ocupa 512 KB porque incluye
+el espacio de guardado de un cartucho de 4 Mbit.
+
+## Mapa de rutas (EASY, NORMAL y HARD)
 
 15 escenarios distintos en pirámide y 5 metas, cada una con su final:
 
@@ -96,8 +123,9 @@ sigue disponible si tienes ese SDK.
 
 | Ruta | Contenido |
 |---|---|
-| `src/main.c` | Bucle de juego, estados (título, cuenta atrás, carrera, meta, resultados) |
-| `src/course.c` | Mapa de rutas, bifurcaciones y buffer de tramos |
+| `src/main.c` | Bucle de juego, estados (título, cuenta atrás, carrera, meta, resultados), modos, guardado |
+| `src/course.c` | Mapa de rutas, bifurcaciones, buffer de tramos y generador del modo FREE |
+| `src/core/ngpc_flash*` | Guardado en flash (NgpCraft, MIT) |
 | `src/traffic.c` | Tráfico: aparición, carriles, proyección y colisiones |
 | `src/theme.c` | Panorama, colores de carretera y objetos de cada tramo |
 | `src/id_scenery.c` | Objetos de arcén, señales de bifurcación y banderas |
@@ -107,7 +135,8 @@ sigue disponible si tienes ese SDK.
 | `src/id_road*`, `src/driving.inc`, `src/core`, `src/fx`, `src/gfx` | Motor de OVER REV / NgpCraft (MIT) |
 | `tools/art.py`, `tools/pano.py` | Arte original (sprites como texto, panoramas procedurales) |
 | `tools/gen_gfx.py` | PNG/arte → tiles, paletas y mapas NGPC (`GraphX/`) |
-| `tools/gen_course.py` | Genera los 15 tramos (curvas, cuestas, tema, tráfico) |
+| `tools/gen_course.py` | Genera los 15 tramos fijos y la tabla de paisajes (el modo FREE usa las mismas reglas en `course.c`) |
+| `tools/gen_title.py` | Pantalla de título |
 | `tools/gen_music.py` | Partituras originales → streams del driver de sonido |
 | `tools/objart.py` | Objetos del arcén dibujados por código (palmeras, molinos, árboles, columnas, señales) |
 | `media/` | GIF de juego, grabaciones de las tres canciones y una carrera con el motor |
@@ -115,7 +144,8 @@ sigue disponible si tienes ese SDK.
 ### Personalizar
 
 * **Tramos**: `tools/gen_course.py` (longitud, estilo de curvas por tema, tráfico).
-* **Tiempos**: `START_TIME` y `extend_time[]` en `src/main.c`.
+* **Tiempos**: `stage_time[][]` en `src/main.c` (EASY y NORMAL/HARD por etapa).
+* **Pantalla de título**: `tools/gen_title.py` (emblema, palmera y rótulo, dibujados por código).
 * **Gráficos**: los sprites son rejillas de texto en `tools/art.py`; los fondos se
   dibujan en `tools/pano.py`. Si prefieres dibujar PNGs, `tools/conv.py`
   (`convert_plane`) convierte cualquier imagen 256×88 a tiles con ≤8 paletas.
@@ -138,7 +168,10 @@ sigue disponible si tienes ese SDK.
   `src/id_road.c`, generado por `tools/gen_gfx.py`).
 * La bifurcación se representa con señales y el HUD; la carretera no se divide
   visualmente en dos.
-* Sin guardado de récords (el récord dura hasta apagar).
+* Guardado de récords probado en emulador (Beetle NGP). En ese emulador el borrado de
+  bloques flash no está emulado: tras unas 60 grabaciones (cada nuevo récord o cambio
+  de opciones) dejaría de guardar, y se conservaría el último récord grabado. En
+  hardware y en emuladores que emulan el borrado no hay ese límite.
 
 ## Arte y sonido
 
@@ -157,6 +190,10 @@ sonidos de ningún juego comercial: todo se genera con los scripts de `tools/`.
   una fanfarria en la meta y la emisora SILENCIO. La música va más baja que el motor.
 * Salida con pancarta START y público animando; meta con pancarta FINISH, público y
   trofeo en la pantalla final.
+* Pantalla de título azul con un emblema ovalado: puesta de sol sobre el mar, una
+  carretera hacia el sol, palmera, el rótulo SUNSET RUN inclinado y el descapotable
+  levantando arena.
+* Nubes de la playa separadas y modeladas (luz arriba, sombra en la base de cada bola).
 * Motor: una nota grave en el canal 3 del PSG que sube con las revoluciones y baja
   al pasar a HIGH. Pitidos de salida, campana de checkpoint y chirrido de neumáticos.
 

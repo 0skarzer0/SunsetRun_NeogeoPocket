@@ -18,7 +18,7 @@ def main():
     if not os.environ.get('THOME'):
         parser.error('Set THOME or pass --thome PATH to your Toshiba SDK')
     os.chdir(ROOT)
-    flags = ['-Nb2', '-DNGP_ENABLE_SOUND=1', '-DNGP_ENABLE_FLASH_SAVE=0',
+    flags = ['-Nb2', '-DNGP_ENABLE_SOUND=1', '-DNGP_ENABLE_FLASH_SAVE=1',
              '-DNGP_ENABLE_DEBUG=0', '-DNGP_PROFILE_RELEASE=1',
              '-DNGP_ENABLE_DMA=1', '-DNGP_ENABLE_SPRMUX=0', '-DNGP_ENABLE_PROFILER=0',
              '-DNGP_DMA_ALLOW_VBLANK_TRIGGER=0', '-DNGP_DMA_INSTALL_DONE_ISR=0',

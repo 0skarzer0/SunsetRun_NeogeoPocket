@@ -1,0 +1,6 @@
+Descomprime aqui el paquete de Windows del Macroassembler AS:
+
+  http://john.ccac.rwth-aachen.de:8000/ftp/as/precompiled/i386-unknown-win32/aswcurr.zip
+
+(da igual la estructura de carpetas: build.bat busca asl.exe y p2bin.exe en
+cualquier subcarpeta de tools\win y los ficheros *.msg que los acompanan).

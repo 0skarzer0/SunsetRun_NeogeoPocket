@@ -1,0 +1,19 @@
+Pon aquí tus canciones en formato MIDI (.mid) y ejecuta build.bat (Windows)
+o python3 tools/build.py (Linux/macOS).
+
+- Cada archivo es una emisora de radio, en orden alfabético (máximo 8).
+  Un número delante ordena sin salir en pantalla: "01_mi_cancion.mid" -> "MI CANCION".
+- Un archivo cuyo nombre empiece por "goal" sustituye al tema de la meta.
+- Siempre se añade al final la emisora SILENCIO (solo motor y efectos).
+- Si la carpeta no tiene ningún .mid, se usan las canciones propias del juego
+  (tools/gen_music.py).
+
+Cómo se reparte la canción en el chip de sonido (3 voces + ruido):
+- canal 10 (batería GM)  -> percusión (bombo, caja, charles)
+- la pista más aguda     -> melodía
+- la pista más grave     -> bajo
+- otra pista             -> acompañamiento (en carrera lo sustituye el motor)
+- Si una pista se llama "lead", "melody", "bass", "chords", "pad"... se usa para ese papel.
+- Si todo va en una sola pista de piano: nota más aguda = melodía, más grave = bajo.
+- Los acordes se reducen a una nota por voz y las notas se suben o bajan de
+  octava para caber entre Sol2 y La6.

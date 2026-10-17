@@ -10,8 +10,8 @@ extern const u16 gfx_trophy_tiles[];
 extern const u8 gfx_trophy_cells[];
 extern const u16 gfx_trophy_pal[4];
 extern const u16 gfx_particle_tiles[24];
-#define GFX_BRIDGE_TILES 6
-extern const u16 gfx_bridge_tiles[48];
+#define GFX_BRIDGE_TILES 12
+extern const u16 gfx_bridge_tiles[96];
 #define GFX_ROLL_FRAMES 12
 #define GFX_FLIP_FIRST 12
 typedef struct { u16 first_cell; u8 cells; u16 first_tile; u8 tiles; u8 under; } RollFrame;

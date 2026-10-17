@@ -1,18 +1,19 @@
-Partituras de dominio público usadas para la radio de SUNSET RUN
-================================================================
+Partituras de dominio público usadas para la música de SUNSET RUN
+=================================================================
 
-Ediciones para piano del Mutopia Project (https://www.mutopiaproject.org),
-copiadas sin cambios. Las obras son de dominio público y estas ediciones
-fueron puestas en el dominio público por quienes las transcribieron:
+Scott Joplin (1868-1917), el rey del ragtime. Todas sus obras son de dominio
+público. Estas son ediciones para piano del Mutopia Project
+(https://www.mutopiaproject.org), puestas en el dominio público por quienes las
+transcribieron, copiadas sin cambios:
 
-  grieg_mountain_king.ly       Edvard Grieg, "In the Hall of the Mountain King",
-                               Peer Gynt Suite I op. 46 n.º 4 (1875).
-                               Transcripción: Coyau (Mutopia-2013/12/07-1888).
-  strauss_thunder_lightning.ly Johann Strauss II, "Unter Donner und Blitz",
-                               polka op. 324 (1868).
-                               Transcripción: Stan Sanderson (Mutopia-2005/10/17-610).
-  joplin_maple_leaf.ly         Scott Joplin, "Maple Leaf Rag" (1899). Mutopia.
-  joplin_entertainer.ly        Scott Joplin, "The Entertainer" (1902). Mutopia.
+  joplin_entertainer.ly   "The Entertainer" (1902)        emisora 1
+  joplin_maple_leaf.ly    "Maple Leaf Rag" (1899)         emisora 2
+  joplin_pine_apple.ly    "Pine Apple Rag" (1908)         emisora 3
+  joplin_peacherine.ly    "Peacherine Rag" (1901)         emisora 4
+  joplin_solace.ly        "Solace" (1909)                 fin de partida / resultados
+                          (los ficheros de esa edición unidos en uno)
 
 tools/classical.py las lee (con tools/lyparse.py) y hace los arreglos chiptune
-de cuatro voces: melodía, bajo, armonía y batería.
+de cuatro voces: melodía (la línea superior de la mano derecha), bajo (la línea
+inferior de la izquierda: el "oom-pah" del ragtime), armonía (los acordes) y
+batería.

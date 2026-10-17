@@ -1,12 +1,10 @@
 """Chiptune arrangements of famous public-domain classics for the radio.
 
 The scores are the public-domain piano editions of the Mutopia Project in
-music/classical/ (see the LEEME there), read with tools/lyparse.py:
-
-  * THUNDER POLKA  - Johann Strauss II, "Unter Donner und Blitz", op. 324 (1868)
-  * RAGTIME        - Scott Joplin, "Maple Leaf Rag" (1899) + "The Entertainer" (1902)
-  * MOUNTAIN KING  - Edvard Grieg, "In the Hall of the Mountain King", op. 46 (1875),
-                     accelerating to the end, twice (the second time higher and faster)
+music/classical/ (see the LEEME there), read with tools/lyparse.py.  The radio
+is Scott Joplin, the King of Ragtime: The Entertainer (1902), Maple Leaf Rag
+(1899), Pine Apple Rag (1908) and Peacherine Rag (1901); his slow "Solace"
+(1909) plays on the game over and results screens.
 
 Each piano score becomes the console's four voices: the lead is the top line
 of the right hand (a held note stays until something higher replaces it),
@@ -131,7 +129,9 @@ def drum_events(length, bar, style):
             pat = [(0, 'k'), (F(1, 8), 'h'), (F(1, 4), 's'), (F(3, 8), 'h')]
             if style == 'rag':
                 pat = [(0, 'k'), (F(1, 8), 'h'), (F(1, 4), 's'), (F(5, 16), 'h'), (F(3, 8), 'o')]
-            if last:
+            elif style == 'tango':     # habanera: dotted eighth, sixteenth, two eighths
+                pat = [(0, 'k'), (F(3, 16), 'h'), (F(1, 4), 'k'), (F(3, 8), 'h')]
+            if last and style != 'tango':
                 pat = [(0, 'k'), (F(1, 8), 's'), (F(1, 4), 's'), (F(5, 16), 's'), (F(3, 8), 's'), (F(7, 16), 's')]
         else:
             pat = [(0, 'k'), (F(1, 8), 'h'), (F(1, 4), 's'), (F(3, 8), 'h'),
@@ -185,33 +185,34 @@ def frames_in(text):
     return sum(int(t.split('/')[1]) for t in text.split() if '/' in t)
 
 
+RADIO = [   # (title, score, right hand, left hand, quarter-note bpm)
+    ('THE ENTERTAINER', 'joplin_entertainer.ly', ['top'], ['bottom'], 100),
+    ('MAPLE LEAF RAG', 'joplin_maple_leaf.ly', ['top'], ['bottom'], 95),
+    ('PINE APPLE RAG', 'joplin_pine_apple.ly', ['right'], ['left'], 96),
+    ('PEACHERINE RAG', 'joplin_peacherine.ly', ['top'], ['bottom'], 96),
+]
+
+
+def assemble(name, parts):
+    v = {k: ' '.join(x[k] for x in parts) for k in ('lead', 'bass', 'harm', 'drums')}
+    n = {frames_in(v[k]) for k in v}
+    assert len(n) == 1, (name, {k: frames_in(v[k]) for k in v})
+    return (name, 1, v['lead'], v['bass'], v['harm'], v['drums'])
+
+
 def songs():
-    """-> [(name, f16, lead, bass, harm, drums)] with durations in frames (f16 = 1)"""
-    out = []
-    # 1. Strauss: fast polka
-    p = piece('strauss_thunder_lightning.ly', ['upper', 'two'], ['lower'], F(1, 2),
-              Tempo([(F(0), 152)]), 'polka')
-    out.append(('THUNDER POLKA', [p]))
-    # 2. Joplin: two rags back to back
-    a = piece('joplin_maple_leaf.ly', ['top'], ['bottom'], F(1, 2), Tempo([(F(0), 100)]), 'rag')
-    b = piece('joplin_entertainer.ly', ['top'], ['bottom'], F(1, 2), Tempo([(F(0), 104)]), 'rag')
-    out.append(('RAGTIME', [a, b]))
-    # 3. Grieg: accelerating march, then again higher and even faster
-    g1 = piece('grieg_mountain_king.ly', ['rightOne', 'rightTwo'], ['left'], F(1),
-               Tempo([(F(0), 116), (F(40), 150), (F(88), 230)]), 'march')
-    g2 = piece('grieg_mountain_king.ly', ['rightOne', 'rightTwo'], ['left'], F(1),
-               Tempo([(F(0), 150), (F(40), 190), (F(88), 260)]), 'march', extra=12 if False else 0,
-               lead_inst='@11 v4')
-    out.append(('MOUNTAIN KING', [g1, g2]))
-    res = []
-    for name, parts in out:
-        v = {k: ' '.join(x[k] for x in parts) for k in ('lead', 'bass', 'harm', 'drums')}
-        n = {frames_in(v[k]) for k in v}
-        assert len(n) == 1, (name, {k: frames_in(v[k]) for k in v})
-        res.append((name, 1, v['lead'], v['bass'], v['harm'], v['drums']))
-    return res
+    """-> the radio: [(name, f16, lead, bass, harm, drums)], durations in frames (f16 = 1)"""
+    return [assemble(t, [piece(f, rh, lh, F(1, 2), Tempo([(F(0), bpm)]), 'rag')])
+            for t, f, rh, lh, bpm in RADIO]
+
+
+def solace():
+    """Joplin's "Solace" (1909), the slow Mexican serenade: game over / results"""
+    p = piece('joplin_solace.ly', ['solaceRH'], ['solaceLH'], F(1, 2), Tempo([(F(0), 74)]), 'tango',
+              lead_inst='@13 v5')
+    return assemble('SOLACE', [p])
 
 
 if __name__ == '__main__':
-    for name, f16, lead, bass, harm, dr in songs():
+    for name, f16, lead, bass, harm, dr in songs() + [solace()]:
         print(name, '%.0f s' % (frames_in(lead) / 60.0))

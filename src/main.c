@@ -1412,6 +1412,9 @@ void main(void)
 #endif
     id_road_dma_resume();
     music_play(station);
+#ifdef TEST_MUSIC
+    music_play(TEST_MUSIC);
+#endif
     clock_prev = pace_prev = g_vb_counter;
     for (;;) {
         u8 now, elapsed, owed, t;

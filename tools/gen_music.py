@@ -163,9 +163,9 @@ def bars_of(text):
 # Chiptune racing tunes: square-wave lead with a short hook repeated and
 # answered, octave / pumping bass, fast arpeggios (heard on the menus; in a
 # race the third channel plays the engine), noise drums.  Original music.
-# The radio plays chiptune arrangements of famous public-domain classics
-# (Strauss, Joplin, Grieg), read from the Mutopia scores in music/classical/:
-# see tools/classical.py.  Durations there are in frames (f16 = 1).
+# The radio plays chiptune arrangements of Scott Joplin's rags, and game over
+# plays his "Solace", read from the public-domain Mutopia scores in
+# music/classical/: see tools/classical.py.  Durations are in frames (f16 = 1).
 import classical as _classical
 SONGS = _classical.songs()
 
@@ -178,7 +178,7 @@ mel4 = ('@10 v4 G5/2 C6/2 E6/4 D6/2 C6/2 G5/4 | A5/2 C6/2 F6/4 E6/2 C6/2 A5/4 | 
 JINGLES = [
     ('GOAL', 7, mel4, '@6 v6 ' + bass_line(prog4, 36, 'octave'), '@6 v8 ' + montuno(prog4, 60, 'arp'),
      drums(len(prog4), 'rock', 8), 1),
-    ('OVER', 8, '@10 v4 E5/4 D#5/4 D5/4 C#5/4 C5/16', '@6 v6 A2/16 A2/16', '@13 v8 C4/16 A3/16', 'k/16 r/16', 0),
+    ('OVER',) + tuple(_classical.solace()[1:]) + (1,),   # Joplin's "Solace", looped
 ]
 
 for name, f16, mel, bass, harm, dr in SONGS:

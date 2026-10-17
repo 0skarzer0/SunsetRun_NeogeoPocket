@@ -387,8 +387,17 @@ def gen_extra():
     pil = ['22221222', '23221232', '22221222', '11111111', '12222122', '12322123', '12222122', '11111111']
     pill = ['33' + r[2:] for r in pil]
     pilr = [r[:6] + '11' for r in pil]
+    # slender versions for distant bridges: a 3 px / 5 px deck at the bottom of
+    # its character, 3 px / 5 px pillars on the side facing the road
+    e = '00000000'
+    dthin = [e] * 5 + ['33333333', '22232222', '11111111']
+    dmed = [e] * 3 + ['33333333', '22232221', '23222231', '22222221', '11111111']
+    ptl = ['00000' + ('321' if y % 4 else '311') for y in range(8)]
+    ptr = [('123' if y % 4 else '113') + '00000' for y in range(8)]
+    pml = ['000' + ('32221' if y % 4 else '31111') for y in range(8)]
+    pmr = [('12223' if y % 4 else '11113') + '000' for y in range(8)]
     btw = []
-    for t in (cap, deck, dbot, pil, pill, pilr):
+    for t in (cap, deck, dbot, pil, pill, pilr, dthin, dmed, ptl, ptr, pml, pmr):
         btw += tile(t)
     # rollover: the rear view rotated in the screen plane is what a barrel
     # roll looks like from behind; upside-down frames show the underside
@@ -538,8 +547,8 @@ def gen_extra():
          '#define GFX_TROPHY_CELLS %d' % len(tcells),
          'extern const u16 gfx_banner_tiles[];', 'extern const u16 gfx_trophy_tiles[];',
          'extern const u8 gfx_trophy_cells[];', 'extern const u16 gfx_trophy_pal[4];',
-         'extern const u16 gfx_particle_tiles[24];', '#define GFX_BRIDGE_TILES 6',
-         'extern const u16 gfx_bridge_tiles[48];',
+         'extern const u16 gfx_particle_tiles[24];', '#define GFX_BRIDGE_TILES 12',
+         'extern const u16 gfx_bridge_tiles[96];',
          '#define GFX_ROLL_FRAMES 12', '#define GFX_FLIP_FIRST 12',
          'typedef struct { u16 first_cell; u8 cells; u16 first_tile; u8 tiles; u8 under; } RollFrame;',
          'extern const RollFrame gfx_roll_frames[2 * GFX_ROLL_FRAMES];   /* side roll, then forward flip */',

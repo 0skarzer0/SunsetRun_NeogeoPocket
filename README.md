@@ -46,7 +46,8 @@ flashcart.
   saliste del asfalto. La arena / hierba te frena.
 * En el campo, el otoño, la granja, el lago y las ruinas la carretera pasa bajo una
   larga serie de **puentes de piedra** (unos 10 s a tope): primero en recta, luego en
-  bajada, en subida y por último en curva. Sus pilares están fuera del asfalto, pero si vas
+  bajada, en subida y por último en curva. A lo lejos se ven finos y van engordando al
+  acercarse. Sus pilares están fuera del asfalto, pero si vas
   por el arcén te los comes.
 * Al terminar (en la meta o sin tiempo) aparece el **mapa del recorrido**: la pirámide
   de tramos con una miniatura de cada paisaje y un cochecito rojo que recorre las
@@ -204,14 +205,14 @@ sonidos de ningún juego comercial: todo se genera con los scripts de `tools/`.
 * Carretera de 4 carriles en gris claro; el horizonte coincide con su punto de fuga.
 * Coche con la zaga de lamas y pilotos, el chico castaño a la izquierda y la chica
   rubia a la derecha; tráfico en colores vivos (morado, amarillo, rosa, verde, celeste).
-* Música (radio): arreglos chiptune de clásicos famosos de dominio público, sacados de
-  las partituras para piano del Mutopia Project (`music/classical/`, ver su LEEME):
-  **THUNDER POLKA** (Johann Strauss II, *Unter Donner und Blitz*, 3:20),
-  **RAGTIME** (Scott Joplin, *Maple Leaf Rag* + *The Entertainer*, 6:03) y
-  **MOUNTAIN KING** (Grieg, *En la gruta del rey de la montaña*, acelerando hasta el
-  final, dos veces, 4:01). Melodía, bajo, armonía y batería salen de la partitura
-  (`tools/lyparse.py` lee LilyPond, `tools/classical.py` hace el arreglo). Además, una
-  fanfarria en la meta y la emisora SILENCIO. Hay grabaciones en `media/`.
+* Música: Scott Joplin, el rey del ragtime (todas sus obras son de dominio público),
+  en arreglos chiptune sacados de las partituras para piano del Mutopia Project
+  (`music/classical/`, ver su LEEME). Emisoras: **THE ENTERTAINER** (1902, 3:18),
+  **MAPLE LEAF RAG** (1899, 3:02), **PINE APPLE RAG** (1908, 3:05) y **PEACHERINE RAG**
+  (1901, 3:05), más SILENCIO. Al acabarse el tiempo y en los resultados suena **Solace**
+  (1909), su serenata lenta. Melodía, bajo, armonía y batería salen de la partitura
+  (`tools/lyparse.py` lee LilyPond, `tools/classical.py` hace el arreglo); en la meta,
+  la fanfarria. Hay grabaciones en `media/`.
 * Salida con pancarta START y público animando con ropa de colores (rojo, azul, verde),
   que suelta globos al dar la salida; meta con pancarta FINISH, público y
   trofeo en la pantalla final.
@@ -243,8 +244,8 @@ sonidos de ningún juego comercial: todo se genera con los scripts de `tools/`.
   los comandos al PSG procede de NGPC_sound_driver_custom (NgpCraft, MIT).
 * Fuente de texto: fuente "dash" de OVER REV (MIT), con sombra añadida.
 * Juego, gráficos, arreglos, toolchain abierta: este proyecto, MIT.
-* Radio: obras de dominio público de J. Strauss II, S. Joplin y E. Grieg, a partir de
-  ediciones del Mutopia Project puestas en el dominio público por sus transcriptores
-  (Coyau, Stan Sanderson y otros; ver `music/classical/LEEME.txt`).
+* Música: obras de Scott Joplin (dominio público), a partir de ediciones del Mutopia
+  Project puestas en el dominio público por sus transcriptores (ver
+  `music/classical/LEEME.txt`).
 * Mecánicas inspiradas en OutRun (SEGA, 1986). Referencias de jugabilidad
   consultadas en Cannonball (djyt); no se ha copiado su código ni datos.

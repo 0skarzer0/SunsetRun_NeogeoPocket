@@ -21,6 +21,13 @@
 #define T_PIL   93u          /* ']' */
 #define T_PILL  94u          /* '^' */
 #define T_PILR  95u          /* '_' */
+/* slender tiles for distant bridges (font slots no text uses) */
+#define T_DTHIN 34u          /* '"' : 3 px deck */
+#define T_DMED  39u          /* ''' : 5 px deck */
+#define T_PTL   59u          /* ';' : 3 px pillar, left side of the road */
+#define T_PTR   61u          /* '=' : 3 px pillar, right side */
+#define T_PML   62u          /* '>' : 5 px pillar, left */
+#define T_PMR   63u          /* '?' : 5 px pillar, right */
 #define PAL_BRIDGE 11u       /* SCR1 */
 #define BR_MAX  12u          /* a whole run of bridges; ~5 are on screen at once */
 #define BR_GAP   260u        /* course units between bridges of a row */
@@ -43,6 +50,14 @@ void bridge_init(void)
     for (i = 0u; i < 8u; i++) d[i] = gfx_bridge_tiles[i];
     d = (volatile u16 *)(0xA000u + (u32)T_DECK * 16u);
     for (i = 0u; i < 40u; i++) d[i] = gfx_bridge_tiles[8u + i];
+    {
+        static const u8 slim[6] = { T_DTHIN, T_DMED, T_PTL, T_PTR, T_PML, T_PMR };
+        u8 k;
+        for (k = 0u; k < 6u; k++) {
+            d = (volatile u16 *)(0xA000u + (u32)slim[k] * 16u);
+            for (i = 0u; i < 8u; i++) d[i] = gfx_bridge_tiles[(u16)(6u + k) * 8u + i];
+        }
+    }
     car_d = id_road_distance_at_line(ID_CAR_WHEEL);
 }
 
@@ -100,7 +115,7 @@ void bridge_setup(void)
 
 /* half width of the opening and of the pillars at road half width h */
 #define OPEN(h)   ((s16)(h) + (s16)((h) / 6u) + 3)
-#define PILLAR(h) ((s16)((h) / 3u) + 3)
+#define PILLAR(h) ((s16)((h) / 3u))     /* also the deck thickness: grows with the size */
 
 static u8 clamp_col(s16 x)
 {
@@ -115,7 +130,7 @@ void bridge_draw(u16 course_pos)
     u16 sig = 0u;
     u8 n = 0u;
     u8 r0s[BR_MAX], r1s[BR_MAX], fts[BR_MAX], l0s[BR_MAX], l1s[BR_MAX], q0s[BR_MAX], q1s[BR_MAX];
-    u8 lv[BR_MAX], rv[BR_MAX];
+    u8 lv[BR_MAX], rv[BR_MAX], slim[BR_MAX];    /* 0 full stone, 1 = 5 px, 2 = 3 px */
     bridge_line = 0u;
     if (br_n == 0u) {
         return;
@@ -147,19 +162,27 @@ void bridge_draw(u16 course_pos)
         if (bridge_line == 0u) {
             bridge_line = (u8)foot;
         }
-        r0s[n] = (u8)((top < (s16)(FIRST_ROW * 8u)) ? FIRST_ROW : (u8)(top >> 3));
-        r1s[n] = (u8)(bot >> 3);
-        if (r1s[n] < r0s[n]) r1s[n] = r0s[n];
+        slim[n] = (u8)((p < 4) ? 2u : ((p < 8) ? 1u : 0u));
+        if (slim[n]) {
+            /* far away: one character row for the deck, one column per pillar */
+            r1s[n] = (u8)((bot - 1) >> 3);
+            r0s[n] = r1s[n];
+            if (r1s[n] < FIRST_ROW) continue;
+        } else {
+            r0s[n] = (u8)((top < (s16)(FIRST_ROW * 8u)) ? FIRST_ROW : (u8)(top >> 3));
+            r1s[n] = (u8)((bot - 1) >> 3);
+            if (r1s[n] < r0s[n]) r1s[n] = r0s[n];
+        }
         fts[n] = (u8)(foot >> 3);
         if (fts[n] > 18u) fts[n] = 18u;
         lv[n] = (u8)(g.centre - w - 1 >= 0);
         rv[n] = (u8)(g.centre + w <= 159);
-        l0s[n] = clamp_col((s16)(g.centre - w - p));
         l1s[n] = clamp_col((s16)(g.centre - w - 1));
         q0s[n] = clamp_col((s16)(g.centre + w));
-        q1s[n] = clamp_col((s16)(g.centre + w + p));
+        l0s[n] = slim[n] ? l1s[n] : clamp_col((s16)(g.centre - w - p));
+        q1s[n] = slim[n] ? q0s[n] : clamp_col((s16)(g.centre + w + p));
         sig = (u16)((sig * 31u) + r0s[n] + ((u16)r1s[n] << 5) + ((u16)l0s[n] << 9) + ((u16)q1s[n] << 3)
-                    + fts[n] + l1s[n] + q0s[n]);
+                    + fts[n] + l1s[n] + q0s[n] + ((u16)slim[n] << 12));
         n++;
     }
     if (n == 0u) {
@@ -176,6 +199,18 @@ void bridge_draw(u16 course_pos)
     while (n > 0u) {
         u8 k = (u8)(n - 1u), x, y;
         n--;
+        if (slim[k]) {
+            /* a slender far bridge: thin deck, thin pillars on the road side */
+            u16 td = (slim[k] == 2u) ? T_DTHIN : T_DMED;
+            u16 tl = (slim[k] == 2u) ? T_PTL : T_PML;
+            u16 tr = (slim[k] == 2u) ? T_PTR : T_PMR;
+            volatile u16 *p = &HW_SCR1_MAP[(u16)r0s[k] * 32u + l0s[k]];
+            for (x = l0s[k]; x <= q1s[k]; x++) *p++ = (u16)(td | ((u16)PAL_BRIDGE << 9));
+            for (y = (u8)(r0s[k] + 1u); y <= fts[k]; y++) {
+                if (lv[k]) HW_SCR1_MAP[(u16)y * 32u + l0s[k]] = (u16)(tl | ((u16)PAL_BRIDGE << 9));
+                if (rv[k]) HW_SCR1_MAP[(u16)y * 32u + q1s[k]] = (u16)(tr | ((u16)PAL_BRIDGE << 9));
+            }
+        } else {
         for (y = r0s[k]; y <= r1s[k]; y++) {
             u16 t = (y == r1s[k] && r1s[k] > r0s[k]) ? T_DBOT : ((y == r0s[k]) ? T_CAP : T_DECK);
             volatile u16 *p = &HW_SCR1_MAP[(u16)y * 32u + l0s[k]];
@@ -195,6 +230,7 @@ void bridge_draw(u16 course_pos)
                     HW_SCR1_MAP[(u16)y * 32u + x] = (u16)(t | ((u16)PAL_BRIDGE << 9));
                 }
             }
+        }
         }
         if (bb_r0 == 255u) {
             bb_r0 = r0s[k]; bb_r1 = fts[k]; bb_c0 = l0s[k]; bb_c1 = q1s[k];

@@ -34,6 +34,7 @@ static u8  dens_min, dens_max, target;
 static u8  cooldown;
 static u16 rng = 0x1D2Bu;
 static u8 hard, trf_cap = 6u;
+u8 trf_spr_end = SPR_TRF_END;
 
 void traffic_set_hard(u8 on)
 {
@@ -305,14 +306,14 @@ void traffic_draw(void)
             jb.attr = (u8)((bridge_line != 0u && g.foot < (s16)bridge_line) ? SPR_MIDDLE : id_spr_priority);
             jb.pal = c->pal;
             jb.spr = spr;
-            jb.end = SPR_TRF_END;
+            jb.end = trf_spr_end;
             jb.flip = 0u;
             jb.hasmap = 0u;
             spr_cells_asm(&jb);
             spr = jb.spr;
         }
     }
-    id_spr_hide_range(spr, (u8)SPR_TRF_END);
+    id_spr_hide_range(spr, trf_spr_end);
 }
 
 /* Test autopilot helper: a lateral target that avoids the cars ahead. */

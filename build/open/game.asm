@@ -1194,6 +1194,11 @@ L293:
 	push xwa
 	call _scenery_mode
 	lda xsp,(xsp+4)
+	ld wa,1
+	push xwa
+	call _theme_crowd_colours
+	lda xsp,(xsp+4)
+	call _balloons_reset__0
 	call _bridge_setup
 	call _leg_time__0
 	ld (_time_left__0),a
@@ -4132,16 +4137,347 @@ L802:
 	pop xiz
 	ret
 
+; function balloons_init
+_balloons_init__0:
+	push xiz
+	lda xsp,(xsp-6)
+	ld xwa,41920
+	ld xix,xwa
+	ld izl,0
+	jr L830
+L827:
+	ld xwa,_gfx_particle_tiles
+	ld bc,16
+	ld e,izl
+	extz de
+	add bc,de
+	extz xbc
+	sll 1,xbc
+	add xwa,xbc
+	ld wa,(xwa)
+	ld xbc,xix
+	ld e,izl
+	extz de
+	exts xde
+	sll 1,xde
+	add xbc,xde
+	ld (xbc),wa
+L829:
+	inc 1,izl
+L830:
+	ld a,izl
+	cp a,8
+	jr ult,L827
+L828:
+L826:
+	lda xsp,(xsp+6)
+	pop xiz
+	ret
+
+; function balloons_reset
+_balloons_reset__0:
+	ldb (_bal_live__0),0
+	ldb (_trf_spr_end),50
+	ld a,50
+	push xwa
+	ld a,42
+	push xwa
+	call _id_spr_hide_range
+	lda xsp,(xsp+8)
+L832:
+	ret
+
+; function balloons_launch
+_balloons_launch__0:
+	push xiz
+	lda xsp,(xsp-2)
+	ld izl,0
+	jp L844
+L841:
+	ld a,(_g_vb_counter)
+	extz wa
+	mul xwa,37
+	ld c,izl
+	extz bc
+	mul xbc,71
+	add wa,bc
+	ld ixl,a
+	ld c,izl
+	extz bc
+	and bc,1
+	cp bc,0
+	jr z,L845
+	ld wa,118
+	ld c,ixl
+	extz bc
+	and bc,31
+	add wa,bc
+	jr L846
+L845:
+	ld wa,6
+	ld c,ixl
+	extz bc
+	and bc,31
+	add wa,bc
+L846:
+	ld xbc,_bal_x__0
+	ld e,izl
+	extz de
+	exts xde
+	sll 1,xde
+	add xbc,xde
+	ld (xbc),wa
+	ld wa,112
+	ld c,ixl
+	extz bc
+	and bc,15
+	add wa,bc
+	sll 2,wa
+	ld xbc,_bal_y__0
+	ld e,izl
+	extz de
+	exts xde
+	sll 1,xde
+	add xbc,xde
+	ld (xbc),wa
+	ld wa,4
+	ld c,ixl
+	extz bc
+	and bc,3
+	add wa,bc
+	ld xbc,_bal_v__0
+	ld e,izl
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	ld a,izl
+	extz wa
+	mul xwa,7
+	ld xbc,_bal_wait__0
+	ld e,izl
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+L843:
+	inc 1,izl
+L844:
+	ld a,izl
+	cp a,8
+	jp ult,L841
+L842:
+	ldb (_bal_live__0),1
+	ldb (_trf_spr_end),42
+L840:
+	lda xsp,(xsp+2)
+	pop xiz
+	ret
+
+; function balloons_draw
+_balloons_draw__0:
+	push xiz
+	lda xsp,(xsp-18)
+	ld wa,0
+	ld (xsp+1),a
+	ld a,(_bal_live__0)
+	cp a,0
+	jr nz,L862
+	jp L861
+L862:
+	ld izl,0
+	jp L866
+L863:
+	ld a,42
+	add a,izl
+	ld iyl,a
+	ld xwa,_bal_wait__0
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	cp a,0
+	jr z,L867
+	ld xbc,_bal_wait__0
+	ld e,izl
+	extz de
+	exts xde
+	add xbc,xde
+	ld a,(xbc)
+	dec 1,a
+	ld (xbc),a
+	push xix
+	push xiy
+	ld a,iyl
+	add a,1
+	push xwa
+	ld a,iyl
+	push xwa
+	call _id_spr_hide_range
+	lda xsp,(xsp+8)
+	pop xiy
+	pop xix
+	ldb (xsp+1),1
+	jp L865
+L867:
+	ld xwa,_bal_y__0
+	ld c,izl
+	extz bc
+	exts xbc
+	sll 1,xbc
+	add xwa,xbc
+	ld wa,(xwa)
+	ld xbc,_bal_v__0
+	ld e,izl
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	extz bc
+	sub wa,bc
+	ld xbc,_bal_y__0
+	ld e,izl
+	extz de
+	exts xde
+	sll 1,xde
+	add xbc,xde
+	ld (xbc),wa
+	ld xwa,_bal_y__0
+	ld c,izl
+	extz bc
+	exts xbc
+	sll 1,xbc
+	add xwa,xbc
+	ld wa,(xwa)
+	cp wa,65496
+	jr ge,L868
+	push xix
+	push xiy
+	ld a,iyl
+	add a,1
+	push xwa
+	ld a,iyl
+	push xwa
+	call _id_spr_hide_range
+	lda xsp,(xsp+8)
+	pop xiy
+	pop xix
+	jp L865
+L868:
+	ldb (xsp+1),1
+	ld xwa,_bal_x__0
+	ld c,izl
+	extz bc
+	exts xbc
+	sll 1,xbc
+	add xwa,xbc
+	ld wa,(xwa)
+	ld e,(_g_vb_counter)
+	extz de
+	sra 3,de
+	ld l,izl
+	extz hl
+	add de,hl
+	and de,2
+	cp de,0
+	jr z,L869
+	ld bc,1
+	jr L870
+L869:
+	ld bc,0
+L870:
+	add wa,bc
+	ld (xsp+4),wa
+L871:
+	ld a,iyl
+	ld (xsp+6),a
+	ld a,(xsp+4)
+	ld (xsp+7),a
+	ld xwa,_bal_y__0
+	ld c,izl
+	extz bc
+	exts xbc
+	sll 1,xbc
+	add xwa,xbc
+	ld wa,(xwa)
+	sra 2,wa
+	ld (xsp+8),a
+	ld wa,60
+	ld (xsp+10),wa
+	ld wa,11
+	ld c,izl
+	extz bc
+	extz xbc
+	div xbc,5
+	ld bc,qbc
+	add wa,bc
+	ld (xsp+12),a
+	ld a,0
+	ld (xsp+13),a
+	ld wa,34816
+	ld c,(xsp+6)
+	extz bc
+	sll 2,bc
+	add wa,bc
+	extz xwa
+	ld xix,xwa
+	ld a,(xsp+10)
+	and a,255
+	ld (xix),a
+	ld a,(xsp+13)
+	extz wa
+	ld c,(_id_spr_priority)
+	extz bc
+	or wa,bc
+	ld bc,(xsp+10)
+	srl 8,bc
+	and bc,1
+	extz bc
+	or wa,bc
+	ld (xix+1),a
+	ld a,(xsp+7)
+	ld (xix+2),a
+	ld a,(xsp+8)
+	ld (xix+3),a
+	ld a,(xsp+12)
+	and a,15
+	ld bc,35840
+	ld e,(xsp+6)
+	extz de
+	add bc,de
+	extz xbc
+	ld (xbc),a
+L873:
+L872:
+L865:
+	inc 1,izl
+L866:
+	ld a,izl
+	cp a,8
+	jp ult,L863
+L864:
+	ld a,(xsp+1)
+	cp a,0
+	jr nz,L874
+	ldb (_bal_live__0),0
+	ldb (_trf_spr_end),50
+L874:
+L861:
+	lda xsp,(xsp+18)
+	pop xiz
+	ret
+
 ; function smoke_init
 _smoke_init__0:
 	push xiz
 	lda xsp,(xsp-2)
 	ld ixl,0
-	jr L834
-L831:
+	jr L888
+L885:
 	ld izl,0
-	jr L838
-L835:
+	jr L892
+L889:
 	ld xwa,_smoke_tiles__0
 	ld c,ixl
 	extz bc
@@ -4171,20 +4507,20 @@ L835:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L837:
+L891:
 	inc 1,izl
-L838:
+L892:
 	ld a,izl
 	cp a,8
-	jr ult,L835
-L836:
-L833:
+	jr ult,L889
+L890:
+L887:
 	inc 1,ixl
-L834:
+L888:
 	ld a,ixl
 	cp a,4
-	jr ult,L831
-L832:
+	jr ult,L885
+L886:
 	push xix
 	ld wa,4095
 	push xwa
@@ -4201,7 +4537,7 @@ L832:
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
 	pop xix
-L830:
+L884:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -4212,7 +4548,7 @@ _smoke_draw__0:
 	lda xsp,(xsp-24)
 	ld a,(xsp+32)
 	cp a,0
-	jr nz,L862
+	jr nz,L916
 	push xix
 	push xiy
 	ld a,28
@@ -4224,16 +4560,16 @@ _smoke_draw__0:
 	pop xiy
 	pop xix
 	ldb (_smoke_t__0),0
-	jp L861
-L862:
+	jp L915
+L916:
 	ld a,(_smoke_t__0)
 	extz wa
 	and wa,7
 	cp wa,0
-	jr nz,L863
+	jr nz,L917
 	ld a,(xsp+36)
 	cp a,0
-	jr nz,L863
+	jr nz,L917
 	push xix
 	push xiy
 	ld wa,7
@@ -4242,7 +4578,7 @@ L862:
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-L863:
+L917:
 	incb 1,(_smoke_t__0)
 	push xix
 	push xiy
@@ -4264,11 +4600,11 @@ L863:
 	add wa,bc
 	ld (xsp+2),a
 	ld ixl,0
-	jp L867
-L864:
+	jp L921
+L918:
 	ld c,ixl
 	cp c,0
-	jr nz,L868
+	jr nz,L922
 	ld wa,(xsp+0)
 	sub wa,11
 	ld c,(_smoke_t__0)
@@ -4276,8 +4612,8 @@ L864:
 	sra 2,bc
 	and bc,1
 	sub wa,bc
-	jr L869
-L868:
+	jr L923
+L922:
 	ld wa,(xsp+0)
 	add wa,27
 	ld c,(_smoke_t__0)
@@ -4285,7 +4621,7 @@ L868:
 	sra 2,bc
 	and bc,1
 	add wa,bc
-L869:
+L923:
 	ld (xsp+6),wa
 	ld a,(_smoke_t__0)
 	extz wa
@@ -4296,8 +4632,8 @@ L869:
 	and wa,1
 	ld (xsp+3),a
 	ld izl,0
-	jp L873
-L870:
+	jp L927
+L924:
 	ld wa,24
 	ld c,ixl
 	extz bc
@@ -4309,15 +4645,15 @@ L870:
 	ld (xsp+8),a
 	ld c,ixl
 	cp c,0
-	jr z,L874
+	jr z,L928
 	ld a,1
 	sub a,izl
 	extz wa
-	jr L875
-L874:
+	jr L929
+L928:
 	ld a,izl
 	extz wa
-L875:
+L929:
 	ld (xsp+9),a
 	ld wa,(xsp+6)
 	ld c,izl
@@ -4327,11 +4663,11 @@ L875:
 	ld (xsp+10),wa
 	ld wa,(xsp+10)
 	cp wa,65529
-	jr lt,L877
+	jr lt,L931
 	ld wa,(xsp+10)
 	cp wa,159
-	jr le,L876
-L877:
+	jr le,L930
+L931:
 	push xix
 	push xiy
 	ld a,(xsp+16)
@@ -4343,9 +4679,9 @@ L877:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-	jp L872
-L876:
-L878:
+	jp L926
+L930:
+L932:
 	ld a,(xsp+8)
 	ld (xsp+12),a
 	ld a,(xsp+10)
@@ -4369,12 +4705,12 @@ L878:
 	ld (xsp+18),a
 	ld c,ixl
 	cp c,0
-	jr z,L881
+	jr z,L935
 	ld wa,128
-	jr L882
-L881:
+	jr L936
+L935:
 	ld wa,0
-L882:
+L936:
 	ld (xsp+19),a
 	ld wa,34816
 	ld c,(xsp+12)
@@ -4409,23 +4745,23 @@ L882:
 	add bc,de
 	extz xbc
 	ld (xbc),a
-L880:
-L879:
-L872:
+L934:
+L933:
+L926:
 	inc 1,izl
-L873:
+L927:
 	ld a,izl
 	cp a,2
-	jp ult,L870
-L871:
-L866:
+	jp ult,L924
+L925:
+L920:
 	inc 1,ixl
-L867:
+L921:
 	ld a,ixl
 	cp a,2
-	jp ult,L864
-L865:
-L861:
+	jp ult,L918
+L919:
+L915:
 	lda xsp,(xsp+24)
 	pop xiz
 	ret
@@ -4436,12 +4772,12 @@ _engine_sound__0:
 	lda xsp,(xsp-10)
 	ld c,(_gear__0)
 	cp c,0
-	jr nz,L898
+	jr nz,L952
 	ld wa,137
-	jr L899
-L898:
+	jr L953
+L952:
 	ld wa,224
-L899:
+L953:
 	ld (xsp+0),wa
 	ld a,(_speed__0)
 	extz wa
@@ -4451,14 +4787,14 @@ L899:
 	ld ix,wa
 	ld wa,ix
 	cp wa,255
-	jr ule,L900
+	jr ule,L954
 	ld ix,255
-L900:
+L954:
 	ld a,(_crash_timer__0)
 	cp a,0
-	jr z,L901
+	jr z,L955
 	ld ix,0
-L901:
+L955:
 	ld wa,95
 	ld bc,ix
 	mul xbc,27
@@ -4475,49 +4811,49 @@ L901:
 	extz wa
 	and wa,1
 	cp wa,0
-	jr z,L902
+	jr z,L956
 	ld wa,iz
 	ld bc,iz
 	ld l,(_offroad__0)
 	cp l,0
-	jr z,L903
+	jr z,L957
 	ld l,(_speed__0)
 	cp l,20
-	jr ule,L903
+	jr ule,L957
 	ld de,3
-	jr L904
-L903:
+	jr L958
+L957:
 	ld de,5
-L904:
+L958:
 	cp e,0
-	jr z,L906
-L905:
+	jr z,L960
+L959:
 	srl 1,bc
-	djnz e,L905
-L906:
+	djnz e,L959
+L960:
 	add wa,bc
 	ld iz,wa
-L902:
+L956:
 	ld c,(_ngpc_pad_held)
 	extz bc
 	and bc,16
 	cp bc,0
-	jr z,L907
+	jr z,L961
 	ld wa,4
-	jr L908
-L907:
+	jr L962
+L961:
 	ld wa,6
-L908:
+L962:
 	ld iyl,a
 	ld a,(_state__0)
 	cp a,4
-	jr z,L910
+	jr z,L964
 	ld a,(_state__0)
 	cp a,3
-	jr nz,L909
-L910:
+	jr nz,L963
+L964:
 	ld iyl,9
-L909:
+L963:
 	push xix
 	push xiy
 	ld a,iyl
@@ -4528,7 +4864,7 @@ L909:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L897:
+L951:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -4552,20 +4888,20 @@ _roll_draw__0:
 	ld (xsp+6),wa
 	ld a,(xsp+0)
 	cp a,12
-	jr ult,L932
+	jr ult,L986
 	ldb (xsp+0),11
-L932:
+L986:
 	ld a,(_roll_kind__0)
 	cp a,0
-	jr z,L933
+	jr z,L987
 	ld a,(xsp+0)
 	add a,12
 	ld (xsp+0),a
-	jr L934
-L933:
+	jr L988
+L987:
 	ld a,(_roll_dir__0)
 	cp a,0
-	jr nz,L935
+	jr nz,L989
 	ld wa,12
 	ld c,(xsp+0)
 	extz bc
@@ -4574,8 +4910,8 @@ L933:
 	divs xwa,12
 	ld wa,qwa
 	ld (xsp+0),a
-L935:
-L934:
+L989:
+L988:
 	ld xwa,_gfx_roll_frames
 	ld c,(xsp+0)
 	extz bc
@@ -4586,7 +4922,7 @@ L934:
 	ld (xsp+2),xwa
 	ld a,(xsp+0)
 	cp a,(_roll_loaded__0)
-	jp z,L936
+	jp z,L990
 	ld xwa,(xsp+2)
 	ld a,(xwa+6)
 	extz wa
@@ -4608,8 +4944,8 @@ L934:
 	add xwa,xbc
 	ld (xsp+22),xwa
 	ldw (xsp+16),0
-	jr L940
-L937:
+	jr L994
+L991:
 	ld xwa,(xsp+18)
 	ld bc,(xsp+16)
 	extz xbc
@@ -4622,13 +4958,13 @@ L937:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L939:
+L993:
 	incw 1,(xsp+16)
-L940:
+L994:
 	ld wa,(xsp+16)
 	cp wa,(xsp+14)
-	jr ult,L937
-L938:
+	jr ult,L991
+L992:
 	push xix
 	push xiy
 	ld xwa,_gfx_roll_pal
@@ -4676,7 +5012,7 @@ L938:
 	pop xix
 	ld a,(xsp+0)
 	ld (_roll_loaded__0),a
-L936:
+L990:
 	push xix
 	push xiy
 	ld wa,147
@@ -4701,7 +5037,7 @@ L936:
 	ld (xsp+1),a
 	ld a,(_roll_kind__0)
 	cp a,0
-	jr z,L941
+	jr z,L995
 	ld a,(xsp+1)
 	extz wa
 	ld c,(xsp+1)
@@ -4709,15 +5045,15 @@ L936:
 	sra 1,bc
 	add wa,bc
 	ld (xsp+1),a
-L941:
+L995:
 	ld wa,136
 	ld c,(xsp+1)
 	extz bc
 	sub wa,bc
 	ld (xsp+10),wa
 	ld izl,0
-	jp L945
-L942:
+	jp L999
+L996:
 	ld xwa,_gfx_roll_cells
 	ld xbc,(xsp+2)
 	ld bc,(xbc)
@@ -4743,17 +5079,17 @@ L942:
 	ld iy,wa
 	ld wa,(xsp+18)
 	cp wa,65529
-	jr lt,L947
+	jr lt,L1001
 	ld wa,(xsp+18)
 	cp wa,159
-	jr gt,L947
+	jr gt,L1001
 	ld wa,iy
 	cp wa,65529
-	jr lt,L947
+	jr lt,L1001
 	ld wa,iy
 	cp wa,151
-	jr le,L946
-L947:
+	jr le,L1000
+L1001:
 	push xix
 	push xiy
 	ld a,izl
@@ -4765,9 +5101,9 @@ L947:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-	jp L944
-L946:
-L948:
+	jp L998
+L1000:
+L1002:
 	ld a,izl
 	ld (xsp+22),a
 	ld a,(xsp+18)
@@ -4817,17 +5153,17 @@ L948:
 	add bc,de
 	extz xbc
 	ld (xbc),a
-L950:
-L949:
-L944:
+L1004:
+L1003:
+L998:
 	inc 1,izl
-L945:
+L999:
 	ld a,izl
 	ld xbc,(xsp+2)
 	ld c,(xbc+2)
 	cp a,c
-	jp ult,L942
-L943:
+	jp ult,L996
+L997:
 	push xix
 	push xiy
 	ld wa,24
@@ -4838,7 +5174,7 @@ L943:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L931:
+L985:
 	lda xsp,(xsp+34)
 	pop xiz
 	ret
@@ -4866,23 +5202,23 @@ _sharp_ahead__0:
 	ld ix,wa
 	ld wa,ix
 	cp wa,52
-	jr ge,L967
+	jr ge,L1021
 	ld wa,ix
 	cp wa,65484
-	jr gt,L966
-L967:
+	jr gt,L1020
+L1021:
 	ld wa,0
-	jp L965
-L966:
+	jp L1019
+L1020:
 	ldb (xsp+1),0
-	jr L971
-L968:
+	jr L1025
+L1022:
 	inc 1,izl
 	ld a,izl
 	cp a,(_track_len)
-	jr ult,L972
+	jr ult,L1026
 	ld izl,0
-L972:
+L1026:
 	ld xwa,(_track_seg)
 	ld c,izl
 	extz bc
@@ -4892,27 +5228,27 @@ L972:
 	ld ix,wa
 	ld wa,ix
 	cp wa,52
-	jr ge,L974
+	jr ge,L1028
 	ld wa,ix
 	cp wa,65484
-	jr gt,L973
-L974:
+	jr gt,L1027
+L1028:
 	ld wa,iy
 	cp wa,150
-	jr uge,L975
+	jr uge,L1029
 	ld wa,0
-	jr L965
-L975:
+	jr L1019
+L1029:
 	ld bc,ix
 	cp bc,0
-	jr le,L976
+	jr le,L1030
 	ld wa,1
-	jr L977
-L976:
+	jr L1031
+L1030:
 	ld wa,65535
-L977:
-	jr L965
-L973:
+L1031:
+	jr L1019
+L1027:
 	ld wa,iy
 	ld xbc,(_track_seg)
 	ld e,izl
@@ -4922,20 +5258,20 @@ L973:
 	ld bc,(xbc)
 	add wa,bc
 	ld iy,wa
-L970:
+L1024:
 	incb 1,(xsp+1)
-L971:
+L1025:
 	ld a,(xsp+1)
 	cp a,6
-	jr uge,L978
+	jr uge,L1032
 	ld wa,iy
 	cp wa,1300
-	jr ult,L968
-L978:
-L969:
+	jr ult,L1022
+L1032:
+L1023:
 	ld wa,0
-	jr L965
-L965:
+	jr L1019
+L1019:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -4946,7 +5282,7 @@ _game_tick__0:
 	lda xsp,(xsp-8)
 	ld a,(_state__0)
 	cp a,0
-	jp nz,L1098
+	jp nz,L1153
 	ld wa,12
 	push xwa
 	ld a,(_state_timer__0)
@@ -4959,77 +5295,77 @@ _game_tick__0:
 	extz wa
 	and wa,12
 	cp wa,0
-	jr z,L1099
+	jr z,L1154
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,8
 	cp wa,0
-	jr z,L1100
+	jr z,L1155
 	ld a,(_station__0)
 	extz wa
 	add wa,1
 	and wa,3
 	ld (_station__0),a
-	jr L1101
-L1100:
+	jr L1156
+L1155:
 	ld a,(_station__0)
 	extz wa
 	add wa,4
 	sub wa,1
 	and wa,3
 	ld (_station__0),a
-L1101:
+L1156:
 	ldb (_save_dirty__0),1
 	call _title_texts__0
 	ld a,(_station__0)
 	push xwa
 	call _music_play
 	lda xsp,(xsp+4)
-L1099:
+L1154:
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,3
 	cp wa,0
-	jr z,L1102
+	jr z,L1157
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,2
 	cp wa,0
-	jr z,L1103
+	jr z,L1158
 	ld a,(_difficulty)
 	extz wa
 	add wa,1
 	and wa,3
 	ld (_difficulty),a
-	jr L1104
-L1103:
+	jr L1159
+L1158:
 	ld a,(_difficulty)
 	extz wa
 	add wa,4
 	sub wa,1
 	and wa,3
 	ld (_difficulty),a
-L1104:
+L1159:
 	ld a,(_difficulty)
 	cp a,3
-	jr nz,L1105
+	jr nz,L1160
 	call _new_seed__0
-L1105:
+L1160:
 	ldb (_save_dirty__0),1
 	ld wa,0
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
 	call _title_texts__0
-L1102:
+L1157:
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,32
 	cp wa,0
-	jr z,L1106
+	jr z,L1161
 	ld a,(_difficulty)
 	cp a,3
-	jr nz,L1106
+	jr nz,L1161
 	call _new_seed__0
 	ldb (_save_dirty__0),1
 	ld wa,0
@@ -5037,24 +5373,24 @@ L1102:
 	call _sfx
 	lda xsp,(xsp+4)
 	call _title_texts__0
-L1106:
+L1161:
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,16
 	cp wa,0
-	jr z,L1107
+	jr z,L1162
 	call _title_leave__0
 	call _new_game__0
 	ldb (_state__0),1
 	ldb (_state_timer__0),0
-L1107:
+L1162:
 	ldb (_ngpc_pad_held),0
 	ldb (_ngpc_pad_pressed),0
-	jp L1108
-L1098:
+	jp L1163
+L1153:
 	ld a,(_state__0)
 	cp a,6
-	jr nz,L1109
+	jr nz,L1164
 	incw 1,(_map_t__0)
 	ld wa,(_map_along__0)
 	add wa,2
@@ -5063,40 +5399,40 @@ L1098:
 	extz wa
 	and wa,16
 	cp wa,0
-	jr z,L1112
+	jr z,L1167
 	ld wa,(_map_t__0)
 	cp wa,20
-	jr ugt,L1111
-L1112:
+	jr ugt,L1166
+L1167:
 	ld wa,(_map_done__0)
 	cp wa,0
-	jr z,L1110
+	jr z,L1165
 	ld wa,(_map_t__0)
 	ld bc,(_map_done__0)
 	add bc,75
 	cp wa,bc
-	jr ule,L1110
-L1111:
+	jr ule,L1165
+L1166:
 	call _map_leave__0
 	ldb (_state__0),5
 	ldb (_state_timer__0),0
 	call _result_screen__0
-L1110:
+L1165:
 	ldb (_ngpc_pad_held),0
 	ldb (_ngpc_pad_pressed),0
-	jp L1113
-L1109:
+	jp L1168
+L1164:
 	ld a,(_state__0)
 	cp a,5
-	jr nz,L1114
+	jr nz,L1169
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,16
 	cp wa,0
-	jr z,L1115
+	jr z,L1170
 	ld a,(_state_timer__0)
 	cp a,30
-	jr ule,L1115
+	jr ule,L1170
 	ldb (_state__0),0
 	ldb (_state_timer__0),0
 	call _new_game__0
@@ -5105,43 +5441,43 @@ L1109:
 	push xwa
 	call _music_play
 	lda xsp,(xsp+4)
-L1115:
+L1170:
 	ld a,(_state_timer__0)
 	cp a,255
-	jr uge,L1116
+	jr uge,L1171
 	incb 1,(_state_timer__0)
-L1116:
+L1171:
 	ld a,(_state_timer__0)
 	cp a,30
-	jr ule,L1117
+	jr ule,L1172
 	ld wa,13
 	push xwa
 	ld a,(_state_timer__0)
 	push xwa
 	call _title_blink__0
 	lda xsp,(xsp+8)
-L1117:
+L1172:
 	ldb (_ngpc_pad_held),0
 	ldb (_ngpc_pad_pressed),0
-	jr L1118
-L1114:
+	jr L1173
+L1169:
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,64
 	cp wa,0
-	jr z,L1119
+	jr z,L1174
 	ld c,(_paused__0)
 	cp c,0
-	jr nz,L1120
+	jr nz,L1175
 	ld wa,1
-	jr L1121
-L1120:
+	jr L1176
+L1175:
 	ld wa,0
-L1121:
+L1176:
 	ld (_paused__0),a
 	ld a,(_paused__0)
 	cp a,0
-	jr z,L1122
+	jr z,L1177
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -5151,8 +5487,8 @@ L1121:
 	push xwa
 	call _message__0
 	lda xsp,(xsp+12)
-	jr L1123
-L1122:
+	jr L1178
+L1177:
 	ld wa,1
 	push xwa
 	ld wa,0
@@ -5163,19 +5499,19 @@ L1122:
 	push xwa
 	call _message__0
 	lda xsp,(xsp+12)
-L1123:
-L1119:
-L1118:
-L1113:
-L1108:
+L1178:
+L1174:
+L1173:
+L1168:
+L1163:
 	ld a,(_paused__0)
 	cp a,0
-	jr z,L1124
-	jp L1097
-L1124:
+	jr z,L1179
+	jp L1152
+L1179:
 	ld a,(_state__0)
 	cp a,1
-	jp nz,L1125
+	jp nz,L1180
 	ld a,(_state_timer__0)
 	extz wa
 	extz xwa
@@ -5187,13 +5523,13 @@ L1124:
 	div xwa,30
 	ld wa,qwa
 	cp wa,0
-	jr nz,L1127
+	jr nz,L1182
 	ld a,(xsp+0)
 	cp a,4
-	jr uge,L1127
+	jr uge,L1182
 	ld wa,0
 	push xwa
-	ld xwa,_cd__0_L1126
+	ld xwa,_cd__0_L1181
 	ld c,(xsp+4)
 	extz bc
 	exts xbc
@@ -5207,15 +5543,20 @@ L1124:
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
-L1127:
+L1182:
 	incb 1,(_state_timer__0)
 	ld a,(_state_timer__0)
 	cp a,90
-	jr ult,L1128
+	jr ult,L1183
 	ldb (_state__0),2
+	ld a,(_cur_stage)
+	cp a,0
+	jr nz,L1184
+	call _balloons_launch__0
+L1184:
 	ld wa,30
 	push xwa
-	ld xwa,(_cd__0_L1126+12)
+	ld xwa,(_cd__0_L1181+12)
 	push xwa
 	call _count_message__0
 	lda xsp,(xsp+8)
@@ -5223,30 +5564,30 @@ L1127:
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
-L1128:
+L1183:
 	ldb (_ngpc_pad_held),0
 	ldb (_ngpc_pad_pressed),0
-L1125:
+L1180:
 	ld a,(_state__0)
 	cp a,2
-	jr z,L1130
+	jr z,L1186
 	ld a,(_state__0)
 	cp a,3
-	jr z,L1130
+	jr z,L1186
 	ld a,(_state__0)
 	cp a,4
-	jp nz,L1129
-L1130:
+	jp nz,L1185
+L1186:
 	ld a,(_state__0)
 	cp a,2
-	jr nz,L1132
+	jr nz,L1188
 	ld a,(_crash_timer__0)
 	cp a,0
-	jr z,L1131
-L1132:
+	jr z,L1187
+L1188:
 	ldb (_ngpc_pad_held),0
 	ldb (_ngpc_pad_pressed),0
-L1131:
+L1187:
 	ld wa,(_course_pos__0)
 	ld (xsp+2),wa
 	ld a,(_speed__0)
@@ -5254,39 +5595,39 @@ L1131:
 	call _drive__0
 	ld a,(_offroad__0)
 	cp a,0
-	jr z,L1133
+	jr z,L1189
 	ld a,(_was_offroad__0)
 	cp a,0
-	jr nz,L1133
+	jr nz,L1189
 	ld a,(xsp+4)
 	ld (_verge_spd__0),a
-	jr L1134
-L1133:
+	jr L1190
+L1189:
 	ld a,(_offroad__0)
 	cp a,0
-	jr z,L1135
+	jr z,L1191
 	ld c,(_verge_spd__0)
 	cp c,4
-	jr ule,L1136
+	jr ule,L1192
 	ld a,(_verge_spd__0)
 	sub a,4
 	extz wa
-	jr L1137
-L1136:
+	jr L1193
+L1192:
 	ld wa,0
-L1137:
+L1193:
 	ld (_verge_spd__0),a
-	jr L1138
-L1135:
+	jr L1194
+L1191:
 	ldb (_verge_spd__0),0
-L1138:
-L1134:
+L1194:
+L1190:
 	ld a,(_offroad__0)
 	ld (_was_offroad__0),a
 	call _advance__0
 	ld a,(_state__0)
 	cp a,2
-	jp nz,L1139
+	jp nz,L1195
 	ld xwa,(_score__0)
 	ld c,(_speed__0)
 	extz bc
@@ -5303,35 +5644,35 @@ L1134:
 	ld a,(_sec_acc__0)
 	add a,(xsp+16)
 	ld (_sec_acc__0),a
-	jr L1142
-L1140:
+	jr L1198
+L1196:
 	ld a,(_sec_acc__0)
 	sub a,60
 	ld (_sec_acc__0),a
 	ld a,(_time_left__0)
 	cp a,0
-	jr z,L1143
+	jr z,L1199
 	decb 1,(_time_left__0)
-L1143:
+L1199:
 	ld a,(_time_left__0)
 	cp a,0
-	jr z,L1144
+	jr z,L1200
 	ld a,(_time_left__0)
 	cp a,10
-	jr ugt,L1144
+	jr ugt,L1200
 	ld wa,5
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
-L1144:
-L1142:
+L1200:
+L1198:
 	ld a,(_sec_acc__0)
 	cp a,60
-	jr uge,L1140
-L1141:
+	jr uge,L1196
+L1197:
 	ld a,(_time_left__0)
 	cp a,0
-	jr nz,L1145
+	jr nz,L1201
 	ldb (_state__0),3
 	ldb (_state_timer__0),0
 	ld wa,0
@@ -5351,8 +5692,8 @@ L1141:
 	push xwa
 	call _hud_clear_message
 	lda xsp,(xsp+4)
-L1145:
-L1139:
+L1201:
+L1195:
 	ld wa,(_course_pos__0)
 	push xwa
 	call _course_fork_zone
@@ -5360,13 +5701,13 @@ L1139:
 	ld (xsp+0),a
 	ld a,(xsp+0)
 	cp a,0
-	jp z,L1146
+	jp z,L1202
 	call _course_is_last_stage
 	cp a,0
-	jp nz,L1146
+	jp nz,L1202
 	ld a,(_last_fork_zone__0)
 	cp a,0
-	jr nz,L1147
+	jr nz,L1203
 	ld wa,1
 	push xwa
 	call _scenery_mode
@@ -5383,22 +5724,22 @@ L1139:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-L1147:
+L1203:
 	ld a,(_fork_choice)
 	cp a,0
-	jr nz,L1148
+	jr nz,L1204
 	ld wa,(_course_pos__0)
 	add wa,850
 	cp wa,(_leg_len)
-	jr ult,L1148
+	jr ult,L1204
 	ld bc,(_car_lat__0)
 	cp bc,0
-	jr le,L1149
+	jr le,L1205
 	ld wa,1
-	jr L1150
-L1149:
+	jr L1206
+L1205:
 	ld wa,0
-L1150:
+L1206:
 	push xwa
 	call _course_decide
 	lda xsp,(xsp+4)
@@ -5408,7 +5749,7 @@ L1150:
 	lda xsp,(xsp+4)
 	ld a,(_fork_choice)
 	cp a,2
-	jr nz,L1151
+	jr nz,L1207
 	ld xwa,_S0_24
 	push xwa
 	ld wa,3
@@ -5421,8 +5762,8 @@ L1150:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-	jr L1152
-L1151:
+	jr L1208
+L1207:
 	ld xwa,_S0_25
 	push xwa
 	ld wa,3
@@ -5435,19 +5776,19 @@ L1151:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-L1152:
-L1148:
-	jp L1153
-L1146:
+L1208:
+L1204:
+	jp L1209
+L1202:
 	ld a,(xsp+0)
 	cp a,0
-	jr z,L1154
+	jr z,L1210
 	call _course_is_last_stage
 	cp a,0
-	jr z,L1154
+	jr z,L1210
 	ld a,(_last_fork_zone__0)
 	cp a,0
-	jr nz,L1155
+	jr nz,L1211
 	ld xwa,_S0_26
 	push xwa
 	ld wa,3
@@ -5460,82 +5801,82 @@ L1146:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-L1155:
+L1211:
 	ld wa,5
 	push xwa
 	call _scenery_mode
 	lda xsp,(xsp+4)
-	jr L1156
-L1154:
+	jr L1212
+L1210:
 	ld a,(_cur_stage)
 	cp a,0
-	jr nz,L1157
+	jr nz,L1213
 	ld wa,(_course_pos__0)
 	cp wa,900
-	jr uge,L1157
+	jr uge,L1213
 	ld wa,5
 	push xwa
 	call _scenery_mode
 	lda xsp,(xsp+4)
-	jr L1158
-L1157:
+	jr L1214
+L1213:
 	ld wa,(_course_pos__0)
 	push xwa
 	call _course_start_zone
 	lda xsp,(xsp+4)
 	cp a,0
-	jr z,L1159
+	jr z,L1215
 	ld wa,2
 	push xwa
 	call _scenery_mode
 	lda xsp,(xsp+4)
-	jr L1160
-L1159:
+	jr L1216
+L1215:
 	call _sharp_ahead__0
 	ld (xsp+4),a
 	ld c,(xsp+4)
 	cp c,0
-	jr le,L1161
+	jr le,L1217
 	ld wa,3
-	jr L1162
-L1161:
+	jr L1218
+L1217:
 	ld c,(xsp+4)
 	cp c,0
-	jr ge,L1163
+	jr ge,L1219
 	ld wa,4
-	jr L1164
-L1163:
+	jr L1220
+L1219:
 	ld wa,0
-L1164:
-L1162:
+L1220:
+L1218:
 	push xwa
 	call _scenery_mode
 	lda xsp,(xsp+4)
-L1160:
-L1158:
-L1156:
-L1153:
+L1216:
+L1214:
+L1212:
+L1209:
 	ld a,(xsp+0)
 	ld (_last_fork_zone__0),a
 	ld a,(_goal_reached__0)
 	cp a,0
-	jr nz,L1165
+	jr nz,L1221
 	ld wa,(_course_pos__0)
 	cp wa,(_leg_len)
-	jr ult,L1165
+	jr ult,L1221
 	ldb (_last_fork_zone__0),0
 	call _leg_end__0
-L1165:
+L1221:
 	ld a,(_speed__0)
 	push xwa
 	call _id_scenery_advance
 	lda xsp,(xsp+4)
 	ld a,(_state__0)
 	cp a,2
-	jp nz,L1166
+	jp nz,L1222
 	ld a,(_crash_timer__0)
 	cp a,0
-	jp nz,L1166
+	jp nz,L1222
 	ld a,(_speed__0)
 	push xwa
 	ld wa,(_car_lat__0)
@@ -5545,45 +5886,45 @@ L1165:
 	ld (xsp+4),a
 	ld a,(xsp+4)
 	cp a,0
-	jr z,L1167
+	jr z,L1223
 	ld a,(_speed__0)
 	extz wa
-	mul xwa,5
-	srl 3,wa
-	add wa,4
+	mul xwa,15
+	srl 4,wa
+	add wa,6
 	ld (xsp+6),wa
 	ld c,(xsp+4)
 	cp c,1
-	jr nz,L1168
+	jr nz,L1224
 	ld wa,(xsp+6)
-	jr L1169
-L1168:
+	jr L1225
+L1224:
 	ld wa,(xsp+6)
 	neg wa
-L1169:
+L1225:
 	ld (_knock_v__0),wa
 	ldb (_knock_t__0),1
 	ld wa,(_dbg_knock_at)
 	cp wa,0
-	jr nz,L1170
+	jr nz,L1226
 	ld a,(_speed__0)
 	cp a,100
-	jr ule,L1170
+	jr ule,L1226
 	ld wa,(_dbg_updates)
 	ld (_dbg_knock_at),wa
-L1170:
+L1226:
 	ld a,(_speed__0)
 	extz wa
-	mul xwa,5
-	srl 3,wa
+	mul xwa,7
+	srl 4,wa
 	ld (_speed__0),a
 	incb 1,(_dbg_bumps)
 	ld wa,4
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
-	jp L1171
-L1167:
+	jp L1227
+L1223:
 	ld wa,147
 	push xwa
 	ld wa,(_car_lat__0)
@@ -5592,7 +5933,7 @@ L1167:
 	call _id_scenery_hit
 	lda xsp,(xsp+8)
 	cp a,0
-	jr nz,L1173
+	jr nz,L1229
 	ld wa,(_car_lat__0)
 	sra 4,wa
 	push xwa
@@ -5603,22 +5944,22 @@ L1167:
 	call _bridge_hit
 	lda xsp,(xsp+12)
 	cp a,0
-	jp z,L1172
-L1173:
+	jp z,L1228
+L1229:
 	ld c,(_verge_spd__0)
 	cp c,(_speed__0)
-	jr ule,L1174
+	jr ule,L1230
 	ld a,(_verge_spd__0)
 	extz wa
-	jr L1175
-L1174:
+	jr L1231
+L1230:
 	ld a,(_speed__0)
 	extz wa
-L1175:
+L1231:
 	ld (xsp+5),a
 	ld a,(xsp+5)
 	cp a,110
-	jp ule,L1176
+	jp ule,L1232
 	ld a,(xsp+5)
 	ld xbc,_dbg_cspd
 	ld e,(_dbg_scn)
@@ -5631,63 +5972,63 @@ L1175:
 	ldb (_crash_timer__0),90
 	ld a,(xsp+5)
 	cp a,168
-	jr ult,L1177
+	jr ult,L1233
 	ldb (_roll_t__0),1
 	ld c,(xsp+5)
 	cp c,214
-	jr ult,L1178
+	jr ult,L1234
 	ld wa,1
-	jr L1179
-L1178:
+	jr L1235
+L1234:
 	ld wa,0
-L1179:
+L1235:
 	ld (_roll_kind__0),a
 	ld a,(_roll_kind__0)
 	cp a,0
-	jr z,L1180
+	jr z,L1236
 	incb 1,(_dbg_flips)
 	ld wa,(_dbg_flip_at)
 	cp wa,0
-	jr nz,L1181
+	jr nz,L1237
 	ld wa,(_dbg_updates)
 	ld (_dbg_flip_at),wa
-L1181:
-	jr L1182
-L1180:
+L1237:
+	jr L1238
+L1236:
 	incb 1,(_dbg_rolls)
-L1182:
+L1238:
 	ld wa,(_dbg_roll_at)
 	cp wa,0
-	jr nz,L1183
+	jr nz,L1239
 	ld wa,(_dbg_updates)
 	ld (_dbg_roll_at),wa
-L1183:
+L1239:
 	ld bc,(_car_lat__0)
 	cp bc,0
-	jr gt,L1186
+	jr gt,L1242
 	ld bc,(_car_lat__0)
 	cp bc,0
-	jr nz,L1184
+	jr nz,L1240
 	ld c,(_g_vb_counter)
 	extz bc
 	and bc,1
 	cp bc,0
-	jr z,L1184
-L1186:
+	jr z,L1240
+L1242:
 	ld wa,1
-	jr L1185
-L1184:
+	jr L1241
+L1240:
 	ld wa,0
-L1185:
+L1241:
 	ld (_roll_dir__0),a
-L1177:
+L1233:
 	incb 1,(_dbg_crashes)
 	ld wa,3
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
-	jr L1187
-L1176:
+	jr L1243
+L1232:
 	ld wa,48
 	ld (xsp+6),a
 	ld a,(_speed__0)
@@ -5696,50 +6037,50 @@ L1176:
 	ld (xsp+7),a
 	ld a,(xsp+6)
 	cp a,(xsp+7)
-	jr ule,L1188
+	jr ule,L1244
 	ld a,(xsp+7)
 	ld (xsp+6),a
-L1188:
+L1244:
 	ld c,(_speed__0)
 	cp c,(xsp+6)
-	jr ule,L1189
+	jr ule,L1245
 	ld a,(_speed__0)
 	sub a,(xsp+6)
 	extz wa
-	jr L1190
-L1189:
+	jr L1246
+L1245:
 	ld wa,0
-L1190:
+L1246:
 	ld (_speed__0),a
 	ld wa,4
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
-L1187:
-L1172:
-L1171:
-L1166:
+L1243:
+L1228:
+L1227:
+L1222:
 	ld wa,(_knock_v__0)
 	cp wa,0
-	jr z,L1191
+	jr z,L1247
 	ld wa,(_car_lat__0)
 	add wa,(_knock_v__0)
 	ld (_car_lat__0),wa
 	ld wa,(_car_lat__0)
 	cp wa,(_lat_limit__0)
-	jr le,L1192
+	jr le,L1248
 	ld wa,(_lat_limit__0)
 	ld (_car_lat__0),wa
-L1192:
+L1248:
 	ld wa,(_car_lat__0)
 	ld bc,(_lat_limit__0)
 	neg bc
 	cp wa,bc
-	jr ge,L1193
+	jr ge,L1249
 	ld wa,(_lat_limit__0)
 	neg wa
 	ld (_car_lat__0),wa
-L1193:
+L1249:
 	ld wa,(_knock_v__0)
 	mul xwa,7
 	exts xwa
@@ -5747,64 +6088,64 @@ L1193:
 	ld (_knock_v__0),wa
 	ld wa,(_knock_v__0)
 	cp wa,65524
-	jr le,L1194
+	jr le,L1250
 	ld wa,(_knock_v__0)
 	cp wa,12
-	jr ge,L1194
+	jr ge,L1250
 	ldw (_knock_v__0),0
-L1194:
-L1191:
+L1250:
+L1247:
 	ld a,(_knock_t__0)
 	cp a,0
-	jr z,L1195
+	jr z,L1251
 	incb 1,(_knock_t__0)
 	ld a,(_knock_t__0)
 	cp a,26
-	jr ule,L1196
+	jr ule,L1252
 	ldb (_knock_t__0),0
-L1196:
-L1195:
+L1252:
+L1251:
 	ld a,(_roll_t__0)
 	cp a,0
-	jr z,L1197
+	jr z,L1253
 	incb 1,(_roll_t__0)
 	ld a,(_roll_t__0)
 	cp a,36
-	jr ule,L1198
+	jr ule,L1254
 	ldb (_roll_t__0),0
 	ldb (_roll_loaded__0),255
 	call _id_car_restore
-L1198:
-L1197:
+L1254:
+L1253:
 	ld a,(_crash_timer__0)
 	cp a,0
-	jr z,L1199
+	jr z,L1255
 	decb 1,(_crash_timer__0)
 	ld c,(_speed__0)
 	cp c,12
-	jr ule,L1200
+	jr ule,L1256
 	ld a,(_speed__0)
 	sub a,12
 	extz wa
-	jr L1201
-L1200:
+	jr L1257
+L1256:
 	ld wa,0
-L1201:
+L1257:
 	ld (_speed__0),a
 	ld a,(_crash_timer__0)
 	cp a,0
-	jr nz,L1202
+	jr nz,L1258
 	ld wa,(_car_lat__0)
 	exts xwa
 	divs xwa,2
 	ld (_car_lat__0),wa
 	ldb (_speed__0),0
 	ldb (_gear__0),0
-L1202:
-L1199:
+L1258:
+L1255:
 	ld c,(_state__0)
 	cp c,2
-	jr nz,L1203
+	jr nz,L1259
 	push xwa
 	ld wa,(_course_pos__0)
 	push xwa
@@ -5813,12 +6154,12 @@ L1199:
 	ld xbc,xwa
 	pop xwa
 	cp c,0
-	jr nz,L1203
+	jr nz,L1259
 	ld wa,1
-	jr L1204
-L1203:
+	jr L1260
+L1259:
 	ld wa,0
-L1204:
+L1260:
 	push xwa
 	ld a,(_speed__0)
 	push xwa
@@ -5826,27 +6167,27 @@ L1204:
 	lda xsp,(xsp+8)
 	ld a,(_state__0)
 	cp a,3
-	jr nz,L1205
+	jr nz,L1261
 	incb 1,(_state_timer__0)
 	ld a,(_speed__0)
 	cp a,0
-	jr nz,L1206
+	jr nz,L1262
 	ld a,(_state_timer__0)
 	cp a,60
-	jr ule,L1206
+	jr ule,L1262
 	ldb (_state__0),6
 	ldb (_state_timer__0),0
 	call _map_screen__0
-L1206:
-	jr L1207
-L1205:
+L1262:
+	jr L1263
+L1261:
 	ld a,(_state__0)
 	cp a,4
-	jr nz,L1208
+	jr nz,L1264
 	incb 1,(_state_timer__0)
 	ld a,(_state_timer__0)
 	cp a,1
-	jr nz,L1209
+	jr nz,L1265
 	ld xwa,(_score__0)
 	ld c,(_time_left__0)
 	extz bc
@@ -5854,34 +6195,34 @@ L1205:
 	add xwa,xbc
 	ld (_score__0),xwa
 	ld izl,0
-	jr L1213
-L1210:
+	jr L1269
+L1266:
 	ld wa,20000
 	push xwa
 	call _hud_score_add
 	lda xsp,(xsp+4)
-L1212:
+L1268:
 	inc 1,izl
-L1213:
+L1269:
 	ld a,izl
 	cp a,(_time_left__0)
-	jr ult,L1210
-L1211:
-L1209:
+	jr ult,L1266
+L1267:
+L1265:
 	ld a,(_speed__0)
 	cp a,0
-	jr nz,L1214
+	jr nz,L1270
 	ld a,(_state_timer__0)
 	cp a,60
-	jr ule,L1214
+	jr ule,L1270
 	ldb (_state__0),6
 	ldb (_state_timer__0),0
 	call _map_screen__0
-L1214:
-L1208:
-L1207:
-L1129:
-L1097:
+L1270:
+L1264:
+L1263:
+L1185:
+L1152:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -5970,6 +6311,7 @@ _main:
 	call _smoke_init__0
 	call _banner_init
 	call _bridge_init
+	call _balloons_init__0
 	ld wa,147
 	push xwa
 	call _id_road_half_at
@@ -5997,19 +6339,19 @@ _main:
 	add wa,384
 	ld (_lat_limit__0),wa
 	ldw (xsp+2),65530
-	jr L1279
-L1276:
+	jr L1335
+L1332:
 	ld bc,(xsp+2)
 	cp bc,0
-	jr le,L1280
+	jr le,L1336
 	call _id_road_grade_hi
 	exts wa
-	jr L1281
-L1280:
+	jr L1337
+L1336:
 	call _id_road_grade_lo
 	exts wa
 	neg wa
-L1281:
+L1337:
 	ld (xsp+8),wa
 	ld wa,(xsp+2)
 	mul xwa,(xsp+8)
@@ -6022,13 +6364,13 @@ L1281:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1278:
+L1334:
 	incw 1,(xsp+2)
-L1279:
+L1335:
 	ld wa,(xsp+2)
 	cp wa,6
-	jr le,L1276
-L1277:
+	jr le,L1332
+L1333:
 	ld wa,147
 	push xwa
 	call _traffic_set_car_line
@@ -6045,16 +6387,16 @@ L1277:
 	ld a,(_g_vb_counter)
 	ld (_pace_prev__0),a
 	ld (_clock_prev__0),a
-L1282:
-	jr L1288
-L1286:
+L1338:
+	jr L1344
+L1342:
 	call _ngpc_vsync
-L1288:
+L1344:
 	ld a,(_g_vb_counter)
 	sub a,(_pace_prev__0)
 	cp a,2
-	jr ult,L1286
-L1287:
+	jr ult,L1342
+L1343:
 	ld a,(_g_vb_counter)
 	ld (xsp+8),a
 	ld a,(xsp+8)
@@ -6066,15 +6408,15 @@ L1287:
 	ld (xsp+10),a
 	ld a,(xsp+10)
 	cp a,3
-	jr ule,L1289
+	jr ule,L1345
 	ldb (xsp+10),3
 	ld a,(xsp+8)
 	ld c,(xsp+9)
 	and c,1
 	sub a,c
 	ld (_pace_prev__0),a
-	jr L1290
-L1289:
+	jr L1346
+L1345:
 	ld a,(_pace_prev__0)
 	extz wa
 	ld c,(xsp+10)
@@ -6083,77 +6425,78 @@ L1289:
 	extz bc
 	add wa,bc
 	ld (_pace_prev__0),a
-L1290:
+L1346:
 	call _ngpc_input_update
 	call _audio_update
 	incw 1,(_dbg_updates)
 	ld a,(xsp+8)
 	ld (_clock_prev__0),a
 	ld izl,0
-	jr L1294
-L1291:
+	jr L1350
+L1347:
 	ld wa,2
 	push xwa
 	call _game_tick__0
 	lda xsp,(xsp+4)
 	ld a,izl
 	cp a,0
-	jr nz,L1295
+	jr nz,L1351
 	ldb (_ngpc_pad_pressed),0
-L1295:
-L1293:
+L1351:
+L1349:
 	inc 1,izl
-L1294:
+L1350:
 	ld a,izl
 	cp a,(xsp+10)
-	jr ult,L1291
-L1292:
+	jr ult,L1347
+L1348:
 	ld a,(_state__0)
 	cp a,0
-	jr nz,L1296
+	jr nz,L1352
 	ld a,(_state_timer__0)
 	push xwa
 	call _title_car__0
 	lda xsp,(xsp+4)
 	call _player_engine_off
-	jp L1284
-L1296:
+	jp L1340
+L1352:
 	ld a,(_state__0)
 	cp a,6
-	jr nz,L1297
+	jr nz,L1353
 	call _map_car__0
 	call _player_engine_off
-	jp L1284
-L1297:
+	jp L1340
+L1353:
 	call _render_road__0
 	call _tick_flash__0
 	call _tick_message__0
 	ld a,(_state__0)
 	cp a,0
-	jr z,L1298
+	jr z,L1354
 	ld a,(_state__0)
 	cp a,5
-	jr z,L1298
+	jr z,L1354
 	ld wa,(_course_pos__0)
 	push xwa
 	call _bridge_draw
 	lda xsp,(xsp+4)
 	call _id_scenery_draw
 	call _traffic_draw
-L1298:
+	call _balloons_draw__0
+L1354:
 	ld a,(_state__0)
 	cp a,1
-	jr z,L1300
+	jr z,L1356
 	ld a,(_state__0)
 	cp a,2
-	jr nz,L1299
+	jr nz,L1355
 	ld a,(_cur_stage)
 	cp a,0
-	jr nz,L1299
+	jr nz,L1355
 	ld wa,(_course_pos__0)
 	cp wa,220
-	jr uge,L1299
-L1300:
+	jr uge,L1355
+L1356:
 	ld xwa,_S0_31
 	push xwa
 	ld wa,0
@@ -6164,26 +6507,26 @@ L1300:
 	push xwa
 	call _banner_show
 	lda xsp,(xsp+12)
-	jr L1301
-L1299:
+	jr L1357
+L1355:
 	ld a,(_state__0)
 	cp a,2
-	jr z,L1303
+	jr z,L1359
 	ld a,(_state__0)
 	cp a,4
-	jr z,L1303
+	jr z,L1359
 	ld a,(_state__0)
 	cp a,3
-	jr nz,L1302
-L1303:
+	jr nz,L1358
+L1359:
 	call _course_is_last_stage
 	cp a,0
-	jr z,L1302
+	jr z,L1358
 	ld wa,(_course_pos__0)
 	ld bc,(_leg_len)
 	sub bc,1400
 	cp wa,bc
-	jr le,L1302
+	jr le,L1358
 	ld xwa,_S0_32
 	push xwa
 	ld wa,1
@@ -6194,33 +6537,33 @@ L1303:
 	push xwa
 	call _banner_show
 	lda xsp,(xsp+12)
-	jr L1304
-L1302:
+	jr L1360
+L1358:
 	call _banner_hide
-L1304:
-L1301:
+L1360:
+L1357:
 	ld a,(_state__0)
 	cp a,5
-	jr nz,L1305
+	jr nz,L1361
 	ld a,(_goal_reached__0)
 	cp a,0
-	jr z,L1305
+	jr z,L1361
 	call _trophy_draw__0
 	call _ending_tick
-L1305:
+L1361:
 	ld a,(_state__0)
 	cp a,2
-	jr z,L1307
+	jr z,L1363
 	ld a,(_state__0)
 	cp a,1
-	jr z,L1307
+	jr z,L1363
 	ld a,(_state__0)
 	cp a,3
-	jr z,L1307
+	jr z,L1363
 	ld a,(_state__0)
 	cp a,4
-	jr nz,L1306
-L1307:
+	jr nz,L1362
+L1363:
 	ld wa,(_course_pos__0)
 	extz xwa
 	ld bc,(_leg_len)
@@ -6235,21 +6578,21 @@ L1307:
 	push xwa
 	ld c,(_gear__0)
 	cp c,0
-	jr nz,L1308
+	jr nz,L1364
 	ld c,(_speed__0)
 	cp c,123
-	jr ult,L1308
+	jr ult,L1364
 	ld c,(_g_vb_counter)
 	extz bc
 	and bc,8
 	cp bc,0
-	jr z,L1308
+	jr z,L1364
 	ld wa,2
-	jr L1309
-L1308:
+	jr L1365
+L1364:
 	ld a,(_gear__0)
 	extz wa
-L1309:
+L1365:
 	push xwa
 	ld a,(_speed__0)
 	extz wa
@@ -6260,78 +6603,78 @@ L1309:
 	push xwa
 	call _hud_race
 	lda xsp,(xsp+20)
-L1306:
+L1362:
 	ld a,(_roll_t__0)
 	cp a,0
-	jr z,L1310
+	jr z,L1366
 	call _roll_draw__0
-	jp L1311
-L1310:
+	jp L1367
+L1366:
 	ld a,(_crash_timer__0)
 	cp a,0
-	jr z,L1312
+	jr z,L1368
 	ld a,(_crash_timer__0)
 	extz wa
 	and wa,2
 	cp wa,0
-	jr z,L1312
+	jr z,L1368
 	ld wa,2
 	push xwa
 	ld c,(_crash_timer__0)
 	extz bc
 	and bc,4
 	cp bc,0
-	jr z,L1313
+	jr z,L1369
 	ld wa,1
-	jr L1314
-L1313:
+	jr L1370
+L1369:
 	ld wa,65535
-L1314:
+L1370:
 	push xwa
 	ld wa,(_car_lat__0)
 	sra 4,wa
 	push xwa
 	call _id_car_draw
 	lda xsp,(xsp+12)
-	jp L1315
-L1312:
+	jp L1371
+L1368:
 	ld a,(_knock_t__0)
 	cp a,0
-	jr z,L1316
+	jr z,L1372
 	ld c,(_knock_t__0)
 	extz bc
 	sra 2,bc
 	and bc,1
 	cp bc,0
-	jr z,L1317
+	jr z,L1373
 	ld wa,1
-	jr L1318
-L1317:
+	jr L1374
+L1373:
 	ld wa,65535
-L1318:
+L1374:
 	ld (xsp+12),a
 	ld c,(_knock_t__0)
 	cp c,18
-	jr uge,L1319
+	jr uge,L1375
 	ld a,(xsp+12)
 	exts wa
 	sll 1,wa
-	jr L1320
-L1319:
+	jr L1376
+L1375:
 	ld wa,0
-L1320:
+L1376:
 	ld (xsp+14),wa
 	ld c,(_offroad__0)
 	cp c,0
-	jr z,L1321
+	jr z,L1377
 	ld c,(_speed__0)
 	cp c,20
-	jr ule,L1321
+	jr ule,L1377
 	ld wa,1
-	jr L1322
-L1321:
+	jr L1378
+L1377:
 	ld wa,0
-L1322:
+L1378:
 	push xwa
 	ld a,(xsp+16)
 	push xwa
@@ -6341,19 +6684,19 @@ L1322:
 	push xwa
 	call _id_car_draw
 	lda xsp,(xsp+12)
-	jr L1323
-L1316:
+	jr L1379
+L1372:
 	ld c,(_offroad__0)
 	cp c,0
-	jr z,L1324
+	jr z,L1380
 	ld c,(_speed__0)
 	cp c,20
-	jr ule,L1324
+	jr ule,L1380
 	ld wa,1
-	jr L1325
-L1324:
+	jr L1381
+L1380:
 	ld wa,0
-L1325:
+L1381:
 	push xwa
 	ld a,(_car_lean__0)
 	push xwa
@@ -6362,79 +6705,79 @@ L1325:
 	push xwa
 	call _id_car_draw
 	lda xsp,(xsp+12)
-L1323:
-L1315:
-L1311:
+L1379:
+L1371:
+L1367:
 	ld c,(_knock_t__0)
 	cp c,0
-	jr z,L1326
+	jr z,L1382
 	ld c,(_knock_t__0)
 	cp c,5
-	jr uge,L1326
+	jr uge,L1382
 	ld wa,1
-	jr L1327
-L1326:
+	jr L1383
+L1382:
 	ld wa,0
-L1327:
+L1383:
 	push xwa
 	ld c,(_skid__0)
 	cp c,0
-	jr nz,L1330
+	jr nz,L1386
 	ld c,(_knock_t__0)
 	cp c,0
-	jr z,L1328
+	jr z,L1384
 	ld c,(_knock_t__0)
 	cp c,20
-	jr uge,L1328
+	jr uge,L1384
 	ld c,(_speed__0)
 	cp c,30
-	jr ule,L1328
-L1330:
+	jr ule,L1384
+L1386:
 	ld c,(_crash_timer__0)
 	cp c,0
-	jr nz,L1328
+	jr nz,L1384
 	ld c,(_state__0)
 	cp c,2
-	jr nz,L1328
+	jr nz,L1384
 	ld wa,1
-	jr L1329
-L1328:
+	jr L1385
+L1384:
 	ld wa,0
-L1329:
+L1385:
 	push xwa
 	call _smoke_draw__0
 	lda xsp,(xsp+8)
 	ld a,(_offroad__0)
 	cp a,0
-	jr z,L1331
+	jr z,L1387
 	ld a,(_state__0)
 	cp a,2
-	jr nz,L1331
+	jr nz,L1387
 	incb 1,(_dbg_off)
-L1331:
+L1387:
 	ld a,(_state__0)
 	cp a,2
-	jr z,L1333
+	jr z,L1389
 	ld a,(_state__0)
 	cp a,1
-	jr z,L1333
+	jr z,L1389
 	ld a,(_state__0)
 	cp a,3
-	jr z,L1333
+	jr z,L1389
 	ld a,(_state__0)
 	cp a,4
-	jr nz,L1332
-L1333:
+	jr nz,L1388
+L1389:
 	call _engine_sound__0
-	jr L1334
-L1332:
+	jr L1390
+L1388:
 	call _player_engine_off
-L1334:
-L1284:
-L1285:
-	jp L1282
-L1283:
-L1275:
+L1390:
+L1340:
+L1341:
+	jp L1338
+L1339:
+L1331:
 	lda xsp,(xsp+16)
 	pop xiz
 	ret
@@ -6446,13 +6789,13 @@ _player_engine:
 	ld a,(xsp+8)
 	ld (_eng_attn__10),a
 	ldb (_eng_on__10),1
-L1336:
+L1392:
 	ret
 
 ; function player_engine_off
 _player_engine_off:
 	ldb (_eng_on__10),0
-L1338:
+L1394:
 	ret
 
 ; function player_init
@@ -6463,8 +6806,8 @@ _player_init:
 	ld xix,xwa
 	ldw (0B8h),43690
 	ld izl,0
-	jr L1352
-L1349:
+	jr L1408
+L1405:
 	ld xwa,_z80drv__10
 	ld c,izl
 	extz bc
@@ -6477,17 +6820,17 @@ L1349:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1351:
+L1407:
 	inc 1,izl
-L1352:
+L1408:
 	ld a,izl
 	cp a,65
-	jr ult,L1349
-L1350:
+	jr ult,L1405
+L1406:
 	ldw (0B8h),21845
 	ld izl,0
-	jr L1356
-L1353:
+	jr L1412
+L1409:
 	ld wa,0
 	ld xbc,_want_div__10
 	ld e,izl
@@ -6532,17 +6875,17 @@ L1353:
 	muls xde,18
 	add xbc,xde
 	ld (xbc+15),a
-L1355:
+L1411:
 	inc 1,izl
-L1356:
+L1412:
 	ld a,izl
 	cp a,4
-	jr ult,L1353
-L1354:
+	jr ult,L1409
+L1410:
 	ldb (_playing__10),0
 	ld a,(_g_vb_counter)
 	ld (_last_vbl__10),a
-L1348:
+L1404:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -6560,8 +6903,8 @@ _player_start:
 	ld xwa,(xsp+38)
 	ld (xsp+12),xwa
 	ld izl,0
-	jp L1366
-L1363:
+	jp L1422
+L1419:
 	lda xwa,(xsp+0)
 	ld c,izl
 	extz bc
@@ -6630,17 +6973,17 @@ L1363:
 	muls xde,18
 	add xbc,xde
 	ld (xbc+16),a
-L1365:
+L1421:
 	inc 1,izl
-L1366:
+L1422:
 	ld a,izl
 	cp a,4
-	jp ult,L1363
-L1364:
+	jp ult,L1419
+L1420:
 	ldb (_playing__10),1
 	ld a,(_g_vb_counter)
 	ld (_last_vbl__10),a
-L1362:
+L1418:
 	lda xsp,(xsp+18)
 	pop xiz
 	ret
@@ -6651,8 +6994,8 @@ _player_stop:
 	lda xsp,(xsp-2)
 	ldb (_playing__10),0
 	ld izl,0
-	jr L1376
-L1373:
+	jr L1432
+L1429:
 	ld a,0
 	ld xbc,_voice__10
 	ld e,izl
@@ -6660,14 +7003,14 @@ L1373:
 	muls xde,18
 	add xbc,xde
 	ld (xbc+15),a
-L1375:
+L1431:
 	inc 1,izl
-L1376:
+L1432:
 	ld a,izl
 	cp a,4
-	jr ult,L1373
-L1374:
-L1372:
+	jr ult,L1429
+L1430:
+L1428:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -6679,8 +7022,8 @@ _voice_events__10:
 	ld xiz,(xsp+10)
 	ld wa,0
 	ld (xsp+0),a
-	jp L1393
-L1391:
+	jp L1449
+L1447:
 	ld xwa,(xiz)
 	inc 1,xwa
 	ld (xiz),xwa
@@ -6690,25 +7033,25 @@ L1391:
 	incb 1,(xsp+0)
 	ld a,ixl
 	cp a,0
-	jr nz,L1394
+	jr nz,L1450
 	ld xwa,(xiz+4)
 	ld (xiz),xwa
-	jp L1393
-L1394:
+	jp L1449
+L1450:
 	ld a,ixl
 	cp a,240
-	jr nz,L1395
+	jr nz,L1451
 	ld xwa,(xiz)
 	inc 1,xwa
 	ld (xiz),xwa
 	dec 1,xwa
 	ld a,(xwa)
 	ld (xiz+13),a
-	jp L1393
-L1395:
+	jp L1449
+L1451:
 	ld a,ixl
 	cp a,244
-	jr nz,L1396
+	jr nz,L1452
 	ld xwa,(xiz)
 	inc 1,xwa
 	ld (xiz),xwa
@@ -6717,14 +7060,14 @@ L1395:
 	ld (xiz+14),a
 	ld a,(xiz+14)
 	cp a,17
-	jr ule,L1397
+	jr ule,L1453
 	ldb (xiz+14),0
-L1397:
-	jr L1393
-L1396:
+L1453:
+	jr L1449
+L1452:
 	ld a,ixl
 	cp a,255
-	jr nz,L1398
+	jr nz,L1454
 	ld xwa,(xiz)
 	inc 1,xwa
 	ld (xiz),xwa
@@ -6733,16 +7076,16 @@ L1396:
 	extz wa
 	ld (xiz+8),wa
 	ldb (xiz+15),0
-	jr L1393
-L1398:
+	jr L1449
+L1454:
 	ld a,ixl
 	cp a,240
-	jr ult,L1399
+	jr ult,L1455
 	ld xwa,(xiz)
 	inc 1,xwa
 	ld (xiz),xwa
-	jr L1393
-L1399:
+	jr L1449
+L1455:
 	ld xwa,(xiz)
 	inc 1,xwa
 	ld (xiz),xwa
@@ -6754,15 +7097,15 @@ L1399:
 	ldb (xiz+12),0
 	ld a,(xsp+14)
 	cp a,3
-	jr nz,L1400
+	jr nz,L1456
 	ld a,ixl
 	extz wa
 	sub wa,1
 	and wa,7
 	ld (xiz+10),wa
 	ldb (xiz+16),1
-	jr L1401
-L1400:
+	jr L1457
+L1456:
 	push xix
 	ld a,ixl
 	push xwa
@@ -6770,17 +7113,17 @@ L1400:
 	lda xsp,(xsp+4)
 	pop xix
 	ld (xiz+10),wa
-L1401:
-L1393:
+L1457:
+L1449:
 	ld wa,(xiz+8)
 	cp wa,0
-	jr nz,L1402
+	jr nz,L1458
 	ld a,(xsp+0)
 	cp a,32
-	jp ult,L1391
-L1402:
-L1392:
-L1390:
+	jp ult,L1447
+L1458:
+L1448:
+L1446:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -6794,9 +7137,9 @@ _note_div:
 	ld izl,a
 	ld a,izl
 	cp a,50
-	jr ule,L1406
+	jr ule,L1462
 	ld izl,50
-L1406:
+L1462:
 	ld xwa,_NOTE_TABLE
 	ld c,izl
 	extz bc
@@ -6818,8 +7161,8 @@ L1406:
 	extz bc
 	and bc,15
 	or wa,bc
-	jr L1405
-L1405:
+	jr L1461
+L1461:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -6834,12 +7177,12 @@ _flush__10:
 	ld xiy,xwa
 	ld a,(07003h)
 	cp a,0
-	jr z,L1423
-	jp L1422
-L1423:
+	jr z,L1479
+	jp L1478
+L1479:
 	ld izl,0
-	jp L1427
-L1424:
+	jp L1483
+L1480:
 	ld xwa,_want_div__10
 	ld c,izl
 	extz bc
@@ -6857,7 +7200,7 @@ L1424:
 	ld (xsp+8),a
 	ld a,izl
 	cp a,3
-	jr uge,L1428
+	jr uge,L1484
 	ld wa,ix
 	ld xbc,_sent_div__10
 	ld e,izl
@@ -6867,7 +7210,7 @@ L1424:
 	add xbc,xde
 	ld bc,(xbc)
 	cp wa,bc
-	jr nz,L1429
+	jr nz,L1485
 	ld a,(xsp+8)
 	ld xbc,_sent_attn__10
 	ld e,izl
@@ -6876,9 +7219,9 @@ L1424:
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jr nz,L1429
-	jp L1426
-L1429:
+	jr nz,L1485
+	jp L1482
+L1485:
 	ld a,128
 	ld c,izl
 	sll 5,c
@@ -6899,26 +7242,26 @@ L1429:
 	and c,15
 	or a,c
 	ld (xiy+2),a
-	jr L1430
-L1428:
+	jr L1486
+L1484:
 	ld a,(_noise_trig__10)
 	cp a,0
-	jr nz,L1431
+	jr nz,L1487
 	ld wa,ix
 	cp wa,(_sent_div__10+6)
-	jr nz,L1431
+	jr nz,L1487
 	ld a,(xsp+8)
 	cp a,(_sent_attn__10+3)
-	jr nz,L1431
-	jp L1426
-L1431:
+	jr nz,L1487
+	jp L1482
+L1487:
 	ld a,(_noise_trig__10)
 	cp a,0
-	jr nz,L1433
+	jr nz,L1489
 	ld wa,ix
 	cp wa,(_sent_div__10+6)
-	jr z,L1432
-L1433:
+	jr z,L1488
+L1489:
 	ld a,224
 	ld c,ixl
 	and c,7
@@ -6929,8 +7272,8 @@ L1433:
 	and c,7
 	or a,c
 	ld (xiy+1),a
-	jr L1434
-L1432:
+	jr L1490
+L1488:
 	ld a,240
 	ld c,(xsp+8)
 	and c,15
@@ -6941,14 +7284,14 @@ L1432:
 	and c,15
 	or a,c
 	ld (xiy+1),a
-L1434:
+L1490:
 	ld a,240
 	ld c,(xsp+8)
 	and c,15
 	or a,c
 	ld (xiy+2),a
 	ldb (_noise_trig__10),0
-L1430:
+L1486:
 	ld wa,ix
 	ld xbc,_sent_div__10
 	ld e,izl
@@ -6970,24 +7313,24 @@ L1430:
 	add xwa,xbc
 	ld xiy,xwa
 	incb 1,(xsp+0)
-L1426:
+L1482:
 	inc 1,izl
-L1427:
+L1483:
 	ld a,izl
 	cp a,4
-	jr uge,L1435
+	jr uge,L1491
 	ld a,(xsp+0)
 	cp a,5
-	jp ult,L1424
-L1435:
-L1425:
+	jp ult,L1480
+L1491:
+L1481:
 	ld a,(xsp+0)
 	cp a,0
-	jr z,L1436
+	jr z,L1492
 	ld a,(xsp+0)
 	ld (07003h),a
-L1436:
-L1422:
+L1492:
+L1478:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -7005,12 +7348,12 @@ _player_update:
 	ld (_last_vbl__10),a
 	ld a,iyl
 	cp a,8
-	jr ule,L1459
+	jr ule,L1515
 	ld iyl,8
-L1459:
+L1515:
 	ld izl,0
-	jp L1463
-L1460:
+	jp L1519
+L1516:
 	ld wa,15
 	ld (xsp+3),a
 	ld xwa,_want_div__10
@@ -7023,7 +7366,7 @@ L1460:
 	ld (xsp+4),wa
 	ld a,(_playing__10)
 	cp a,0
-	jp z,L1464
+	jp z,L1520
 	ld xwa,_voice__10
 	ld c,izl
 	extz bc
@@ -7035,14 +7378,14 @@ L1460:
 	ld c,iyl
 	extz bc
 	cp wa,bc
-	jr ule,L1465
+	jr ule,L1521
 	ld wa,(xix+8)
 	ld c,iyl
 	extz bc
 	sub wa,bc
 	ld (xix+8),wa
-	jr L1466
-L1465:
+	jr L1522
+L1521:
 	ldw (xix+8),0
 	push xix
 	push xiy
@@ -7054,17 +7397,17 @@ L1465:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L1466:
+L1522:
 	ld a,(xix+12)
 	cp a,250
-	jr uge,L1467
+	jr uge,L1523
 	ld a,(xix+12)
 	add a,iyl
 	ld (xix+12),a
-L1467:
+L1523:
 	ld a,(xix+15)
 	cp a,0
-	jr z,L1468
+	jr z,L1524
 	ld xwa,_inst_tab__10
 	ld c,(xix+14)
 	extz bc
@@ -7085,43 +7428,43 @@ L1467:
 	ld xbc,(xsp+10)
 	ld c,(xbc+1)
 	cp a,c
-	jr ule,L1469
+	jr ule,L1525
 	ld xwa,(xsp+10)
 	ld a,(xwa+1)
 	ld (xsp+14),a
-L1469:
+L1525:
 	ld a,(xix+13)
 	add a,(xsp+14)
 	ld (xsp+3),a
 	ld a,(xsp+3)
 	cp a,15
-	jr ule,L1470
+	jr ule,L1526
 	ldb (xsp+3),15
-L1470:
+L1526:
 	ld wa,(xix+10)
 	ld (xsp+4),wa
 	ld a,izl
 	cp a,3
-	jr nz,L1471
+	jr nz,L1527
 	ld a,(xix+16)
 	cp a,0
-	jr z,L1471
+	jr z,L1527
 	ldb (xix+16),0
 	ldb (_noise_trig__10),1
-L1471:
-L1468:
-L1464:
+L1527:
+L1524:
+L1520:
 	ld a,izl
 	cp a,2
-	jr nz,L1472
+	jr nz,L1528
 	ld a,(_eng_on__10)
 	cp a,0
-	jr z,L1472
+	jr z,L1528
 	ld wa,(_eng_div__10)
 	ld (xsp+4),wa
 	ld a,(_eng_attn__10)
 	ld (xsp+3),a
-L1472:
+L1528:
 	ld xwa,_sfx_frames__10
 	ld c,izl
 	extz bc
@@ -7129,7 +7472,7 @@ L1472:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jp z,L1473
+	jp z,L1529
 	ld xwa,_sfx_attn__10
 	ld c,izl
 	extz bc
@@ -7144,7 +7487,7 @@ L1472:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L1474
+	jr z,L1530
 	ld xwa,_sfx_age__10
 	ld c,izl
 	extz bc
@@ -7167,10 +7510,10 @@ L1472:
 	ld (xsp+6),a
 	ld a,(xsp+6)
 	cp a,15
-	jr ule,L1475
+	jr ule,L1531
 	ldb (xsp+6),15
-L1475:
-L1474:
+L1531:
+L1530:
 	ld a,(xsp+6)
 	ld (xsp+3),a
 	ld xwa,_sfx_div__10
@@ -7213,7 +7556,7 @@ L1474:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,250
-	jr uge,L1476
+	jr uge,L1532
 	ld xwa,_sfx_age__10
 	ld c,izl
 	extz bc
@@ -7227,7 +7570,7 @@ L1474:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1476:
+L1532:
 	ld xbc,_sfx_frames__10
 	ld e,izl
 	extz de
@@ -7235,7 +7578,7 @@ L1476:
 	add xbc,xde
 	ld c,(xbc)
 	cp c,iyl
-	jr ule,L1477
+	jr ule,L1533
 	ld xwa,_sfx_frames__10
 	ld c,izl
 	extz bc
@@ -7244,17 +7587,17 @@ L1476:
 	ld a,(xwa)
 	sub a,iyl
 	extz wa
-	jr L1478
-L1477:
+	jr L1534
+L1533:
 	ld wa,0
-L1478:
+L1534:
 	ld xbc,_sfx_frames__10
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1473:
+L1529:
 	ld wa,(xsp+4)
 	ld xbc,_want_div__10
 	ld e,izl
@@ -7270,19 +7613,19 @@ L1473:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1462:
+L1518:
 	inc 1,izl
-L1463:
+L1519:
 	ld a,izl
 	cp a,4
-	jp ult,L1460
-L1461:
+	jp ult,L1516
+L1517:
 	push xix
 	push xiy
 	call _flush__10
 	pop xiy
 	pop xix
-L1458:
+L1514:
 	lda xsp,(xsp+16)
 	pop xiz
 	ret
@@ -7335,7 +7678,7 @@ _player_sfx_tone:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1480:
+L1536:
 	pop xiz
 	ret
 
@@ -7353,7 +7696,7 @@ _player_sfx_noise:
 	ld (_sfx_decay__10+3),a
 	ldb (_sfx_age__10+3),0
 	ldb (_noise_trig__10),1
-L1482:
+L1538:
 	ret
 
 ; function banner_init
@@ -7363,8 +7706,8 @@ _banner_init:
 	ld xwa,41520
 	ld xix,xwa
 	ld izl,0
-	jr L1492
-L1489:
+	jr L1548
+L1545:
 	ld xwa,_gfx_banner_tiles
 	ld c,izl
 	extz bc
@@ -7379,13 +7722,13 @@ L1489:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1491:
+L1547:
 	inc 1,izl
-L1492:
+L1548:
 	ld a,izl
 	cp a,40
-	jr ult,L1489
-L1490:
+	jr ult,L1545
+L1546:
 	push xix
 	ld wa,2
 	push xwa
@@ -7400,7 +7743,7 @@ L1490:
 	pop xix
 	ld (_car_d__11),wa
 	ldb (_b_on__11),0
-L1488:
+L1544:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -7412,9 +7755,9 @@ _banner_style:
 	ld izl,a
 	ld a,izl
 	cp a,4
-	jr ult,L1496
+	jr ult,L1552
 	ld izl,0
-L1496:
+L1552:
 	ld wa,4095
 	push xwa
 	ld xwa,_b_band__11
@@ -7467,7 +7810,7 @@ L1496:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-L1495:
+L1551:
 	pop xiz
 	ret
 
@@ -7477,17 +7820,17 @@ _erase__11:
 	lda xsp,(xsp-2)
 	ld a,(_b_on__11)
 	cp a,0
-	jr nz,L1508
-	jr L1507
-L1508:
+	jr nz,L1564
+	jr L1563
+L1564:
 	ld a,(_b_r0__11)
 	ld ixl,a
-	jr L1512
-L1509:
+	jr L1568
+L1565:
 	ld a,(_b_c0__11)
 	ld izl,a
-	jr L1516
-L1513:
+	jr L1572
+L1569:
 	ld wa,0
 	ld xbc,36864
 	ld e,ixl
@@ -7500,22 +7843,22 @@ L1513:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1515:
+L1571:
 	inc 1,izl
-L1516:
+L1572:
 	ld a,izl
 	cp a,(_b_c1__11)
-	jr ule,L1513
-L1514:
-L1511:
+	jr ule,L1569
+L1570:
+L1567:
 	inc 1,ixl
-L1512:
+L1568:
 	ld a,ixl
 	cp a,(_b_foot__11)
-	jr ule,L1509
-L1510:
+	jr ule,L1565
+L1566:
 	ldb (_b_on__11),0
-L1507:
+L1563:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -7525,7 +7868,7 @@ _banner_hide:
 	call _erase__11
 	ld a,(_b_spr__11)
 	cp a,0
-	jr z,L1520
+	jr z,L1576
 	ld a,64
 	push xwa
 	ld a,58
@@ -7533,21 +7876,21 @@ _banner_hide:
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
 	ldb (_b_spr__11),0
-L1520:
-L1519:
+L1576:
+L1575:
 	ret
 
 ; function banner_dirty
 _banner_dirty:
 	ldb (_b_r0__11),255
-L1522:
+L1578:
 	ret
 
 ; function banner_active
 _banner_active:
 	ld a,(_b_on__11)
-	jr L1524
-L1524:
+	jr L1580
+L1580:
 	ret
 
 ; function banner_show
@@ -7556,18 +7899,18 @@ _banner_show:
 	lda xsp,(xsp-46)
 	ld wa,(xsp+54)
 	cp wa,0
-	jr lt,L1579
+	jr lt,L1635
 	ld wa,(xsp+54)
 	cp wa,1400
-	jr le,L1578
-L1579:
+	jr le,L1634
+L1635:
 	push xix
 	push xiy
 	call _banner_hide
 	pop xiy
 	pop xix
-	jp L1577
-L1578:
+	jp L1633
+L1634:
 	push xix
 	push xiy
 	ld wa,(xsp+62)
@@ -7580,14 +7923,14 @@ L1578:
 	ld (xsp+6),a
 	ld a,(xsp+6)
 	cp a,255
-	jr nz,L1580
+	jr nz,L1636
 	push xix
 	push xiy
 	call _banner_hide
 	pop xiy
 	pop xix
-	jp L1577
-L1580:
+	jp L1633
+L1636:
 	push xix
 	push xiy
 	lda xwa,(xsp+8)
@@ -7615,18 +7958,18 @@ L1580:
 	ld (xsp+16),wa
 	ld wa,(xsp+16)
 	cp wa,16
-	jr lt,L1582
+	jr lt,L1638
 	ld wa,(xsp+18)
 	cp wa,151
-	jr le,L1581
-L1582:
+	jr le,L1637
+L1638:
 	push xix
 	push xiy
 	call _banner_hide
 	pop xiy
 	pop xix
-	jp L1577
-L1581:
+	jp L1633
+L1637:
 	ld wa,(xsp+0)
 	sub wa,(xsp+24)
 	sub wa,4
@@ -7643,73 +7986,73 @@ L1581:
 	ld iyl,a
 	ld a,iyl
 	cp a,(xsp+7)
-	jr uge,L1583
+	jr uge,L1639
 	ld a,(xsp+7)
 	ld iyl,a
-L1583:
+L1639:
 	ld wa,(xsp+2)
 	sra 3,wa
 	ld (xsp+11),a
 	ld a,(xsp+11)
 	cp a,18
-	jr ule,L1584
+	jr ule,L1640
 	ldb (xsp+11),18
-L1584:
+L1640:
 	ld bc,(xsp+20)
 	cp bc,0
-	jr ge,L1585
+	jr ge,L1641
 	ld wa,0
-	jr L1586
-L1585:
+	jr L1642
+L1641:
 	ld bc,(xsp+20)
 	sra 3,bc
 	cp bc,19
-	jr le,L1587
+	jr le,L1643
 	ld wa,19
-	jr L1588
-L1587:
+	jr L1644
+L1643:
 	ld wa,(xsp+20)
 	sra 3,wa
-L1588:
-L1586:
+L1644:
+L1642:
 	ld (xsp+9),a
 	ld bc,(xsp+22)
 	cp bc,0
-	jr ge,L1589
+	jr ge,L1645
 	ld wa,0
-	jr L1590
-L1589:
+	jr L1646
+L1645:
 	ld bc,(xsp+22)
 	sra 3,bc
 	cp bc,19
-	jr le,L1591
+	jr le,L1647
 	ld wa,19
-	jr L1592
-L1591:
+	jr L1648
+L1647:
 	ld wa,(xsp+22)
 	sra 3,wa
-L1592:
-L1590:
+L1648:
+L1646:
 	ld (xsp+10),a
 	ld a,(_b_on__11)
 	cp a,0
-	jr z,L1594
+	jr z,L1650
 	ld a,(xsp+7)
 	cp a,(_b_r0__11)
-	jr nz,L1594
+	jr nz,L1650
 	ld a,iyl
 	cp a,(_b_r1__11)
-	jr nz,L1594
+	jr nz,L1650
 	ld a,(xsp+9)
 	cp a,(_b_c0__11)
-	jr nz,L1594
+	jr nz,L1650
 	ld a,(xsp+10)
 	cp a,(_b_c1__11)
-	jr nz,L1594
+	jr nz,L1650
 	ld a,(xsp+11)
 	cp a,(_b_foot__11)
-	jp z,L1593
-L1594:
+	jp z,L1649
+L1650:
 	push xix
 	push xiy
 	call _erase__11
@@ -7717,46 +8060,46 @@ L1594:
 	pop xix
 	ld a,(xsp+7)
 	ld izl,a
-	jp L1598
-L1595:
+	jp L1654
+L1651:
 	ld a,(xsp+9)
 	ld ixl,a
-	jr L1602
-L1599:
+	jr L1658
+L1655:
 	ld wa,36
 	ld (xsp+26),wa
 	ld a,(xsp+58)
 	cp a,0
-	jr z,L1603
+	jr z,L1659
 	ld a,ixl
 	cp a,(xsp+9)
-	jr z,L1604
+	jr z,L1660
 	ld a,ixl
 	cp a,(xsp+10)
-	jr nz,L1603
-L1604:
+	jr nz,L1659
+L1660:
 	ldw (xsp+26),42
-	jr L1605
-L1603:
+	jr L1661
+L1659:
 	ld a,izl
 	cp a,(xsp+7)
-	jr nz,L1606
+	jr nz,L1662
 	ld a,iyl
 	cp a,(xsp+7)
-	jr ule,L1606
+	jr ule,L1662
 	ldw (xsp+26),35
-	jr L1607
-L1606:
+	jr L1663
+L1662:
 	ld a,izl
 	cp a,iyl
-	jr nz,L1608
+	jr nz,L1664
 	ld a,iyl
 	cp a,(xsp+7)
-	jr ule,L1608
+	jr ule,L1664
 	ldw (xsp+26),37
-L1608:
-L1607:
-L1605:
+L1664:
+L1663:
+L1661:
 	ld wa,(xsp+26)
 	or wa,5120
 	ld xbc,36864
@@ -7770,28 +8113,28 @@ L1605:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1601:
+L1657:
 	inc 1,ixl
-L1602:
+L1658:
 	ld a,ixl
 	cp a,(xsp+10)
-	jr ule,L1599
-L1600:
-L1597:
+	jr ule,L1655
+L1656:
+L1653:
 	inc 1,izl
-L1598:
+L1654:
 	ld a,izl
 	cp a,iyl
-	jp ule,L1595
-L1596:
+	jp ule,L1651
+L1652:
 	ld a,iyl
 	add a,1
 	ld izl,a
-	jr L1612
-L1609:
+	jr L1668
+L1665:
 	ld wa,(xsp+20)
 	cp wa,0
-	jr lt,L1613
+	jr lt,L1669
 	ld wa,5158
 	ld xbc,36864
 	ld e,izl
@@ -7804,10 +8147,10 @@ L1609:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1613:
+L1669:
 	ld wa,(xsp+22)
 	cp wa,160
-	jr ge,L1614
+	jr ge,L1670
 	ld wa,5158
 	ld xbc,36864
 	ld e,izl
@@ -7820,14 +8163,14 @@ L1613:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1614:
-L1611:
+L1670:
+L1667:
 	inc 1,izl
-L1612:
+L1668:
 	ld a,izl
 	cp a,(xsp+11)
-	jr ule,L1609
-L1610:
+	jr ule,L1665
+L1666:
 	ldb (_b_on__11),1
 	ld a,(xsp+7)
 	ld (_b_r0__11),a
@@ -7839,12 +8182,12 @@ L1610:
 	ld (_b_c1__11),a
 	ld a,(xsp+11)
 	ld (_b_foot__11),a
-L1593:
+L1649:
 	ldb (xsp+14),0
-	jr L1617
-L1615:
+	jr L1673
+L1671:
 	incb 1,(xsp+14)
-L1617:
+L1673:
 	ld xwa,(xsp+62)
 	ld c,(xsp+14)
 	extz bc
@@ -7852,12 +8195,12 @@ L1617:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L1618
+	jr z,L1674
 	ld a,(xsp+14)
 	cp a,6
-	jr ult,L1615
-L1618:
-L1616:
+	jr ult,L1671
+L1674:
+L1672:
 	ld wa,2
 	mul xwa,(xsp+24)
 	add wa,8
@@ -7865,9 +8208,9 @@ L1616:
 	extz bc
 	sll 3,bc
 	cp wa,bc
-	jr ge,L1619
+	jr ge,L1675
 	ldb (xsp+14),0
-L1619:
+L1675:
 	ld wa,8
 	ld bc,(xsp+24)
 	sra 4,bc
@@ -7898,8 +8241,8 @@ L1619:
 	sub wa,4
 	ld (xsp+30),a
 	ldb (xsp+15),0
-	jp L1623
-L1620:
+	jp L1679
+L1676:
 	ld wa,(xsp+28)
 	ld bc,(xsp+26)
 	ld e,(xsp+15)
@@ -7912,11 +8255,11 @@ L1620:
 	ld (xsp+34),a
 	ld wa,(xsp+32)
 	cp wa,65529
-	jr lt,L1625
+	jr lt,L1681
 	ld wa,(xsp+32)
 	cp wa,159
-	jr le,L1624
-L1625:
+	jr le,L1680
+L1681:
 	push xix
 	push xiy
 	ld a,(xsp+42)
@@ -7928,9 +8271,9 @@ L1625:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-	jp L1622
-L1624:
-L1626:
+	jp L1678
+L1680:
+L1682:
 	ld a,(xsp+34)
 	ld (xsp+35),a
 	ld a,(xsp+32)
@@ -7986,15 +8329,15 @@ L1626:
 	add bc,de
 	extz xbc
 	ld (xbc),a
-L1628:
-L1627:
-L1622:
+L1684:
+L1683:
+L1678:
 	incb 1,(xsp+15)
-L1623:
+L1679:
 	ld a,(xsp+15)
 	cp a,(xsp+14)
-	jp ult,L1620
-L1621:
+	jp ult,L1676
+L1677:
 	push xix
 	push xiy
 	ld a,64
@@ -8007,7 +8350,7 @@ L1621:
 	pop xiy
 	pop xix
 	ldb (_b_spr__11),1
-L1577:
+L1633:
 	lda xsp,(xsp+46)
 	pop xiz
 	ret
@@ -8019,8 +8362,8 @@ _bridge_init:
 	ld xwa,41984
 	ld xix,xwa
 	ld izl,0
-	jr L1642
-L1639:
+	jr L1698
+L1695:
 	ld xwa,_gfx_bridge_tiles
 	ld c,izl
 	extz bc
@@ -8035,18 +8378,18 @@ L1639:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1641:
+L1697:
 	inc 1,izl
-L1642:
+L1698:
 	ld a,izl
 	cp a,8
-	jr ult,L1639
-L1640:
+	jr ult,L1695
+L1696:
 	ld xwa,42416
 	ld xix,xwa
 	ld izl,0
-	jr L1646
-L1643:
+	jr L1702
+L1699:
 	ld xwa,_gfx_bridge_tiles
 	ld bc,8
 	ld e,izl
@@ -8063,13 +8406,13 @@ L1643:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1645:
+L1701:
 	inc 1,izl
-L1646:
+L1702:
 	ld a,izl
 	cp a,40
-	jr ult,L1643
-L1644:
+	jr ult,L1699
+L1700:
 	push xix
 	ld wa,147
 	push xwa
@@ -8077,7 +8420,7 @@ L1644:
 	lda xsp,(xsp+4)
 	pop xix
 	ld (_car_d__12),wa
-L1638:
+L1694:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -8088,13 +8431,13 @@ _clear_box__12:
 	lda xsp,(xsp-6)
 	ld a,(_bb_r0__12)
 	cp a,255
-	jr nz,L1658
-	jr L1657
-L1658:
+	jr nz,L1714
+	jr L1713
+L1714:
 	ld a,(_bb_r0__12)
 	ld ixl,a
-	jr L1662
-L1659:
+	jr L1718
+L1715:
 	ld xwa,36864
 	ld c,ixl
 	extz bc
@@ -8109,30 +8452,30 @@ L1659:
 	ld xiy,xwa
 	ld a,(_bb_c0__12)
 	ld izl,a
-	jr L1666
-L1663:
+	jr L1722
+L1719:
 	ld wa,0
 	ld xbc,xiy
 	inc 2,xbc
 	ld xiy,xbc
 	dec 2,xbc
 	ld (xbc),wa
-L1665:
+L1721:
 	inc 1,izl
-L1666:
+L1722:
 	ld a,izl
 	cp a,(_bb_c1__12)
-	jr ule,L1663
-L1664:
-L1661:
+	jr ule,L1719
+L1720:
+L1717:
 	inc 1,ixl
-L1662:
+L1718:
 	ld a,ixl
 	cp a,(_bb_r1__12)
-	jr ule,L1659
-L1660:
+	jr ule,L1715
+L1716:
 	ldb (_bb_r0__12),255
-L1657:
+L1713:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -8142,29 +8485,21 @@ _bridge_hide:
 	call _clear_box__12
 	ldw (_sig_prev__12),65535
 	ldb (_bridge_line),0
-L1668:
+L1724:
 	ret
 
 ; function bridge_setup
 _bridge_setup:
 	push xiz
-	lda xsp,(xsp-22)
-	ld wa,0
-	ld (xsp+0),wa
-	ld wa,0
-	ld (xsp+2),wa
+	lda xsp,(xsp-14)
 	ld wa,0
 	ld ix,wa
 	ld wa,0
-	ld (xsp+6),wa
+	ld (xsp+2),wa
 	ld wa,0
-	ld (xsp+8),wa
-	ld wa,1200
-	ld (xsp+10),wa
-	ld wa,(_leg_len)
-	sub wa,2400
-	sub wa,300
-	ld (xsp+12),wa
+	ld (xsp+4),wa
+	ld wa,0
+	ld (xsp+7),a
 	push xix
 	push xiy
 	call _bridge_hide
@@ -8201,122 +8536,108 @@ _bridge_setup:
 	add xwa,xbc
 	ld a,(xwa+19)
 	cp a,0
-	jr nz,L1690
-	jp L1689
-L1690:
-	ld izl,0
-	jp L1694
-L1691:
+	jr nz,L1745
+	jp L1744
+L1745:
+	ld iyl,0
+	jr L1749
+L1746:
 	ld xwa,(_track_seg)
-	ld c,izl
+	ld c,iyl
 	extz bc
 	muls xbc,6
 	add xwa,xbc
 	lda xwa,(xwa)
-	ld xiy,xwa
-	ld bc,(xiy+2)
-	cp bc,0
-	jr ge,L1695
-	ld wa,(xiy+2)
-	neg wa
-	jr L1696
-L1695:
-	ld wa,(xiy+2)
-L1696:
-	ld (xsp+20),wa
-	ld wa,(xsp+20)
-	cp wa,32
-	jr gt,L1697
-	ld a,(xiy+4)
+	ld (xsp+8),xwa
+	ld a,(xsp+7)
 	cp a,0
-	jr nz,L1697
-	ld wa,(xsp+0)
-	cp wa,(xsp+10)
-	jr ult,L1697
+	jr nz,L1750
+	ld xwa,(xsp+8)
+	ld wa,(xwa)
+	cp wa,1010
+	jr nz,L1750
+	ldb (xsp+7),1
 	ld wa,ix
-	cp wa,0
-	jr nz,L1698
-	ld wa,(xsp+0)
 	ld (xsp+2),wa
-L1698:
-	ld wa,ix
-	add wa,(xiy)
-	ld ix,wa
-	ld wa,(xsp+2)
-	add wa,ix
-	cp wa,(xsp+12)
-	jr ule,L1699
-	ld wa,(xsp+12)
-	sub wa,(xsp+2)
-	ld ix,wa
-L1699:
-	ld wa,ix
-	cp wa,(xsp+8)
-	jr ule,L1700
-	ld wa,ix
-	ld (xsp+8),wa
-	ld wa,(xsp+2)
-	ld (xsp+6),wa
-L1700:
-	jr L1701
-L1697:
-	ld ix,0
-L1701:
-	ld wa,(xsp+0)
-	add wa,(xiy)
-	ld (xsp+0),wa
-L1693:
-	inc 1,izl
-L1694:
-	ld a,izl
-	cp a,(_track_len)
-	jr uge,L1702
-	ld wa,(xsp+0)
-	cp wa,(xsp+12)
-	jp ult,L1691
-L1702:
-L1692:
-	ld wa,(xsp+8)
-	cp wa,700
-	jr uge,L1703
-	jr L1689
-L1703:
-	ld wa,(xsp+8)
-	sub wa,300
-	extz xwa
-	div xwa,280
-	add wa,1
-	ld (_br_n__12),a
-	ld a,(_br_n__12)
-	cp a,4
-	jr ule,L1704
-	ldb (_br_n__12),4
-L1704:
 	ld izl,0
-	jr L1708
-L1705:
-	ld wa,(xsp+6)
-	add wa,200
-	ld c,izl
-	extz bc
-	mul xbc,280
+	jr L1754
+L1751:
+	ld wa,(xsp+4)
+	ld xbc,(_track_seg)
+	ld e,iyl
+	add e,izl
+	extz de
+	muls xde,6
+	add xbc,xde
+	ld bc,(xbc)
 	add wa,bc
+	ld (xsp+4),wa
+L1753:
+	inc 1,izl
+L1754:
+	ld a,izl
+	cp a,4
+	jr uge,L1755
+	ld a,iyl
+	add a,izl
+	cp a,(_track_len)
+	jr ult,L1751
+L1755:
+L1752:
+L1750:
+	ld wa,ix
+	ld xbc,(xsp+8)
+	ld bc,(xbc)
+	add wa,bc
+	ld ix,wa
+L1748:
+	inc 1,iyl
+L1749:
+	ld a,iyl
+	cp a,(_track_len)
+	jr uge,L1756
+	ld wa,ix
+	cp wa,(_leg_len)
+	jp ult,L1746
+L1756:
+L1747:
+	ld a,(xsp+7)
+	cp a,0
+	jr nz,L1757
+	jr L1744
+L1757:
+	ld wa,(xsp+2)
+	add wa,150
+	ld ix,wa
+	jr L1761
+L1758:
+	ld wa,ix
 	ld xbc,_br_at__12
-	ld e,izl
+	ld e,(_br_n__12)
+	incb 1,(_br_n__12)
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1707:
-	inc 1,izl
-L1708:
-	ld a,izl
-	cp a,(_br_n__12)
-	jr ult,L1705
-L1706:
-L1689:
-	lda xsp,(xsp+22)
+L1760:
+	ld wa,ix
+	add wa,260
+	ld ix,wa
+L1761:
+	ld wa,ix
+	add wa,100
+	ld bc,(xsp+2)
+	add bc,(xsp+4)
+	cp wa,bc
+	jr uge,L1762
+	ld a,(_br_n__12)
+	cp a,12
+	jr ult,L1758
+L1762:
+L1759:
+L1744:
+	lda xsp,(xsp+14)
 	pop xiz
 	ret
 
@@ -8326,27 +8647,27 @@ _clamp_col__12:
 	ld iz,(xsp+8)
 	ld wa,iz
 	cp wa,0
-	jr ge,L1713
+	jr ge,L1767
 	ld wa,0
-	jr L1712
-L1713:
+	jr L1766
+L1767:
 	ld wa,iz
 	cp wa,159
-	jr le,L1714
+	jr le,L1768
 	ld wa,19
-	jr L1712
-L1714:
+	jr L1766
+L1768:
 	ld wa,iz
 	sra 3,wa
-	jr L1712
-L1712:
+	jr L1766
+L1766:
 	pop xiz
 	ret
 
 ; function bridge_draw
 _bridge_draw:
 	push xiz
-	lda xsp,(xsp-64)
+	lda xsp,(xsp-136)
 	ld wa,0
 	ld (xsp+2),wa
 	ld wa,0
@@ -8354,12 +8675,12 @@ _bridge_draw:
 	ldb (_bridge_line),0
 	ld a,(_br_n__12)
 	cp a,0
-	jr nz,L1783
-	jp L1782
-L1783:
+	jr nz,L1837
+	jp L1836
+L1837:
 	ldb (xsp+0),0
-	jp L1787
-L1784:
+	jp L1841
+L1838:
 	ld xwa,_br_at__12
 	ld c,(xsp+0)
 	extz bc
@@ -8367,112 +8688,112 @@ L1784:
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	sub wa,(xsp+72)
-	ld (xsp+42),wa
-	ld wa,(xsp+42)
+	sub wa,(xsp+144)
+	ld (xsp+114),wa
+	ld wa,(xsp+114)
 	cp wa,0
-	jr le,L1789
-	ld wa,(xsp+42)
+	jr le,L1843
+	ld wa,(xsp+114)
 	cp wa,1450
-	jr le,L1788
-L1789:
-	jp L1786
-L1788:
+	jr le,L1842
+L1843:
+	jp L1840
+L1842:
 	push xix
 	push xiy
-	ld wa,(xsp+50)
+	ld wa,(xsp+122)
 	add wa,(_car_d__12)
 	push xwa
 	call _id_road_line_at_distance
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-	ld (xsp+50),a
-	ld a,(xsp+50)
+	ld (xsp+122),a
+	ld a,(xsp+122)
 	cp a,255
-	jr nz,L1790
-	jp L1786
-L1790:
+	jr nz,L1844
+	jp L1840
+L1844:
 	push xix
 	push xiy
-	lda xwa,(xsp+52)
+	lda xwa,(xsp+124)
 	push xwa
-	ld a,(xsp+62)
+	ld a,(xsp+134)
 	push xwa
 	call _id_road_sprite_sample
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-	ld a,(xsp+48)
+	ld a,(xsp+120)
 	extz wa
-	ld (xsp+52),wa
-	ld a,(xsp+48)
+	ld (xsp+124),wa
+	ld a,(xsp+120)
 	extz wa
-	ld c,(xsp+48)
+	ld c,(xsp+120)
 	extz bc
 	extz xbc
 	div xbc,6
 	add wa,bc
 	add wa,3
-	ld (xsp+54),wa
-	ld a,(xsp+48)
+	ld (xsp+126),wa
+	ld a,(xsp+120)
 	extz wa
 	extz xwa
 	div xwa,3
 	add wa,3
-	ld (xsp+56),wa
-	ld wa,(xsp+46)
-	ld (xsp+62),wa
-	ld wa,(xsp+62)
+	ld (xsp+128),wa
+	ld wa,(xsp+118)
+	ld (xsp+134),wa
+	ld wa,(xsp+134)
 	cp wa,151
-	jr le,L1791
-	ldw (xsp+62),151
-L1791:
-	ld wa,(xsp+62)
-	sub wa,(xsp+52)
-	ld bc,(xsp+52)
+	jr le,L1845
+	ldw (xsp+134),151
+L1845:
+	ld wa,(xsp+134)
+	sub wa,(xsp+124)
+	ld bc,(xsp+124)
 	sra 3,bc
 	sub wa,bc
-	ld (xsp+60),wa
-	ld wa,(xsp+60)
-	sub wa,(xsp+56)
-	ld (xsp+58),wa
-	ld wa,(xsp+60)
+	ld (xsp+132),wa
+	ld wa,(xsp+132)
+	sub wa,(xsp+128)
+	ld (xsp+130),wa
+	ld wa,(xsp+132)
 	cp wa,20
-	jr ge,L1792
-	jp L1786
-L1792:
+	jr ge,L1846
+	jp L1840
+L1846:
 	ld a,(_bridge_line)
 	cp a,0
-	jr nz,L1793
-	ld a,(xsp+62)
+	jr nz,L1847
+	ld a,(xsp+134)
 	ld (_bridge_line),a
-L1793:
-	ld bc,(xsp+58)
+L1847:
+	ld bc,(xsp+130)
 	cp bc,16
-	jr ge,L1794
+	jr ge,L1848
 	ld wa,2
-	jr L1795
-L1794:
-	ld wa,(xsp+58)
+	jr L1849
+L1848:
+	ld wa,(xsp+130)
 	sra 3,wa
 	extz wa
-L1795:
+L1849:
 	lda xbc,(xsp+5)
 	ld e,iyl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-	ld wa,(xsp+60)
+	ld wa,(xsp+132)
 	sra 3,wa
-	lda xbc,(xsp+9)
+	lda xbc,(xsp+17)
 	ld e,iyl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-	lda xwa,(xsp+9)
+	lda xwa,(xsp+17)
 	ld c,iyl
 	extz bc
 	exts xbc
@@ -8485,102 +8806,102 @@ L1795:
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jr uge,L1796
+	jr uge,L1850
 	lda xwa,(xsp+5)
 	ld c,iyl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
-	lda xbc,(xsp+9)
-	ld e,iyl
-	extz de
-	exts xde
-	add xbc,xde
-	ld (xbc),a
-L1796:
-	ld wa,(xsp+62)
-	sra 3,wa
-	lda xbc,(xsp+13)
-	ld e,iyl
-	extz de
-	exts xde
-	add xbc,xde
-	ld (xbc),a
-	lda xwa,(xsp+13)
-	ld c,iyl
-	extz bc
-	exts xbc
-	add xwa,xbc
-	ld a,(xwa)
-	cp a,18
-	jr ule,L1797
-	ld a,18
-	lda xbc,(xsp+13)
-	ld e,iyl
-	extz de
-	exts xde
-	add xbc,xde
-	ld (xbc),a
-L1797:
-	ld bc,(xsp+44)
-	sub bc,(xsp+54)
-	sub bc,1
-	cp bc,0
-	jr lt,L1798
-	ld wa,1
-	jr L1799
-L1798:
-	ld wa,0
-L1799:
-	lda xbc,(xsp+33)
-	ld e,iyl
-	extz de
-	exts xde
-	add xbc,xde
-	ld (xbc),a
-	ld bc,(xsp+44)
-	add bc,(xsp+54)
-	cp bc,159
-	jr gt,L1800
-	ld wa,1
-	jr L1801
-L1800:
-	ld wa,0
-L1801:
-	lda xbc,(xsp+37)
-	ld e,iyl
-	extz de
-	exts xde
-	add xbc,xde
-	ld (xbc),a
-	push xix
-	push xiy
-	ld wa,(xsp+52)
-	sub wa,(xsp+62)
-	sub wa,(xsp+64)
-	push xwa
-	call _clamp_col__12
-	lda xsp,(xsp+4)
-	pop xiy
-	pop xix
 	lda xbc,(xsp+17)
 	ld e,iyl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
+L1850:
+	ld wa,(xsp+134)
+	sra 3,wa
+	lda xbc,(xsp+29)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	lda xwa,(xsp+29)
+	ld c,iyl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	cp a,18
+	jr ule,L1851
+	ld a,18
+	lda xbc,(xsp+29)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+L1851:
+	ld bc,(xsp+116)
+	sub bc,(xsp+126)
+	sub bc,1
+	cp bc,0
+	jr lt,L1852
+	ld wa,1
+	jr L1853
+L1852:
+	ld wa,0
+L1853:
+	lda xbc,(xsp+89)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	ld bc,(xsp+116)
+	add bc,(xsp+126)
+	cp bc,159
+	jr gt,L1854
+	ld wa,1
+	jr L1855
+L1854:
+	ld wa,0
+L1855:
+	lda xbc,(xsp+101)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
 	push xix
 	push xiy
-	ld wa,(xsp+52)
-	sub wa,(xsp+62)
+	ld wa,(xsp+124)
+	sub wa,(xsp+134)
+	sub wa,(xsp+136)
+	push xwa
+	call _clamp_col__12
+	lda xsp,(xsp+4)
+	pop xiy
+	pop xix
+	lda xbc,(xsp+41)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	push xix
+	push xiy
+	ld wa,(xsp+124)
+	sub wa,(xsp+134)
 	sub wa,1
 	push xwa
 	call _clamp_col__12
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-	lda xbc,(xsp+21)
+	lda xbc,(xsp+53)
 	ld e,iyl
 	extz de
 	exts xde
@@ -8588,14 +8909,14 @@ L1801:
 	ld (xbc),a
 	push xix
 	push xiy
-	ld wa,(xsp+52)
-	add wa,(xsp+62)
+	ld wa,(xsp+124)
+	add wa,(xsp+134)
 	push xwa
 	call _clamp_col__12
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-	lda xbc,(xsp+25)
+	lda xbc,(xsp+65)
 	ld e,iyl
 	extz de
 	exts xde
@@ -8603,15 +8924,15 @@ L1801:
 	ld (xbc),a
 	push xix
 	push xiy
-	ld wa,(xsp+52)
-	add wa,(xsp+62)
-	add wa,(xsp+64)
+	ld wa,(xsp+124)
+	add wa,(xsp+134)
+	add wa,(xsp+136)
 	push xwa
 	call _clamp_col__12
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-	lda xbc,(xsp+29)
+	lda xbc,(xsp+77)
 	ld e,iyl
 	extz de
 	exts xde
@@ -8627,7 +8948,7 @@ L1801:
 	ld c,(xbc)
 	extz bc
 	add wa,bc
-	lda xbc,(xsp+9)
+	lda xbc,(xsp+17)
 	ld e,iyl
 	extz de
 	exts xde
@@ -8636,7 +8957,7 @@ L1801:
 	extz bc
 	sll 5,bc
 	add wa,bc
-	lda xbc,(xsp+17)
+	lda xbc,(xsp+41)
 	ld e,iyl
 	extz de
 	exts xde
@@ -8645,7 +8966,7 @@ L1801:
 	extz bc
 	sll 9,bc
 	add wa,bc
-	lda xbc,(xsp+29)
+	lda xbc,(xsp+77)
 	ld e,iyl
 	extz de
 	exts xde
@@ -8654,7 +8975,7 @@ L1801:
 	extz bc
 	sll 3,bc
 	add wa,bc
-	lda xbc,(xsp+13)
+	lda xbc,(xsp+29)
 	ld e,iyl
 	extz de
 	exts xde
@@ -8662,7 +8983,7 @@ L1801:
 	ld c,(xbc)
 	extz bc
 	add wa,bc
-	lda xbc,(xsp+21)
+	lda xbc,(xsp+53)
 	ld e,iyl
 	extz de
 	exts xde
@@ -8670,7 +8991,7 @@ L1801:
 	ld c,(xbc)
 	extz bc
 	add wa,bc
-	lda xbc,(xsp+25)
+	lda xbc,(xsp+65)
 	ld e,iyl
 	extz de
 	exts xde
@@ -8680,28 +9001,28 @@ L1801:
 	add wa,bc
 	ld (xsp+2),wa
 	inc 1,iyl
-L1786:
+L1840:
 	incb 1,(xsp+0)
-L1787:
+L1841:
 	ld a,(xsp+0)
 	ld c,(_br_n__12)
 	cp a,c
-	jp lt,L1784
-L1785:
+	jp lt,L1838
+L1839:
 	ld a,iyl
 	cp a,0
-	jr nz,L1802
+	jr nz,L1856
 	ld a,(_bb_r0__12)
 	cp a,255
-	jr z,L1803
+	jr z,L1857
 	push xix
 	push xiy
 	call _bridge_hide
 	pop xiy
 	pop xix
-L1803:
-	jp L1782
-L1802:
+L1857:
+	jp L1836
+L1856:
 	ld wa,(xsp+2)
 	ld c,iyl
 	extz bc
@@ -8709,9 +9030,9 @@ L1802:
 	ld (xsp+2),wa
 	ld wa,(xsp+2)
 	cp wa,(_sig_prev__12)
-	jr nz,L1804
-	jp L1782
-L1804:
+	jr nz,L1858
+	jp L1836
+L1858:
 	ld wa,(xsp+2)
 	ld (_sig_prev__12),wa
 	push xix
@@ -8719,8 +9040,8 @@ L1804:
 	call _clear_box__12
 	pop xiy
 	pop xix
-	jp L1807
-L1805:
+	jp L1861
+L1859:
 	ld a,iyl
 	sub a,1
 	ld izl,a
@@ -8731,19 +9052,19 @@ L1805:
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
-	ld (xsp+43),a
-	jp L1811
-L1808:
-	ld c,(xsp+43)
-	lda xde,(xsp+9)
+	ld (xsp+115),a
+	jp L1865
+L1862:
+	ld c,(xsp+115)
+	lda xde,(xsp+17)
 	ld l,izl
 	extz hl
 	exts xhl
 	add xde,xhl
 	ld e,(xde)
 	cp c,e
-	jr nz,L1812
-	lda xbc,(xsp+9)
+	jr nz,L1866
+	lda xbc,(xsp+17)
 	ld e,izl
 	extz de
 	exts xde
@@ -8756,11 +9077,11 @@ L1808:
 	add xde,xhl
 	ld e,(xde)
 	cp c,e
-	jr ule,L1812
+	jr ule,L1866
 	ld wa,92
-	jr L1813
-L1812:
-	ld c,(xsp+43)
+	jr L1867
+L1866:
+	ld c,(xsp+115)
 	lda xde,(xsp+5)
 	ld l,izl
 	extz hl
@@ -8768,19 +9089,19 @@ L1812:
 	add xde,xhl
 	ld e,(xde)
 	cp c,e
-	jr nz,L1814
+	jr nz,L1868
 	ld wa,64
-	jr L1815
-L1814:
+	jr L1869
+L1868:
 	ld wa,91
-L1815:
-L1813:
-	ld (xsp+44),wa
+L1869:
+L1867:
+	ld (xsp+116),wa
 	ld xwa,36864
-	ld c,(xsp+43)
+	ld c,(xsp+115)
 	extz bc
 	sll 5,bc
-	lda xde,(xsp+17)
+	lda xde,(xsp+41)
 	ld l,izl
 	extz hl
 	exts xhl
@@ -8792,8 +9113,8 @@ L1813:
 	sll 1,xbc
 	add xwa,xbc
 	lda xwa,(xwa)
-	ld (xsp+46),xwa
-	lda xwa,(xsp+9)
+	ld (xsp+118),xwa
+	lda xwa,(xsp+17)
 	ld c,izl
 	extz bc
 	exts xbc
@@ -8806,124 +9127,124 @@ L1813:
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jr nz,L1816
-	ldw (xsp+44),92
-L1816:
-	lda xwa,(xsp+17)
+	jr nz,L1870
+	ldw (xsp+116),92
+L1870:
+	lda xwa,(xsp+41)
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	ld ixl,a
-	jr L1820
-L1817:
-	ld wa,(xsp+44)
+	jr L1874
+L1871:
+	ld wa,(xsp+116)
 	or wa,5632
-	ld xbc,(xsp+46)
+	ld xbc,(xsp+118)
 	inc 2,xbc
-	ld (xsp+46),xbc
+	ld (xsp+118),xbc
 	dec 2,xbc
 	ld (xbc),wa
-L1819:
+L1873:
 	inc 1,ixl
-L1820:
+L1874:
 	ld a,ixl
-	lda xbc,(xsp+29)
+	lda xbc,(xsp+77)
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jr ule,L1817
-L1818:
-L1810:
-	incb 1,(xsp+43)
-L1811:
-	ld a,(xsp+43)
-	lda xbc,(xsp+9)
+	jr ule,L1871
+L1872:
+L1864:
+	incb 1,(xsp+115)
+L1865:
+	ld a,(xsp+115)
+	lda xbc,(xsp+17)
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jp ule,L1808
-L1809:
-	lda xwa,(xsp+9)
+	jp ule,L1862
+L1863:
+	lda xwa,(xsp+17)
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	add a,1
-	ld (xsp+43),a
-	jp L1824
-L1821:
-	lda xwa,(xsp+33)
+	ld (xsp+115),a
+	jp L1878
+L1875:
+	lda xwa,(xsp+89)
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jp z,L1825
-	lda xwa,(xsp+17)
+	jp z,L1879
+	lda xwa,(xsp+41)
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	ld ixl,a
-	jp L1829
-L1826:
+	jp L1883
+L1880:
 	ld c,ixl
-	lda xde,(xsp+21)
+	lda xde,(xsp+53)
 	ld l,izl
 	extz hl
 	exts xhl
 	add xde,xhl
 	ld e,(xde)
 	cp c,e
-	jr nz,L1830
+	jr nz,L1884
 	ld wa,95
-	jr L1831
-L1830:
+	jr L1885
+L1884:
 	ld c,ixl
-	lda xde,(xsp+17)
+	lda xde,(xsp+41)
 	ld l,izl
 	extz hl
 	exts xhl
 	add xde,xhl
 	ld e,(xde)
 	cp c,e
-	jr nz,L1832
-	lda xbc,(xsp+21)
+	jr nz,L1886
+	lda xbc,(xsp+53)
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld c,(xbc)
-	lda xde,(xsp+17)
+	lda xde,(xsp+41)
 	ld l,izl
 	extz hl
 	exts xhl
 	add xde,xhl
 	ld e,(xde)
 	cp c,e
-	jr ule,L1832
+	jr ule,L1886
 	ld wa,94
-	jr L1833
-L1832:
+	jr L1887
+L1886:
 	ld wa,93
-L1833:
-L1831:
-	ld (xsp+44),wa
-	ld wa,(xsp+44)
+L1887:
+L1885:
+	ld (xsp+116),wa
+	ld wa,(xsp+116)
 	or wa,5632
 	ld xbc,36864
-	ld e,(xsp+43)
+	ld e,(xsp+115)
 	extz de
 	sll 5,de
 	ld l,ixl
@@ -8933,83 +9254,83 @@ L1831:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1828:
+L1882:
 	inc 1,ixl
-L1829:
+L1883:
 	ld a,ixl
-	lda xbc,(xsp+21)
+	lda xbc,(xsp+53)
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jp ule,L1826
-L1827:
-L1825:
-	lda xwa,(xsp+37)
+	jp ule,L1880
+L1881:
+L1879:
+	lda xwa,(xsp+101)
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jp z,L1834
-	lda xwa,(xsp+25)
+	jp z,L1888
+	lda xwa,(xsp+65)
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	ld ixl,a
-	jp L1838
-L1835:
+	jp L1892
+L1889:
 	ld c,ixl
-	lda xde,(xsp+25)
+	lda xde,(xsp+65)
 	ld l,izl
 	extz hl
 	exts xhl
 	add xde,xhl
 	ld e,(xde)
 	cp c,e
-	jr nz,L1839
+	jr nz,L1893
 	ld wa,94
-	jr L1840
-L1839:
+	jr L1894
+L1893:
 	ld c,ixl
-	lda xde,(xsp+29)
+	lda xde,(xsp+77)
 	ld l,izl
 	extz hl
 	exts xhl
 	add xde,xhl
 	ld e,(xde)
 	cp c,e
-	jr nz,L1841
-	lda xbc,(xsp+29)
+	jr nz,L1895
+	lda xbc,(xsp+77)
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld c,(xbc)
-	lda xde,(xsp+25)
+	lda xde,(xsp+65)
 	ld l,izl
 	extz hl
 	exts xhl
 	add xde,xhl
 	ld e,(xde)
 	cp c,e
-	jr ule,L1841
+	jr ule,L1895
 	ld wa,95
-	jr L1842
-L1841:
+	jr L1896
+L1895:
 	ld wa,93
-L1842:
-L1840:
-	ld (xsp+44),wa
-	ld wa,(xsp+44)
+L1896:
+L1894:
+	ld (xsp+116),wa
+	ld wa,(xsp+116)
 	or wa,5632
 	ld xbc,36864
-	ld e,(xsp+43)
+	ld e,(xsp+115)
 	extz de
 	sll 5,de
 	ld l,ixl
@@ -9019,10 +9340,24 @@ L1840:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1837:
+L1891:
 	inc 1,ixl
-L1838:
+L1892:
 	ld a,ixl
+	lda xbc,(xsp+77)
+	ld e,izl
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	cp a,c
+	jp ule,L1889
+L1890:
+L1888:
+L1877:
+	incb 1,(xsp+115)
+L1878:
+	ld a,(xsp+115)
 	lda xbc,(xsp+29)
 	ld e,izl
 	extz de
@@ -9030,25 +9365,11 @@ L1838:
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jp ule,L1835
-L1836:
-L1834:
-L1823:
-	incb 1,(xsp+43)
-L1824:
-	ld a,(xsp+43)
-	lda xbc,(xsp+13)
-	ld e,izl
-	extz de
-	exts xde
-	add xbc,xde
-	ld c,(xbc)
-	cp a,c
-	jp ule,L1821
-L1822:
+	jp ule,L1875
+L1876:
 	ld a,(_bb_r0__12)
 	cp a,255
-	jr nz,L1843
+	jr nz,L1897
 	lda xwa,(xsp+5)
 	ld c,izl
 	extz bc
@@ -9056,29 +9377,29 @@ L1822:
 	add xwa,xbc
 	ld a,(xwa)
 	ld (_bb_r0__12),a
-	lda xwa,(xsp+13)
-	ld c,izl
-	extz bc
-	exts xbc
-	add xwa,xbc
-	ld a,(xwa)
-	ld (_bb_r1__12),a
-	lda xwa,(xsp+17)
-	ld c,izl
-	extz bc
-	exts xbc
-	add xwa,xbc
-	ld a,(xwa)
-	ld (_bb_c0__12),a
 	lda xwa,(xsp+29)
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
+	ld (_bb_r1__12),a
+	lda xwa,(xsp+41)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	ld (_bb_c0__12),a
+	lda xwa,(xsp+77)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
 	ld (_bb_c1__12),a
-	jp L1844
-L1843:
+	jp L1898
+L1897:
 	lda xwa,(xsp+5)
 	ld c,izl
 	extz bc
@@ -9086,7 +9407,7 @@ L1843:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,(_bb_r0__12)
-	jr uge,L1845
+	jr uge,L1899
 	lda xwa,(xsp+5)
 	ld c,izl
 	extz bc
@@ -9094,63 +9415,63 @@ L1843:
 	add xwa,xbc
 	ld a,(xwa)
 	ld (_bb_r0__12),a
-L1845:
-	lda xwa,(xsp+13)
+L1899:
+	lda xwa,(xsp+29)
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,(_bb_r1__12)
-	jr ule,L1846
-	lda xwa,(xsp+13)
+	jr ule,L1900
+	lda xwa,(xsp+29)
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	ld (_bb_r1__12),a
-L1846:
-	lda xwa,(xsp+17)
+L1900:
+	lda xwa,(xsp+41)
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,(_bb_c0__12)
-	jr uge,L1847
-	lda xwa,(xsp+17)
+	jr uge,L1901
+	lda xwa,(xsp+41)
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	ld (_bb_c0__12),a
-L1847:
-	lda xwa,(xsp+29)
+L1901:
+	lda xwa,(xsp+77)
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,(_bb_c1__12)
-	jr ule,L1848
-	lda xwa,(xsp+29)
+	jr ule,L1902
+	lda xwa,(xsp+77)
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	ld (_bb_c1__12),a
-L1848:
-L1844:
-L1807:
+L1902:
+L1898:
+L1861:
 	ld a,iyl
 	cp a,0
-	jp ugt,L1805
-L1806:
-L1782:
-	lda xsp,(xsp+64)
+	jp ugt,L1859
+L1860:
+L1836:
+	lda xsp,(xsp+136)
 	pop xiz
 	ret
 
@@ -9179,14 +9500,14 @@ _bridge_hit:
 	ld iy,wa
 	ld wa,ix
 	cp wa,0
-	jr ge,L1857
+	jr ge,L1911
 	ld wa,ix
 	neg wa
 	ld ix,wa
-L1857:
+L1911:
 	ld izl,0
-	jr L1861
-L1858:
+	jr L1915
+L1912:
 	ld wa,(xsp+12)
 	ld xbc,_br_at__12
 	ld e,izl
@@ -9196,7 +9517,7 @@ L1858:
 	add xbc,xde
 	ld bc,(xbc)
 	cp wa,bc
-	jr uge,L1862
+	jr uge,L1916
 	ld wa,(xsp+16)
 	ld xbc,_br_at__12
 	ld e,izl
@@ -9206,24 +9527,24 @@ L1858:
 	add xbc,xde
 	ld bc,(xbc)
 	cp wa,bc
-	jr ult,L1862
+	jr ult,L1916
 	ld wa,ix
 	add wa,14
 	cp wa,iy
-	jr le,L1862
+	jr le,L1916
 	ld wa,1
-	jr L1856
-L1862:
-L1860:
+	jr L1910
+L1916:
+L1914:
 	inc 1,izl
-L1861:
+L1915:
 	ld a,izl
 	cp a,(_br_n__12)
-	jr ult,L1858
-L1859:
+	jr ult,L1912
+L1913:
 	ld wa,0
-	jr L1856
-L1856:
+	jr L1910
+L1910:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -9238,22 +9559,22 @@ _slot_offset__13:
 	ld (xsp+0),xwa
 	ld a,izl
 	cp a,32
-	jr ult,L1866
+	jr ult,L1920
 	ld xwa,(xsp+0)
 	sub xwa,8192
 	ld (xsp+0),xwa
 	ld a,izl
 	sub a,32
 	ld izl,a
-L1866:
+L1920:
 	ld xwa,(xsp+0)
 	ld c,izl
 	extz bc
 	extz xbc
 	sll 8,xbc
 	add xwa,xbc
-	jr L1865
-L1865:
+	jr L1919
+L1919:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -9269,8 +9590,8 @@ _slot_ptr__13:
 	ld xbc,xwa
 	pop xwa
 	add xwa,xbc
-	jr L1868
-L1868:
+	jr L1922
+L1922:
 	ret
 
 ; function crc_byte
@@ -9285,31 +9606,31 @@ _crc_byte__13:
 	xor wa,bc
 	ld iz,wa
 	ld ixl,0
-	jr L1880
-L1877:
+	jr L1934
+L1931:
 	ld bc,iz
 	and bc,32768
 	cp bc,0
-	jr z,L1881
+	jr z,L1935
 	ld wa,iz
 	sll 1,wa
 	xor wa,4129
-	jr L1882
-L1881:
+	jr L1936
+L1935:
 	ld wa,iz
 	sll 1,wa
-L1882:
+L1936:
 	ld iz,wa
-L1879:
+L1933:
 	inc 1,ixl
-L1880:
+L1934:
 	ld a,ixl
 	cp a,8
-	jr ult,L1877
-L1878:
+	jr ult,L1931
+L1932:
 	ld wa,iz
-	jr L1876
-L1876:
+	jr L1930
+L1930:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -9326,28 +9647,28 @@ _slot_erased__13:
 	pop xix
 	ld xix,xwa
 	ld iz,0
-	jr L1893
-L1890:
+	jr L1947
+L1944:
 	ld xwa,xix
 	ld bc,iz
 	extz xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,255
-	jr z,L1894
+	jr z,L1948
 	ld wa,0
-	jr L1889
-L1894:
-L1892:
+	jr L1943
+L1948:
+L1946:
 	inc 1,iz
-L1893:
+L1947:
 	ld wa,iz
 	cp wa,256
-	jr ult,L1890
-L1891:
+	jr ult,L1944
+L1945:
 	ld wa,1
-	jr L1889
-L1889:
+	jr L1943
+L1943:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -9363,29 +9684,29 @@ _slot_looks_valid__13:
 	ld xiz,xwa
 	ld c,(xiz)
 	cp c,202
-	jr nz,L1899
+	jr nz,L1953
 	ld c,(xiz+1)
 	cp c,254
-	jr nz,L1899
+	jr nz,L1953
 	ld c,(xiz+2)
 	cp c,32
-	jr nz,L1899
+	jr nz,L1953
 	ld c,(xiz+3)
 	cp c,38
-	jr nz,L1899
+	jr nz,L1953
 	ld c,(xiz+254)
 	cp c,74
-	jr nz,L1899
+	jr nz,L1953
 	ld c,(xiz+255)
 	cp c,0
-	jr nz,L1899
+	jr nz,L1953
 	ld wa,1
-	jr L1900
-L1899:
+	jr L1954
+L1953:
 	ld wa,0
-L1900:
-	jr L1898
-L1898:
+L1954:
+	jr L1952
+L1952:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -9404,8 +9725,8 @@ _slot_crc_ok__13:
 	ld wa,65535
 	ld ix,wa
 	ld iz,0
-	jr L1912
-L1909:
+	jr L1966
+L1963:
 	push xix
 	ld xwa,(xsp+4)
 	ld bc,iz
@@ -9419,31 +9740,31 @@ L1909:
 	lda xsp,(xsp+8)
 	pop xix
 	ld ix,wa
-L1911:
+L1965:
 	inc 1,iz
-L1912:
+L1966:
 	ld wa,iz
 	cp wa,252
-	jr ult,L1909
-L1910:
+	jr ult,L1963
+L1964:
 	ld xbc,(xsp+0)
 	ld c,(xbc+252)
 	ld e,ixl
 	cp c,e
-	jr nz,L1913
+	jr nz,L1967
 	ld xbc,(xsp+0)
 	ld c,(xbc+253)
 	ld de,ix
 	srl 8,de
 	cp c,e
-	jr nz,L1913
+	jr nz,L1967
 	ld wa,1
-	jr L1914
-L1913:
+	jr L1968
+L1967:
 	ld wa,0
-L1914:
-	jr L1908
-L1908:
+L1968:
+	jr L1962
+L1962:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -9477,8 +9798,8 @@ _slot_sequence__13:
 	sll 15,xbc
 	sll 9,xbc
 	or xwa,xbc
-	jr L1916
-L1916:
+	jr L1970
+L1970:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -9487,15 +9808,15 @@ L1916:
 _bank_of__13:
 	ld c,(xsp+4)
 	cp c,32
-	jr ult,L1921
+	jr ult,L1975
 	ld a,32
 	extz wa
-	jr L1922
-L1921:
+	jr L1976
+L1975:
 	ld wa,0
-L1922:
-	jr L1920
-L1920:
+L1976:
+	jr L1974
+L1974:
 	ret
 
 ; function ngpc_flash_init
@@ -9509,55 +9830,55 @@ _ngpc_flash_init:
 	ld a,(06C58h)
 	extz wa
 	cp wa,1
-	jr z,L1942
+	jr z,L1996
 	cp wa,2
-	jr z,L1943
+	jr z,L1997
 	cp wa,3
-	jr z,L1944
-	jr L1945
-L1942:
+	jr z,L1998
+	jr L1999
+L1996:
 	ld xwa,499712
 	ld (_s_offset__13),xwa
-	jr L1941
-L1943:
+	jr L1995
+L1997:
 	ld xwa,1024000
 	ld (_s_offset__13),xwa
-	jr L1941
-L1944:
+	jr L1995
+L1998:
 	ld xwa,2072576
 	ld (_s_offset__13),xwa
-	jr L1941
-L1945:
+	jr L1995
+L1999:
 	ld xwa,0
 	ld (_s_offset__13),xwa
-	jr L1941
-L1941:
+	jr L1995
+L1995:
 	ld xwa,(_s_offset__13)
 	cp xwa,0
-	jr nz,L1946
-	jp L1940
-L1946:
+	jr nz,L2000
+	jp L1994
+L2000:
 	ld xwa,__DataROM_END
 	ld xbc,2097152
 	add xbc,(_s_offset__13)
 	sub xbc,8192
 	cp xwa,xbc
-	jr ule,L1947
+	jr ule,L2001
 	ld xwa,0
 	ld (_s_offset__13),xwa
-	jr L1940
-L1947:
+	jr L1994
+L2001:
 	ld izl,0
-	jr L1951
-L1948:
+	jr L2005
+L2002:
 	ld a,izl
 	push xwa
 	call _slot_looks_valid__13
 	lda xsp,(xsp+4)
 	cp a,0
-	jr nz,L1952
-	jr L1950
-L1952:
+	jr nz,L2006
+	jr L2004
+L2006:
 	ld a,izl
 	push xwa
 	call _slot_sequence__13
@@ -9565,39 +9886,39 @@ L1952:
 	ld (xsp+2),xwa
 	ld a,(_s_current__13)
 	cp a,255
-	jr z,L1953
+	jr z,L2007
 	ld xwa,(xsp+2)
 	sub xwa,(_s_sequence__13)
 	ld (xsp+6),xwa
 	ld xwa,(xsp+6)
 	cp xwa,0
-	jr z,L1955
+	jr z,L2009
 	ld xwa,(xsp+6)
 	cp xwa,2147483648
-	jr ult,L1954
-L1955:
-	jr L1950
-L1954:
-L1953:
+	jr ult,L2008
+L2009:
+	jr L2004
+L2008:
+L2007:
 	ld a,izl
 	push xwa
 	call _slot_crc_ok__13
 	lda xsp,(xsp+4)
 	cp a,0
-	jr z,L1956
+	jr z,L2010
 	ld a,izl
 	ld (_s_current__13),a
 	ld xwa,(xsp+2)
 	ld (_s_sequence__13),xwa
-L1956:
-L1950:
+L2010:
+L2004:
 	inc 1,izl
-L1951:
+L2005:
 	ld a,izl
 	cp a,64
-	jr ult,L1948
-L1949:
-L1940:
+	jr ult,L2002
+L2003:
+L1994:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -9606,35 +9927,35 @@ L1940:
 _ngpc_flash_ready:
 	ld xbc,(_s_offset__13)
 	cp xbc,0
-	jr z,L1961
+	jr z,L2015
 	ld wa,1
-	jr L1962
-L1961:
+	jr L2016
+L2015:
 	ld wa,0
-L1962:
-	jr L1960
-L1960:
+L2016:
+	jr L2014
+L2014:
 	ret
 
 ; function ngpc_flash_cart_size
 _ngpc_flash_cart_size:
 	ld a,(06C58h)
-	jr L1964
-L1964:
+	jr L2018
+L2018:
 	ret
 
 ; function ngpc_flash_exists
 _ngpc_flash_exists:
 	ld c,(_s_current__13)
 	cp c,255
-	jr z,L1969
+	jr z,L2023
 	ld wa,1
-	jr L1970
-L1969:
+	jr L2024
+L2023:
 	ld wa,0
-L1970:
-	jr L1968
-L1968:
+L2024:
+	jr L2022
+L2022:
 	ret
 
 ; function ngpc_flash_load
@@ -9645,9 +9966,9 @@ _ngpc_flash_load:
 	ld xiy,xwa
 	ld a,(_s_current__13)
 	cp a,255
-	jr nz,L1978
-	jr L1977
-L1978:
+	jr nz,L2032
+	jr L2031
+L2032:
 	push xix
 	push xiy
 	ld a,(_s_current__13)
@@ -9658,8 +9979,8 @@ L1978:
 	pop xix
 	ld xix,xwa
 	ld iz,0
-	jr L1982
-L1979:
+	jr L2036
+L2033:
 	ld xwa,xix
 	ld bc,iz
 	extz xbc
@@ -9670,14 +9991,14 @@ L1979:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L1981:
+L2035:
 	inc 1,iz
-L1982:
+L2036:
 	ld wa,iz
 	cp wa,256
-	jr ult,L1979
-L1980:
-L1977:
+	jr ult,L2033
+L2034:
+L2031:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -9690,13 +10011,13 @@ _ngpc_flash_load_legacy:
 	ld (xsp+0),xwa
 	ld xwa,(_s_offset__13)
 	cp xwa,0
-	jr nz,L1996
+	jr nz,L2050
 	ld wa,0
-	jp L1995
-L1996:
+	jp L2049
+L2050:
 	ldb (xsp+8),32
-	jr L1999
-L1997:
+	jr L2053
+L2051:
 	push xix
 	ld a,(xsp+12)
 	push xwa
@@ -9706,19 +10027,19 @@ L1997:
 	ld xix,xwa
 	ld a,(xix)
 	cp a,202
-	jr nz,L2001
+	jr nz,L2055
 	ld a,(xix+1)
 	cp a,254
-	jr nz,L2001
+	jr nz,L2055
 	ld a,(xix+2)
 	cp a,32
-	jr nz,L2001
+	jr nz,L2055
 	ld a,(xix+3)
 	cp a,38
-	jr z,L2000
-L2001:
-	jr L1999
-L2000:
+	jr z,L2054
+L2055:
+	jr L2053
+L2054:
 	push xix
 	ld a,(xsp+12)
 	push xwa
@@ -9726,7 +10047,7 @@ L2000:
 	lda xsp,(xsp+4)
 	pop xix
 	cp a,0
-	jr z,L2002
+	jr z,L2056
 	push xix
 	ld a,(xsp+12)
 	push xwa
@@ -9734,12 +10055,12 @@ L2000:
 	lda xsp,(xsp+4)
 	pop xix
 	cp a,0
-	jr z,L2002
-	jr L1999
-L2002:
+	jr z,L2056
+	jr L2053
+L2056:
 	ld iz,0
-	jr L2006
-L2003:
+	jr L2060
+L2057:
 	ld xwa,xix
 	ld bc,iz
 	extz xbc
@@ -9750,24 +10071,24 @@ L2003:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L2005:
+L2059:
 	inc 1,iz
-L2006:
+L2060:
 	ld wa,iz
 	cp wa,256
-	jr ult,L2003
-L2004:
+	jr ult,L2057
+L2058:
 	ld wa,1
-	jr L1995
-L1999:
+	jr L2049
+L2053:
 	ld a,(xsp+8)
 	decb 1,(xsp+8)
 	cp a,0
-	jp ugt,L1997
-L1998:
+	jp ugt,L2051
+L2052:
 	ld wa,0
-	jr L1995
-L1995:
+	jr L2049
+L2049:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -9782,14 +10103,14 @@ _ngpc_flash_verify:
 	ld ix,wa
 	ld xwa,(_s_offset__13)
 	cp xwa,0
-	jr z,L2017
+	jr z,L2071
 	ld a,(_s_last_slot__13)
 	cp a,255
-	jr nz,L2016
-L2017:
+	jr nz,L2070
+L2071:
 	ld wa,65535
-	jr L2015
-L2016:
+	jr L2069
+L2070:
 	push xix
 	push xiy
 	ld a,(_s_last_slot__13)
@@ -9800,8 +10121,8 @@ L2016:
 	pop xix
 	ld xiy,xwa
 	ld iz,0
-	jr L2021
-L2018:
+	jr L2075
+L2072:
 	ld xwa,xiy
 	ld bc,iz
 	extz xbc
@@ -9813,19 +10134,19 @@ L2018:
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jr z,L2022
+	jr z,L2076
 	inc 1,ix
-L2022:
-L2020:
+L2076:
+L2074:
 	inc 1,iz
-L2021:
+L2075:
 	ld wa,iz
 	cp wa,256
-	jr ult,L2018
-L2019:
+	jr ult,L2072
+L2073:
 	ld wa,ix
-	jr L2015
-L2015:
+	jr L2069
+L2069:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -9838,47 +10159,47 @@ _ngpc_flash_slots_used:
 	ld (xsp+1),a
 	ld c,(_s_current__13)
 	cp c,255
-	jr nz,L2033
+	jr nz,L2087
 	ld wa,0
-	jr L2034
-L2033:
+	jr L2088
+L2087:
 	ld a,(_s_current__13)
 	push xwa
 	call _bank_of__13
 	lda xsp,(xsp+4)
 	extz wa
-L2034:
+L2088:
 	ld (xsp+2),a
 	ld xwa,(_s_offset__13)
 	cp xwa,0
-	jr nz,L2035
+	jr nz,L2089
 	ld wa,0
-	jr L2032
-L2035:
+	jr L2086
+L2089:
 	ld a,(xsp+2)
 	ld izl,a
-	jr L2039
-L2036:
+	jr L2093
+L2090:
 	ld a,izl
 	push xwa
 	call _slot_erased__13
 	lda xsp,(xsp+4)
 	cp a,0
-	jr nz,L2040
+	jr nz,L2094
 	incb 1,(xsp+1)
-L2040:
-L2038:
+L2094:
+L2092:
 	inc 1,izl
-L2039:
+L2093:
 	ld a,izl
 	ld c,(xsp+2)
 	add c,32
 	cp a,c
-	jr ult,L2036
-L2037:
+	jr ult,L2090
+L2091:
 	ld a,(xsp+1)
-	jr L2032
-L2032:
+	jr L2086
+L2086:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -9901,29 +10222,29 @@ _erase_bank__13:
 	lda xsp,(xsp+4)
 	ld a,(xsp+10)
 	ld izl,a
-	jr L2051
-L2048:
+	jr L2105
+L2102:
 	ld a,izl
 	push xwa
 	call _slot_erased__13
 	lda xsp,(xsp+4)
 	cp a,0
-	jr nz,L2052
+	jr nz,L2106
 	ld wa,0
-	jr L2047
-L2052:
-L2050:
+	jr L2101
+L2106:
+L2104:
 	inc 1,izl
-L2051:
+L2105:
 	ld a,izl
 	ld c,(xsp+10)
 	add c,32
 	cp a,c
-	jr ult,L2048
-L2049:
+	jr ult,L2102
+L2103:
 	ld wa,1
-	jr L2047
-L2047:
+	jr L2101
+L2101:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -9932,34 +10253,34 @@ L2047:
 _ngpc_flash_erase:
 	ld xwa,(_s_offset__13)
 	cp xwa,0
-	jr nz,L2058
+	jr nz,L2112
 	ld wa,0
-	jr L2057
-L2058:
+	jr L2111
+L2112:
 	ld wa,0
 	push xwa
 	call _erase_bank__13
 	lda xsp,(xsp+4)
 	cp a,0
-	jr z,L2060
+	jr z,L2114
 	ld a,32
 	push xwa
 	call _erase_bank__13
 	lda xsp,(xsp+4)
 	cp a,0
-	jr nz,L2059
-L2060:
+	jr nz,L2113
+L2114:
 	call _ngpc_flash_init
 	ld wa,0
-	jr L2057
-L2059:
+	jr L2111
+L2113:
 	ldb (_s_current__13),255
 	ldb (_s_last_slot__13),255
 	ld xwa,0
 	ld (_s_sequence__13),xwa
 	ld wa,1
-	jr L2057
-L2057:
+	jr L2111
+L2111:
 	ret
 
 ; function ngpc_flash_save
@@ -9973,134 +10294,134 @@ _ngpc_flash_save:
 	ldb (_s_last_slot__13),255
 	ld xwa,(_s_offset__13)
 	cp xwa,0
-	jr nz,L2092
+	jr nz,L2146
 	ld wa,0
-	jp L2091
-L2092:
+	jp L2145
+L2146:
 	ld xwa,(xsp+0)
 	ld a,(xwa)
 	cp a,202
-	jr nz,L2094
+	jr nz,L2148
 	ld xwa,(xsp+0)
 	ld a,(xwa+1)
 	cp a,254
-	jr nz,L2094
+	jr nz,L2148
 	ld xwa,(xsp+0)
 	ld a,(xwa+2)
 	cp a,32
-	jr nz,L2094
+	jr nz,L2148
 	ld xwa,(xsp+0)
 	ld a,(xwa+3)
 	cp a,38
-	jr z,L2093
-L2094:
+	jr z,L2147
+L2148:
 	ld wa,0
-	jp L2091
-L2093:
+	jp L2145
+L2147:
 	ld c,(_s_current__13)
 	cp c,255
-	jr nz,L2095
+	jr nz,L2149
 	ld wa,0
-	jr L2096
-L2095:
+	jr L2150
+L2149:
 	ld a,(_s_current__13)
 	push xwa
 	call _bank_of__13
 	lda xsp,(xsp+4)
 	extz wa
-L2096:
+L2150:
 	ld (xsp+5),a
 	ld c,(_s_current__13)
 	cp c,255
-	jr nz,L2097
+	jr nz,L2151
 	ld a,(xsp+5)
 	extz wa
-	jr L2098
-L2097:
+	jr L2152
+L2151:
 	ld a,(_s_current__13)
 	add a,1
 	extz wa
-L2098:
+L2152:
 	ld (xsp+4),a
-	jr L2101
-L2099:
+	jr L2155
+L2153:
 	incb 1,(xsp+4)
-L2101:
+L2155:
 	ld a,(xsp+4)
 	ld c,(xsp+5)
 	add c,32
 	cp a,c
-	jr uge,L2102
+	jr uge,L2156
 	ld a,(xsp+4)
 	push xwa
 	call _slot_erased__13
 	lda xsp,(xsp+4)
 	cp a,0
-	jr z,L2099
-L2102:
-L2100:
+	jr z,L2153
+L2156:
+L2154:
 	ld a,(xsp+4)
 	ld c,(xsp+5)
 	add c,32
 	cp a,c
-	jr ult,L2103
+	jr ult,L2157
 	ld a,(xsp+5)
 	xor a,32
 	ld (xsp+5),a
 	ld a,(xsp+5)
 	ld izl,a
-	jr L2107
-L2104:
+	jr L2161
+L2158:
 	ld a,izl
 	push xwa
 	call _slot_erased__13
 	lda xsp,(xsp+4)
 	cp a,0
-	jr nz,L2108
-	jr L2105
-L2108:
-L2106:
+	jr nz,L2162
+	jr L2159
+L2162:
+L2160:
 	inc 1,izl
-L2107:
+L2161:
 	ld a,izl
 	ld c,(xsp+5)
 	add c,32
 	cp a,c
-	jr ult,L2104
-L2105:
+	jr ult,L2158
+L2159:
 	ld a,izl
 	ld c,(xsp+5)
 	add c,32
 	cp a,c
-	jr z,L2109
+	jr z,L2163
 	ld a,(xsp+5)
 	push xwa
 	call _erase_bank__13
 	lda xsp,(xsp+4)
 	cp a,0
-	jr nz,L2109
+	jr nz,L2163
 	ld wa,0
-	jp L2091
-L2109:
+	jp L2145
+L2163:
 	ld a,(xsp+5)
 	ld (xsp+4),a
-L2103:
+L2157:
 	ld xwa,(_s_sequence__13)
 	add xwa,1
 	ld (xsp+12),xwa
 	ld izl,0
-	jr L2113
-L2110:
+	jr L2167
+L2164:
 	ld xwa,(xsp+12)
 	ld c,izl
 	extz bc
 	sll 3,bc
 	cp c,0
-	jr z,L2115
-L2114:
+	jr z,L2169
+L2168:
 	srl 1,xwa
-	djnz c,L2114
-L2115:
+	djnz c,L2168
+L2169:
 	ld xbc,(xsp+0)
 	ld de,248
 	ld l,izl
@@ -10109,16 +10430,16 @@ L2115:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L2112:
+L2166:
 	inc 1,izl
-L2113:
+L2167:
 	ld a,izl
 	cp a,4
-	jr ult,L2110
-L2111:
+	jr ult,L2164
+L2165:
 	ldw (xsp+8),0
-	jr L2119
-L2116:
+	jr L2173
+L2170:
 	ld xwa,(xsp+0)
 	ld bc,(xsp+8)
 	extz xbc
@@ -10130,13 +10451,13 @@ L2116:
 	call _crc_byte__13
 	lda xsp,(xsp+8)
 	ld (xsp+10),wa
-L2118:
+L2172:
 	incw 1,(xsp+8)
-L2119:
+L2173:
 	ld wa,(xsp+8)
 	cp wa,252
-	jr ult,L2116
-L2117:
+	jr ult,L2170
+L2171:
 	ld a,(xsp+10)
 	ld xbc,(xsp+0)
 	ld (xbc+252),a
@@ -10168,17 +10489,17 @@ L2117:
 	call _ngpc_flash_verify
 	lda xsp,(xsp+4)
 	cp wa,0
-	jr z,L2120
+	jr z,L2174
 	ld wa,0
-	jr L2091
-L2120:
+	jr L2145
+L2174:
 	ld a,(xsp+4)
 	ld (_s_current__13),a
 	ld xwa,(xsp+12)
 	ld (_s_sequence__13),xwa
 	ld wa,1
-	jr L2091
-L2091:
+	jr L2145
+L2145:
 	lda xsp,(xsp+16)
 	pop xiz
 	ret
@@ -10197,7 +10518,7 @@ _ngpc_input_vblank:
 	ld (_s_vbl_down__14),a
 	ld a,(xsp+0)
 	ld (_s_vbl_prev__14),a
-L2122:
+L2176:
 	lda xsp,(xsp+2)
 	ret
 
@@ -10207,7 +10528,7 @@ _ngpc_input_set_repeat:
 	ld (_s_repeat_delay__14),a
 	ld a,(xsp+8)
 	ld (_s_repeat_rate__14),a
-L2124:
+L2178:
 	ret
 
 ; function ngpc_input_update
@@ -10237,22 +10558,22 @@ _ngpc_input_update:
 	ldb (_ngpc_pad_repeat),0
 	ldb (xsp+1),1
 	ldb (xsp+0),0
-	jp L2140
-L2137:
+	jp L2194
+L2191:
 	ld a,(xsp+2)
 	extz wa
 	ld c,(xsp+1)
 	extz bc
 	and wa,bc
 	cp wa,0
-	jr z,L2141
+	jr z,L2195
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	ld c,(xsp+1)
 	extz bc
 	and wa,bc
 	cp wa,0
-	jr z,L2142
+	jr z,L2196
 	ld a,(_s_repeat_delay__14)
 	ld xbc,_s_repeat_timer__14
 	ld e,(xsp+0)
@@ -10260,8 +10581,8 @@ L2137:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-	jr L2143
-L2142:
+	jr L2197
+L2196:
 	ld xwa,_s_repeat_timer__14
 	ld c,(xsp+0)
 	extz bc
@@ -10269,7 +10590,7 @@ L2142:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr ule,L2144
+	jr ule,L2198
 	ld xbc,_s_repeat_timer__14
 	ld e,(xsp+0)
 	extz de
@@ -10278,8 +10599,8 @@ L2142:
 	ld a,(xbc)
 	dec 1,a
 	ld (xbc),a
-	jr L2145
-L2144:
+	jr L2199
+L2198:
 	ld a,(_ngpc_pad_repeat)
 	extz wa
 	ld c,(xsp+1)
@@ -10293,10 +10614,10 @@ L2144:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2145:
-L2143:
-	jr L2146
-L2141:
+L2199:
+L2197:
+	jr L2200
+L2195:
 	ld a,0
 	ld xbc,_s_repeat_timer__14
 	ld e,(xsp+0)
@@ -10304,21 +10625,21 @@ L2141:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2146:
+L2200:
 	ld a,(xsp+1)
 	extz wa
 	sll 1,wa
 	ld (xsp+1),a
-L2139:
+L2193:
 	incb 1,(xsp+0)
-L2140:
+L2194:
 	ld a,(xsp+0)
 	cp a,8
-	jp ult,L2137
-L2138:
+	jp ult,L2191
+L2192:
 	ld a,(xsp+2)
 	ld (_s_pad_prev__14),a
-L2136:
+L2190:
 	lda xsp,(xsp+4)
 	ret
 
@@ -10336,8 +10657,8 @@ _runtime_bootstrap__15:
 	ld xiz,xwa
 	ld xwa,__Bss_END
 	ld (xsp+16),xwa
-	jr L2157
-L2155:
+	jr L2211
+L2209:
 	ld xwa,xix
 	inc 1,xwa
 	ld xix,xwa
@@ -10348,25 +10669,25 @@ L2155:
 	ld xiy,xbc
 	dec 1,xbc
 	ld (xbc),a
-L2157:
+L2211:
 	ld xwa,xix
 	cp xwa,(xsp+4)
-	jr ult,L2155
-L2156:
-	jr L2160
-L2158:
+	jr ult,L2209
+L2210:
+	jr L2214
+L2212:
 	ld a,0
 	ld xbc,xiz
 	inc 1,xbc
 	ld xiz,xbc
 	dec 1,xbc
 	ld (xbc),a
-L2160:
+L2214:
 	ld xwa,xiz
 	cp xwa,(xsp+16)
-	jr ult,L2158
-L2159:
-L2154:
+	jr ult,L2212
+L2213:
+L2208:
 	lda xsp,(xsp+20)
 	pop xiz
 	ret
@@ -10380,7 +10701,7 @@ _isr_dummy__15:
 	push xix
 	push xiy
 	push xiz
-L2162:
+L2216:
 	pop xiz
 	pop xiy
 	pop xix
@@ -10394,7 +10715,7 @@ L2162:
 _ngpc_set_vblank_hook:
 	ld xwa,(xsp+4)
 	ld (_g_vb_hook__15),xwa
-L2164:
+L2218:
 	ret
 
 ; function isr_vblank
@@ -10409,15 +10730,15 @@ _isr_vblank__15:
 	ldb (06Fh),78
 	ld xwa,(_g_vb_hook__15)
 	cp xwa,0
-	jr z,L2168
+	jr z,L2222
 	ld xwa,(_g_vb_hook__15)
 	ld xhl,xwa
 	call (xhl)
-L2168:
+L2222:
 	call _ngpc_vramq_flush
 	incb 1,(_g_vb_counter)
 	call _ngpc_input_vblank
-L2167:
+L2221:
 	pop xiz
 	pop xiy
 	pop xix
@@ -10434,12 +10755,12 @@ _ngpc_init:
 	call _runtime_bootstrap__15
 	ld c,(06F91h)
 	cp c,0
-	jr z,L2177
+	jr z,L2231
 	ld wa,1
-	jr L2178
-L2177:
+	jr L2232
+L2231:
 	ld wa,0
-L2178:
+L2232:
 	ld (_s_is_color__15),a
 	ld a,(06F87h)
 	ld (_s_language__15),a
@@ -10493,8 +10814,8 @@ L2178:
 	ldb (08021h),0
 	andb (08012h),127
 	ldb (xsp+0),0
-	jr L2182
-L2179:
+	jr L2236
+L2233:
 	ld wa,0
 	ld xbc,40960
 	ld e,(xsp+0)
@@ -10503,30 +10824,30 @@ L2179:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2181:
+L2235:
 	incb 1,(xsp+0)
-L2182:
+L2236:
 	ld a,(xsp+0)
 	cp a,8
-	jr ult,L2179
-L2180:
+	jr ult,L2233
+L2234:
 	ei
-L2176:
+L2230:
 	lda xsp,(xsp+2)
 	ret
 
 ; function ngpc_is_color
 _ngpc_is_color:
 	ld a,(_s_is_color__15)
-	jr L2184
-L2184:
+	jr L2238
+L2238:
 	ret
 
 ; function ngpc_get_language
 _ngpc_get_language:
 	ld a,(_s_language__15)
-	jr L2186
-L2186:
+	jr L2240
+L2240:
 	ret
 
 ; function ngpc_shutdown_reason
@@ -10537,30 +10858,30 @@ _ngpc_shutdown_reason:
 	extz wa
 	and wa,32
 	cp wa,0
-	jr z,L2202
+	jr z,L2256
 	ld iy,15
-	jr L2203
-L2202:
+	jr L2257
+L2256:
 	ld a,(xsp+14)
 	extz wa
 	and wa,128
 	cp wa,0
-	jr z,L2204
+	jr z,L2258
 	ld iy,4095
-	jr L2205
-L2204:
+	jr L2259
+L2258:
 	ld a,(xsp+14)
 	extz wa
 	and wa,64
 	cp wa,0
-	jr z,L2206
+	jr z,L2260
 	ld iy,240
-	jr L2207
-L2206:
+	jr L2261
+L2260:
 	ld iy,3840
-L2207:
-L2205:
-L2203:
+L2261:
+L2259:
+L2257:
 	ld wa,iy
 	ld xbc,33776
 	ld (xbc),wa
@@ -10572,30 +10893,30 @@ L2203:
 	ldb (08004h),0
 	ldb (08005h),0
 	ld iz,0
-	jr L2211
-L2208:
+	jr L2265
+L2262:
 	ld a,(_g_vb_counter)
 	ld ixl,a
-	jr L2214
-L2212:
-L2214:
+	jr L2268
+L2266:
+L2268:
 	ld a,(_g_vb_counter)
 	cp a,ixl
-	jr z,L2212
-L2213:
-L2210:
+	jr z,L2266
+L2267:
+L2264:
 	inc 1,iz
-L2211:
+L2265:
 	ld wa,iz
 	cp wa,180
-	jr ult,L2208
-L2209:
+	jr ult,L2262
+L2263:
 	push xix
 	push xiy
 	call _ngpc_shutdown
 	pop xiy
 	pop xix
-L2201:
+L2255:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -10605,7 +10926,7 @@ _ngpc_shutdown:
 	ldb ra3, 3
 	ldb rw3, 0
 	swi 1
-L2216:
+L2270:
 	ret
 
 ; function ngpc_load_sysfont
@@ -10615,8 +10936,8 @@ _ngpc_load_sysfont:
 	ld xwa,41472
 	ld xix,xwa
 	ld iz,0
-	jr L2226
-L2223:
+	jr L2280
+L2277:
 	ld xwa,_overrev_dash_tiles__15
 	ld bc,iz
 	extz xbc
@@ -10629,14 +10950,14 @@ L2223:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2225:
+L2279:
 	inc 1,iz
-L2226:
+L2280:
 	ld wa,iz
 	cp wa,768
-	jr ult,L2223
-L2224:
-L2222:
+	jr ult,L2277
+L2278:
+L2276:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -10647,8 +10968,8 @@ _ngpc_memcpy:
 	ld xix,(xsp+8)
 	ld xiz,(xsp+12)
 	ld iy,(xsp+16)
-	jr L2234
-L2232:
+	jr L2288
+L2286:
 	ld xwa,xiz
 	inc 1,xwa
 	ld xiz,xwa
@@ -10659,13 +10980,13 @@ L2232:
 	ld xix,xbc
 	dec 1,xbc
 	ld (xbc),a
-L2234:
+L2288:
 	ld wa,iy
 	dec 1,iy
 	cp wa,0
-	jr nz,L2232
-L2233:
-L2231:
+	jr nz,L2286
+L2287:
+L2285:
 	pop xiz
 	ret
 
@@ -10676,21 +10997,21 @@ _ngpc_memset:
 	ld a,(xsp+12)
 	ld iyl,a
 	ld ix,(xsp+16)
-	jr L2242
-L2240:
+	jr L2296
+L2294:
 	ld a,iyl
 	ld xbc,xiz
 	inc 1,xbc
 	ld xiz,xbc
 	dec 1,xbc
 	ld (xbc),a
-L2242:
+L2296:
 	ld wa,ix
 	dec 1,ix
 	cp wa,0
-	jr nz,L2240
-L2241:
-L2239:
+	jr nz,L2294
+L2295:
+L2293:
 	pop xiz
 	ret
 
@@ -10700,22 +11021,22 @@ _ngpc_vsync:
 	lda xsp,(xsp-2)
 	ld a,(_g_vb_counter)
 	ld izl,a
-	jr L2253
-L2251:
-L2253:
+	jr L2307
+L2305:
+L2307:
 	ld a,(_g_vb_counter)
 	cp a,izl
-	jr z,L2251
-L2252:
+	jr z,L2305
+L2306:
 	ld a,(06F85h)
 	cp a,0
-	jr z,L2254
+	jr z,L2308
 	ld a,(06F85h)
 	push xwa
 	call _ngpc_shutdown_reason
 	lda xsp,(xsp+4)
-L2254:
-L2249:
+L2308:
+L2303:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -10726,14 +11047,14 @@ _ngpc_in_vblank:
 	extz bc
 	and bc,64
 	cp bc,0
-	jr z,L2259
+	jr z,L2313
 	ld wa,1
-	jr L2260
-L2259:
+	jr L2314
+L2313:
 	ld wa,0
-L2260:
-	jr L2258
-L2258:
+L2314:
+	jr L2312
+L2312:
 	ret
 
 ; function ngpc_sleep
@@ -10745,21 +11066,21 @@ _ngpc_sleep:
 	call _ngpc_cpu_speed
 	lda xsp,(xsp+4)
 	ld izl,0
-	jr L2270
-L2267:
+	jr L2324
+L2321:
 	call _ngpc_vsync
-L2269:
+L2323:
 	inc 1,izl
-L2270:
+L2324:
 	ld a,izl
 	cp a,(xsp+10)
-	jr ult,L2267
-L2268:
+	jr ult,L2321
+L2322:
 	ld wa,0
 	push xwa
 	call _ngpc_cpu_speed
 	lda xsp,(xsp+4)
-L2266:
+L2320:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -10776,7 +11097,7 @@ _ngpc_cpu_speed:
 	ld xix, 0xfffe00
 	ld xix, (xix+w)
 	call xix
-L2272:
+L2326:
 	ret
 
 ; function dst_range_ok
@@ -10785,14 +11106,14 @@ _dst_range_ok__17:
 	lda xsp,(xsp-12)
 	ld xwa,(xsp+20)
 	cp xwa,0
-	jr z,L2280
+	jr z,L2334
 	ld wa,(xsp+24)
 	cp wa,0
-	jr nz,L2279
-L2280:
+	jr nz,L2333
+L2334:
 	ld wa,0
-	jr L2278
-L2279:
+	jr L2332
+L2333:
 	ld xwa,(xsp+20)
 	extz xwa
 	ld xiz,xwa
@@ -10806,19 +11127,19 @@ L2279:
 	ld (xsp+8),xwa
 	ld xwa,xiz
 	cp xwa,32768
-	jr uge,L2281
+	jr uge,L2335
 	ld wa,0
-	jr L2278
-L2281:
+	jr L2332
+L2335:
 	ld xwa,(xsp+8)
 	cp xwa,49151
-	jr ule,L2282
+	jr ule,L2336
 	ld wa,0
-	jr L2278
-L2282:
+	jr L2332
+L2336:
 	ld wa,1
-	jr L2278
-L2278:
+	jr L2332
+L2332:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -10828,7 +11149,7 @@ _ngpc_vramq_init:
 	ldb (_s_cmd_count__17),0
 	ldb (_s_drop_count__17),0
 	ldb (_s_lock__17),0
-L2284:
+L2338:
 	ret
 
 ; function ngpc_vramq_copy
@@ -10837,7 +11158,7 @@ _ngpc_vramq_copy:
 	lda xsp,(xsp-2)
 	ld xwa,(xsp+14)
 	cp xwa,0
-	jr z,L2291
+	jr z,L2345
 	ld wa,(xsp+18)
 	push xwa
 	ld xwa,(xsp+14)
@@ -10845,22 +11166,22 @@ _ngpc_vramq_copy:
 	call _dst_range_ok__17
 	lda xsp,(xsp+8)
 	cp a,0
-	jr nz,L2290
-L2291:
+	jr nz,L2344
+L2345:
 	ld wa,0
-	jp L2289
-L2290:
+	jp L2343
+L2344:
 	ldb (_s_lock__17),1
 	ld a,(_s_cmd_count__17)
 	ld izl,a
 	ld a,izl
 	cp a,16
-	jr ult,L2292
+	jr ult,L2346
 	incb 1,(_s_drop_count__17)
 	ldb (_s_lock__17),0
 	ld wa,0
-	jr L2289
-L2292:
+	jr L2343
+L2346:
 	ld xwa,(xsp+10)
 	ld xbc,_s_cmd_dst__17
 	ld e,izl
@@ -10905,8 +11226,8 @@ L2292:
 	ld (_s_cmd_count__17),a
 	ldb (_s_lock__17),0
 	ld wa,1
-	jr L2289
-L2289:
+	jr L2343
+L2343:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -10922,21 +11243,21 @@ _ngpc_vramq_fill:
 	call _dst_range_ok__17
 	lda xsp,(xsp+8)
 	cp a,0
-	jr nz,L2297
+	jr nz,L2351
 	ld wa,0
-	jp L2296
-L2297:
+	jp L2350
+L2351:
 	ldb (_s_lock__17),1
 	ld a,(_s_cmd_count__17)
 	ld izl,a
 	ld a,izl
 	cp a,16
-	jr ult,L2298
+	jr ult,L2352
 	incb 1,(_s_drop_count__17)
 	ldb (_s_lock__17),0
 	ld wa,0
-	jr L2296
-L2298:
+	jr L2350
+L2352:
 	ld xwa,(xsp+10)
 	ld xbc,_s_cmd_dst__17
 	ld e,izl
@@ -10981,8 +11302,8 @@ L2298:
 	ld (_s_cmd_count__17),a
 	ldb (_s_lock__17),0
 	ld wa,1
-	jr L2296
-L2296:
+	jr L2350
+L2350:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -10993,20 +11314,20 @@ _ngpc_vramq_flush:
 	lda xsp,(xsp-10)
 	ld a,(_s_lock__17)
 	cp a,0
-	jr z,L2313
-	jp L2312
-L2313:
+	jr z,L2367
+	jp L2366
+L2367:
 	ld a,(_s_cmd_count__17)
 	ld (xsp+1),a
 	ld a,(xsp+1)
 	cp a,0
-	jr nz,L2314
-	jp L2312
-L2314:
+	jr nz,L2368
+	jp L2366
+L2368:
 	ldb (_s_lock__17),1
 	ld izl,0
-	jp L2318
-L2315:
+	jp L2372
+L2369:
 	ld xwa,_s_cmd_dst__17
 	ld c,izl
 	extz bc
@@ -11031,7 +11352,7 @@ L2315:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,1
-	jr nz,L2319
+	jr nz,L2373
 	push xix
 	push xiy
 	ld wa,iy
@@ -11058,8 +11379,8 @@ L2315:
 	lda xsp,(xsp+12)
 	pop xiy
 	pop xix
-	jr L2320
-L2319:
+	jr L2374
+L2373:
 	ld xwa,_s_cmd_type__17
 	ld c,izl
 	extz bc
@@ -11067,7 +11388,7 @@ L2319:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,2
-	jr nz,L2321
+	jr nz,L2375
 	ld xwa,_s_cmd_fill__17
 	ld c,izl
 	extz bc
@@ -11076,32 +11397,32 @@ L2319:
 	add xwa,xbc
 	ld wa,(xwa)
 	ld (xsp+8),wa
-	jr L2324
-L2322:
+	jr L2378
+L2376:
 	ld wa,(xsp+8)
 	ld xbc,xix
 	inc 2,xbc
 	ld xix,xbc
 	dec 2,xbc
 	ld (xbc),wa
-L2324:
+L2378:
 	ld wa,iy
 	dec 1,iy
 	cp wa,0
-	jr nz,L2322
-L2323:
-L2321:
-L2320:
-L2317:
+	jr nz,L2376
+L2377:
+L2375:
+L2374:
+L2371:
 	inc 1,izl
-L2318:
+L2372:
 	ld a,izl
 	cp a,(xsp+1)
-	jp ult,L2315
-L2316:
+	jp ult,L2369
+L2370:
 	ldb (_s_cmd_count__17),0
 	ldb (_s_lock__17),0
-L2312:
+L2366:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -11110,31 +11431,31 @@ L2312:
 _ngpc_vramq_clear:
 	ld a,(_s_lock__17)
 	cp a,0
-	jr z,L2328
-	jr L2327
-L2328:
+	jr z,L2382
+	jr L2381
+L2382:
 	ldb (_s_cmd_count__17),0
-L2327:
+L2381:
 	ret
 
 ; function ngpc_vramq_pending
 _ngpc_vramq_pending:
 	ld a,(_s_cmd_count__17)
-	jr L2330
-L2330:
+	jr L2384
+L2384:
 	ret
 
 ; function ngpc_vramq_dropped
 _ngpc_vramq_dropped:
 	ld a,(_s_drop_count__17)
-	jr L2332
-L2332:
+	jr L2386
+L2386:
 	ret
 
 ; function ngpc_vramq_clear_dropped
 _ngpc_vramq_clear_dropped:
 	ldb (_s_drop_count__17),0
-L2334:
+L2388:
 	ret
 
 ; function rnd16
@@ -11155,8 +11476,8 @@ _rnd16__18:
 	xor wa,bc
 	ld (_rs__18),wa
 	ld wa,(_rs__18)
-	jr L2336
-L2336:
+	jr L2390
+L2390:
 	ret
 
 ; function rndn
@@ -11165,8 +11486,8 @@ _rndn__18:
 	extz xwa
 	div xwa,(xsp+4)
 	ld wa,qwa
-	jr L2338
-L2338:
+	jr L2392
+L2392:
 	ret
 
 ; function stage_of
@@ -11177,15 +11498,15 @@ _stage_of__18:
 	ld ixl,a
 	ld wa,0
 	ld izl,a
-	jr L2347
-L2345:
+	jr L2401
+L2399:
 	inc 1,izl
-L2347:
+L2401:
 	ld a,izl
 	extz wa
 	add wa,1
 	cp wa,5
-	jr uge,L2348
+	jr uge,L2402
 	ld a,izl
 	extz wa
 	add wa,1
@@ -11197,12 +11518,12 @@ L2347:
 	srl 1,wa
 	add wa,0
 	cp a,ixl
-	jr ule,L2345
-L2348:
-L2346:
+	jr ule,L2399
+L2402:
+L2400:
 	ld a,izl
-	jr L2344
-L2344:
+	jr L2398
+L2398:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -11231,7 +11552,7 @@ _put__18:
 	add xbc,xde
 	ld (xbc+4),a
 	incb 1,(_gn__18)
-L2350:
+L2404:
 	ret
 
 ; function slope_for
@@ -11240,7 +11561,7 @@ _slope_for__18:
 	lda xsp,(xsp-2)
 	ld a,(xsp+10)
 	cp a,0
-	jr z,L2358
+	jr z,L2412
 	ld wa,100
 	push xwa
 	call _rndn__18
@@ -11250,7 +11571,7 @@ _slope_for__18:
 	extz de
 	mul xbc,de
 	cp wa,bc
-	jr uge,L2358
+	jr uge,L2412
 	ld wa,6
 	push xwa
 	call _rndn__18
@@ -11265,33 +11586,33 @@ _slope_for__18:
 	ld izl,a
 	ld a,(xsp+0)
 	cp a,0
-	jr nz,L2359
+	jr nz,L2413
 	ld a,(xsp+10)
 	neg a
 	ld izl,a
-L2359:
+L2413:
 	ld a,(xsp+0)
 	cp a,3
-	jr nz,L2360
+	jr nz,L2414
 	ld a,(xsp+10)
 	ld izl,a
-L2360:
+L2414:
 	ld a,izl
 	cp a,252
-	jr ge,L2361
+	jr ge,L2415
 	ld izl,252
-L2361:
+L2415:
 	ld a,izl
 	cp a,3
-	jr le,L2362
+	jr le,L2416
 	ld izl,3
-L2362:
+L2416:
 	ld a,izl
-	jr L2357
-L2358:
+	jr L2411
+L2412:
 	ld wa,0
-	jr L2357
-L2357:
+	jr L2411
+L2411:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -11328,17 +11649,17 @@ _sharp__18:
 	ld iz,wa
 	ld wa,iz
 	cp wa,52
-	jr uge,L2367
+	jr uge,L2421
 	ld iz,52
-L2367:
+L2421:
 	ld wa,iz
 	cp wa,72
-	jr ule,L2368
+	jr ule,L2422
 	ld iz,72
-L2368:
+L2422:
 	ld wa,iz
-	jr L2366
-L2366:
+	jr L2420
+L2420:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -11346,10 +11667,10 @@ L2366:
 ; function gen_leg
 _gen_leg__18:
 	push xiz
-	lda xsp,(xsp-30)
+	lda xsp,(xsp-32)
 	ld xwa,_gfx_themes
 	ld xbc,_leg_theme
-	ld e,(xsp+38)
+	ld e,(xsp+40)
 	extz de
 	exts xde
 	add xbc,xde
@@ -11359,7 +11680,7 @@ _gen_leg__18:
 	add xwa,xbc
 	lda xwa,(xwa)
 	ld (xsp+0),xwa
-	ld a,(xsp+38)
+	ld a,(xsp+40)
 	push xwa
 	call _stage_of__18
 	lda xsp,(xsp+4)
@@ -11382,11 +11703,11 @@ _gen_leg__18:
 	ld iz,wa
 	ld wa,1
 	ld (xsp+16),wa
-	ld xwa,(xsp+42)
+	ld xwa,(xsp+44)
 	ld (_gp__18),xwa
 	ldb (_gn__18),0
 	ld wa,(_free_seed)
-	ld c,(xsp+38)
+	ld c,(xsp+40)
 	extz bc
 	add bc,1
 	mul xbc,40503
@@ -11394,9 +11715,9 @@ _gen_leg__18:
 	ld (_rs__18),wa
 	ld wa,(_rs__18)
 	cp wa,0
-	jr nz,L2393
+	jr nz,L2454
 	ldw (_rs__18),44257
-L2393:
+L2454:
 	call _rnd16__18
 	ld wa,0
 	push xwa
@@ -11406,13 +11727,75 @@ L2393:
 	push xwa
 	call _put__18
 	lda xsp,(xsp+12)
-	jp L2396
-L2394:
+	ld xbc,(xsp+0)
+	ld c,(xbc+19)
+	cp c,0
+	jr nz,L2455
+	ld wa,1
+	jr L2456
+L2455:
+	ld wa,0
+L2456:
+	ld (xsp+18),a
+	jp L2459
+L2457:
+	ld a,(xsp+18)
+	cp a,0
+	jp nz,L2460
+	ld wa,iz
+	cp wa,4680
+	jr ult,L2460
+	ldb (xsp+18),1
+	ldb (xsp+22),0
+	jr L2464
+L2461:
+	ld xwa,_bridge_run__18
+	ld c,(xsp+22)
+	extz bc
+	muls xbc,6
+	add xwa,xbc
+	ld a,(xwa+4)
+	push xwa
+	ld xwa,_bridge_run__18
+	ld c,(xsp+26)
+	extz bc
+	muls xbc,6
+	add xwa,xbc
+	ld wa,(xwa+2)
+	mul xwa,(xsp+20)
+	push xwa
+	ld xwa,_bridge_run__18
+	ld c,(xsp+30)
+	extz bc
+	muls xbc,6
+	add xwa,xbc
+	ld wa,(xwa)
+	push xwa
+	call _put__18
+	lda xsp,(xsp+12)
+	ld wa,iz
+	ld xbc,_bridge_run__18
+	ld e,(xsp+22)
+	extz de
+	muls xde,6
+	add xbc,xde
+	ld bc,(xbc)
+	add wa,bc
+	ld iz,wa
+L2463:
+	incb 1,(xsp+22)
+L2464:
+	ld a,(xsp+22)
+	cp a,4
+	jr ult,L2461
+L2462:
+	jp L2459
+L2460:
 	ld wa,1000
 	push xwa
 	call _rndn__18
 	lda xsp,(xsp+4)
-	ld (xsp+18),wa
+	ld (xsp+20),wa
 	push xwa
 	ld wa,1000
 	push xwa
@@ -11421,29 +11804,29 @@ L2394:
 	ld xbc,xwa
 	pop xwa
 	cp bc,600
-	jr uge,L2397
+	jr uge,L2465
 	ld wa,(xsp+16)
 	neg wa
-	jr L2398
-L2397:
+	jr L2466
+L2465:
 	ld wa,(xsp+16)
-L2398:
-	ld (xsp+20),wa
-	ld wa,(xsp+18)
-	cp wa,(xsp+8)
-	jp uge,L2399
-	ld xwa,(xsp+0)
-	ld a,(xwa+16)
-	push xwa
-	call _sharp__18
-	lda xsp,(xsp+4)
+L2466:
 	ld (xsp+22),wa
+	ld wa,(xsp+20)
+	cp wa,(xsp+8)
+	jp uge,L2467
 	ld xwa,(xsp+0)
 	ld a,(xwa+16)
 	push xwa
 	call _sharp__18
 	lda xsp,(xsp+4)
 	ld (xsp+24),wa
+	ld xwa,(xsp+0)
+	ld a,(xwa+16)
+	push xwa
+	call _sharp__18
+	lda xsp,(xsp+4)
+	ld (xsp+26),wa
 	ld xwa,_sp_s__18
 	push xwa
 	ld wa,3
@@ -11456,7 +11839,7 @@ L2398:
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld (xsp+26),wa
+	ld (xsp+28),wa
 	ld xwa,_sp_gap__18
 	push xwa
 	ld wa,3
@@ -11469,7 +11852,7 @@ L2398:
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld (xsp+28),wa
+	ld (xsp+30),wa
 	push xwa
 	ld wa,2
 	push xwa
@@ -11478,12 +11861,12 @@ L2398:
 	ld xbc,xwa
 	pop xwa
 	cp bc,0
-	jr z,L2400
+	jr z,L2468
 	ld wa,500
-	jr L2401
-L2400:
+	jr L2469
+L2468:
 	ld wa,400
-L2401:
+L2469:
 	ld (xsp+12),wa
 	ld xwa,(xsp+0)
 	ld a,(xwa+17)
@@ -11501,52 +11884,52 @@ L2401:
 	lda xsp,(xsp+12)
 	ld wa,0
 	push xwa
-	ld wa,(xsp+24)
-	mul xwa,(xsp+26)
-	push xwa
-	ld wa,(xsp+34)
-	push xwa
-	call _put__18
-	lda xsp,(xsp+12)
-	ld wa,(xsp+28)
-	cp wa,0
-	jr z,L2402
-	ld wa,0
-	push xwa
-	ld wa,0
+	ld wa,(xsp+26)
+	mul xwa,(xsp+28)
 	push xwa
 	ld wa,(xsp+36)
 	push xwa
 	call _put__18
 	lda xsp,(xsp+12)
-L2402:
+	ld wa,(xsp+30)
+	cp wa,0
+	jr z,L2470
 	ld wa,0
 	push xwa
-	ld wa,(xsp+24)
-	neg wa
-	mul xwa,(xsp+28)
+	ld wa,0
 	push xwa
-	ld wa,(xsp+34)
+	ld wa,(xsp+38)
+	push xwa
+	call _put__18
+	lda xsp,(xsp+12)
+L2470:
+	ld wa,0
+	push xwa
+	ld wa,(xsp+26)
+	neg wa
+	mul xwa,(xsp+30)
+	push xwa
+	ld wa,(xsp+36)
 	push xwa
 	call _put__18
 	lda xsp,(xsp+12)
 	ld wa,iz
 	add wa,450
 	ld bc,2
-	mul xbc,(xsp+26)
+	mul xbc,(xsp+28)
 	add wa,bc
-	add wa,(xsp+28)
+	add wa,(xsp+30)
 	ld iz,wa
-	ld wa,(xsp+20)
+	ld wa,(xsp+22)
 	neg wa
 	ld (xsp+16),wa
-	jp L2403
-L2399:
-	ld wa,(xsp+18)
+	jp L2471
+L2467:
+	ld wa,(xsp+20)
 	ld bc,(xsp+8)
 	add bc,(xsp+6)
 	cp wa,bc
-	jp uge,L2404
+	jp uge,L2472
 	push xwa
 	ld wa,2
 	push xwa
@@ -11555,12 +11938,12 @@ L2399:
 	ld xbc,xwa
 	pop xwa
 	cp bc,0
-	jr z,L2405
+	jr z,L2473
 	ld wa,500
-	jr L2406
-L2405:
+	jr L2474
+L2473:
 	ld wa,400
-L2406:
+L2474:
 	ld (xsp+12),wa
 	ld xwa,(xsp+0)
 	ld a,(xwa+17)
@@ -11588,10 +11971,10 @@ L2406:
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld (xsp+22),wa
+	ld (xsp+24),wa
 	ld wa,0
 	push xwa
-	ld wa,(xsp+24)
+	ld wa,(xsp+26)
 	push xwa
 	ld xwa,(xsp+8)
 	ld a,(xwa+16)
@@ -11602,18 +11985,18 @@ L2406:
 	pop xwa
 	mul xwa,bc
 	push xwa
-	ld wa,(xsp+30)
+	ld wa,(xsp+32)
 	push xwa
 	call _put__18
 	lda xsp,(xsp+12)
 	ld wa,iz
 	add wa,450
-	add wa,(xsp+22)
+	add wa,(xsp+24)
 	ld iz,wa
-	ld wa,(xsp+20)
+	ld wa,(xsp+22)
 	ld (xsp+16),wa
-	jp L2407
-L2404:
+	jp L2475
+L2472:
 	ld wa,100
 	push xwa
 	call _rndn__18
@@ -11622,7 +12005,7 @@ L2404:
 	ld c,(xbc+18)
 	extz bc
 	cp wa,bc
-	jr uge,L2408
+	jr uge,L2476
 	ld xwa,_sp_straight__18
 	push xwa
 	ld wa,4
@@ -11635,7 +12018,7 @@ L2404:
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld (xsp+22),wa
+	ld (xsp+24),wa
 	ld xwa,(xsp+0)
 	ld a,(xwa+17)
 	push xwa
@@ -11644,15 +12027,15 @@ L2404:
 	push xwa
 	ld wa,0
 	push xwa
-	ld wa,(xsp+30)
+	ld wa,(xsp+32)
 	push xwa
 	call _put__18
 	lda xsp,(xsp+12)
 	ld wa,iz
-	add wa,(xsp+22)
+	add wa,(xsp+24)
 	ld iz,wa
-	jp L2409
-L2408:
+	jp L2477
+L2476:
 	ld xwa,_sp_bend__18
 	push xwa
 	ld wa,5
@@ -11665,17 +12048,17 @@ L2408:
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld (xsp+22),wa
+	ld (xsp+24),wa
 	ld xwa,_easy_bends__18
 	push xwa
 	ld c,(xsp+8)
 	cp c,1
-	jr ult,L2410
+	jr ult,L2478
 	ld wa,5
-	jr L2411
-L2410:
+	jr L2479
+L2478:
 	ld wa,3
-L2411:
+L2479:
 	push xwa
 	call _rndn__18
 	lda xsp,(xsp+4)
@@ -11685,8 +12068,8 @@ L2411:
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld (xsp+24),wa
-	ld wa,(xsp+24)
+	ld (xsp+26),wa
+	ld wa,(xsp+26)
 	ld xbc,(xsp+0)
 	ld c,(xbc+16)
 	extz bc
@@ -11694,48 +12077,48 @@ L2411:
 	add wa,5
 	extz xwa
 	div xwa,10
-	ld (xsp+24),wa
-	ld wa,(xsp+24)
+	ld (xsp+26),wa
+	ld wa,(xsp+26)
 	cp wa,18
-	jr uge,L2412
-	ldw (xsp+24),18
-L2412:
-	ld wa,(xsp+24)
+	jr uge,L2480
+	ldw (xsp+26),18
+L2480:
+	ld wa,(xsp+26)
 	cp wa,48
-	jr ule,L2413
-	ldw (xsp+24),48
-L2413:
+	jr ule,L2481
+	ldw (xsp+26),48
+L2481:
 	ld xwa,(xsp+0)
 	ld a,(xwa+17)
 	push xwa
 	call _slope_for__18
 	lda xsp,(xsp+4)
 	push xwa
-	ld wa,(xsp+24)
-	ld bc,(xsp+28)
+	ld wa,(xsp+26)
+	ld bc,(xsp+30)
 	mul xwa,bc
 	push xwa
-	ld wa,(xsp+30)
+	ld wa,(xsp+32)
 	push xwa
 	call _put__18
 	lda xsp,(xsp+12)
 	ld wa,iz
-	add wa,(xsp+22)
+	add wa,(xsp+24)
 	ld iz,wa
-	ld wa,(xsp+20)
+	ld wa,(xsp+22)
 	ld (xsp+16),wa
-L2409:
-L2407:
-L2403:
-L2396:
+L2477:
+L2475:
+L2471:
+L2459:
 	ld wa,iz
 	cp wa,11700
-	jr uge,L2414
+	jr uge,L2482
 	ld a,(_gn__18)
 	cp a,30
-	jp ule,L2394
-L2414:
-L2395:
+	jp ule,L2457
+L2482:
+L2458:
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -11745,9 +12128,9 @@ L2395:
 	call _put__18
 	lda xsp,(xsp+12)
 	ld a,(_gn__18)
-	jr L2392
-L2392:
-	lda xsp,(xsp+30)
+	jr L2453
+L2453:
+	lda xsp,(xsp+32)
 	pop xiz
 	ret
 
@@ -11758,8 +12141,8 @@ _cost_of__18:
 	ld xwa,0
 	ld (xsp+0),xwa
 	ld ixl,0
-	jr L2429
-L2426:
+	jr L2497
+L2494:
 	ld xwa,(xsp+18)
 	ld c,ixl
 	extz bc
@@ -11771,26 +12154,26 @@ L2426:
 	ld iz,wa
 	ld wa,iy
 	cp wa,0
-	jr ge,L2430
+	jr ge,L2498
 	ld wa,iy
 	neg wa
 	ld iy,wa
-L2430:
-	jr L2433
-L2431:
+L2498:
+	jr L2501
+L2499:
 	dec 1,iz
-L2433:
+L2501:
 	ld wa,iz
 	cp wa,6
-	jr ule,L2434
+	jr ule,L2502
 	ld wa,iz
 	mul xwa,iz
 	ld bc,iy
 	mul xwa,bc
 	cp wa,6000
-	jr ugt,L2431
-L2434:
-L2432:
+	jr ugt,L2499
+L2502:
+L2500:
 	ld xwa,(xsp+0)
 	ld xbc,(xsp+18)
 	ld e,ixl
@@ -11814,17 +12197,17 @@ L2432:
 	pop xwa
 	add xwa,xbc
 	ld (xsp+0),xwa
-L2428:
+L2496:
 	inc 1,ixl
-L2429:
+L2497:
 	ld a,ixl
 	cp a,(xsp+22)
-	jr ult,L2426
-L2427:
+	jr ult,L2494
+L2495:
 	ld xwa,(xsp+0)
 	srl 4,xwa
-	jr L2425
-L2425:
+	jr L2493
+L2493:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -11855,7 +12238,7 @@ _put_placeholder__18:
 	muls xde,6
 	add xbc,xde
 	ld (xbc+4),a
-L2436:
+L2504:
 	pop xiz
 	ret
 
@@ -11867,7 +12250,7 @@ _copy_leg__18:
 	ld iyl,a
 	ld a,(_difficulty)
 	cp a,3
-	jr nz,L2446
+	jr nz,L2514
 	push xix
 	push xiy
 	ld xwa,_buf__18
@@ -11884,8 +12267,8 @@ _copy_leg__18:
 	pop xiy
 	pop xix
 	ld ixl,a
-	jr L2447
-L2446:
+	jr L2515
+L2514:
 	ld xwa,_gfx_legs
 	ld c,(xsp+14)
 	extz bc
@@ -11903,14 +12286,14 @@ L2446:
 	add wa,bc
 	add wa,1
 	cp wa,72
-	jr ule,L2448
+	jr ule,L2516
 	ld a,71
 	sub a,iyl
 	ld ixl,a
-L2448:
+L2516:
 	ld izl,0
-	jr L2452
-L2449:
+	jr L2520
+L2517:
 	push xwa
 	ld xwa,(xsp+6)
 	ld xwa,(xwa)
@@ -11930,14 +12313,14 @@ L2449:
 	ld bc,6
 	ldirb
 	pop xwa
-L2451:
+L2519:
 	inc 1,izl
-L2452:
+L2520:
 	ld a,izl
 	cp a,ixl
-	jr ult,L2449
-L2450:
-L2447:
+	jr ult,L2517
+L2518:
+L2515:
 	push xix
 	push xiy
 	ld a,ixl
@@ -11955,8 +12338,8 @@ L2447:
 	pop xix
 	ld (_next_leg_cost),wa
 	ld a,ixl
-	jr L2445
-L2445:
+	jr L2513
+L2513:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -11981,8 +12364,8 @@ _load_current__18:
 	ld (_track_len),a
 	ldw (_leg_len),0
 	ld izl,0
-	jr L2462
-L2459:
+	jr L2530
+L2527:
 	ld wa,(_leg_len)
 	ld xbc,_buf__18
 	ld e,izl
@@ -11992,15 +12375,15 @@ L2459:
 	ld bc,(xbc)
 	add wa,bc
 	ld (_leg_len),wa
-L2461:
+L2529:
 	inc 1,izl
-L2462:
+L2530:
 	ld a,izl
 	cp a,(_n_cur__18)
-	jr ult,L2459
-L2460:
+	jr ult,L2527
+L2528:
 	ldb (_fork_choice),0
-L2458:
+L2526:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -12013,8 +12396,8 @@ _course_start:
 	ldb (_cur_branch),0
 	ldb (_cur_leg),0
 	ld izl,0
-	jr L2483
-L2480:
+	jr L2551
+L2548:
 	ld a,0
 	ld xbc,_route_hist
 	ld e,izl
@@ -12022,16 +12405,16 @@ L2480:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2482:
+L2550:
 	inc 1,izl
-L2483:
+L2551:
 	ld a,izl
 	cp a,5
-	jr ult,L2480
-L2481:
+	jr ult,L2548
+L2549:
 	ld izl,0
-	jr L2487
-L2484:
+	jr L2555
+L2552:
 	ld xwa,_gfx_legs
 	ld c,izl
 	extz bc
@@ -12044,32 +12427,32 @@ L2484:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2486:
+L2554:
 	inc 1,izl
-L2487:
+L2555:
 	ld a,izl
 	cp a,15
-	jr ult,L2484
-L2485:
+	jr ult,L2552
+L2553:
 	ld a,(_difficulty)
 	cp a,3
-	jp nz,L2488
+	jp nz,L2556
 	ld wa,(_free_seed)
 	cp wa,0
-	jr nz,L2489
+	jr nz,L2557
 	ldw (_free_seed),24301
-L2489:
+L2557:
 	ld wa,(_free_seed)
 	xor wa,15450
 	ld (_rs__18),wa
 	ld wa,(_rs__18)
 	cp wa,0
-	jr nz,L2490
+	jr nz,L2558
 	ldw (_rs__18),44257
-L2490:
+L2558:
 	ld izl,14
-	jr L2494
-L2491:
+	jr L2562
+L2559:
 	ld a,izl
 	extz wa
 	add wa,1
@@ -12103,16 +12486,16 @@ L2491:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2493:
+L2561:
 	dec 1,izl
-L2494:
+L2562:
 	ld a,izl
 	cp a,0
-	jr ugt,L2491
-L2492:
-L2488:
+	jr ugt,L2559
+L2560:
+L2556:
 	call _load_current__18
-L2479:
+L2547:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -12123,14 +12506,14 @@ _course_is_last_stage:
 	extz bc
 	add bc,1
 	cp bc,5
-	jr ult,L2499
+	jr ult,L2567
 	ld wa,1
-	jr L2500
-L2499:
+	jr L2568
+L2567:
 	ld wa,0
-L2500:
-	jr L2498
-L2498:
+L2568:
+	jr L2566
+L2566:
 	ret
 
 ; function course_fork_zone
@@ -12138,31 +12521,31 @@ _course_fork_zone:
 	ld bc,(xsp+4)
 	add bc,2400
 	cp bc,(_leg_len)
-	jr ult,L2505
+	jr ult,L2573
 	ld wa,1
-	jr L2506
-L2505:
+	jr L2574
+L2573:
 	ld wa,0
-L2506:
-	jr L2504
-L2504:
+L2574:
+	jr L2572
+L2572:
 	ret
 
 ; function course_start_zone
 _course_start_zone:
 	ld c,(_cur_stage)
 	cp c,0
-	jr z,L2511
+	jr z,L2579
 	ld bc,(xsp+4)
 	cp bc,900
-	jr uge,L2511
+	jr uge,L2579
 	ld wa,1
-	jr L2512
-L2511:
+	jr L2580
+L2579:
 	ld wa,0
-L2512:
-	jr L2510
-L2510:
+L2580:
+	jr L2578
+L2578:
 	ret
 
 ; function course_decide
@@ -12171,21 +12554,21 @@ _course_decide:
 	lda xsp,(xsp-2)
 	ld a,(_fork_choice)
 	cp a,0
-	jr nz,L2525
+	jr nz,L2593
 	call _course_is_last_stage
 	cp a,0
-	jr z,L2524
-L2525:
-	jp L2523
-L2524:
+	jr z,L2592
+L2593:
+	jp L2591
+L2592:
 	ld c,(xsp+10)
 	cp c,0
-	jr z,L2526
+	jr z,L2594
 	ld wa,2
-	jr L2527
-L2526:
+	jr L2595
+L2594:
 	ld wa,1
-L2527:
+L2595:
 	ld (_fork_choice),a
 	ld a,(_cur_stage)
 	extz wa
@@ -12200,12 +12583,12 @@ L2527:
 	extz bc
 	ld l,(xsp+10)
 	cp l,0
-	jr z,L2528
+	jr z,L2596
 	ld de,1
-	jr L2529
-L2528:
+	jr L2597
+L2596:
 	ld de,0
-L2529:
+L2597:
 	add bc,de
 	add wa,bc
 	ld (xsp+0),a
@@ -12220,22 +12603,22 @@ L2529:
 	ld (_n_next__18),a
 	ld a,izl
 	cp a,0
-	jr z,L2530
+	jr z,L2598
 	ld c,(xsp+10)
 	cp c,0
-	jr z,L2531
+	jr z,L2599
 	ld wa,65486
-	jr L2532
-L2531:
+	jr L2600
+L2599:
 	ld wa,50
-L2532:
+L2600:
 	ld xbc,_buf__18
 	ld e,(_n_cur__18)
 	extz de
 	muls xde,6
 	add xbc,xde
 	ld (xbc+2),wa
-L2530:
+L2598:
 	ld a,(_n_cur__18)
 	add a,izl
 	push xwa
@@ -12245,7 +12628,7 @@ L2530:
 	add a,izl
 	add a,1
 	ld (_track_len),a
-L2523:
+L2591:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -12258,25 +12641,25 @@ _course_next_leg:
 	call _course_is_last_stage
 	pop xix
 	cp a,0
-	jr z,L2547
+	jr z,L2615
 	ld wa,0
-	jp L2546
-L2547:
+	jp L2614
+L2615:
 	ld a,(_fork_choice)
 	cp a,0
-	jr nz,L2548
+	jr nz,L2616
 	push xix
 	ld wa,0
 	push xwa
 	call _course_decide
 	lda xsp,(xsp+4)
 	pop xix
-L2548:
+L2616:
 	ld a,(_n_cur__18)
 	ld ixl,a
 	ld izl,0
-	jr L2552
-L2549:
+	jr L2620
+L2617:
 	push xwa
 	ld xwa,_buf__18
 	ld c,izl
@@ -12295,22 +12678,22 @@ L2549:
 	ld bc,6
 	ldirb
 	pop xwa
-L2551:
+L2619:
 	inc 1,izl
-L2552:
+L2620:
 	ld a,izl
 	add a,ixl
 	cp a,(_track_len)
-	jr ult,L2549
-L2550:
+	jr ult,L2617
+L2618:
 	ld a,(_track_len)
 	sub a,ixl
 	ld (_track_len),a
 	ld a,(_fork_choice)
 	cp a,2
-	jr nz,L2553
+	jr nz,L2621
 	incb 1,(_cur_branch)
-L2553:
+L2621:
 	incb 1,(_cur_stage)
 	ld a,(_cur_branch)
 	ld xbc,_route_hist
@@ -12334,15 +12717,15 @@ L2553:
 	ld (_n_cur__18),a
 	ld a,(_n_cur__18)
 	cp a,(_track_len)
-	jr ult,L2554
+	jr ult,L2622
 	ld a,(_track_len)
 	sub a,1
 	ld (_n_cur__18),a
-L2554:
+L2622:
 	ldw (_leg_len),0
 	ld izl,0
-	jr L2558
-L2555:
+	jr L2626
+L2623:
 	ld wa,(_leg_len)
 	ld xbc,_buf__18
 	ld e,izl
@@ -12352,17 +12735,17 @@ L2555:
 	ld bc,(xbc)
 	add wa,bc
 	ld (_leg_len),wa
-L2557:
+L2625:
 	inc 1,izl
-L2558:
+L2626:
 	ld a,izl
 	cp a,(_n_cur__18)
-	jr ult,L2555
-L2556:
+	jr ult,L2623
+L2624:
 	ldb (_fork_choice),0
 	ld a,ixl
-	jr L2546
-L2546:
+	jr L2614
+L2614:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -12399,7 +12782,7 @@ _course_debug_leg:
 	push xix
 	call _load_current__18
 	pop xix
-L2560:
+L2628:
 	pop xiz
 	ret
 
@@ -12411,8 +12794,8 @@ _rnd__19:
 	ld (_seed__19),wa
 	ld wa,(_seed__19)
 	srl 8,wa
-	jr L2562
-L2562:
+	jr L2630
+L2630:
 	ret
 
 ; function ending_start
@@ -12421,9 +12804,9 @@ _ending_start:
 	lda xsp,(xsp-8)
 	ld a,(xsp+16)
 	cp a,5
-	jr ule,L2574
+	jr ule,L2642
 	ldb (xsp+16),5
-L2574:
+L2642:
 	ld xwa,_endings__19
 	ld c,(xsp+16)
 	extz bc
@@ -12433,8 +12816,8 @@ L2574:
 	lda xwa,(xwa)
 	ld (xsp+0),xwa
 	ldw (xsp+4),0
-	jr L2578
-L2575:
+	jr L2646
+L2643:
 	ld xwa,_gfx_particle_tiles
 	ld bc,(xsp+4)
 	extz xbc
@@ -12447,13 +12830,13 @@ L2575:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2577:
+L2645:
 	incw 1,(xsp+4)
-L2578:
+L2646:
 	ld wa,(xsp+4)
 	cp wa,24
-	jr ult,L2575
-L2576:
+	jr ult,L2643
+L2644:
 	ld xwa,(xsp+0)
 	lda xwa,(xwa+8)
 	ld wa,(xwa+4)
@@ -12553,8 +12936,8 @@ L2576:
 	ld (_fx__19),a
 	ldb (_timer__19),0
 	ld izl,0
-	jr L2582
-L2579:
+	jr L2650
+L2647:
 	ld a,0
 	ld xbc,_life__19
 	ld e,izl
@@ -12588,29 +12971,29 @@ L2579:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2581:
+L2649:
 	inc 1,izl
-L2582:
+L2650:
 	ld a,izl
 	cp a,14
-	jr ult,L2579
-L2580:
-L2573:
+	jr ult,L2647
+L2648:
+L2641:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
 
 ; function pal_of
 _pal_of__19:
-	ld xwa,_pals__19_L2586
+	ld xwa,_pals__19_L2654
 	ld c,(xsp+4)
 	extz bc
 	and bc,3
 	extz xbc
 	add xwa,xbc
 	ld a,(xwa)
-	jr L2585
-L2585:
+	jr L2653
+L2653:
 	ret
 
 ; function ending_tick
@@ -12620,14 +13003,14 @@ _ending_tick:
 	incb 1,(_timer__19)
 	ld a,(_fx__19)
 	cp a,1
-	jp nz,L2624
+	jp nz,L2692
 	ld a,(_timer__19)
 	extz wa
 	extz xwa
 	div xwa,40
 	ld wa,qwa
 	cp wa,1
-	jp nz,L2624
+	jp nz,L2692
 	ld wa,24
 	push xwa
 	call _rnd__19
@@ -12658,19 +13041,19 @@ _ending_tick:
 	lda xsp,(xsp+4)
 	ld (xsp+6),a
 	ld izl,0
-	jp L2628
-L2625:
+	jp L2696
+L2693:
 	ld a,izl
 	and a,7
 	ld (xsp+7),a
 	ld c,izl
 	cp c,8
-	jr uge,L2629
+	jr uge,L2697
 	ld wa,2
-	jr L2630
-L2629:
+	jr L2698
+L2697:
 	ld wa,1
-L2630:
+L2698:
 	ld (xsp+8),wa
 	ld wa,(xsp+2)
 	ld xbc,_px__19
@@ -12739,32 +13122,32 @@ L2630:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2627:
+L2695:
 	inc 1,izl
-L2628:
+L2696:
 	ld a,izl
 	cp a,14
-	jp ult,L2625
-L2626:
-L2624:
+	jp ult,L2693
+L2694:
+L2692:
 	ld izl,0
-	jp L2634
-L2631:
+	jp L2702
+L2699:
 	ld a,56
 	add a,izl
 	ld (xsp+1),a
 	ld a,(_fx__19)
 	extz wa
 	cp wa,1
-	jr z,L2636
+	jr z,L2704
 	cp wa,2
-	jp z,L2637
+	jp z,L2705
 	cp wa,3
-	jp z,L2638
+	jp z,L2706
 	cp wa,4
-	jp z,L2639
-	jp L2640
-L2636:
+	jp z,L2707
+	jp L2708
+L2704:
 	ld xwa,_life__19
 	ld c,izl
 	extz bc
@@ -12772,7 +13155,7 @@ L2636:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jp z,L2641
+	jp z,L2709
 	ld xbc,_life__19
 	ld e,izl
 	extz de
@@ -12840,9 +13223,9 @@ L2636:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2641:
-	jp L2635
-L2637:
+L2709:
+	jp L2703
+L2705:
 	ld xwa,_life__19
 	ld c,izl
 	extz bc
@@ -12850,7 +13233,7 @@ L2637:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L2643
+	jr z,L2711
 	ld xwa,_py__19
 	ld c,izl
 	extz bc
@@ -12859,8 +13242,8 @@ L2637:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,2400
-	jp le,L2642
-L2643:
+	jp le,L2710
+L2711:
 	call _rnd__19
 	extz wa
 	extz xwa
@@ -12925,7 +13308,7 @@ L2643:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2642:
+L2710:
 	ld xwa,_py__19
 	ld c,izl
 	extz bc
@@ -12963,12 +13346,12 @@ L2642:
 	add de,hl
 	and de,32
 	cp de,0
-	jr z,L2644
+	jr z,L2712
 	ld bc,6
-	jr L2645
-L2644:
+	jr L2713
+L2712:
 	ld bc,65530
-L2645:
+L2713:
 	add wa,bc
 	ld xbc,_px__19
 	ld e,izl
@@ -12977,8 +13360,8 @@ L2645:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	jp L2635
-L2638:
+	jp L2703
+L2706:
 	ld xwa,_life__19
 	ld c,izl
 	extz bc
@@ -12986,7 +13369,7 @@ L2638:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L2647
+	jr z,L2715
 	ld xwa,_py__19
 	ld c,izl
 	extz bc
@@ -12995,8 +13378,8 @@ L2638:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,65408
-	jp ge,L2646
-L2647:
+	jp ge,L2714
+L2715:
 	ld wa,8
 	push xwa
 	call _rnd__19
@@ -13071,7 +13454,7 @@ L2647:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2646:
+L2714:
 	ld xwa,_py__19
 	ld c,izl
 	extz bc
@@ -13109,12 +13492,12 @@ L2646:
 	add de,hl
 	and de,64
 	cp de,0
-	jr z,L2648
+	jr z,L2716
 	ld bc,3
-	jr L2649
-L2648:
+	jr L2717
+L2716:
 	ld bc,65533
-L2649:
+L2717:
 	add wa,bc
 	ld xbc,_px__19
 	ld e,izl
@@ -13123,8 +13506,8 @@ L2649:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	jp L2635
-L2639:
+	jp L2703
+L2707:
 	ld xwa,_life__19
 	ld c,izl
 	extz bc
@@ -13132,7 +13515,7 @@ L2639:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jp nz,L2650
+	jp nz,L2718
 	call _rnd__19
 	extz wa
 	extz xwa
@@ -13177,12 +13560,12 @@ L2639:
 	extz bc
 	and bc,1
 	cp bc,0
-	jr z,L2651
+	jr z,L2719
 	ld wa,2
-	jr L2652
-L2651:
+	jr L2720
+L2719:
 	ld wa,9
-L2652:
+L2720:
 	ld xbc,_ppal__19
 	ld e,izl
 	extz de
@@ -13196,8 +13579,8 @@ L2652:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-	jr L2653
-L2650:
+	jr L2721
+L2718:
 	ld xbc,_life__19
 	ld e,izl
 	extz de
@@ -13206,11 +13589,11 @@ L2650:
 	ld a,(xbc)
 	dec 1,a
 	ld (xbc),a
-L2653:
-	jr L2635
-L2640:
-	jr L2635
-L2635:
+L2721:
+	jr L2703
+L2708:
+	jr L2703
+L2703:
 	ld xwa,_life__19
 	ld c,izl
 	extz bc
@@ -13218,7 +13601,7 @@ L2635:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jp z,L2655
+	jp z,L2723
 	ld xwa,_px__19
 	ld c,izl
 	extz bc
@@ -13227,7 +13610,7 @@ L2635:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,65424
-	jr lt,L2655
+	jr lt,L2723
 	ld xwa,_px__19
 	ld c,izl
 	extz bc
@@ -13236,7 +13619,7 @@ L2635:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,2544
-	jr gt,L2655
+	jr gt,L2723
 	ld xwa,_py__19
 	ld c,izl
 	extz bc
@@ -13245,7 +13628,7 @@ L2635:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,65424
-	jr lt,L2655
+	jr lt,L2723
 	ld xwa,_py__19
 	ld c,izl
 	extz bc
@@ -13254,10 +13637,10 @@ L2635:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,2416
-	jr gt,L2655
+	jr gt,L2723
 	ld a,(_fx__19)
 	cp a,4
-	jr nz,L2654
+	jr nz,L2722
 	ld xwa,_life__19
 	ld c,izl
 	extz bc
@@ -13267,8 +13650,8 @@ L2635:
 	extz wa
 	and wa,4
 	cp wa,0
-	jr z,L2654
-L2655:
+	jr z,L2722
+L2723:
 	ld a,(xsp+1)
 	add a,1
 	push xwa
@@ -13276,9 +13659,9 @@ L2655:
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-	jp L2633
-L2654:
-L2656:
+	jp L2701
+L2722:
+L2724:
 	ld a,(xsp+1)
 	ld (xsp+2),a
 	ld xwa,_px__19
@@ -13355,16 +13738,16 @@ L2656:
 	add bc,de
 	extz xbc
 	ld (xbc),a
-L2658:
-L2657:
-L2633:
+L2726:
+L2725:
+L2701:
 	inc 1,izl
-L2634:
+L2702:
 	ld a,izl
 	cp a,14
-	jp ult,L2631
-L2632:
-L2623:
+	jp ult,L2699
+L2700:
+L2691:
 	lda xsp,(xsp+14)
 	pop xiz
 	ret
@@ -13378,7 +13761,7 @@ _ending_stop:
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
 	ldb (_fx__19),0
-L2660:
+L2728:
 	ret
 
 ; function dma0_program
@@ -13391,7 +13774,7 @@ _dma0_program__20:
 	push xwa
 	call _dma0_program_asm
 	lda xsp,(xsp+12)
-L2662:
+L2730:
 	ret
 
 ; function dma1_program
@@ -13404,7 +13787,7 @@ _dma1_program__20:
 	push xwa
 	call _dma1_program_asm
 	lda xsp,(xsp+12)
-L2664:
+L2732:
 	ret
 
 ; function dma2_program
@@ -13417,7 +13800,7 @@ _dma2_program__20:
 	push xwa
 	call _dma2_program_asm
 	lda xsp,(xsp+12)
-L2666:
+L2734:
 	ret
 
 ; function dma3_program
@@ -13430,7 +13813,7 @@ _dma3_program__20:
 	push xwa
 	call _dma3_program_asm
 	lda xsp,(xsp+12)
-L2668:
+L2736:
 	ret
 
 ; function dma0_program_u16
@@ -13443,7 +13826,7 @@ _dma0_program_u16__20:
 	push xwa
 	call _dma0_program_u16_asm
 	lda xsp,(xsp+12)
-L2670:
+L2738:
 	ret
 
 ; function dma1_program_u16
@@ -13456,7 +13839,7 @@ _dma1_program_u16__20:
 	push xwa
 	call _dma1_program_u16_asm
 	lda xsp,(xsp+12)
-L2672:
+L2740:
 	ret
 
 ; function dma2_program_u16
@@ -13469,7 +13852,7 @@ _dma2_program_u16__20:
 	push xwa
 	call _dma2_program_u16_asm
 	lda xsp,(xsp+12)
-L2674:
+L2742:
 	ret
 
 ; function dma3_program_u16
@@ -13482,7 +13865,7 @@ _dma3_program_u16__20:
 	push xwa
 	call _dma3_program_u16_asm
 	lda xsp,(xsp+12)
-L2676:
+L2744:
 	ret
 
 ; function dma0_program_u32
@@ -13495,7 +13878,7 @@ _dma0_program_u32__20:
 	push xwa
 	call _dma0_program_u32_asm
 	lda xsp,(xsp+12)
-L2678:
+L2746:
 	ret
 
 ; function dma1_program_u32
@@ -13508,7 +13891,7 @@ _dma1_program_u32__20:
 	push xwa
 	call _dma1_program_u32_asm
 	lda xsp,(xsp+12)
-L2680:
+L2748:
 	ret
 
 ; function dma2_program_u32
@@ -13521,7 +13904,7 @@ _dma2_program_u32__20:
 	push xwa
 	call _dma2_program_u32_asm
 	lda xsp,(xsp+12)
-L2682:
+L2750:
 	ret
 
 ; function dma3_program_u32
@@ -13534,7 +13917,7 @@ _dma3_program_u32__20:
 	push xwa
 	call _dma3_program_u32_asm
 	lda xsp,(xsp+12)
-L2684:
+L2752:
 	ret
 
 ; function dma0_clear
@@ -13543,7 +13926,7 @@ _dma0_clear__20:
 	ldc dmac0,wa
 	ld a,0
 	ldc dmam0,a
-L2686:
+L2754:
 	ret
 
 ; function dma1_clear
@@ -13552,7 +13935,7 @@ _dma1_clear__20:
 	ldc dmac1,wa
 	ld a,0
 	ldc dmam1,a
-L2688:
+L2756:
 	ret
 
 ; function dma2_clear
@@ -13561,7 +13944,7 @@ _dma2_clear__20:
 	ldc dmac2,wa
 	ld a,0
 	ldc dmam2,a
-L2690:
+L2758:
 	ret
 
 ; function dma3_clear
@@ -13570,7 +13953,7 @@ _dma3_clear__20:
 	ldc dmac3,wa
 	ld a,0
 	ldc dmam3,a
-L2692:
+L2760:
 	ret
 
 ; function dma_set_start_vector
@@ -13581,32 +13964,32 @@ _dma_set_start_vector__20:
 	ld a,(xsp+8)
 	extz wa
 	cp wa,0
-	jr z,L2701
+	jr z,L2769
 	cp wa,1
-	jr z,L2702
+	jr z,L2770
 	cp wa,2
-	jr z,L2703
+	jr z,L2771
 	cp wa,3
-	jr z,L2704
-	jr L2700
-L2701:
+	jr z,L2772
+	jr L2768
+L2769:
 	ld a,izl
 	ld (07Ch),a
-	jr L2700
-L2702:
+	jr L2768
+L2770:
 	ld a,izl
 	ld (07Dh),a
-	jr L2700
-L2703:
+	jr L2768
+L2771:
 	ld a,izl
 	ld (07Eh),a
-	jr L2700
-L2704:
+	jr L2768
+L2772:
 	ld a,izl
 	ld (07Fh),a
-	jr L2700
-L2700:
-L2699:
+	jr L2768
+L2768:
+L2767:
 	pop xiz
 	ret
 
@@ -13615,14 +13998,14 @@ _dma_rearm_in_isr__20:
 	push xiz
 	ld a,(xsp+8)
 	ld izl,a
-	jr L2730
-	jp L2729
-L2730:
+	jr L2798
+	jp L2797
+L2798:
 	ld a,izl
 	cp a,3
-	jr ule,L2731
-	jp L2729
-L2731:
+	jr ule,L2799
+	jp L2797
+L2799:
 	ld xwa,_s_rearm_enabled__20
 	ld c,izl
 	extz bc
@@ -13630,9 +14013,9 @@ L2731:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr nz,L2732
-	jp L2729
-L2732:
+	jr nz,L2800
+	jp L2797
+L2800:
 	ld wa,0
 	push xwa
 	ld a,izl
@@ -13647,26 +14030,26 @@ L2732:
 	ld a,(xwa)
 	extz wa
 	cp wa,0
-	jr z,L2735
+	jr z,L2803
 	cp wa,1
-	jp z,L2736
+	jp z,L2804
 	cp wa,2
-	jp z,L2737
-	jr L2734
-L2734:
-L2735:
+	jp z,L2805
+	jr L2802
+L2802:
+L2803:
 	ld a,izl
 	extz wa
 	cp wa,0
-	jr z,L2739
+	jr z,L2807
 	cp wa,1
-	jr z,L2740
+	jr z,L2808
 	cp wa,2
-	jp z,L2741
+	jp z,L2809
 	cp wa,3
-	jp z,L2742
-	jp L2738
-L2739:
+	jp z,L2810
+	jp L2806
+L2807:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
@@ -13693,8 +14076,8 @@ L2739:
 	push xwa
 	call _dma0_program__20
 	lda xsp,(xsp+12)
-	jp L2738
-L2740:
+	jp L2806
+L2808:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
@@ -13721,8 +14104,8 @@ L2740:
 	push xwa
 	call _dma1_program__20
 	lda xsp,(xsp+12)
-	jp L2738
-L2741:
+	jp L2806
+L2809:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
@@ -13749,8 +14132,8 @@ L2741:
 	push xwa
 	call _dma2_program__20
 	lda xsp,(xsp+12)
-	jr L2738
-L2742:
+	jr L2806
+L2810:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
@@ -13777,22 +14160,22 @@ L2742:
 	push xwa
 	call _dma3_program__20
 	lda xsp,(xsp+12)
-	jr L2738
-L2738:
-	jp L2733
-L2736:
+	jr L2806
+L2806:
+	jp L2801
+L2804:
 	ld a,izl
 	extz wa
 	cp wa,0
-	jr z,L2744
+	jr z,L2812
 	cp wa,1
-	jr z,L2745
+	jr z,L2813
 	cp wa,2
-	jp z,L2746
+	jp z,L2814
 	cp wa,3
-	jp z,L2747
-	jp L2743
-L2744:
+	jp z,L2815
+	jp L2811
+L2812:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
@@ -13819,8 +14202,8 @@ L2744:
 	push xwa
 	call _dma0_program_u16__20
 	lda xsp,(xsp+12)
-	jp L2743
-L2745:
+	jp L2811
+L2813:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
@@ -13847,8 +14230,8 @@ L2745:
 	push xwa
 	call _dma1_program_u16__20
 	lda xsp,(xsp+12)
-	jp L2743
-L2746:
+	jp L2811
+L2814:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
@@ -13875,8 +14258,8 @@ L2746:
 	push xwa
 	call _dma2_program_u16__20
 	lda xsp,(xsp+12)
-	jr L2743
-L2747:
+	jr L2811
+L2815:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
@@ -13903,22 +14286,22 @@ L2747:
 	push xwa
 	call _dma3_program_u16__20
 	lda xsp,(xsp+12)
-	jr L2743
-L2743:
-	jp L2733
-L2737:
+	jr L2811
+L2811:
+	jp L2801
+L2805:
 	ld a,izl
 	extz wa
 	cp wa,0
-	jr z,L2749
+	jr z,L2817
 	cp wa,1
-	jr z,L2750
+	jr z,L2818
 	cp wa,2
-	jp z,L2751
+	jp z,L2819
 	cp wa,3
-	jp z,L2752
-	jp L2748
-L2749:
+	jp z,L2820
+	jp L2816
+L2817:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
@@ -13945,8 +14328,8 @@ L2749:
 	push xwa
 	call _dma0_program_u32__20
 	lda xsp,(xsp+12)
-	jp L2748
-L2750:
+	jp L2816
+L2818:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
@@ -13973,8 +14356,8 @@ L2750:
 	push xwa
 	call _dma1_program_u32__20
 	lda xsp,(xsp+12)
-	jp L2748
-L2751:
+	jp L2816
+L2819:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
@@ -14001,8 +14384,8 @@ L2751:
 	push xwa
 	call _dma2_program_u32__20
 	lda xsp,(xsp+12)
-	jr L2748
-L2752:
+	jr L2816
+L2820:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
@@ -14029,10 +14412,10 @@ L2752:
 	push xwa
 	call _dma3_program_u32__20
 	lda xsp,(xsp+12)
-	jr L2748
-L2748:
-	jr L2733
-L2733:
+	jr L2816
+L2816:
+	jr L2801
+L2801:
 	ld xwa,_s_rearm_vector__20
 	ld c,izl
 	extz bc
@@ -14044,7 +14427,7 @@ L2733:
 	push xwa
 	call _dma_set_start_vector__20
 	lda xsp,(xsp+8)
-L2729:
+L2797:
 	pop xiz
 	ret
 
@@ -14057,23 +14440,23 @@ _isr_dma0_inttc__20:
 	push xix
 	push xiy
 	push xiz
-	jr L2758
+	jr L2826
 	ldb (_s_done_flag__20),1
-L2758:
+L2826:
 	ld wa,0
 	push xwa
 	call _dma_rearm_in_isr__20
 	lda xsp,(xsp+4)
-	jr L2759
+	jr L2827
 	ld xwa,(_s_done_cb__20)
 	cp xwa,0
-	jr z,L2760
+	jr z,L2828
 	ld xwa,(_s_done_cb__20)
 	ld xhl,xwa
 	call (xhl)
-L2760:
-L2759:
-L2757:
+L2828:
+L2827:
+L2825:
 	pop xiz
 	pop xiy
 	pop xix
@@ -14092,23 +14475,23 @@ _isr_dma1_inttc__20:
 	push xix
 	push xiy
 	push xiz
-	jr L2766
+	jr L2834
 	ldb (_s_done_flag__20+1),1
-L2766:
+L2834:
 	ld wa,1
 	push xwa
 	call _dma_rearm_in_isr__20
 	lda xsp,(xsp+4)
-	jr L2767
+	jr L2835
 	ld xwa,(_s_done_cb__20+4)
 	cp xwa,0
-	jr z,L2768
+	jr z,L2836
 	ld xwa,(_s_done_cb__20+4)
 	ld xhl,xwa
 	call (xhl)
-L2768:
-L2767:
-L2765:
+L2836:
+L2835:
+L2833:
 	pop xiz
 	pop xiy
 	pop xix
@@ -14127,23 +14510,23 @@ _isr_dma2_inttc__20:
 	push xix
 	push xiy
 	push xiz
-	jr L2774
+	jr L2842
 	ldb (_s_done_flag__20+2),1
-L2774:
+L2842:
 	ld wa,2
 	push xwa
 	call _dma_rearm_in_isr__20
 	lda xsp,(xsp+4)
-	jr L2775
+	jr L2843
 	ld xwa,(_s_done_cb__20+8)
 	cp xwa,0
-	jr z,L2776
+	jr z,L2844
 	ld xwa,(_s_done_cb__20+8)
 	ld xhl,xwa
 	call (xhl)
-L2776:
-L2775:
-L2773:
+L2844:
+L2843:
+L2841:
 	pop xiz
 	pop xiy
 	pop xix
@@ -14162,23 +14545,23 @@ _isr_dma3_inttc__20:
 	push xix
 	push xiy
 	push xiz
-	jr L2782
+	jr L2850
 	ldb (_s_done_flag__20+3),1
-L2782:
+L2850:
 	ld wa,3
 	push xwa
 	call _dma_rearm_in_isr__20
 	lda xsp,(xsp+4)
-	jr L2783
+	jr L2851
 	ld xwa,(_s_done_cb__20+12)
 	cp xwa,0
-	jr z,L2784
+	jr z,L2852
 	ld xwa,(_s_done_cb__20+12)
 	ld xhl,xwa
 	call (xhl)
-L2784:
-L2783:
-L2781:
+L2852:
+L2851:
+L2849:
 	pop xiz
 	pop xiy
 	pop xix
@@ -14194,28 +14577,28 @@ _dma_start_common__20:
 	ld iz,(xsp+20)
 	ld a,(xsp+8)
 	cp a,3
-	jr ule,L2811
-	jp L2810
-L2811:
+	jr ule,L2879
+	jp L2878
+L2879:
 	ld xwa,(xsp+12)
 	cp xwa,0
-	jr z,L2813
+	jr z,L2881
 	ld xwa,(xsp+16)
 	cp xwa,0
-	jr nz,L2812
-L2813:
-	jp L2810
-L2812:
+	jr nz,L2880
+L2881:
+	jp L2878
+L2880:
 	ld wa,iz
 	cp wa,0
-	jr nz,L2814
-	jp L2810
-L2814:
+	jr nz,L2882
+	jp L2878
+L2882:
 	ld a,(xsp+24)
 	cp a,11
-	jr nz,L2815
-	jp L2810
-L2815:
+	jr nz,L2883
+	jp L2878
+L2883:
 	ld a,0
 	ld xbc,_s_done_flag__20
 	ld e,(xsp+8)
@@ -14238,25 +14621,25 @@ L2815:
 	lda xsp,(xsp+8)
 	ld wa,(xsp+28)
 	cp wa,0
-	jr z,L2817
+	jr z,L2885
 	cp wa,1
-	jr z,L2818
+	jr z,L2886
 	cp wa,2
-	jp z,L2819
-	jp L2816
-L2817:
+	jp z,L2887
+	jp L2884
+L2885:
 	ld a,(xsp+8)
 	extz wa
 	cp wa,0
-	jr z,L2821
+	jr z,L2889
 	cp wa,1
-	jr z,L2822
+	jr z,L2890
 	cp wa,2
-	jr z,L2823
+	jr z,L2891
 	cp wa,3
-	jr z,L2824
-	jr L2820
-L2821:
+	jr z,L2892
+	jr L2888
+L2889:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -14265,8 +14648,8 @@ L2821:
 	push xwa
 	call _dma0_program__20
 	lda xsp,(xsp+12)
-	jr L2820
-L2822:
+	jr L2888
+L2890:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -14275,8 +14658,8 @@ L2822:
 	push xwa
 	call _dma1_program__20
 	lda xsp,(xsp+12)
-	jr L2820
-L2823:
+	jr L2888
+L2891:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -14285,8 +14668,8 @@ L2823:
 	push xwa
 	call _dma2_program__20
 	lda xsp,(xsp+12)
-	jr L2820
-L2824:
+	jr L2888
+L2892:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -14295,22 +14678,22 @@ L2824:
 	push xwa
 	call _dma3_program__20
 	lda xsp,(xsp+12)
-	jr L2820
-L2820:
-	jp L2816
-L2818:
+	jr L2888
+L2888:
+	jp L2884
+L2886:
 	ld a,(xsp+8)
 	extz wa
 	cp wa,0
-	jr z,L2826
+	jr z,L2894
 	cp wa,1
-	jr z,L2827
+	jr z,L2895
 	cp wa,2
-	jr z,L2828
+	jr z,L2896
 	cp wa,3
-	jr z,L2829
-	jr L2825
-L2826:
+	jr z,L2897
+	jr L2893
+L2894:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -14319,8 +14702,8 @@ L2826:
 	push xwa
 	call _dma0_program_u16__20
 	lda xsp,(xsp+12)
-	jr L2825
-L2827:
+	jr L2893
+L2895:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -14329,8 +14712,8 @@ L2827:
 	push xwa
 	call _dma1_program_u16__20
 	lda xsp,(xsp+12)
-	jr L2825
-L2828:
+	jr L2893
+L2896:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -14339,8 +14722,8 @@ L2828:
 	push xwa
 	call _dma2_program_u16__20
 	lda xsp,(xsp+12)
-	jr L2825
-L2829:
+	jr L2893
+L2897:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -14349,22 +14732,22 @@ L2829:
 	push xwa
 	call _dma3_program_u16__20
 	lda xsp,(xsp+12)
-	jr L2825
-L2825:
-	jr L2816
-L2819:
+	jr L2893
+L2893:
+	jr L2884
+L2887:
 	ld a,(xsp+8)
 	extz wa
 	cp wa,0
-	jr z,L2831
+	jr z,L2899
 	cp wa,1
-	jr z,L2832
+	jr z,L2900
 	cp wa,2
-	jr z,L2833
+	jr z,L2901
 	cp wa,3
-	jr z,L2834
-	jr L2830
-L2831:
+	jr z,L2902
+	jr L2898
+L2899:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -14373,8 +14756,8 @@ L2831:
 	push xwa
 	call _dma0_program_u32__20
 	lda xsp,(xsp+12)
-	jr L2830
-L2832:
+	jr L2898
+L2900:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -14383,8 +14766,8 @@ L2832:
 	push xwa
 	call _dma1_program_u32__20
 	lda xsp,(xsp+12)
-	jr L2830
-L2833:
+	jr L2898
+L2901:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -14393,8 +14776,8 @@ L2833:
 	push xwa
 	call _dma2_program_u32__20
 	lda xsp,(xsp+12)
-	jr L2830
-L2834:
+	jr L2898
+L2902:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -14403,17 +14786,17 @@ L2834:
 	push xwa
 	call _dma3_program_u32__20
 	lda xsp,(xsp+12)
-	jr L2830
-L2830:
-	jr L2816
-L2816:
+	jr L2898
+L2898:
+	jr L2884
+L2884:
 	ld a,(xsp+24)
 	push xwa
 	ld a,(xsp+12)
 	push xwa
 	call _dma_set_start_vector__20
 	lda xsp,(xsp+8)
-L2810:
+L2878:
 	pop xiz
 	ret
 
@@ -14422,8 +14805,8 @@ _ngpc_dma_init:
 	push xiz
 	lda xsp,(xsp-2)
 	ld izl,0
-	jp L2845
-L2842:
+	jp L2913
+L2910:
 	ld xwa,0
 	ld xbc,_s_done_cb__20
 	ld e,izl
@@ -14491,13 +14874,13 @@ L2842:
 	sll 2,xde
 	add xbc,xde
 	ld (xbc),xwa
-L2844:
+L2912:
 	inc 1,izl
-L2845:
+L2913:
 	ld a,izl
 	cp a,4
-	jp ult,L2842
-L2843:
+	jp ult,L2910
+L2911:
 	ld xwa,_isr_dma0_inttc__20
 	ld (06FF0h),xwa
 	ld xwa,_isr_dma1_inttc__20
@@ -14508,8 +14891,8 @@ L2843:
 	ld (06FFCh),xwa
 	ldb (079h),153
 	ldb (07Ah),153
-L2846:
-L2841:
+L2914:
+L2909:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -14530,7 +14913,7 @@ _ngpc_dma_start_table_u8:
 	push xwa
 	call _dma_start_common__20
 	lda xsp,(xsp+24)
-L2848:
+L2916:
 	ret
 
 ; function ngpc_dma_start_table_u16
@@ -14549,7 +14932,7 @@ _ngpc_dma_start_table_u16:
 	push xwa
 	call _dma_start_common__20
 	lda xsp,(xsp+24)
-L2850:
+L2918:
 	ret
 
 ; function ngpc_dma_start_table_u32
@@ -14568,7 +14951,7 @@ _ngpc_dma_start_table_u32:
 	push xwa
 	call _dma_start_common__20
 	lda xsp,(xsp+24)
-L2852:
+L2920:
 	ret
 
 ; function ngpc_dma_link_hblank
@@ -14585,7 +14968,7 @@ _ngpc_dma_link_hblank:
 	push xwa
 	call _ngpc_dma_start_table_u8
 	lda xsp,(xsp+20)
-L2854:
+L2922:
 	ret
 
 ; function ngpc_dma_link_vblank
@@ -14602,7 +14985,7 @@ _ngpc_dma_link_vblank:
 	push xwa
 	call _ngpc_dma_start_table_u8
 	lda xsp,(xsp+20)
-L2856:
+L2924:
 	ret
 
 ; function ngpc_dma_link_hblank_u16
@@ -14619,7 +15002,7 @@ _ngpc_dma_link_hblank_u16:
 	push xwa
 	call _ngpc_dma_start_table_u16
 	lda xsp,(xsp+20)
-L2858:
+L2926:
 	ret
 
 ; function ngpc_dma_link_hblank_u32
@@ -14636,7 +15019,7 @@ _ngpc_dma_link_hblank_u32:
 	push xwa
 	call _ngpc_dma_start_table_u32
 	lda xsp,(xsp+20)
-L2860:
+L2928:
 	ret
 
 ; function ngpc_dma_timer0_hblank_enable
@@ -14645,7 +15028,7 @@ _ngpc_dma_timer0_hblank_enable:
 	push xwa
 	call _ngpc_dma_timer0_hblank_enable_treg0
 	lda xsp,(xsp+4)
-L2862:
+L2930:
 	ret
 
 ; function ngpc_dma_timer0_hblank_enable_treg0
@@ -14654,13 +15037,13 @@ _ngpc_dma_timer0_hblank_enable_treg0:
 	ld a,(xsp+4)
 	ld (022h),a
 	orb (020h),1
-L2864:
+L2932:
 	ret
 
 ; function ngpc_dma_timer0_hblank_disable
 _ngpc_dma_timer0_hblank_disable:
 	andb (020h),254
-L2866:
+L2934:
 	ret
 
 ; function ngpc_dma_timer01_hblank_enable
@@ -14669,13 +15052,13 @@ _ngpc_dma_timer01_hblank_enable:
 	ldb (022h),1
 	ldb (023h),1
 	orb (020h),3
-L2868:
+L2936:
 	ret
 
 ; function ngpc_dma_timer01_hblank_disable
 _ngpc_dma_timer01_hblank_disable:
 	andb (020h),252
-L2870:
+L2938:
 	ret
 
 ; function ngpc_dma_timer1_from_timer0_enable
@@ -14684,7 +15067,7 @@ _ngpc_dma_timer1_from_timer0_enable:
 	push xwa
 	call _ngpc_dma_timer1_from_timer0_enable_treg1
 	lda xsp,(xsp+4)
-L2872:
+L2940:
 	ret
 
 ; function ngpc_dma_timer1_from_timer0_enable_treg1
@@ -14693,13 +15076,13 @@ _ngpc_dma_timer1_from_timer0_enable_treg1:
 	ld a,(xsp+4)
 	ld (023h),a
 	orb (020h),2
-L2874:
+L2942:
 	ret
 
 ; function ngpc_dma_timer1_disable
 _ngpc_dma_timer1_disable:
 	andb (020h),253
-L2876:
+L2944:
 	ret
 
 ; function ngpc_dma_hblank_stream_begin
@@ -14708,9 +15091,9 @@ _ngpc_dma_hblank_stream_begin:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2880
-	jr L2879
-L2880:
+	jr nz,L2948
+	jr L2947
+L2948:
 	ld a,(xsp+12)
 	ld (xiz),a
 	ld xwa,(xsp+16)
@@ -14719,7 +15102,7 @@ L2880:
 	ld (xiz+6),xwa
 	ld wa,(xsp+24)
 	ld (xiz+10),wa
-L2879:
+L2947:
 	pop xiz
 	ret
 
@@ -14729,9 +15112,9 @@ _ngpc_dma_hblank_stream_rearm:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2884
-	jr L2883
-L2884:
+	jr nz,L2952
+	jr L2951
+L2952:
 	ld wa,16
 	push xwa
 	ld wa,(xiz+10)
@@ -14744,7 +15127,7 @@ L2884:
 	push xwa
 	call _ngpc_dma_start_table_u8
 	lda xsp,(xsp+20)
-L2883:
+L2951:
 	pop xiz
 	ret
 
@@ -14752,15 +15135,15 @@ L2883:
 _ngpc_dma_hblank_stream_end:
 	ld xwa,(xsp+4)
 	cp xwa,0
-	jr nz,L2888
-	jr L2887
-L2888:
+	jr nz,L2956
+	jr L2955
+L2956:
 	ld xwa,(xsp+4)
 	ld a,(xwa)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
-L2887:
+L2955:
 	ret
 
 ; function ngpc_dma_stream_begin_u8
@@ -14769,9 +15152,9 @@ _ngpc_dma_stream_begin_u8:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2892
-	jr L2891
-L2892:
+	jr nz,L2960
+	jr L2959
+L2960:
 	ld a,(xsp+12)
 	ld (xiz),a
 	ld xwa,(xsp+16)
@@ -14782,7 +15165,7 @@ L2892:
 	ld (xiz+10),wa
 	ld a,(xsp+28)
 	ld (xiz+12),a
-L2891:
+L2959:
 	pop xiz
 	ret
 
@@ -14792,9 +15175,9 @@ _ngpc_dma_stream_rearm_u8:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2896
-	jr L2895
-L2896:
+	jr nz,L2964
+	jr L2963
+L2964:
 	ld a,(xiz+12)
 	push xwa
 	ld wa,(xiz+10)
@@ -14807,7 +15190,7 @@ L2896:
 	push xwa
 	call _ngpc_dma_start_table_u8
 	lda xsp,(xsp+20)
-L2895:
+L2963:
 	pop xiz
 	ret
 
@@ -14815,15 +15198,15 @@ L2895:
 _ngpc_dma_stream_end_u8:
 	ld xwa,(xsp+4)
 	cp xwa,0
-	jr nz,L2900
-	jr L2899
-L2900:
+	jr nz,L2968
+	jr L2967
+L2968:
 	ld xwa,(xsp+4)
 	ld a,(xwa)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
-L2899:
+L2967:
 	ret
 
 ; function ngpc_dma_stream_begin_u16
@@ -14832,9 +15215,9 @@ _ngpc_dma_stream_begin_u16:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2904
-	jr L2903
-L2904:
+	jr nz,L2972
+	jr L2971
+L2972:
 	ld a,(xsp+12)
 	ld (xiz),a
 	ld xwa,(xsp+16)
@@ -14845,7 +15228,7 @@ L2904:
 	ld (xiz+10),wa
 	ld a,(xsp+28)
 	ld (xiz+12),a
-L2903:
+L2971:
 	pop xiz
 	ret
 
@@ -14855,9 +15238,9 @@ _ngpc_dma_stream_rearm_u16:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2908
-	jr L2907
-L2908:
+	jr nz,L2976
+	jr L2975
+L2976:
 	ld a,(xiz+12)
 	push xwa
 	ld wa,(xiz+10)
@@ -14870,7 +15253,7 @@ L2908:
 	push xwa
 	call _ngpc_dma_start_table_u16
 	lda xsp,(xsp+20)
-L2907:
+L2975:
 	pop xiz
 	ret
 
@@ -14878,15 +15261,15 @@ L2907:
 _ngpc_dma_stream_end_u16:
 	ld xwa,(xsp+4)
 	cp xwa,0
-	jr nz,L2912
-	jr L2911
-L2912:
+	jr nz,L2980
+	jr L2979
+L2980:
 	ld xwa,(xsp+4)
 	ld a,(xwa)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
-L2911:
+L2979:
 	ret
 
 ; function ngpc_dma_stream_begin_u32
@@ -14895,9 +15278,9 @@ _ngpc_dma_stream_begin_u32:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2916
-	jr L2915
-L2916:
+	jr nz,L2984
+	jr L2983
+L2984:
 	ld a,(xsp+12)
 	ld (xiz),a
 	ld xwa,(xsp+16)
@@ -14908,7 +15291,7 @@ L2916:
 	ld (xiz+10),wa
 	ld a,(xsp+28)
 	ld (xiz+12),a
-L2915:
+L2983:
 	pop xiz
 	ret
 
@@ -14918,9 +15301,9 @@ _ngpc_dma_stream_rearm_u32:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2920
-	jr L2919
-L2920:
+	jr nz,L2988
+	jr L2987
+L2988:
 	ld a,(xiz+12)
 	push xwa
 	ld wa,(xiz+10)
@@ -14933,7 +15316,7 @@ L2920:
 	push xwa
 	call _ngpc_dma_start_table_u32
 	lda xsp,(xsp+20)
-L2919:
+L2987:
 	pop xiz
 	ret
 
@@ -14941,15 +15324,15 @@ L2919:
 _ngpc_dma_stream_end_u32:
 	ld xwa,(xsp+4)
 	cp xwa,0
-	jr nz,L2924
-	jr L2923
-L2924:
+	jr nz,L2992
+	jr L2991
+L2992:
 	ld xwa,(xsp+4)
 	ld a,(xwa)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
-L2923:
+L2991:
 	ret
 
 ; function ngpc_dma_stop
@@ -14959,9 +15342,9 @@ _ngpc_dma_stop:
 	ld izl,a
 	ld a,izl
 	cp a,3
-	jr ule,L2933
-	jr L2932
-L2933:
+	jr ule,L3001
+	jr L3000
+L3001:
 	ld wa,0
 	push xwa
 	ld a,izl
@@ -14985,28 +15368,28 @@ L2933:
 	ld a,izl
 	extz wa
 	cp wa,0
-	jr z,L2935
+	jr z,L3003
 	cp wa,1
-	jr z,L2936
+	jr z,L3004
 	cp wa,2
-	jr z,L2937
+	jr z,L3005
 	cp wa,3
-	jr z,L2938
-	jr L2934
-L2935:
+	jr z,L3006
+	jr L3002
+L3003:
 	call _dma0_clear__20
-	jr L2934
-L2936:
+	jr L3002
+L3004:
 	call _dma1_clear__20
-	jr L2934
-L2937:
+	jr L3002
+L3005:
 	call _dma2_clear__20
-	jr L2934
-L2938:
+	jr L3002
+L3006:
 	call _dma3_clear__20
-	jr L2934
-L2934:
-L2932:
+	jr L3002
+L3002:
+L3000:
 	pop xiz
 	ret
 
@@ -15015,31 +15398,31 @@ _ngpc_dma_remaining:
 	ld a,(xsp+4)
 	extz wa
 	cp wa,0
-	jr z,L2948
+	jr z,L3016
 	cp wa,1
-	jr z,L2949
+	jr z,L3017
 	cp wa,2
-	jr z,L2950
+	jr z,L3018
 	cp wa,3
-	jr z,L2951
-	jr L2952
-L2948:
+	jr z,L3019
+	jr L3020
+L3016:
 	ldc wa,dmac0
-	jr L2946
-L2949:
+	jr L3014
+L3017:
 	ldc wa,dmac1
-	jr L2946
-L2950:
+	jr L3014
+L3018:
 	ldc wa,dmac2
-	jr L2946
-L2951:
+	jr L3014
+L3019:
 	ldc wa,dmac3
-	jr L2946
-L2952:
+	jr L3014
+L3020:
 	ld wa,0
-	jr L2946
-L2947:
-L2946:
+	jr L3014
+L3015:
+L3014:
 	ret
 
 ; function ngpc_dma_active
@@ -15052,23 +15435,23 @@ _ngpc_dma_active:
 	ld xbc,xwa
 	pop xwa
 	cp bc,0
-	jr z,L2957
+	jr z,L3025
 	ld wa,1
-	jr L2958
-L2957:
+	jr L3026
+L3025:
 	ld wa,0
-L2958:
-	jr L2956
-L2956:
+L3026:
+	jr L3024
+L3024:
 	ret
 
 ; function ngpc_dma_set_done_handler
 _ngpc_dma_set_done_handler:
 	ld a,(xsp+4)
 	cp a,3
-	jr ule,L2962
-	jr L2961
-L2962:
+	jr ule,L3030
+	jr L3029
+L3030:
 	ld xwa,(xsp+8)
 	ld xbc,_s_done_cb__20
 	ld e,(xsp+4)
@@ -15077,7 +15460,7 @@ L2962:
 	sll 2,xde
 	add xbc,xde
 	ld (xbc),xwa
-L2961:
+L3029:
 	ret
 
 ; function ngpc_dma_poll_done
@@ -15088,10 +15471,10 @@ _ngpc_dma_poll_done:
 	ld izl,a
 	ld a,izl
 	cp a,3
-	jr ule,L2968
+	jr ule,L3036
 	ld wa,0
-	jr L2967
-L2968:
+	jr L3035
+L3036:
 	ld xwa,_s_done_flag__20
 	ld c,izl
 	extz bc
@@ -15101,7 +15484,7 @@ L2968:
 	ld (xsp+0),a
 	ld a,(xsp+0)
 	cp a,0
-	jr z,L2969
+	jr z,L3037
 	ld a,0
 	ld xbc,_s_done_flag__20
 	ld e,izl
@@ -15117,8 +15500,8 @@ L2968:
 	add xbc,xde
 	ld (xbc),a
 	ld wa,1
-	jr L2967
-L2969:
+	jr L3035
+L3037:
 	ld xwa,_s_was_active__20
 	ld c,izl
 	extz bc
@@ -15126,13 +15509,13 @@ L2969:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L2970
+	jr z,L3038
 	ld a,izl
 	push xwa
 	call _ngpc_dma_remaining
 	lda xsp,(xsp+4)
 	cp wa,0
-	jr nz,L2970
+	jr nz,L3038
 	ld a,0
 	ld xbc,_s_was_active__20
 	ld e,izl
@@ -15141,11 +15524,11 @@ L2969:
 	add xbc,xde
 	ld (xbc),a
 	ld wa,1
-	jr L2967
-L2970:
+	jr L3035
+L3038:
 	ld wa,0
-	jr L2967
-L2967:
+	jr L3035
+L3035:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -15156,15 +15539,15 @@ _ngpc_dma_pp_init:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2974
-	jr L2973
-L2974:
+	jr nz,L3042
+	jr L3041
+L3042:
 	ld xwa,(xsp+12)
 	ld (xiz),xwa
 	ld wa,(xsp+16)
 	ld (xiz+4),wa
 	ldw (xiz+6),0
-L2973:
+L3041:
 	pop xiz
 	ret
 
@@ -15174,20 +15557,20 @@ _ngpc_dma_pp_front:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr z,L2980
+	jr z,L3048
 	ld xwa,(xiz)
 	cp xwa,0
-	jr nz,L2979
-L2980:
+	jr nz,L3047
+L3048:
 	ld xwa,0
-	jr L2978
-L2979:
+	jr L3046
+L3047:
 	ld xwa,(xiz)
 	ld bc,(xiz+6)
 	extz xbc
 	add xwa,xbc
-	jr L2978
-L2978:
+	jr L3046
+L3046:
 	pop xiz
 	ret
 
@@ -15197,21 +15580,21 @@ _ngpc_dma_pp_back:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr z,L2986
+	jr z,L3054
 	ld xwa,(xiz)
 	cp xwa,0
-	jr nz,L2985
-L2986:
+	jr nz,L3053
+L3054:
 	ld xwa,0
-	jr L2984
-L2985:
+	jr L3052
+L3053:
 	ld xwa,(xiz)
 	ld bc,(xiz+6)
 	xor bc,(xiz+4)
 	extz xbc
 	add xwa,xbc
-	jr L2984
-L2984:
+	jr L3052
+L3052:
 	pop xiz
 	ret
 
@@ -15221,13 +15604,13 @@ _ngpc_dma_pp_swap:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2990
-	jr L2989
-L2990:
+	jr nz,L3058
+	jr L3057
+L3058:
 	ld wa,(xiz+6)
 	xor wa,(xiz+4)
 	ld (xiz+6),wa
-L2989:
+L3057:
 	pop xiz
 	ret
 
@@ -15238,9 +15621,9 @@ _ngpc_dma_autorearm_begin_u8:
 	ld izl,a
 	ld a,izl
 	cp a,3
-	jr ule,L2994
-	jr L2993
-L2994:
+	jr ule,L3062
+	jr L3061
+L3062:
 	ld a,0
 	ld xbc,_s_rearm_elem__20
 	ld e,izl
@@ -15279,7 +15662,7 @@ L2994:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2993:
+L3061:
 	pop xiz
 	ret
 
@@ -15290,9 +15673,9 @@ _ngpc_dma_autorearm_begin_u16:
 	ld izl,a
 	ld a,izl
 	cp a,3
-	jr ule,L2998
-	jr L2997
-L2998:
+	jr ule,L3066
+	jr L3065
+L3066:
 	ld a,1
 	ld xbc,_s_rearm_elem__20
 	ld e,izl
@@ -15331,7 +15714,7 @@ L2998:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2997:
+L3065:
 	pop xiz
 	ret
 
@@ -15342,9 +15725,9 @@ _ngpc_dma_autorearm_begin_u32:
 	ld izl,a
 	ld a,izl
 	cp a,3
-	jr ule,L3002
-	jr L3001
-L3002:
+	jr ule,L3070
+	jr L3069
+L3070:
 	ld a,2
 	ld xbc,_s_rearm_elem__20
 	ld e,izl
@@ -15383,7 +15766,7 @@ L3002:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L3001:
+L3069:
 	pop xiz
 	ret
 
@@ -15391,9 +15774,9 @@ L3001:
 _ngpc_dma_autorearm_set_src_u8:
 	ld a,(xsp+4)
 	cp a,3
-	jr ule,L3006
-	jr L3005
-L3006:
+	jr ule,L3074
+	jr L3073
+L3074:
 	ld xwa,(xsp+8)
 	ld xbc,_s_rearm_src__20
 	ld e,(xsp+4)
@@ -15402,16 +15785,16 @@ L3006:
 	sll 2,xde
 	add xbc,xde
 	ld (xbc),xwa
-L3005:
+L3073:
 	ret
 
 ; function ngpc_dma_autorearm_set_src_u16
 _ngpc_dma_autorearm_set_src_u16:
 	ld a,(xsp+4)
 	cp a,3
-	jr ule,L3010
-	jr L3009
-L3010:
+	jr ule,L3078
+	jr L3077
+L3078:
 	ld xwa,(xsp+8)
 	ld xbc,_s_rearm_src__20
 	ld e,(xsp+4)
@@ -15420,16 +15803,16 @@ L3010:
 	sll 2,xde
 	add xbc,xde
 	ld (xbc),xwa
-L3009:
+L3077:
 	ret
 
 ; function ngpc_dma_autorearm_set_src_u32
 _ngpc_dma_autorearm_set_src_u32:
 	ld a,(xsp+4)
 	cp a,3
-	jr ule,L3014
-	jr L3013
-L3014:
+	jr ule,L3082
+	jr L3081
+L3082:
 	ld xwa,(xsp+8)
 	ld xbc,_s_rearm_src__20
 	ld e,(xsp+4)
@@ -15438,7 +15821,7 @@ L3014:
 	sll 2,xde
 	add xbc,xde
 	ld (xbc),xwa
-L3013:
+L3081:
 	ret
 
 ; function ngpc_dma_autorearm_enable
@@ -15448,12 +15831,12 @@ _ngpc_dma_autorearm_enable:
 	ld izl,a
 	ld a,izl
 	cp a,3
-	jr ule,L3024
-	jp L3023
-L3024:
-	jr L3025
-	jp L3023
-L3025:
+	jr ule,L3092
+	jp L3091
+L3092:
+	jr L3093
+	jp L3091
+L3093:
 	ld a,1
 	ld xbc,_s_rearm_enabled__20
 	ld e,izl
@@ -15469,14 +15852,14 @@ L3025:
 	ld a,(xwa)
 	extz wa
 	cp wa,0
-	jr z,L3028
+	jr z,L3096
 	cp wa,1
-	jr z,L3029
+	jr z,L3097
 	cp wa,2
-	jp z,L3030
-	jr L3027
-L3027:
-L3028:
+	jp z,L3098
+	jr L3095
+L3095:
+L3096:
 	ld xwa,_s_rearm_vector__20
 	ld c,izl
 	extz bc
@@ -15512,8 +15895,8 @@ L3028:
 	push xwa
 	call _ngpc_dma_start_table_u8
 	lda xsp,(xsp+20)
-	jp L3026
-L3029:
+	jp L3094
+L3097:
 	ld xwa,_s_rearm_vector__20
 	ld c,izl
 	extz bc
@@ -15549,8 +15932,8 @@ L3029:
 	push xwa
 	call _ngpc_dma_start_table_u16
 	lda xsp,(xsp+20)
-	jr L3026
-L3030:
+	jr L3094
+L3098:
 	ld xwa,_s_rearm_vector__20
 	ld c,izl
 	extz bc
@@ -15586,9 +15969,9 @@ L3030:
 	push xwa
 	call _ngpc_dma_start_table_u32
 	lda xsp,(xsp+20)
-	jr L3026
-L3026:
-L3023:
+	jr L3094
+L3094:
+L3091:
 	pop xiz
 	ret
 
@@ -15596,9 +15979,9 @@ L3023:
 _ngpc_dma_autorearm_disable:
 	ld a,(xsp+4)
 	cp a,3
-	jr ule,L3034
-	jr L3033
-L3034:
+	jr ule,L3102
+	jr L3101
+L3102:
 	ld a,0
 	ld xbc,_s_rearm_enabled__20
 	ld e,(xsp+4)
@@ -15606,33 +15989,33 @@ L3034:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L3033:
+L3101:
 	ret
 
 ; function plane_reg_x
 _plane_reg_x__21:
 	ld a,(xsp+4)
 	cp a,1
-	jr nz,L3038
+	jr nz,L3106
 	ld xwa,08034h
-	jr L3037
-L3038:
+	jr L3105
+L3106:
 	ld xwa,08032h
-	jr L3037
-L3037:
+	jr L3105
+L3105:
 	ret
 
 ; function plane_reg_y
 _plane_reg_y__21:
 	ld a,(xsp+4)
 	cp a,1
-	jr nz,L3042
+	jr nz,L3110
 	ld xwa,08035h
-	jr L3041
-L3042:
+	jr L3109
+L3110:
 	ld xwa,08033h
-	jr L3041
-L3041:
+	jr L3109
+L3109:
 	ret
 
 ; function ngpc_dma_raster_begin
@@ -15651,7 +16034,7 @@ _ngpc_dma_raster_begin:
 	push xwa
 	call _ngpc_dma_raster_begin_ex
 	lda xsp,(xsp+24)
-L3044:
+L3112:
 	ret
 
 ; function ngpc_dma_raster_begin_ex
@@ -15661,9 +16044,9 @@ _ngpc_dma_raster_begin_ex:
 	ld xiz,(xsp+16)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3054
-	jp L3053
-L3054:
+	jr nz,L3122
+	jp L3121
+L3122:
 	ld a,(xsp+20)
 	ld (xiz),a
 	ldb (xiz+1),0
@@ -15683,7 +16066,7 @@ L3054:
 	ld (xsp+4),xwa
 	ld xwa,(xsp+28)
 	cp xwa,0
-	jr z,L3055
+	jr z,L3123
 	ld wa,16
 	push xwa
 	ld wa,152
@@ -15698,11 +16081,11 @@ L3054:
 	push xwa
 	call _ngpc_dma_stream_begin_u8
 	lda xsp,(xsp+24)
-	jr L3056
-L3055:
+	jr L3124
+L3123:
 	ld xwa,(xsp+36)
 	cp xwa,0
-	jr z,L3057
+	jr z,L3125
 	ld wa,16
 	push xwa
 	ld wa,152
@@ -15717,8 +16100,8 @@ L3055:
 	push xwa
 	call _ngpc_dma_stream_begin_u8
 	lda xsp,(xsp+24)
-	jr L3058
-L3057:
+	jr L3126
+L3125:
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -15733,14 +16116,14 @@ L3057:
 	push xwa
 	call _ngpc_dma_stream_begin_u8
 	lda xsp,(xsp+24)
-L3058:
-L3056:
+L3126:
+L3124:
 	ld xwa,(xsp+28)
 	cp xwa,0
-	jr z,L3059
+	jr z,L3127
 	ld xwa,(xsp+36)
 	cp xwa,0
-	jr z,L3059
+	jr z,L3127
 	ld wa,17
 	push xwa
 	ld wa,152
@@ -15755,8 +16138,8 @@ L3056:
 	push xwa
 	call _ngpc_dma_stream_begin_u8
 	lda xsp,(xsp+24)
-	jr L3060
-L3059:
+	jr L3128
+L3127:
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -15771,8 +16154,8 @@ L3059:
 	push xwa
 	call _ngpc_dma_stream_begin_u8
 	lda xsp,(xsp+24)
-L3060:
-L3053:
+L3128:
+L3121:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -15783,31 +16166,31 @@ _ngpc_dma_raster_enable:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3067
-	jr L3066
-L3067:
+	jr nz,L3135
+	jr L3134
+L3135:
 	ldb (xiz+1),0
 	ld xwa,(xiz+2)
 	cp xwa,0
-	jr nz,L3068
+	jr nz,L3136
 	ld xwa,(xiz+6)
 	cp xwa,0
-	jr nz,L3068
-	jr L3066
-L3068:
+	jr nz,L3136
+	jr L3134
+L3136:
 	ld xwa,(xiz+2)
 	cp xwa,0
-	jr z,L3069
+	jr z,L3137
 	ld xwa,(xiz+6)
 	cp xwa,0
-	jr z,L3069
+	jr z,L3137
 	call _ngpc_dma_timer01_hblank_enable
-	jr L3070
-L3069:
+	jr L3138
+L3137:
 	call _ngpc_dma_timer0_hblank_enable
-L3070:
+L3138:
 	ldb (xiz+1),1
-L3066:
+L3134:
 	pop xiz
 	ret
 
@@ -15817,41 +16200,41 @@ _ngpc_dma_raster_rearm:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3079
-	jr L3078
-L3079:
+	jr nz,L3147
+	jr L3146
+L3147:
 	ld a,(xiz+1)
 	cp a,0
-	jr nz,L3080
-	jr L3078
-L3080:
+	jr nz,L3148
+	jr L3146
+L3148:
 	ld xwa,(xiz+2)
 	cp xwa,0
-	jr z,L3081
+	jr z,L3149
 	lda xwa,(xiz+10)
 	push xwa
 	call _ngpc_dma_stream_rearm_u8
 	lda xsp,(xsp+4)
 	ld xwa,(xiz+6)
 	cp xwa,0
-	jr z,L3082
+	jr z,L3150
 	lda xwa,(xiz+24)
 	push xwa
 	call _ngpc_dma_stream_rearm_u8
 	lda xsp,(xsp+4)
-L3082:
-	jr L3083
-L3081:
+L3150:
+	jr L3151
+L3149:
 	ld xwa,(xiz+6)
 	cp xwa,0
-	jr z,L3084
+	jr z,L3152
 	lda xwa,(xiz+10)
 	push xwa
 	call _ngpc_dma_stream_rearm_u8
 	lda xsp,(xsp+4)
-L3084:
-L3083:
-L3078:
+L3152:
+L3151:
+L3146:
 	pop xiz
 	ret
 
@@ -15861,34 +16244,34 @@ _ngpc_dma_raster_disable:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3091
-	jr L3090
-L3091:
+	jr nz,L3159
+	jr L3158
+L3159:
 	ld a,(xiz+1)
 	cp a,0
-	jr z,L3092
+	jr z,L3160
 	ld a,(xiz+10)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
 	ld xwa,(xiz+2)
 	cp xwa,0
-	jr z,L3093
+	jr z,L3161
 	ld xwa,(xiz+6)
 	cp xwa,0
-	jr z,L3093
+	jr z,L3161
 	ld a,(xiz+24)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
 	call _ngpc_dma_timer01_hblank_disable
-	jr L3094
-L3093:
+	jr L3162
+L3161:
 	call _ngpc_dma_timer0_hblank_disable
-L3094:
-L3092:
+L3162:
+L3160:
 	ldb (xiz+1),0
-L3090:
+L3158:
 	pop xiz
 	ret
 
@@ -15899,19 +16282,19 @@ _ngpc_dma_raster_build_parallax_table:
 	ld xiy,(xsp+18)
 	ld xwa,(xsp+14)
 	cp xwa,0
-	jr nz,L3114
-	jp L3113
-L3114:
+	jr nz,L3182
+	jp L3181
+L3182:
 	ld xwa,xiy
 	cp xwa,0
-	jr z,L3116
+	jr z,L3184
 	ld a,(xsp+22)
 	cp a,0
-	jr nz,L3115
-L3116:
+	jr nz,L3183
+L3184:
 	ld izl,0
-	jr L3120
-L3117:
+	jr L3188
+L3185:
 	ld a,0
 	ld xbc,(xsp+14)
 	ld e,izl
@@ -15919,18 +16302,18 @@ L3117:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L3119:
+L3187:
 	inc 1,izl
-L3120:
+L3188:
 	ld a,izl
 	cp a,152
-	jr ult,L3117
-L3118:
-	jp L3113
-L3115:
+	jr ult,L3185
+L3186:
+	jp L3181
+L3183:
 	ld ixl,0
-	jp L3124
-L3121:
+	jp L3192
+L3189:
 	ld xwa,xiy
 	ld c,ixl
 	extz bc
@@ -15945,7 +16328,7 @@ L3121:
 	ld e,(xsp+22)
 	extz de
 	cp bc,de
-	jr ge,L3125
+	jr ge,L3193
 	ld xwa,xiy
 	ld c,ixl
 	extz bc
@@ -15955,11 +16338,11 @@ L3121:
 	add xwa,xbc
 	ld a,(xwa)
 	extz wa
-	jr L3126
-L3125:
+	jr L3194
+L3193:
 	ld a,152
 	extz wa
-L3126:
+L3194:
 	ld (xsp+3),a
 	ld wa,(xsp+26)
 	ld xbc,xiy
@@ -15974,8 +16357,8 @@ L3126:
 	ld (xsp+4),a
 	ld a,(xsp+2)
 	ld izl,a
-	jr L3130
-L3127:
+	jr L3198
+L3195:
 	ld a,(xsp+4)
 	ld xbc,(xsp+14)
 	ld e,izl
@@ -15983,21 +16366,21 @@ L3127:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L3129:
+L3197:
 	inc 1,izl
-L3130:
+L3198:
 	ld a,izl
 	cp a,(xsp+3)
-	jr ult,L3127
-L3128:
-L3123:
+	jr ult,L3195
+L3196:
+L3191:
 	inc 1,ixl
-L3124:
+L3192:
 	ld a,ixl
 	cp a,(xsp+22)
-	jp ult,L3121
-L3122:
-L3113:
+	jp ult,L3189
+L3190:
+L3181:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -16014,7 +16397,7 @@ _ngpc_dma_raster_xy_begin:
 	push xwa
 	call _ngpc_dma_raster_xy_begin_ex
 	lda xsp,(xsp+16)
-L3132:
+L3200:
 	ret
 
 ; function ngpc_dma_raster_xy_begin_ex
@@ -16024,9 +16407,9 @@ _ngpc_dma_raster_xy_begin_ex:
 	ld xiz,(xsp+12)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3138
-	jr L3137
-L3138:
+	jr nz,L3206
+	jr L3205
+L3206:
 	ld a,(xsp+16)
 	ld (xiz),a
 	ldb (xiz+1),0
@@ -16039,7 +16422,7 @@ L3138:
 	ld (xsp+0),xwa
 	ld xwa,(xsp+24)
 	cp xwa,0
-	jr z,L3139
+	jr z,L3207
 	ld wa,16
 	push xwa
 	ld wa,152
@@ -16054,8 +16437,8 @@ L3138:
 	push xwa
 	call _ngpc_dma_stream_begin_u16
 	lda xsp,(xsp+24)
-	jr L3140
-L3139:
+	jr L3208
+L3207:
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -16070,8 +16453,8 @@ L3139:
 	push xwa
 	call _ngpc_dma_stream_begin_u16
 	lda xsp,(xsp+24)
-L3140:
-L3137:
+L3208:
+L3205:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -16082,18 +16465,18 @@ _ngpc_dma_raster_xy_enable:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3145
-	jr L3144
-L3145:
+	jr nz,L3213
+	jr L3212
+L3213:
 	ldb (xiz+1),0
 	ld xwa,(xiz+2)
 	cp xwa,0
-	jr nz,L3146
-	jr L3144
-L3146:
+	jr nz,L3214
+	jr L3212
+L3214:
 	call _ngpc_dma_timer0_hblank_enable
 	ldb (xiz+1),1
-L3144:
+L3212:
 	pop xiz
 	ret
 
@@ -16103,19 +16486,19 @@ _ngpc_dma_raster_xy_rearm:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3151
-	jr L3150
-L3151:
+	jr nz,L3219
+	jr L3218
+L3219:
 	ld a,(xiz+1)
 	cp a,0
-	jr nz,L3152
-	jr L3150
-L3152:
+	jr nz,L3220
+	jr L3218
+L3220:
 	lda xwa,(xiz+6)
 	push xwa
 	call _ngpc_dma_stream_rearm_u16
 	lda xsp,(xsp+4)
-L3150:
+L3218:
 	pop xiz
 	ret
 
@@ -16125,20 +16508,20 @@ _ngpc_dma_raster_xy_disable:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3157
-	jr L3156
-L3157:
+	jr nz,L3225
+	jr L3224
+L3225:
 	ld a,(xiz+1)
 	cp a,0
-	jr z,L3158
+	jr z,L3226
 	ld a,(xiz+6)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
 	call _ngpc_dma_timer0_hblank_disable
-L3158:
+L3226:
 	ldb (xiz+1),0
-L3156:
+L3224:
 	pop xiz
 	ret
 
@@ -16149,19 +16532,19 @@ _ngpc_dma_raster_build_parallax_table_xy:
 	ld xiy,(xsp+20)
 	ld xwa,(xsp+16)
 	cp xwa,0
-	jr nz,L3178
-	jp L3177
-L3178:
+	jr nz,L3246
+	jp L3245
+L3246:
 	ld xwa,xiy
 	cp xwa,0
-	jr z,L3180
+	jr z,L3248
 	ld a,(xsp+24)
 	cp a,0
-	jr nz,L3179
-L3180:
+	jr nz,L3247
+L3248:
 	ld izl,0
-	jr L3184
-L3181:
+	jr L3252
+L3249:
 	ld a,(xsp+32)
 	extz wa
 	sll 8,wa
@@ -16173,18 +16556,18 @@ L3181:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3183:
+L3251:
 	inc 1,izl
-L3184:
+L3252:
 	ld a,izl
 	cp a,152
-	jr ult,L3181
-L3182:
-	jp L3177
-L3179:
+	jr ult,L3249
+L3250:
+	jp L3245
+L3247:
 	ld ixl,0
-	jp L3188
-L3185:
+	jp L3256
+L3253:
 	ld xwa,xiy
 	ld c,ixl
 	extz bc
@@ -16199,7 +16582,7 @@ L3185:
 	ld e,(xsp+24)
 	extz de
 	cp bc,de
-	jr ge,L3189
+	jr ge,L3257
 	ld xwa,xiy
 	ld c,ixl
 	extz bc
@@ -16209,11 +16592,11 @@ L3185:
 	add xwa,xbc
 	ld a,(xwa)
 	extz wa
-	jr L3190
-L3189:
+	jr L3258
+L3257:
 	ld a,152
 	extz wa
-L3190:
+L3258:
 	ld (xsp+3),a
 	ld wa,(xsp+28)
 	ld xbc,xiy
@@ -16235,8 +16618,8 @@ L3190:
 	ld (xsp+6),wa
 	ld a,(xsp+2)
 	ld izl,a
-	jr L3194
-L3191:
+	jr L3262
+L3259:
 	ld wa,(xsp+6)
 	ld xbc,(xsp+16)
 	ld e,izl
@@ -16245,21 +16628,21 @@ L3191:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3193:
+L3261:
 	inc 1,izl
-L3194:
+L3262:
 	ld a,izl
 	cp a,(xsp+3)
-	jr ult,L3191
-L3192:
-L3187:
+	jr ult,L3259
+L3260:
+L3255:
 	inc 1,ixl
-L3188:
+L3256:
 	ld a,ixl
 	cp a,(xsp+24)
-	jp ult,L3185
-L3186:
-L3177:
+	jp ult,L3253
+L3254:
+L3245:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -16267,13 +16650,13 @@ L3177:
 ; function audio_init
 _audio_init:
 	call _player_init
-L3196:
+L3264:
 	ret
 
 ; function audio_update
 _audio_update:
 	call _player_update
-L3198:
+L3266:
 	ret
 
 ; function music_play
@@ -16282,10 +16665,10 @@ _music_play:
 	lda xsp,(xsp-4)
 	ld a,(xsp+12)
 	cp a,6
-	jr ult,L3202
+	jr ult,L3270
 	call _music_stop
-	jr L3201
-L3202:
+	jr L3269
+L3270:
 	ld xwa,_music_songs
 	ld c,(xsp+12)
 	extz bc
@@ -16305,7 +16688,7 @@ L3202:
 	push xwa
 	call _player_start
 	lda xsp,(xsp+16)
-L3201:
+L3269:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -16314,20 +16697,20 @@ L3201:
 _music_stop:
 	call _player_stop
 	ldb (_cur_song__22),255
-L3204:
+L3272:
 	ret
 
 ; function music_fade
 _music_fade:
 	call _player_stop
-L3206:
+L3274:
 	ret
 
 ; function music_current
 _music_current:
 	ld a,(_cur_song__22)
-	jr L3208
-L3208:
+	jr L3276
+L3276:
 	ret
 
 ; function sfx
@@ -16335,23 +16718,23 @@ _sfx:
 	ld a,(xsp+4)
 	extz wa
 	cp wa,0
-	jr z,L3222
+	jr z,L3290
 	cp wa,1
-	jr z,L3223
+	jr z,L3291
 	cp wa,2
-	jr z,L3224
+	jr z,L3292
 	cp wa,3
-	jp z,L3225
+	jp z,L3293
 	cp wa,4
-	jp z,L3226
+	jp z,L3294
 	cp wa,5
-	jp z,L3227
+	jp z,L3295
 	cp wa,7
-	jp z,L3228
+	jp z,L3296
 	cp wa,6
-	jp z,L3229
-	jp L3230
-L3222:
+	jp z,L3297
+	jp L3298
+L3290:
 	ld wa,0
 	push xwa
 	ld wa,12
@@ -16366,8 +16749,8 @@ L3222:
 	push xwa
 	call _player_sfx_tone
 	lda xsp,(xsp+24)
-	jp L3221
-L3223:
+	jp L3289
+L3291:
 	ld wa,6
 	push xwa
 	ld wa,45
@@ -16382,8 +16765,8 @@ L3223:
 	push xwa
 	call _player_sfx_tone
 	lda xsp,(xsp+24)
-	jp L3221
-L3224:
+	jp L3289
+L3292:
 	ld wa,5
 	push xwa
 	ld wa,70
@@ -16412,8 +16795,8 @@ L3224:
 	push xwa
 	call _player_sfx_tone
 	lda xsp,(xsp+24)
-	jp L3221
-L3225:
+	jp L3289
+L3293:
 	ld wa,4
 	push xwa
 	ld wa,60
@@ -16424,8 +16807,8 @@ L3225:
 	push xwa
 	call _player_sfx_noise
 	lda xsp,(xsp+16)
-	jr L3221
-L3226:
+	jr L3289
+L3294:
 	ld wa,1
 	push xwa
 	ld wa,10
@@ -16436,8 +16819,8 @@ L3226:
 	push xwa
 	call _player_sfx_noise
 	lda xsp,(xsp+16)
-	jr L3221
-L3227:
+	jr L3289
+L3295:
 	ld wa,0
 	push xwa
 	ld wa,5
@@ -16452,8 +16835,8 @@ L3227:
 	push xwa
 	call _player_sfx_tone
 	lda xsp,(xsp+24)
-	jr L3221
-L3228:
+	jr L3289
+L3296:
 	ld wa,0
 	push xwa
 	ld wa,8
@@ -16468,8 +16851,8 @@ L3228:
 	push xwa
 	call _player_sfx_tone
 	lda xsp,(xsp+24)
-	jr L3221
-L3229:
+	jr L3289
+L3297:
 	ld wa,1
 	push xwa
 	ld wa,6
@@ -16484,44 +16867,44 @@ L3229:
 	push xwa
 	call _player_sfx_tone
 	lda xsp,(xsp+24)
-	jr L3221
-L3230:
-	jr L3221
-L3221:
-L3220:
+	jr L3289
+L3298:
+	jr L3289
+L3289:
+L3288:
 	ret
 
 ; function scr_map
 _scr_map__23:
 	ld c,(xsp+4)
 	cp c,0
-	jr nz,L3235
+	jr nz,L3303
 	ld xwa,36864
-	jr L3236
-L3235:
+	jr L3304
+L3303:
 	ld xwa,38912
-L3236:
-	jr L3234
-L3234:
+L3304:
+	jr L3302
+L3302:
 	ret
 
 ; function pal_base
 _pal_base__23:
 	ld a,(xsp+4)
 	cp a,2
-	jr nz,L3241
+	jr nz,L3309
 	ld xwa,33280
-	jr L3240
-L3241:
+	jr L3308
+L3309:
 	ld a,(xsp+4)
 	cp a,0
-	jr nz,L3242
+	jr nz,L3310
 	ld xwa,33408
-	jr L3240
-L3242:
+	jr L3308
+L3310:
 	ld xwa,33536
-	jr L3240
-L3240:
+	jr L3308
+L3308:
 	ret
 
 ; function ngpc_gfx_load_tiles
@@ -16531,8 +16914,8 @@ _ngpc_gfx_load_tiles:
 	ld xwa,40960
 	ld xiy,xwa
 	ld iz,0
-	jr L3252
-L3249:
+	jr L3320
+L3317:
 	ld xwa,(xsp+16)
 	ld bc,iz
 	extz xbc
@@ -16558,14 +16941,14 @@ L3249:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L3251:
+L3319:
 	inc 1,iz
-L3252:
+L3320:
 	ld wa,iz
 	cp wa,(xsp+20)
-	jr ult,L3249
-L3250:
-L3248:
+	jr ult,L3317
+L3318:
+L3316:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -16582,8 +16965,8 @@ _ngpc_gfx_load_tiles_at:
 	add xwa,xbc
 	ld xiy,xwa
 	ld iz,0
-	jr L3262
-L3259:
+	jr L3330
+L3327:
 	ld xwa,(xsp+16)
 	ld bc,iz
 	extz xbc
@@ -16609,14 +16992,14 @@ L3259:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L3261:
+L3329:
 	inc 1,iz
-L3262:
+L3330:
 	ld wa,iz
 	cp wa,(xsp+20)
-	jr ult,L3259
-L3260:
-L3258:
+	jr ult,L3327
+L3328:
+L3326:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -16631,8 +17014,8 @@ _ngpc_gfx_load_tiles_u8:
 	sll 4,wa
 	ld ix,wa
 	ld iz,0
-	jr L3272
-L3269:
+	jr L3340
+L3337:
 	ld xwa,(xsp+16)
 	ld bc,iz
 	extz xbc
@@ -16643,14 +17026,14 @@ L3269:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L3271:
+L3339:
 	inc 1,iz
-L3272:
+L3340:
 	ld wa,iz
 	cp wa,ix
-	jr ult,L3269
-L3270:
-L3268:
+	jr ult,L3337
+L3338:
+L3336:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -16669,8 +17052,8 @@ _ngpc_gfx_load_tiles_u8_at:
 	sll 4,wa
 	ld ix,wa
 	ld iz,0
-	jr L3282
-L3279:
+	jr L3350
+L3347:
 	ld xwa,(xsp+16)
 	ld bc,iz
 	extz xbc
@@ -16681,14 +17064,14 @@ L3279:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L3281:
+L3349:
 	inc 1,iz
-L3282:
+L3350:
 	ld wa,iz
 	cp wa,ix
-	jr ult,L3279
-L3280:
-L3278:
+	jr ult,L3347
+L3348:
+L3346:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -16717,8 +17100,8 @@ _make_entry__23:
 	and bc,1
 	sll 14,bc
 	or wa,bc
-	jr L3284
-L3284:
+	jr L3352
+L3352:
 	ret
 
 ; function ngpc_gfx_put_tile
@@ -16750,7 +17133,7 @@ _ngpc_gfx_put_tile:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3286:
+L3354:
 	lda xsp,(xsp+4)
 	ret
 
@@ -16783,7 +17166,7 @@ _ngpc_gfx_put_tile_ex:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3288:
+L3356:
 	lda xsp,(xsp+4)
 	ret
 
@@ -16822,7 +17205,7 @@ _ngpc_gfx_get_tile:
 	and wa,15
 	ld xbc,(xsp+30)
 	ld (xbc),a
-L3290:
+L3358:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -16839,8 +17222,8 @@ _ngpc_gfx_clear:
 	pop xix
 	ld xix,xwa
 	ld iz,0
-	jr L3300
-L3297:
+	jr L3368
+L3365:
 	ld wa,0
 	ld xbc,xix
 	ld de,iz
@@ -16848,14 +17231,14 @@ L3297:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3299:
+L3367:
 	inc 1,iz
-L3300:
+L3368:
 	ld wa,iz
 	cp wa,1024
-	jr ult,L3297
-L3298:
-L3296:
+	jr ult,L3365
+L3366:
+L3364:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -16889,8 +17272,8 @@ _ngpc_gfx_fill:
 	pop xix
 	ld ix,wa
 	ld iz,0
-	jr L3310
-L3307:
+	jr L3378
+L3375:
 	ld wa,ix
 	ld xbc,xiy
 	ld de,iz
@@ -16898,14 +17281,14 @@ L3307:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3309:
+L3377:
 	inc 1,iz
-L3310:
+L3378:
 	ld wa,iz
 	cp wa,1024
-	jr ult,L3307
-L3308:
-L3306:
+	jr ult,L3375
+L3376:
+L3374:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -16939,8 +17322,8 @@ _ngpc_gfx_fill_rect:
 	pop xix
 	ld (xsp+4),wa
 	ld ixl,0
-	jr L3324
-L3321:
+	jr L3392
+L3389:
 	ld a,(xsp+28)
 	add a,ixl
 	and a,31
@@ -16950,8 +17333,8 @@ L3321:
 	sll 5,wa
 	ld (xsp+10),wa
 	ld izl,0
-	jr L3328
-L3325:
+	jr L3396
+L3393:
 	ld a,(xsp+24)
 	add a,izl
 	and a,31
@@ -16966,21 +17349,21 @@ L3325:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3327:
+L3395:
 	inc 1,izl
-L3328:
+L3396:
 	ld a,izl
 	cp a,(xsp+32)
-	jr ult,L3325
-L3326:
-L3323:
+	jr ult,L3393
+L3394:
+L3391:
 	inc 1,ixl
-L3324:
+L3392:
 	ld a,ixl
 	cp a,(xsp+36)
-	jr ult,L3321
-L3322:
-L3320:
+	jr ult,L3389
+L3390:
+L3388:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -17004,8 +17387,8 @@ _ngpc_gfx_set_rect_pal:
 	sll 9,wa
 	ld (xsp+4),wa
 	ldb (xsp+6),0
-	jr L3342
-L3339:
+	jr L3410
+L3407:
 	ld a,(xsp+30)
 	add a,(xsp+6)
 	and a,31
@@ -17015,8 +17398,8 @@ L3339:
 	sll 5,wa
 	ld (xsp+10),wa
 	ld ixl,0
-	jr L3346
-L3343:
+	jr L3414
+L3411:
 	ld a,(xsp+26)
 	add a,ixl
 	and a,31
@@ -17045,21 +17428,21 @@ L3343:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3345:
+L3413:
 	inc 1,ixl
-L3346:
+L3414:
 	ld a,ixl
 	cp a,(xsp+34)
-	jr ult,L3343
-L3344:
-L3341:
+	jr ult,L3411
+L3412:
+L3409:
 	incb 1,(xsp+6)
-L3342:
+L3410:
 	ld a,(xsp+6)
 	cp a,(xsp+38)
-	jr ult,L3339
-L3340:
-L3338:
+	jr ult,L3407
+L3408:
+L3406:
 	lda xsp,(xsp+14)
 	pop xiz
 	ret
@@ -17111,7 +17494,7 @@ _ngpc_gfx_set_palette:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3348:
+L3416:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -17122,26 +17505,26 @@ _ngpc_gfx_set_bg_color:
 	ld xbc,33760
 	ld (xbc),wa
 	ldb (08118h),128
-L3350:
+L3418:
 	ret
 
 ; function ngpc_gfx_scroll
 _ngpc_gfx_scroll:
 	ld a,(xsp+4)
 	cp a,0
-	jr nz,L3355
+	jr nz,L3423
 	ld a,(xsp+8)
 	ld (08032h),a
 	ld a,(xsp+12)
 	ld (08033h),a
-	jr L3356
-L3355:
+	jr L3424
+L3423:
 	ld a,(xsp+8)
 	ld (08034h),a
 	ld a,(xsp+12)
 	ld (08035h),a
-L3356:
-L3354:
+L3424:
+L3422:
 	ret
 
 ; function ngpc_gfx_scroll_parallax
@@ -17153,68 +17536,68 @@ _ngpc_gfx_scroll_parallax:
 	ld izl,a
 	ld a,ixl
 	cp a,255
-	jr nz,L3371
+	jr nz,L3439
 	ldb (08032h),0
 	ldb (08033h),0
-	jr L3372
-L3371:
+	jr L3440
+L3439:
 	ld a,(xsp+8)
 	extz wa
 	ld c,ixl
 	cp c,0
-	jr z,L3374
-L3373:
+	jr z,L3442
+L3441:
 	sra 1,wa
-	djnz c,L3373
-L3374:
+	djnz c,L3441
+L3442:
 	ld (08032h),a
 	ld a,(xsp+12)
 	extz wa
 	ld c,ixl
 	cp c,0
-	jr z,L3376
-L3375:
+	jr z,L3444
+L3443:
 	sra 1,wa
-	djnz c,L3375
-L3376:
+	djnz c,L3443
+L3444:
 	ld (08033h),a
-L3372:
+L3440:
 	ld a,izl
 	cp a,255
-	jr nz,L3377
+	jr nz,L3445
 	ldb (08034h),0
 	ldb (08035h),0
-	jr L3378
-L3377:
+	jr L3446
+L3445:
 	ld a,(xsp+8)
 	extz wa
 	ld c,izl
 	cp c,0
-	jr z,L3380
-L3379:
+	jr z,L3448
+L3447:
 	sra 1,wa
-	djnz c,L3379
-L3380:
+	djnz c,L3447
+L3448:
 	ld (08034h),a
 	ld a,(xsp+12)
 	extz wa
 	ld c,izl
 	cp c,0
-	jr z,L3382
-L3381:
+	jr z,L3450
+L3449:
 	sra 1,wa
-	djnz c,L3381
-L3382:
+	djnz c,L3449
+L3450:
 	ld (08035h),a
-L3378:
-L3370:
+L3446:
+L3438:
 	pop xiz
 	ret
 
 ; function ngpc_gfx_swap_planes
 _ngpc_gfx_swap_planes:
 	xorb (08030h),128
-L3384:
+L3452:
 	ret
 
 ; function ngpc_gfx_set_viewport
@@ -17227,7 +17610,7 @@ _ngpc_gfx_set_viewport:
 	ld (08004h),a
 	ld a,(xsp+16)
 	ld (08005h),a
-L3386:
+L3454:
 	ret
 
 ; function ngpc_gfx_sprite_offset
@@ -17236,20 +17619,20 @@ _ngpc_gfx_sprite_offset:
 	ld (08020h),a
 	ld a,(xsp+8)
 	ld (08021h),a
-L3388:
+L3456:
 	ret
 
 ; function ngpc_gfx_lcd_invert
 _ngpc_gfx_lcd_invert:
 	ld a,(xsp+4)
 	cp a,0
-	jr z,L3393
+	jr z,L3461
 	orb (08012h),128
-	jr L3394
-L3393:
+	jr L3462
+L3461:
 	andb (08012h),127
-L3394:
-L3392:
+L3462:
+L3460:
 	ret
 
 ; function ngpc_gfx_set_outside_color
@@ -17260,7 +17643,7 @@ _ngpc_gfx_set_outside_color:
 	and c,7
 	or a,c
 	ld (08012h),a
-L3396:
+L3464:
 	ret
 
 ; function ngpc_gfx_char_over
@@ -17269,14 +17652,14 @@ _ngpc_gfx_char_over:
 	extz bc
 	and bc,128
 	cp bc,0
-	jr z,L3401
+	jr z,L3469
 	ld wa,1
-	jr L3402
-L3401:
+	jr L3470
+L3469:
 	ld wa,0
-L3402:
-	jr L3400
-L3400:
+L3470:
+	jr L3468
+L3468:
 	ret
 
 ; function ngpc_gfx_set_color_direct
@@ -17299,7 +17682,7 @@ _ngpc_gfx_set_color_direct:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3404:
+L3472:
 	lda xsp,(xsp+4)
 	ret
 
@@ -17308,12 +17691,12 @@ _ngpc_tile_rotate90:
 	push xiz
 	lda xsp,(xsp-6)
 	ld ixl,0
-	jr L3422
-L3419:
+	jr L3490
+L3487:
 	ld iy,0
 	ld izl,0
-	jr L3426
-L3423:
+	jr L3494
+L3491:
 	ld xwa,(xsp+14)
 	ld bc,7
 	ld e,izl
@@ -17329,11 +17712,11 @@ L3423:
 	sll 1,de
 	sub bc,de
 	cp c,0
-	jr z,L3428
-L3427:
+	jr z,L3496
+L3495:
 	srl 1,wa
-	djnz c,L3427
-L3428:
+	djnz c,L3495
+L3496:
 	and wa,3
 	ld (xsp+4),a
 	ld wa,iy
@@ -17345,20 +17728,20 @@ L3428:
 	sll 1,hl
 	sub de,hl
 	cp e,0
-	jr z,L3430
-L3429:
+	jr z,L3498
+L3497:
 	sll 1,bc
-	djnz e,L3429
-L3430:
+	djnz e,L3497
+L3498:
 	or wa,bc
 	ld iy,wa
-L3425:
+L3493:
 	inc 1,izl
-L3426:
+L3494:
 	ld a,izl
 	cp a,8
-	jr ult,L3423
-L3424:
+	jr ult,L3491
+L3492:
 	ld wa,iy
 	ld xbc,(xsp+18)
 	ld e,ixl
@@ -17367,14 +17750,14 @@ L3424:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3421:
+L3489:
 	inc 1,ixl
-L3422:
+L3490:
 	ld a,ixl
 	cp a,8
-	jp ult,L3419
-L3420:
-L3418:
+	jp ult,L3487
+L3488:
+L3486:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -17384,12 +17767,12 @@ _ngpc_tile_rotate270:
 	push xiz
 	lda xsp,(xsp-6)
 	ld ixl,0
-	jr L3448
-L3445:
+	jr L3516
+L3513:
 	ld iy,0
 	ld izl,0
-	jr L3452
-L3449:
+	jr L3520
+L3517:
 	ld xwa,(xsp+14)
 	ld c,izl
 	extz bc
@@ -17405,11 +17788,11 @@ L3449:
 	sll 1,de
 	sub bc,de
 	cp c,0
-	jr z,L3454
-L3453:
+	jr z,L3522
+L3521:
 	srl 1,wa
-	djnz c,L3453
-L3454:
+	djnz c,L3521
+L3522:
 	and wa,3
 	ld (xsp+4),a
 	ld wa,iy
@@ -17421,20 +17804,20 @@ L3454:
 	sll 1,hl
 	sub de,hl
 	cp e,0
-	jr z,L3456
-L3455:
+	jr z,L3524
+L3523:
 	sll 1,bc
-	djnz e,L3455
-L3456:
+	djnz e,L3523
+L3524:
 	or wa,bc
 	ld iy,wa
-L3451:
+L3519:
 	inc 1,izl
-L3452:
+L3520:
 	ld a,izl
 	cp a,8
-	jr ult,L3449
-L3450:
+	jr ult,L3517
+L3518:
 	ld wa,iy
 	ld xbc,(xsp+18)
 	ld e,ixl
@@ -17443,14 +17826,14 @@ L3450:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3447:
+L3515:
 	inc 1,ixl
-L3448:
+L3516:
 	ld a,ixl
 	cp a,8
-	jp ult,L3445
-L3446:
-L3444:
+	jp ult,L3513
+L3514:
+L3512:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -17472,7 +17855,7 @@ _ngpc_tile_rotate90_to:
 	push xwa
 	call _ngpc_gfx_load_tiles_at
 	lda xsp,(xsp+12)
-L3458:
+L3526:
 	lda xsp,(xsp+16)
 	ret
 
@@ -17493,7 +17876,7 @@ _ngpc_tile_rotate270_to:
 	push xwa
 	call _ngpc_gfx_load_tiles_at
 	lda xsp,(xsp+12)
-L3460:
+L3528:
 	lda xsp,(xsp+16)
 	ret
 
@@ -17532,7 +17915,7 @@ _ngpc_sprite_set:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L3462:
+L3530:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -17553,7 +17936,7 @@ _ngpc_sprite_move:
 	ld a,(xsp+16)
 	ld xbc,(xsp+0)
 	ld (xbc+3),a
-L3464:
+L3532:
 	lda xsp,(xsp+4)
 	ret
 
@@ -17569,7 +17952,7 @@ _ngpc_sprite_hide:
 	ld (xsp+0),xwa
 	ld xbc,(xsp+0)
 	andb (xbc+1),231
-L3466:
+L3534:
 	lda xsp,(xsp+4)
 	ret
 
@@ -17578,20 +17961,20 @@ _ngpc_sprite_hide_all:
 	push xiz
 	lda xsp,(xsp-2)
 	ld izl,0
-	jr L3476
-L3473:
+	jr L3544
+L3541:
 	ld a,izl
 	push xwa
 	call _ngpc_sprite_hide
 	lda xsp,(xsp+4)
-L3475:
+L3543:
 	inc 1,izl
-L3476:
+L3544:
 	ld a,izl
 	cp a,64
-	jr ult,L3473
-L3474:
-L3472:
+	jr ult,L3541
+L3542:
+L3540:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -17612,7 +17995,7 @@ _ngpc_sprite_set_flags:
 	or a,(xsp+12)
 	ld xbc,(xsp+0)
 	ld (xbc+1),a
-L3478:
+L3546:
 	lda xsp,(xsp+4)
 	ret
 
@@ -17640,7 +18023,7 @@ _ngpc_sprite_set_tile:
 	extz bc
 	or wa,bc
 	ld (xiz+1),a
-L3480:
+L3548:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -17655,8 +18038,8 @@ _ngpc_sprite_get_pal:
 	ld a,(xwa)
 	extz wa
 	and wa,15
-	jr L3482
-L3482:
+	jr L3550
+L3550:
 	ret
 
 ; function ngpc_text_print
@@ -17666,16 +18049,16 @@ _ngpc_text_print:
 	ld xiz,(xsp+26)
 	ld a,(xsp+18)
 	ld iyl,a
-	jr L3492
-L3490:
+	jr L3560
+L3558:
 	ld a,(xiz)
 	ld ixl,a
 	ld a,ixl
 	cp a,32
-	jr ult,L3493
+	jr ult,L3561
 	ld a,ixl
 	cp a,128
-	jr uge,L3493
+	jr uge,L3561
 	push xix
 	push xiy
 	ld a,(xsp+22)
@@ -17693,22 +18076,22 @@ L3490:
 	lda xsp,(xsp+20)
 	pop xiy
 	pop xix
-L3493:
+L3561:
 	inc 1,iyl
 	ld a,iyl
 	cp a,20
-	jr ult,L3494
-	jr L3491
-L3494:
+	jr ult,L3562
+	jr L3559
+L3562:
 	ld xwa,xiz
 	inc 1,xwa
 	ld xiz,xwa
-L3492:
+L3560:
 	ld a,(xiz)
 	cp a,0
-	jr nz,L3490
-L3491:
-L3489:
+	jr nz,L3558
+L3559:
+L3557:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -17720,8 +18103,8 @@ _ngpc_text_print_dec:
 	ld wa,(xsp+34)
 	ld (xsp+6),wa
 	ld izl,0
-	jr L3508
-L3505:
+	jr L3576
+L3573:
 	ld wa,(xsp+6)
 	extz xwa
 	div xwa,10
@@ -17738,18 +18121,18 @@ L3505:
 	extz xwa
 	div xwa,10
 	ld (xsp+6),wa
-L3507:
+L3575:
 	inc 1,izl
-L3508:
+L3576:
 	ld a,izl
 	cp a,5
-	jr ult,L3505
-L3506:
+	jr ult,L3573
+L3574:
 	ld a,5
 	sub a,(xsp+38)
 	ld izl,a
-	jr L3512
-L3509:
+	jr L3580
+L3577:
 	lda xwa,(xsp+0)
 	ld c,izl
 	extz bc
@@ -17772,14 +18155,14 @@ L3509:
 	call _ngpc_gfx_put_tile
 	lda xsp,(xsp+20)
 	incb 1,(xsp+26)
-L3511:
+L3579:
 	inc 1,izl
-L3512:
+L3580:
 	ld a,izl
 	cp a,5
-	jr ult,L3509
-L3510:
-L3504:
+	jr ult,L3577
+L3578:
+L3572:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -17789,8 +18172,8 @@ _ngpc_text_print_hex:
 	push xiz
 	lda xsp,(xsp-8)
 	ld izl,0
-	jr L3526
-L3523:
+	jr L3594
+L3591:
 	ld a,(xsp+36)
 	extz wa
 	sub wa,1
@@ -17802,28 +18185,28 @@ L3523:
 	ld wa,(xsp+32)
 	ld bc,(xsp+2)
 	cp c,0
-	jr z,L3528
-L3527:
+	jr z,L3596
+L3595:
 	srl 1,wa
-	djnz c,L3527
-L3528:
+	djnz c,L3595
+L3596:
 	and wa,15
 	ld ixl,a
 	ld a,ixl
 	cp a,10
-	jr uge,L3529
+	jr uge,L3597
 	ld a,ixl
 	extz wa
 	add wa,48
 	ld iy,wa
-	jr L3530
-L3529:
+	jr L3598
+L3597:
 	ld a,ixl
 	extz wa
 	sub wa,10
 	add wa,65
 	ld iy,wa
-L3530:
+L3598:
 	push xix
 	push xiy
 	ld a,(xsp+28)
@@ -17844,14 +18227,14 @@ L3530:
 	lda xsp,(xsp+20)
 	pop xiy
 	pop xix
-L3525:
+L3593:
 	inc 1,izl
-L3526:
+L3594:
 	ld a,izl
 	cp a,(xsp+36)
-	jp ult,L3523
-L3524:
-L3522:
+	jp ult,L3591
+L3592:
+L3590:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -17865,8 +18248,8 @@ _ngpc_text_print_num:
 	ld wa,1
 	ld (xsp+8),a
 	ld izl,0
-	jr L3546
-L3543:
+	jr L3614
+L3611:
 	ld wa,(xsp+6)
 	extz xwa
 	div xwa,10
@@ -17883,21 +18266,21 @@ L3543:
 	extz xwa
 	div xwa,10
 	ld (xsp+6),wa
-L3545:
+L3613:
 	inc 1,izl
-L3546:
+L3614:
 	ld a,izl
 	cp a,5
-	jr ult,L3543
-L3544:
+	jr ult,L3611
+L3612:
 	ld a,5
 	sub a,(xsp+40)
 	ld izl,a
-	jr L3550
-L3547:
+	jr L3618
+L3615:
 	ld a,(xsp+8)
 	cp a,0
-	jr z,L3551
+	jr z,L3619
 	lda xwa,(xsp+0)
 	ld c,izl
 	extz bc
@@ -17905,13 +18288,13 @@ L3547:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr nz,L3551
+	jr nz,L3619
 	ld a,izl
 	cp a,4
-	jr uge,L3551
+	jr uge,L3619
 	ld ix,32
-	jr L3552
-L3551:
+	jr L3620
+L3619:
 	ldb (xsp+8),0
 	lda xwa,(xsp+0)
 	ld c,izl
@@ -17922,7 +18305,7 @@ L3551:
 	extz wa
 	add wa,48
 	ld ix,wa
-L3552:
+L3620:
 	push xix
 	ld a,(xsp+28)
 	push xwa
@@ -17938,14 +18321,14 @@ L3552:
 	lda xsp,(xsp+20)
 	pop xix
 	incb 1,(xsp+28)
-L3549:
+L3617:
 	inc 1,izl
-L3550:
+L3618:
 	ld a,izl
 	cp a,5
-	jr ult,L3547
-L3548:
-L3542:
+	jr ult,L3615
+L3616:
+L3610:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -17985,7 +18368,7 @@ _ngpc_text_print_hex32:
 	push xwa
 	call _ngpc_text_print_hex
 	lda xsp,(xsp+24)
-L3554:
+L3622:
 	ret
 
 ; function ngpc_text_tile_screen
@@ -17995,11 +18378,11 @@ _ngpc_text_tile_screen:
 	ld wa,0
 	ld (xsp+2),wa
 	ld ixl,0
-	jr L3568
-L3565:
+	jr L3636
+L3633:
 	ld izl,0
-	jr L3572
-L3569:
+	jr L3640
+L3637:
 	push xix
 	ld a,(xsp+20)
 	push xwa
@@ -18020,21 +18403,21 @@ L3569:
 	lda xsp,(xsp+20)
 	pop xix
 	incw 1,(xsp+2)
-L3571:
+L3639:
 	inc 1,izl
-L3572:
+L3640:
 	ld a,izl
 	cp a,20
-	jr ult,L3569
-L3570:
-L3567:
+	jr ult,L3637
+L3638:
+L3635:
 	inc 1,ixl
-L3568:
+L3636:
 	ld a,ixl
 	cp a,19
-	jr ult,L3565
-L3566:
-L3564:
+	jr ult,L3633
+L3634:
+L3632:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -18044,8 +18427,8 @@ _hud_score_reset:
 	push xiz
 	lda xsp,(xsp-2)
 	ld izl,0
-	jr L3582
-L3579:
+	jr L3650
+L3647:
 	ld a,0
 	ld xbc,_s_dig__26
 	ld e,izl
@@ -18053,14 +18436,14 @@ L3579:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L3581:
+L3649:
 	inc 1,izl
-L3582:
+L3650:
 	ld a,izl
 	cp a,7
-	jr ult,L3579
-L3580:
-L3578:
+	jr ult,L3647
+L3648:
+L3646:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -18073,8 +18456,8 @@ _hud_score_add:
 	ld iy,wa
 	ld wa,7
 	ld izl,a
-	jr L3591
-L3589:
+	jr L3659
+L3657:
 	dec 1,izl
 	ld xwa,_s_dig__26
 	ld c,izl
@@ -18099,16 +18482,16 @@ L3589:
 	extz xwa
 	div xwa,10
 	ld iy,wa
-L3591:
+L3659:
 	ld wa,iy
 	cp wa,0
-	jr z,L3592
+	jr z,L3660
 	ld a,izl
 	cp a,0
-	jr ugt,L3589
-L3592:
-L3590:
-L3588:
+	jr ugt,L3657
+L3660:
+L3658:
+L3656:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -18120,8 +18503,8 @@ _hud_init:
 	ld xwa,41472
 	ld (xsp+2),xwa
 	ld iz,0
-	jr L3602
-L3599:
+	jr L3670
+L3667:
 	ld xwa,_gfx_font_tiles__26
 	ld bc,iz
 	extz xbc
@@ -18134,13 +18517,13 @@ L3599:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3601:
+L3669:
 	inc 1,iz
-L3602:
+L3670:
 	ld wa,iz
 	cp wa,552
-	jr ult,L3599
-L3600:
+	jr ult,L3667
+L3668:
 	ld wa,4095
 	push xwa
 	ld wa,2184
@@ -18239,7 +18622,7 @@ L3600:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-L3598:
+L3666:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -18253,7 +18636,7 @@ _hud_reset:
 	ld (_h_kmh__26),a
 	ld (_h_time__26),a
 	ldb (_h_score_ok__26),0
-L3604:
+L3672:
 	ret
 
 ; function hud_clear_top
@@ -18261,11 +18644,11 @@ _hud_clear_top:
 	push xiz
 	lda xsp,(xsp-2)
 	ld ixl,0
-	jr L3618
-L3615:
+	jr L3686
+L3683:
 	ld izl,0
-	jr L3622
-L3619:
+	jr L3690
+L3687:
 	ld wa,0
 	ld xbc,36864
 	ld e,ixl
@@ -18278,21 +18661,21 @@ L3619:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3621:
+L3689:
 	inc 1,izl
-L3622:
+L3690:
 	ld a,izl
 	cp a,20
-	jr ult,L3619
-L3620:
-L3617:
+	jr ult,L3687
+L3688:
+L3685:
 	inc 1,ixl
-L3618:
+L3686:
 	ld a,ixl
 	cp a,15
-	jr ult,L3615
-L3616:
-L3614:
+	jr ult,L3683
+L3684:
+L3682:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -18304,10 +18687,10 @@ _hud_message:
 	ld xix,(xsp+14)
 	ld wa,0
 	ld izl,a
-	jr L3630
-L3628:
+	jr L3698
+L3696:
 	inc 1,izl
-L3630:
+L3698:
 	ld xwa,xix
 	ld c,izl
 	extz bc
@@ -18315,8 +18698,8 @@ L3630:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr nz,L3628
-L3629:
+	jr nz,L3696
+L3697:
 	push xix
 	ld a,(xsp+14)
 	push xwa
@@ -18341,7 +18724,7 @@ L3629:
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
 	pop xix
-L3627:
+L3695:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -18353,8 +18736,8 @@ _hud_clear_message:
 	ld a,(xsp+10)
 	ld ixl,a
 	ld izl,0
-	jr L3640
-L3637:
+	jr L3708
+L3705:
 	ld wa,0
 	ld xbc,36864
 	ld e,ixl
@@ -18367,14 +18750,14 @@ L3637:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3639:
+L3707:
 	inc 1,izl
-L3640:
+L3708:
 	ld a,izl
 	cp a,20
-	jr ult,L3637
-L3638:
-L3636:
+	jr ult,L3705
+L3706:
+L3704:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -18396,7 +18779,7 @@ _put_digit__26:
 	push xwa
 	call _ngpc_gfx_put_tile
 	lda xsp,(xsp+20)
-L3642:
+L3710:
 	ret
 
 ; function hud_race
@@ -18405,10 +18788,10 @@ _hud_race:
 	lda xsp,(xsp-4)
 	ld a,(xsp+12)
 	cp a,(_h_time__26)
-	jr z,L3668
+	jr z,L3736
 	ld a,(_h_time__26)
 	cp a,255
-	jr nz,L3669
+	jr nz,L3737
 	ld xwa,_S26_0
 	push xwa
 	ld wa,0
@@ -18421,15 +18804,15 @@ _hud_race:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-L3669:
+L3737:
 	ld c,(xsp+12)
 	cp c,10
-	jr uge,L3670
+	jr uge,L3738
 	ld wa,2
-	jr L3671
-L3670:
+	jr L3739
+L3738:
 	ld wa,1
-L3671:
+L3739:
 	push xwa
 	ld a,(xsp+16)
 	extz wa
@@ -18444,12 +18827,12 @@ L3671:
 	lda xsp,(xsp+16)
 	ld c,(xsp+12)
 	cp c,10
-	jr uge,L3672
+	jr uge,L3740
 	ld wa,2
-	jr L3673
-L3672:
+	jr L3741
+L3740:
 	ld wa,1
-L3673:
+L3741:
 	push xwa
 	ld a,(xsp+16)
 	extz wa
@@ -18465,10 +18848,10 @@ L3673:
 	lda xsp,(xsp+16)
 	ld a,(xsp+12)
 	ld (_h_time__26),a
-L3668:
+L3736:
 	ld a,(xsp+28)
 	cp a,(_h_stage__26)
-	jr z,L3674
+	jr z,L3742
 	ld xwa,_S26_1
 	push xwa
 	ld wa,0
@@ -18495,7 +18878,7 @@ L3668:
 	ld a,(xsp+28)
 	ld (_h_stage__26),a
 	ldb (_h_prog__26),255
-L3674:
+L3742:
 	ld wa,(xsp+24)
 	mul xwa,3
 	add wa,9
@@ -18504,20 +18887,20 @@ L3674:
 	ld (xsp+1),a
 	ld a,(xsp+1)
 	cp a,(_h_prog__26)
-	jr z,L3675
+	jr z,L3743
 	ld izl,0
-	jr L3679
-L3676:
+	jr L3747
+L3744:
 	ld wa,0
 	push xwa
 	ld c,izl
 	cp c,(xsp+5)
-	jr uge,L3680
+	jr uge,L3748
 	ld wa,97
-	jr L3681
-L3680:
+	jr L3749
+L3748:
 	ld wa,96
-L3681:
+L3749:
 	push xwa
 	ld wa,0
 	push xwa
@@ -18528,13 +18911,13 @@ L3681:
 	push xwa
 	call _ngpc_gfx_put_tile
 	lda xsp,(xsp+20)
-L3678:
+L3746:
 	inc 1,izl
-L3679:
+L3747:
 	ld a,izl
 	cp a,3
-	jr ult,L3676
-L3677:
+	jr ult,L3744
+L3745:
 	ld wa,1
 	push xwa
 	ld wa,100
@@ -18549,17 +18932,17 @@ L3677:
 	lda xsp,(xsp+20)
 	ld a,(xsp+1)
 	ld (_h_prog__26),a
-L3675:
+L3743:
 	ld a,(xsp+16)
 	cp a,(_h_kmh__26)
-	jp z,L3682
+	jp z,L3750
 	ld a,(xsp+16)
 	extz wa
 	sll 1,wa
 	ld (xsp+2),wa
 	ld a,(_h_kmh__26)
 	cp a,255
-	jr nz,L3683
+	jr nz,L3751
 	ld xwa,_S26_2
 	push xwa
 	ld wa,1
@@ -18572,7 +18955,7 @@ L3675:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-L3683:
+L3751:
 	ld wa,1
 	push xwa
 	ld wa,(xsp+6)
@@ -18615,18 +18998,18 @@ L3683:
 	lda xsp,(xsp+16)
 	ld a,(xsp+16)
 	ld (_h_kmh__26),a
-L3682:
+L3750:
 	ld a,(xsp+20)
 	cp a,(_h_gear__26)
-	jr z,L3684
+	jr z,L3752
 	ld c,(xsp+20)
 	cp c,1
-	jr nz,L3685
+	jr nz,L3753
 	ld xwa,_S26_3
-	jr L3686
-L3685:
+	jr L3754
+L3753:
 	ld xwa,_S26_4
-L3686:
+L3754:
 	push xwa
 	ld wa,1
 	push xwa
@@ -18634,19 +19017,19 @@ L3686:
 	push xwa
 	ld c,(xsp+32)
 	cp c,1
-	jr nz,L3687
+	jr nz,L3755
 	ld wa,1
-	jr L3688
-L3687:
+	jr L3756
+L3755:
 	ld c,(xsp+32)
 	cp c,2
-	jr nz,L3689
+	jr nz,L3757
 	ld wa,2
-	jr L3690
-L3689:
+	jr L3758
+L3757:
 	ld wa,0
-L3690:
-L3688:
+L3758:
+L3756:
 	push xwa
 	ld wa,0
 	push xwa
@@ -18654,8 +19037,8 @@ L3688:
 	lda xsp,(xsp+20)
 	ld a,(xsp+20)
 	ld (_h_gear__26),a
-L3684:
-L3667:
+L3752:
+L3735:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -18668,28 +19051,28 @@ _id_cars_steering:
 	ld izl,a
 	ld c,izl
 	cp c,96
-	jr uge,L3695
+	jr uge,L3763
 	ld a,izl
 	extz wa
 	mul xwa,7
 	extz xwa
 	div xwa,6
-	jr L3696
-L3695:
+	jr L3764
+L3763:
 	ld wa,112
 	ld c,izl
 	extz bc
 	sub bc,96
 	srl 3,bc
 	sub wa,bc
-L3696:
+L3764:
 	ld (xsp+0),wa
 	ld a,(xsp+14)
 	extz wa
 	mul xwa,(xsp+0)
 	srl 7,wa
-	jr L3694
-L3694:
+	jr L3762
+L3762:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -18717,7 +19100,7 @@ _id_fleet_body:
 	ldb (xiz+29),3
 	ldb (xiz+31),1
 	ldb (xiz+30),24
-L3698:
+L3766:
 	pop xiz
 	ret
 
@@ -18759,7 +19142,7 @@ _id_spr_put:
 	add bc,de
 	extz xbc
 	ld (xbc),a
-L3700:
+L3768:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -18772,9 +19155,9 @@ _id_spr_hide_range:
 	ld iyl,a
 	ld a,iyl
 	cp a,(xsp+18)
-	jr ult,L3707
-	jr L3706
-L3707:
+	jr ult,L3775
+	jr L3774
+L3775:
 	ld wa,34817
 	ld c,iyl
 	extz bc
@@ -18785,7 +19168,7 @@ L3707:
 	ld a,(xsp+18)
 	sub a,iyl
 	ld ixl,a
-L3708:
+L3776:
 	ld a,(xiz)
 	and a,231
 	ld (xiz),a
@@ -18794,13 +19177,13 @@ L3708:
 	ld xwa,xiz
 	add xwa,xbc
 	ld xiz,xwa
-L3710:
+L3778:
 	dec 1,ixl
 	ld a,ixl
 	cp a,0
-	jr nz,L3708
-L3709:
-L3706:
+	jr nz,L3776
+L3777:
+L3774:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -18818,8 +19201,8 @@ _mesure_roues__29:
 	ld wa,0
 	ld (xsp+5),a
 	ldb (xsp+0),0
-	jp L3742
-L3739:
+	jp L3810
+L3807:
 	ld a,(xsp+0)
 	extz wa
 	ld c,(_body__29+29)
@@ -18841,8 +19224,8 @@ L3739:
 	ld a,(xwa)
 	ld (xsp+8),a
 	ldb (xsp+1),0
-	jp L3746
-L3743:
+	jp L3814
+L3811:
 	ld xwa,(_body__29+22)
 	ld c,(xsp+7)
 	add c,(xsp+1)
@@ -18869,8 +19252,8 @@ L3743:
 	extz wa
 	ld (xsp+12),wa
 	ld ixl,0
-	jp L3750
-L3747:
+	jp L3818
+L3815:
 	ld xwa,(_body__29)
 	ld bc,(xsp+12)
 	sll 3,bc
@@ -18883,8 +19266,8 @@ L3747:
 	ld wa,(xwa)
 	ld (xsp+16),wa
 	ld izl,0
-	jp L3754
-L3751:
+	jp L3822
+L3819:
 	ld wa,(xsp+16)
 	ld bc,14
 	ld de,2
@@ -18893,16 +19276,16 @@ L3751:
 	mul xde,hl
 	sub bc,de
 	cp c,0
-	jr z,L3757
-L3756:
+	jr z,L3825
+L3824:
 	srl 1,wa
-	djnz c,L3756
-L3757:
+	djnz c,L3824
+L3825:
 	and wa,3
 	cp wa,0
-	jr nz,L3755
-	jp L3753
-L3755:
+	jr nz,L3823
+	jp L3821
+L3823:
 	ld a,(xsp+10)
 	extz wa
 	sll 3,wa
@@ -18910,7 +19293,7 @@ L3755:
 	extz bc
 	add wa,bc
 	cp a,(xsp+2)
-	jr ule,L3758
+	jr ule,L3826
 	ld a,(xsp+10)
 	extz wa
 	sll 3,wa
@@ -18919,7 +19302,7 @@ L3755:
 	add wa,bc
 	ld (xsp+2),a
 	ldb (xsp+5),0
-L3758:
+L3826:
 	ld a,(xsp+10)
 	extz wa
 	sll 3,wa
@@ -18927,7 +19310,7 @@ L3758:
 	extz bc
 	add wa,bc
 	cp a,(xsp+2)
-	jr nz,L3759
+	jr nz,L3827
 	ld a,iyl
 	extz wa
 	sll 3,wa
@@ -18935,7 +19318,7 @@ L3758:
 	extz bc
 	add wa,bc
 	cp a,(xsp+5)
-	jr ule,L3759
+	jr ule,L3827
 	ld a,iyl
 	extz wa
 	sll 3,wa
@@ -18943,7 +19326,7 @@ L3758:
 	extz bc
 	add wa,bc
 	ld (xsp+5),a
-L3759:
+L3827:
 	ld a,iyl
 	extz wa
 	sll 3,wa
@@ -18951,7 +19334,7 @@ L3759:
 	extz bc
 	add wa,bc
 	cp a,(xsp+3)
-	jr ule,L3760
+	jr ule,L3828
 	ld a,iyl
 	extz wa
 	sll 3,wa
@@ -18959,7 +19342,7 @@ L3759:
 	extz bc
 	add wa,bc
 	ld (xsp+3),a
-L3760:
+L3828:
 	ld a,iyl
 	extz wa
 	sll 3,wa
@@ -18967,7 +19350,7 @@ L3760:
 	extz bc
 	add wa,bc
 	cp a,(xsp+4)
-	jr uge,L3761
+	jr uge,L3829
 	ld a,iyl
 	extz wa
 	sll 3,wa
@@ -18975,45 +19358,45 @@ L3760:
 	extz bc
 	add wa,bc
 	ld (xsp+4),a
-L3761:
-L3753:
+L3829:
+L3821:
 	inc 1,izl
-L3754:
+L3822:
 	ld a,izl
 	cp a,8
-	jp ult,L3751
-L3752:
-L3749:
+	jp ult,L3819
+L3820:
+L3817:
 	inc 1,ixl
-L3750:
+L3818:
 	ld a,ixl
 	cp a,8
-	jp ult,L3747
-L3748:
-L3745:
+	jp ult,L3815
+L3816:
+L3813:
 	incb 1,(xsp+1)
-L3746:
+L3814:
 	ld a,(xsp+1)
 	cp a,(xsp+8)
-	jp ult,L3743
-L3744:
-L3741:
+	jp ult,L3811
+L3812:
+L3809:
 	incb 1,(xsp+0)
-L3742:
+L3810:
 	ld a,(xsp+0)
 	cp a,(_body__29+28)
-	jp ult,L3739
-L3740:
+	jp ult,L3807
+L3808:
 	ld a,(xsp+4)
 	cp a,(xsp+3)
-	jr ule,L3762
+	jr ule,L3830
 	ld xwa,(_body__29+18)
 	ld a,(xwa)
 	extz wa
 	sll 2,wa
 	ld (_car_wheel_dx__29),a
-	jr L3738
-L3762:
+	jr L3806
+L3830:
 	ld wa,2
 	ld c,(xsp+5)
 	extz bc
@@ -19028,17 +19411,17 @@ L3762:
 	ld (xsp+8),wa
 	ld bc,(xsp+6)
 	cp bc,(xsp+8)
-	jr ule,L3763
+	jr ule,L3831
 	ld wa,(xsp+6)
 	sub wa,(xsp+8)
 	srl 1,wa
 	extz wa
-	jr L3764
-L3763:
+	jr L3832
+L3831:
 	ld wa,0
-L3764:
+L3832:
 	ld (_car_wheel_dx__29),a
-L3738:
+L3806:
 	lda xsp,(xsp+20)
 	pop xiz
 	ret
@@ -19047,14 +19430,14 @@ L3738:
 _id_car_select:
 	ld c,(xsp+4)
 	cp c,1
-	jr uge,L3769
+	jr uge,L3837
 	ld a,(xsp+4)
 	extz wa
-	jr L3770
-L3769:
+	jr L3838
+L3837:
 	ld a,0
 	extz wa
-L3770:
+L3838:
 	ld (_car_variant__29),a
 	ld xwa,_body__29
 	push xwa
@@ -19063,22 +19446,22 @@ L3770:
 	call _id_fleet_body
 	lda xsp,(xsp+8)
 	call _mesure_roues__29
-L3768:
+L3836:
 	ret
 
 ; function id_car_char_count
 _id_car_char_count:
 	ld c,(xsp+4)
 	cp c,0
-	jr z,L3775
+	jr z,L3843
 	ld wa,(_body__29+4)
-	jr L3776
-L3775:
+	jr L3844
+L3843:
 	ld wa,(_body__29+26)
-L3776:
+L3844:
 	srl 3,wa
-	jr L3774
-L3774:
+	jr L3842
+L3842:
 	ret
 
 ; function id_car_half_width
@@ -19087,15 +19470,15 @@ _id_car_half_width:
 	ld a,(xwa)
 	extz wa
 	sll 2,wa
-	jr L3778
-L3778:
+	jr L3846
+L3846:
 	ret
 
 ; function id_car_wheel_dx
 _id_car_wheel_dx:
 	ld a,(_car_wheel_dx__29)
-	jr L3780
-L3780:
+	jr L3848
+L3848:
 	ret
 
 ; function id_car_init
@@ -19116,8 +19499,8 @@ _id_car_init:
 	ld wa,(xsp+24)
 	ld (_car_tile_base__29),wa
 	ld ix,0
-	jr L3796
-L3793:
+	jr L3864
+L3861:
 	ld wa,40960
 	extz xwa
 	ld bc,(xsp+24)
@@ -19126,8 +19509,8 @@ L3793:
 	add xwa,xbc
 	ld (xsp+8),xwa
 	ld iz,0
-	jr L3800
-L3797:
+	jr L3868
+L3865:
 	ld xwa,(xsp+4)
 	ld bc,ix
 	sll 3,bc
@@ -19155,20 +19538,20 @@ L3797:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L3799:
+L3867:
 	inc 1,iz
-L3800:
+L3868:
 	ld wa,iz
 	cp wa,8
-	jr ult,L3797
-L3798:
-L3795:
+	jr ult,L3865
+L3866:
+L3863:
 	inc 1,ix
-L3796:
+L3864:
 	ld wa,ix
 	cp wa,(xsp+2)
-	jr ult,L3793
-L3794:
+	jr ult,L3861
+L3862:
 	push xix
 	push xiy
 	ld xwa,(_body__29+6)
@@ -19193,7 +19576,7 @@ L3794:
 	pop xix
 	ld a,(_body__29+28)
 	cp a,1
-	jr ule,L3801
+	jr ule,L3869
 	push xix
 	push xiy
 	ld xwa,(_body__29+6)
@@ -19216,8 +19599,8 @@ L3794:
 	lda xsp,(xsp+24)
 	pop xiy
 	pop xix
-	jr L3802
-L3801:
+	jr L3870
+L3869:
 	push xix
 	push xiy
 	ld xwa,(_body__29+6)
@@ -19240,7 +19623,7 @@ L3801:
 	lda xsp,(xsp+24)
 	pop xiy
 	pop xix
-L3802:
+L3870:
 	push xix
 	push xiy
 	ld a,24
@@ -19251,7 +19634,7 @@ L3802:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L3792:
+L3860:
 	lda xsp,(xsp+16)
 	pop xiz
 	ret
@@ -19270,7 +19653,7 @@ _id_car_portrait_angle:
 	ld (xsp+3),a
 	ld a,(_body__29+29)
 	cp a,2
-	jr uge,L3835
+	jr uge,L3903
 	push xix
 	push xiy
 	ld a,(xsp+54)
@@ -19294,8 +19677,8 @@ _id_car_portrait_angle:
 	lda xsp,(xsp+12)
 	pop xiy
 	pop xix
-	jp L3834
-L3835:
+	jp L3902
+L3903:
 	ld a,(xsp+50)
 	extz wa
 	exts xwa
@@ -19306,17 +19689,17 @@ L3835:
 	ld (xsp+50),a
 	ld a,(xsp+50)
 	cp a,(_body__29+29)
-	jr uge,L3836
+	jr uge,L3904
 	ld a,(xsp+50)
 	ld (xsp+4),a
 	ldb (xsp+5),0
-	jr L3837
-L3836:
+	jr L3905
+L3904:
 	ld a,(xsp+3)
 	sub a,(xsp+50)
 	ld (xsp+4),a
 	ldb (xsp+5),1
-L3837:
+L3905:
 	ld xwa,(_body__29+14)
 	ld c,(xsp+4)
 	extz bc
@@ -19341,8 +19724,8 @@ L3837:
 	ldb (xsp+6),255
 	ldb (xsp+7),0
 	ld izl,0
-	jr L3841
-L3838:
+	jr L3909
+L3906:
 	ld xwa,(_body__29+22)
 	ld c,(xsp+9)
 	add c,izl
@@ -19353,42 +19736,42 @@ L3838:
 	ld (xsp+12),a
 	ld c,(xsp+5)
 	cp c,0
-	jr z,L3842
+	jr z,L3910
 	ld a,(xsp+11)
 	sub a,1
 	sub a,(xsp+12)
 	extz wa
-	jr L3843
-L3842:
+	jr L3911
+L3910:
 	ld a,(xsp+12)
 	extz wa
-L3843:
+L3911:
 	ld (xsp+13),a
 	ld a,(xsp+13)
 	cp a,(xsp+6)
-	jr uge,L3844
+	jr uge,L3912
 	ld a,(xsp+13)
 	ld (xsp+6),a
-L3844:
+L3912:
 	ld a,(xsp+13)
 	cp a,(xsp+7)
-	jr ule,L3845
+	jr ule,L3913
 	ld a,(xsp+13)
 	ld (xsp+7),a
-L3845:
-L3840:
+L3913:
+L3908:
 	inc 1,izl
-L3841:
+L3909:
 	ld a,izl
 	cp a,(xsp+10)
-	jr ult,L3838
-L3839:
+	jr ult,L3906
+L3907:
 	ld a,(xsp+6)
 	cp a,(xsp+7)
-	jr ule,L3846
+	jr ule,L3914
 	ldb (xsp+6),0
 	ldb (xsp+7),0
-L3846:
+L3914:
 	ld a,(xsp+38)
 	extz wa
 	ld c,(xsp+7)
@@ -19408,8 +19791,8 @@ L3846:
 	sub wa,bc
 	ld (xsp+8),a
 	ldb (xsp+1),0
-	jp L3850
-L3847:
+	jp L3918
+L3915:
 	ld a,(_body__29+28)
 	sub a,1
 	sub a,(xsp+1)
@@ -19458,16 +19841,16 @@ L3847:
 	ld (xsp+12),a
 	ld c,(xsp+9)
 	cp c,0
-	jr nz,L3851
+	jr nz,L3919
 	ld wa,0
-	jr L3852
-L3851:
+	jr L3920
+L3919:
 	ld wa,5
-L3852:
+L3920:
 	ld (xsp+13),a
 	ld izl,0
-	jp L3856
-L3853:
+	jp L3924
+L3921:
 	ld xwa,(_body__29+22)
 	ld c,(xsp+10)
 	add c,izl
@@ -19478,18 +19861,18 @@ L3853:
 	ld xiy,xwa
 	ld c,(xsp+5)
 	cp c,0
-	jr z,L3857
+	jr z,L3925
 	ld a,(xsp+12)
 	sub a,1
 	sub a,(xiy)
 	extz wa
-	jr L3858
-L3857:
+	jr L3926
+L3925:
 	ld a,(xiy)
 	extz wa
-L3858:
+L3926:
 	ld (xsp+18),a
-L3859:
+L3927:
 	ld a,(xsp+2)
 	ld (xsp+19),a
 	ld a,(xsp+8)
@@ -19515,12 +19898,12 @@ L3859:
 	ld (xsp+24),a
 	ld c,(xsp+5)
 	cp c,0
-	jr z,L3862
+	jr z,L3930
 	ld wa,128
-	jr L3863
-L3862:
+	jr L3931
+L3930:
 	ld wa,0
-L3863:
+L3931:
 	ld (xsp+25),a
 	ld wa,34816
 	ld c,(xsp+19)
@@ -19555,27 +19938,27 @@ L3863:
 	add bc,de
 	extz xbc
 	ld (xbc),a
-L3861:
-L3860:
+L3929:
+L3928:
 	incb 1,(xsp+2)
-L3855:
+L3923:
 	inc 1,izl
-L3856:
+L3924:
 	ld a,izl
 	cp a,(xsp+11)
-	jr uge,L3864
+	jr uge,L3932
 	ld a,(xsp+2)
 	cp a,64
-	jp ult,L3853
-L3864:
-L3854:
-L3849:
+	jp ult,L3921
+L3932:
+L3922:
+L3917:
 	incb 1,(xsp+1)
-L3850:
+L3918:
 	ld a,(xsp+1)
 	cp a,(_body__29+28)
-	jp ult,L3847
-L3848:
+	jp ult,L3915
+L3916:
 	push xix
 	push xiy
 	ld a,64
@@ -19586,7 +19969,7 @@ L3848:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L3834:
+L3902:
 	lda xsp,(xsp+30)
 	pop xiz
 	ret
@@ -19598,8 +19981,8 @@ _id_car_portrait:
 	ld a,(xsp+40)
 	ld (xsp+2),a
 	ldb (xsp+1),0
-	jp L3884
-L3881:
+	jp L3952
+L3949:
 	ld a,(_body__29+28)
 	sub a,1
 	sub a,(xsp+1)
@@ -19626,16 +20009,16 @@ L3881:
 	ld (xsp+5),a
 	ld c,(xsp+3)
 	cp c,0
-	jr nz,L3885
+	jr nz,L3953
 	ld wa,0
-	jr L3886
-L3885:
+	jr L3954
+L3953:
 	ld wa,5
-L3886:
+L3954:
 	ld (xsp+6),a
 	ldb (xsp+0),0
-	jp L3890
-L3887:
+	jp L3958
+L3955:
 	ld xwa,(_body__29+22)
 	ld c,(xsp+4)
 	add c,(xsp+0)
@@ -19644,7 +20027,7 @@ L3887:
 	add xwa,xbc
 	lda xwa,(xwa)
 	ld xiy,xwa
-L3891:
+L3959:
 	ld a,(xsp+2)
 	ld (xsp+12),a
 	ld a,(xsp+32)
@@ -19703,27 +20086,27 @@ L3891:
 	add bc,de
 	extz xbc
 	ld (xbc),a
-L3893:
-L3892:
+L3961:
+L3960:
 	incb 1,(xsp+2)
-L3889:
+L3957:
 	incb 1,(xsp+0)
-L3890:
+L3958:
 	ld a,(xsp+0)
 	cp a,(xsp+5)
-	jr uge,L3894
+	jr uge,L3962
 	ld a,(xsp+2)
 	cp a,64
-	jp ult,L3887
-L3894:
-L3888:
-L3883:
+	jp ult,L3955
+L3962:
+L3956:
+L3951:
 	incb 1,(xsp+1)
-L3884:
+L3952:
 	ld a,(xsp+1)
 	cp a,(_body__29+28)
-	jp ult,L3881
-L3882:
+	jp ult,L3949
+L3950:
 	push xix
 	push xiy
 	ld a,64
@@ -19734,7 +20117,7 @@ L3882:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L3880:
+L3948:
 	lda xsp,(xsp+24)
 	pop xiz
 	ret
@@ -19766,10 +20149,10 @@ _car_layer__29:
 	ld (xsp+10),wa
 	ld wa,(_car_at_x__29)
 	cp wa,32767
-	jr z,L3900
+	jr z,L3968
 	ld wa,(_car_at_x__29)
 	ld (xsp+10),wa
-L3900:
+L3968:
 	ld a,(xsp+62)
 	sub a,(xsp+70)
 	ld (xsp+12),a
@@ -19780,12 +20163,12 @@ L3900:
 	ld (xsp+14),a
 	ld c,(xsp+42)
 	cp c,0
-	jr z,L3901
+	jr z,L3969
 	ld wa,128
-	jr L3902
-L3901:
+	jr L3970
+L3969:
 	ld wa,0
-L3902:
+L3970:
 	ld c,(_id_spr_priority)
 	extz bc
 	or wa,bc
@@ -19809,7 +20192,7 @@ L3902:
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-L3899:
+L3967:
 	lda xsp,(xsp+22)
 	ret
 
@@ -19819,23 +20202,23 @@ _lean_last__29:
 	lda xsp,(xsp-2)
 	ld c,(_body__29+29)
 	cp c,0
-	jr ule,L3908
+	jr ule,L3976
 	ld a,(_body__29+29)
 	extz wa
 	sub wa,1
-	jr L3909
-L3908:
+	jr L3977
+L3976:
 	ld wa,0
-L3909:
+L3977:
 	ld izl,a
 	ld a,izl
 	cp a,2
-	jr ule,L3910
+	jr ule,L3978
 	ld izl,2
-L3910:
+L3978:
 	ld a,izl
-	jr L3907
-L3907:
+	jr L3975
+L3975:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -19848,38 +20231,38 @@ _lean_pose__29:
 	ld (xsp+0),a
 	ld a,(_lean_hold__29)
 	cp a,0
-	jr nz,L3920
+	jr nz,L3988
 	ld wa,0
-	jr L3919
-L3920:
+	jr L3987
+L3988:
 	ld c,(_lean_hold__29)
 	cp c,12
-	jr ult,L3921
+	jr ult,L3989
 	ld wa,3
-	jr L3922
-L3921:
+	jr L3990
+L3989:
 	ld c,(_lean_hold__29)
 	cp c,5
-	jr ult,L3923
+	jr ult,L3991
 	ld wa,2
-	jr L3924
-L3923:
+	jr L3992
+L3991:
 	ld wa,1
-L3924:
-L3922:
+L3992:
+L3990:
 	ld izl,a
 	ld c,izl
 	cp c,(xsp+0)
-	jr ule,L3925
+	jr ule,L3993
 	ld a,(xsp+0)
 	extz wa
-	jr L3926
-L3925:
+	jr L3994
+L3993:
 	ld a,izl
 	extz wa
-L3926:
-	jr L3919
-L3919:
+L3994:
+	jr L3987
+L3987:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -19894,14 +20277,14 @@ _id_car_lean_share:
 	ld (xsp+1),a
 	ld a,(xsp+1)
 	cp a,0
-	jr z,L3935
+	jr z,L4003
 	ld a,(xsp+0)
 	cp a,0
-	jr nz,L3934
-L3935:
+	jr nz,L4002
+L4003:
 	ld wa,0
-	jr L3933
-L3934:
+	jr L4001
+L4002:
 	ld a,(xsp+1)
 	extz wa
 	sll 4,wa
@@ -19912,20 +20295,20 @@ L3934:
 	ld iz,wa
 	ld wa,iz
 	cp wa,16
-	jr le,L3936
+	jr le,L4004
 	ld iz,16
-L3936:
+L4004:
 	ld c,(_lean_side__29)
 	cp c,0
-	jr ge,L3937
+	jr ge,L4005
 	ld wa,iz
 	neg wa
-	jr L3938
-L3937:
+	jr L4006
+L4005:
 	ld wa,iz
-L3938:
-	jr L3933
-L3933:
+L4006:
+	jr L4001
+L4001:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -19933,15 +20316,15 @@ L3933:
 ; function id_car_last_x
 _id_car_last_x:
 	ld wa,(_car_last_x__29)
-	jr L3940
-L3940:
+	jr L4008
+L4008:
 	ret
 
 ; function id_car_last_top
 _id_car_last_top:
 	ld a,(_car_last_top__29)
-	jr L3942
-L3942:
+	jr L4010
+L4010:
 	ret
 
 ; function id_car_draw
@@ -19950,71 +20333,71 @@ _id_car_draw:
 	lda xsp,(xsp-8)
 	ld a,(xsp+20)
 	cp a,0
-	jr z,L3971
+	jr z,L4039
 	ld a,(_lean_side__29)
 	cp a,(xsp+20)
-	jr z,L3972
+	jr z,L4040
 	ld a,(xsp+20)
 	ld (_lean_side__29),a
 	ldb (_lean_hold__29),0
-L3972:
+L4040:
 	ld a,(_lean_hold__29)
 	cp a,255
-	jr uge,L3973
+	jr uge,L4041
 	incb 1,(_lean_hold__29)
-L3973:
+L4041:
 	ldb (_lean_wait__29),2
-	jr L3974
-L3971:
+	jr L4042
+L4039:
 	ld a,(_lean_hold__29)
 	cp a,0
-	jr z,L3975
+	jr z,L4043
 	ld a,(_lean_wait__29)
 	cp a,0
-	jr z,L3976
+	jr z,L4044
 	decb 1,(_lean_wait__29)
-	jr L3977
-L3976:
+	jr L4045
+L4044:
 	ldb (_lean_wait__29),2
 	ld a,(_lean_hold__29)
 	cp a,12
-	jr ult,L3978
+	jr ult,L4046
 	ldb (_lean_hold__29),11
-	jr L3979
-L3978:
+	jr L4047
+L4046:
 	ld a,(_lean_hold__29)
 	cp a,5
-	jr ult,L3980
+	jr ult,L4048
 	ldb (_lean_hold__29),4
-	jr L3981
-L3980:
+	jr L4049
+L4048:
 	ldb (_lean_hold__29),0
-L3981:
-L3979:
-L3977:
-L3975:
-L3974:
+L4049:
+L4047:
+L4045:
+L4043:
+L4042:
 	ld a,(xsp+24)
 	cp a,0
-	jr nz,L3982
+	jr nz,L4050
 	ldb (_bump_phase__29),0
 	ldb (xsp+2),0
-	jr L3983
-L3982:
+	jr L4051
+L4050:
 	incb 1,(_bump_phase__29)
 	ld c,(_bump_phase__29)
 	extz bc
 	and bc,2
 	cp bc,0
-	jr z,L3984
+	jr z,L4052
 	ld a,(xsp+24)
 	extz wa
-	jr L3985
-L3984:
+	jr L4053
+L4052:
 	ld wa,0
-L3985:
+L4053:
 	ld (xsp+2),a
-L3983:
+L4051:
 	ld a,148
 	ld c,(_body__29+30)
 	sub a,c
@@ -20034,12 +20417,12 @@ L3983:
 	ld (xsp+6),wa
 	ld bc,(xsp+6)
 	cp bc,0
-	jr ge,L3986
+	jr ge,L4054
 	ld wa,0
-	jr L3987
-L3986:
+	jr L4055
+L4054:
 	ld wa,(xsp+6)
-L3987:
+L4055:
 	ld (xsp+3),a
 	ld a,(xsp+4)
 	push xwa
@@ -20057,25 +20440,25 @@ L3987:
 	ld (_car_last_top__29),a
 	ld a,(_body__29+28)
 	cp a,1
-	jp ule,L3988
+	jp ule,L4056
 	call _lean_pose__29
 	ld (xsp+0),a
 	ldb (xsp+1),0
 	ld c,(xsp+0)
 	cp c,0
-	jr nz,L3989
+	jr nz,L4057
 	ld wa,0
-	jr L3990
-L3989:
+	jr L4058
+L4057:
 	ld c,(_lean_side__29)
 	cp c,0
-	jr ge,L3991
+	jr ge,L4059
 	ld wa,2
-	jr L3992
-L3991:
+	jr L4060
+L4059:
 	ld wa,1
-L3992:
-L3990:
+L4060:
+L4058:
 	ld izl,a
 	ld a,(xsp+2)
 	push xwa
@@ -20168,25 +20551,25 @@ L3990:
 	push xwa
 	call _car_layer__29
 	lda xsp,(xsp+48)
-	jp L3970
-L3988:
+	jp L4038
+L4056:
 	ld c,(_lean_hold__29)
 	cp c,0
-	jr nz,L3993
+	jr nz,L4061
 	ld wa,0
-	jr L3994
-L3993:
+	jr L4062
+L4061:
 	ld wa,1
-L3994:
+L4062:
 	ld (xsp+0),a
 	ld c,(_lean_side__29)
 	cp c,0
-	jr le,L3995
+	jr le,L4063
 	ld wa,1
-	jr L3996
-L3995:
+	jr L4064
+L4063:
 	ld wa,0
-L3996:
+L4064:
 	ld (xsp+1),a
 	ld a,(xsp+2)
 	push xwa
@@ -20235,7 +20618,7 @@ L3996:
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-L3970:
+L4038:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -20246,7 +20629,7 @@ _id_car_draw_at:
 	ld (_car_at_x__29),wa
 	ld a,(_body__29+28)
 	cp a,1
-	jr ule,L4000
+	jr ule,L4068
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -20288,7 +20671,7 @@ _id_car_draw_at:
 	push xwa
 	call _car_layer__29
 	lda xsp,(xsp+48)
-L4000:
+L4068:
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -20319,21 +20702,21 @@ L4000:
 	call _car_layer__29
 	lda xsp,(xsp+48)
 	ldw (_car_at_x__29),32767
-L3999:
+L4067:
 	ret
 
 ; function id_car_height
 _id_car_height:
 	ld a,(_body__29+30)
-	jr L4002
-L4002:
+	jr L4070
+L4070:
 	ret
 
 ; function id_car_tile_base
 _id_car_tile_base:
 	ld wa,(_car_tile_base__29)
-	jr L4004
-L4004:
+	jr L4072
+L4072:
 	ret
 
 ; function id_car_restore
@@ -20344,7 +20727,7 @@ _id_car_restore:
 	push xwa
 	call _id_car_init
 	lda xsp,(xsp+8)
-L4006:
+L4074:
 	ret
 
 ; function course_art
@@ -20364,15 +20747,15 @@ _course_art__30:
 	ldb (xiz+20),32
 	ldb (xiz+21),64
 	ldb (xiz+22),151
-L4008:
+L4076:
 	pop xiz
 	ret
 
 ; function uses_akina
 _uses_akina__30:
 	ld wa,0
-	jr L4010
-L4010:
+	jr L4078
+L4078:
 	ret
 
 ; function id_road_horizon
@@ -20383,22 +20766,22 @@ _id_road_horizon:
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
-	jr L4012
-L4012:
+	jr L4080
+L4080:
 	ret
 
 ; function sky_is_tall_course
 _sky_is_tall_course__30:
 	ld wa,0
-	jr L4014
-L4014:
+	jr L4082
+L4082:
 	ret
 
 ; function road_is_tarmac
 _road_is_tarmac__30:
 	ld wa,1
-	jr L4016
-L4016:
+	jr L4084
+L4084:
 	ret
 
 ; function id_build_weights
@@ -20425,15 +20808,15 @@ _id_build_weights__30:
 	sll 2,wa
 	ld (_id_curve_cm__30),wa
 	ld izl,0
-	jp L4051
-L4048:
+	jp L4119
+L4116:
 	push xix
 	push xiy
 	call _uses_akina__30
 	pop xiy
 	pop xix
 	cp a,0
-	jp nz,L4052
+	jp nz,L4120
 	ld a,(_art__30+22)
 	extz wa
 	srl 3,wa
@@ -20455,10 +20838,10 @@ L4048:
 	ld (xsp+8),wa
 	ld wa,(xsp+8)
 	cp wa,(xsp+6)
-	jr ule,L4053
+	jr ule,L4121
 	ld wa,(xsp+6)
 	ld (xsp+8),wa
-L4053:
+L4121:
 	ld a,(xsp+8)
 	ld xbc,_id_src__30
 	ld e,izl
@@ -20482,8 +20865,8 @@ L4053:
 	extz xwa
 	div xwa,(xsp+6)
 	ld iy,wa
-	jr L4054
-L4052:
+	jr L4122
+L4120:
 	ld a,izl
 	ld xbc,_id_src__30
 	ld e,izl
@@ -20509,7 +20892,7 @@ L4052:
 	extz xwa
 	div xwa,(xsp+2)
 	ld iy,wa
-L4054:
+L4122:
 	ld wa,255
 	sub wa,iy
 	ld (xsp+6),wa
@@ -20539,7 +20922,7 @@ L4054:
 	ld (xbc),a
 	ld wa,iy
 	cp wa,0
-	jr nz,L4055
+	jr nz,L4123
 	ld wa,1600
 	ld xbc,_id_ahead__30
 	ld e,izl
@@ -20548,8 +20931,8 @@ L4054:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	jr L4056
-L4055:
+	jr L4124
+L4123:
 	ld wa,60
 	mul xwa,(xsp+6)
 	extz xwa
@@ -20557,12 +20940,12 @@ L4055:
 	ld (xsp+8),wa
 	ld bc,(xsp+8)
 	cp bc,1600
-	jr ule,L4057
+	jr ule,L4125
 	ld wa,1600
-	jr L4058
-L4057:
+	jr L4126
+L4125:
 	ld wa,(xsp+8)
-L4058:
+L4126:
 	ld xbc,_id_ahead__30
 	ld e,izl
 	extz de
@@ -20570,7 +20953,7 @@ L4058:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4056:
+L4124:
 	ld a,izl
 	extz wa
 	mul xwa,47
@@ -20615,35 +20998,35 @@ L4056:
 	ld (xsp+12),wa
 	ld bc,(xsp+12)
 	cp bc,47
-	jr ule,L4059
+	jr ule,L4127
 	ld wa,47
-	jr L4060
-L4059:
+	jr L4128
+L4127:
 	ld wa,(xsp+12)
-L4060:
+L4128:
 	ld xbc,_id_sl__30+128
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L4050:
+L4118:
 	inc 1,izl
-L4051:
+L4119:
 	ld a,izl
 	cp a,(_road_lines__30)
-	jp ult,L4048
-L4049:
+	jp ult,L4116
+L4117:
 	ld a,(_road_lines__30)
 	sub a,1
 	ld (_wide_k0__30),a
-	jr L4063
-L4061:
+	jr L4131
+L4129:
 	decb 1,(_wide_k0__30)
-L4063:
+L4131:
 	ld a,(_wide_k0__30)
 	cp a,0
-	jr ule,L4064
+	jr ule,L4132
 	ld xwa,_id_src__30
 	ld c,(_wide_k0__30)
 	sub c,1
@@ -20652,9 +21035,9 @@ L4063:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,48
-	jr uge,L4061
-L4064:
-L4062:
+	jr uge,L4129
+L4132:
+L4130:
 	ld a,(_road_top__30)
 	sub a,8
 	ld (_climb_room__30),a
@@ -20664,24 +21047,24 @@ L4062:
 	pop xiy
 	pop xix
 	cp a,0
-	jr z,L4065
+	jr z,L4133
 	ld a,(_road_lines__30)
 	extz wa
 	extz xwa
 	div xwa,10
 	ld (_descent_room__30),a
-	jr L4066
-L4065:
+	jr L4134
+L4133:
 	ld a,(_road_lines__30)
 	extz wa
 	srl 1,wa
 	ld (_descent_room__30),a
-L4066:
+L4134:
 	ldb (_grade_hi__30),0
 	ldb (_grade_lo__30),0
 	ld ix,1
-	jr L4070
-L4067:
+	jr L4138
+L4135:
 	ld a,(_road_lines__30)
 	extz wa
 	ld xbc,_hill_rate__30
@@ -20701,20 +21084,20 @@ L4067:
 	extz de
 	add bc,de
 	cp wa,bc
-	jr ugt,L4071
+	jr ugt,L4139
 	ld a,ixl
 	ld (_grade_hi__30),a
-L4071:
-L4069:
+L4139:
+L4137:
 	inc 1,ix
-L4070:
+L4138:
 	ld wa,ix
 	cp wa,20
-	jr le,L4067
-L4068:
+	jr le,L4135
+L4136:
 	ld ix,1
-	jr L4075
-L4072:
+	jr L4143
+L4140:
 	ld a,(_road_lines__30)
 	extz wa
 	ld xbc,_hill_rate__30
@@ -20734,19 +21117,19 @@ L4072:
 	ld c,(_road_lines__30)
 	extz bc
 	cp wa,bc
-	jr ult,L4076
+	jr ult,L4144
 	ld a,ixl
 	neg a
 	ld (_grade_lo__30),a
-L4076:
-L4074:
+L4144:
+L4142:
 	inc 1,ix
-L4075:
+L4143:
 	ld wa,ix
 	cp wa,20
-	jr le,L4072
-L4073:
-L4047:
+	jr le,L4140
+L4141:
+L4115:
 	lda xsp,(xsp+14)
 	pop xiz
 	ret
@@ -20757,35 +21140,35 @@ _rally_scan__30:
 	lda xsp,(xsp-6)
 	ld a,(_rally_scanned__30)
 	cp a,0
-	jr z,L4095
-	jp L4094
-L4095:
+	jr z,L4163
+	jp L4162
+L4163:
 	ldw (xsp+0),0
-	jr L4099
-L4096:
+	jr L4167
+L4164:
 	ld a,255
 	ld xbc,_rally_of__30
 	ld de,(xsp+0)
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L4098:
+L4166:
 	incw 1,(xsp+0)
-L4099:
+L4167:
 	ld wa,(xsp+0)
 	cp wa,512
-	jr ult,L4096
-L4097:
+	jr ult,L4164
+L4165:
 	ldb (_rally_used__30),0
 	ld a,(_art__30+21)
 	extz wa
 	srl 3,wa
 	ld iyl,a
-	jp L4103
-L4100:
+	jp L4171
+L4168:
 	ld ixl,0
-	jr L4107
-L4104:
+	jr L4175
+L4172:
 	ld xwa,(_art__30+4)
 	ld c,iyl
 	extz bc
@@ -20802,22 +21185,22 @@ L4104:
 	ld iz,wa
 	ld wa,iz
 	cp wa,512
-	jr uge,L4109
+	jr uge,L4177
 	ld xwa,_rally_of__30
 	ld bc,iz
 	extz xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,255
-	jr z,L4108
-L4109:
-	jr L4106
-L4108:
+	jr z,L4176
+L4177:
+	jr L4174
+L4176:
 	ld a,(_rally_used__30)
 	cp a,255
-	jr ult,L4110
-	jr L4106
-L4110:
+	jr ult,L4178
+	jr L4174
+L4178:
 	ld a,(_rally_used__30)
 	ld xbc,_rally_of__30
 	ld de,iz
@@ -20833,22 +21216,22 @@ L4110:
 	add xbc,xde
 	ld (xbc),wa
 	incb 1,(_rally_used__30)
-L4106:
+L4174:
 	inc 1,ixl
-L4107:
+L4175:
 	ld a,ixl
 	cp a,(_art__30+20)
-	jp ult,L4104
-L4105:
-L4102:
+	jp ult,L4172
+L4173:
+L4170:
 	inc 1,iyl
-L4103:
+L4171:
 	ld a,iyl
 	cp a,29
-	jp ult,L4100
-L4101:
+	jp ult,L4168
+L4169:
 	ldb (_rally_scanned__30),1
-L4094:
+L4162:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -20858,8 +21241,8 @@ _id_road_char_count:
 	call _rally_scan__30
 	ld a,(_rally_used__30)
 	extz wa
-	jr L4112
-L4112:
+	jr L4180
+L4180:
 	ret
 
 ; function id_load_chars
@@ -20875,8 +21258,8 @@ _id_load_chars__30:
 	ld xwa,(_art__30)
 	ld (xsp+4),xwa
 	ld ix,0
-	jp L4128
-L4125:
+	jp L4196
+L4193:
 	ld wa,40960
 	extz xwa
 	ld bc,128
@@ -20893,21 +21276,21 @@ L4125:
 	pop xix
 	pop xwa
 	cp c,0
-	jr nz,L4129
+	jr nz,L4197
 	ld xwa,_rally_src__30
 	ld bc,ix
 	extz xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	jr L4130
-L4129:
+	jr L4198
+L4197:
 	ld wa,ix
-L4130:
+L4198:
 	ld (xsp+12),wa
 	ld iz,0
-	jr L4134
-L4131:
+	jr L4202
+L4199:
 	ld xwa,(xsp+4)
 	ld bc,(xsp+12)
 	sll 3,bc
@@ -20935,21 +21318,21 @@ L4131:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L4133:
+L4201:
 	inc 1,iz
-L4134:
+L4202:
 	ld wa,iz
 	cp wa,8
-	jr ult,L4131
-L4132:
-L4127:
+	jr ult,L4199
+L4200:
+L4195:
 	inc 1,ix
-L4128:
+L4196:
 	ld wa,ix
 	cp wa,(xsp+2)
-	jp ult,L4125
-L4126:
-L4124:
+	jp ult,L4193
+L4194:
+L4192:
 	lda xsp,(xsp+18)
 	pop xiz
 	ret
@@ -20959,8 +21342,8 @@ _id_load_palettes__30:
 	push xiz
 	lda xsp,(xsp-2)
 	ld izl,0
-	jr L4144
-L4141:
+	jr L4212
+L4209:
 	ld xwa,(_art__30+12)
 	ld c,izl
 	extz bc
@@ -21006,13 +21389,13 @@ L4141:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-L4143:
+L4211:
 	inc 1,izl
-L4144:
+L4212:
 	ld a,izl
 	cp a,8
-	jp ult,L4141
-L4142:
+	jp ult,L4209
+L4210:
 	ld wa,4095
 	push xwa
 	ld wa,1365
@@ -21032,7 +21415,7 @@ L4142:
 	push xwa
 	call _ngpc_gfx_set_bg_color
 	lda xsp,(xsp+4)
-L4140:
+L4208:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -21044,7 +21427,7 @@ _id_road_reload_backdrop:
 	push xwa
 	call _ngpc_gfx_set_bg_color
 	lda xsp,(xsp+4)
-L4146:
+L4214:
 	ret
 
 ; function id_road_set_colors
@@ -21091,8 +21474,8 @@ _id_road_set_colors:
 	lda xsp,(xsp+4)
 	pop xix
 	ld izl,0
-	jr L4156
-L4153:
+	jr L4224
+L4221:
 	ld xwa,xix
 	ld c,izl
 	extz bc
@@ -21107,16 +21490,16 @@ L4153:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4155:
+L4223:
 	inc 1,izl
-L4156:
+L4224:
 	ld a,izl
 	cp a,4
-	jr ult,L4153
-L4154:
+	jr ult,L4221
+L4222:
 	ldw (_bc_rest__30),65535
 	ldw (_bc_rest__30+2),65535
-L4152:
+L4220:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -21144,38 +21527,38 @@ _id_load_maps_rally__30:
 	extz wa
 	srl 3,wa
 	ld iyl,a
-	jp L4178
-L4175:
+	jp L4246
+L4243:
 	ld a,iyl
 	ld c,(xsp+2)
 	sub a,c
 	ld (xsp+3),a
 	ld a,(xsp+3)
 	cp a,28
-	jr ule,L4179
+	jr ule,L4247
 	ldb (xsp+3),28
-L4179:
+L4247:
 	ld izl,0
-	jp L4183
-L4180:
+	jp L4251
+L4248:
 	ld wa,0
 	ld (xsp+4),a
 	ld a,(xsp+3)
 	ld (xsp+5),a
 	ld a,izl
 	cp a,0
-	jr uge,L4184
+	jr uge,L4252
 	ld a,(_art__30+21)
 	extz wa
 	srl 3,wa
 	ld (xsp+5),a
-	jr L4185
-L4184:
+	jr L4253
+L4252:
 	ld a,izl
 	ld c,0
 	add c,(_art__30+20)
 	cp a,c
-	jr ult,L4186
+	jr ult,L4254
 	ld a,(_art__30+20)
 	sub a,1
 	ld (xsp+4),a
@@ -21183,13 +21566,13 @@ L4184:
 	extz wa
 	srl 3,wa
 	ld (xsp+5),a
-	jr L4187
-L4186:
+	jr L4255
+L4254:
 	ld a,izl
 	sub a,0
 	ld (xsp+4),a
-L4187:
-L4185:
+L4255:
+L4253:
 	ld a,(xsp+5)
 	extz wa
 	ld c,(_art__30+20)
@@ -21208,23 +21591,23 @@ L4185:
 	ld (xsp+8),wa
 	ld bc,(xsp+8)
 	cp bc,512
-	jr uge,L4188
+	jr uge,L4256
 	ld xwa,_rally_of__30
 	ld bc,(xsp+8)
 	extz xbc
 	add xwa,xbc
 	ld a,(xwa)
 	extz wa
-	jr L4189
-L4188:
+	jr L4257
+L4256:
 	ld wa,255
-L4189:
+L4257:
 	ld ixl,a
 	ld a,ixl
 	cp a,255
-	jr nz,L4190
+	jr nz,L4258
 	ld ixl,0
-L4190:
+L4258:
 	ld wa,128
 	ld c,ixl
 	extz bc
@@ -21249,21 +21632,21 @@ L4190:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4182:
+L4250:
 	inc 1,izl
-L4183:
+L4251:
 	ld a,izl
 	cp a,32
-	jp ult,L4180
-L4181:
-L4177:
+	jp ult,L4248
+L4249:
+L4245:
 	inc 1,iyl
-L4178:
+L4246:
 	ld a,iyl
 	cp a,32
-	jp ult,L4175
-L4176:
-L4174:
+	jp ult,L4243
+L4244:
+L4242:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -21271,14 +21654,14 @@ L4174:
 ; function id_load_maps
 _id_load_maps__30:
 	call _id_load_maps_rally__30
-L4192:
+L4260:
 	ret
 
 ; function id_road_reload_maps
 _id_road_reload_maps:
 	call _id_load_palettes__30
 	call _id_load_maps_rally__30
-L4194:
+L4262:
 	ret
 
 ; function id_build_shear_limits
@@ -21291,10 +21674,10 @@ _id_build_shear_limits__30:
 	pop xiy
 	pop xix
 	cp a,0
-	jp nz,L4226
+	jp nz,L4294
 	ld izl,0
-	jr L4230
-L4227:
+	jr L4298
+L4295:
 	ld xwa,_id_src__30
 	ld c,izl
 	extz bc
@@ -21306,7 +21689,7 @@ L4227:
 	ld (xsp+2),wa
 	ld a,(xsp+1)
 	cp a,48
-	jr uge,L4231
+	jr uge,L4299
 	ld xwa,_id_route_lim0
 	ld c,(xsp+1)
 	extz bc
@@ -21318,11 +21701,11 @@ L4227:
 	ld (xsp+4),wa
 	ld wa,(xsp+4)
 	cp wa,(xsp+2)
-	jr ge,L4232
+	jr ge,L4300
 	ld wa,(xsp+4)
 	ld (xsp+2),wa
-L4232:
-L4231:
+L4300:
+L4299:
 	ld wa,(xsp+2)
 	neg wa
 	ld xbc,_id_dxc__30
@@ -21340,18 +21723,18 @@ L4231:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4229:
+L4297:
 	inc 1,izl
-L4230:
+L4298:
 	ld a,izl
 	cp a,(_road_lines__30)
-	jp ult,L4227
-L4228:
-	jp L4225
-L4226:
+	jp ult,L4295
+L4296:
+	jp L4293
+L4294:
 	ld izl,0
-	jp L4236
-L4233:
+	jp L4304
+L4301:
 	ld a,(_road_top__30)
 	extz wa
 	ld c,izl
@@ -21363,20 +21746,20 @@ L4233:
 	ld wa,0
 	ld (xsp+8),wa
 	ldb (xsp+4),0
-	jr L4240
-L4237:
+	jr L4308
+L4305:
 	ld wa,0
 	ld (xsp+10),wa
 	ld wa,0
 	ld (xsp+12),wa
 	ld wa,(xsp+12)
 	cp wa,0
-	jr nz,L4241
-	jr L4239
-L4241:
+	jr nz,L4309
+	jr L4307
+L4309:
 	ld ixl,0
-	jr L4245
-L4242:
+	jr L4313
+L4310:
 	ld wa,(xsp+12)
 	ld bc,14
 	ld de,2
@@ -21385,14 +21768,14 @@ L4242:
 	mul xde,hl
 	sub bc,de
 	cp c,0
-	jr z,L4248
-L4247:
+	jr z,L4316
+L4315:
 	srl 1,wa
-	djnz c,L4247
-L4248:
+	djnz c,L4315
+L4316:
 	and wa,3
 	cp wa,0
-	jr z,L4246
+	jr z,L4314
 	ld a,(xsp+4)
 	extz wa
 	sll 3,wa
@@ -21402,34 +21785,34 @@ L4248:
 	ld iy,wa
 	ld wa,iy
 	cp wa,(xsp+6)
-	jr uge,L4249
+	jr uge,L4317
 	ld wa,iy
 	ld (xsp+6),wa
-L4249:
+L4317:
 	ld wa,iy
 	cp wa,(xsp+8)
-	jr ule,L4250
+	jr ule,L4318
 	ld wa,iy
 	ld (xsp+8),wa
-L4250:
-L4246:
-L4244:
+L4318:
+L4314:
+L4312:
 	inc 1,ixl
-L4245:
+L4313:
 	ld a,ixl
 	cp a,8
-	jr ult,L4242
-L4243:
-L4239:
+	jr ult,L4310
+L4311:
+L4307:
 	incb 1,(xsp+4)
-L4240:
+L4308:
 	ld a,(xsp+4)
 	cp a,32
-	jr ult,L4237
-L4238:
+	jr ult,L4305
+L4306:
 	ld wa,(xsp+6)
 	cp wa,(xsp+8)
-	jr ule,L4251
+	jr ule,L4319
 	ld wa,65409
 	ld xbc,_id_dxc__30
 	ld e,izl
@@ -21446,8 +21829,8 @@ L4238:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	jr L4252
-L4251:
+	jr L4320
+L4319:
 	ld wa,(xsp+8)
 	sub wa,255
 	sub wa,7
@@ -21468,7 +21851,7 @@ L4251:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4252:
+L4320:
 	ld xwa,_id_dxc__30+128
 	ld c,izl
 	extz bc
@@ -21477,7 +21860,7 @@ L4252:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,88
-	jr le,L4253
+	jr le,L4321
 	ld wa,88
 	ld xbc,_id_dxc__30+128
 	ld e,izl
@@ -21486,7 +21869,7 @@ L4252:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4253:
+L4321:
 	ld xwa,_id_dxc__30
 	ld c,izl
 	extz bc
@@ -21495,7 +21878,7 @@ L4253:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,65448
-	jr ge,L4254
+	jr ge,L4322
 	ld wa,65448
 	ld xbc,_id_dxc__30
 	ld e,izl
@@ -21504,15 +21887,15 @@ L4253:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4254:
-L4235:
+L4322:
+L4303:
 	inc 1,izl
-L4236:
+L4304:
 	ld a,izl
 	cp a,(_road_lines__30)
-	jp ult,L4233
-L4234:
-L4225:
+	jp ult,L4301
+L4302:
+L4293:
 	lda xsp,(xsp+18)
 	pop xiz
 	ret
@@ -21520,22 +21903,22 @@ L4225:
 ; function id_road_course
 _id_road_course:
 	ld a,(_road_course__30)
-	jr L4256
-L4256:
+	jr L4324
+L4324:
 	ret
 
 ; function id_road_top
 _id_road_top:
 	ld a,(_road_top__30)
-	jr L4258
-L4258:
+	jr L4326
+L4326:
 	ret
 
 ; function id_road_bottom
 _id_road_bottom:
 	ld a,(_road_bottom__30)
-	jr L4260
-L4260:
+	jr L4328
+L4328:
 	ret
 
 ; function id_road_select
@@ -21544,13 +21927,13 @@ _id_road_select:
 	lda xsp,(xsp-14)
 	ld c,(xsp+22)
 	cp c,1
-	jr uge,L4300
+	jr uge,L4368
 	ld a,(xsp+22)
 	extz wa
-	jr L4301
-L4300:
+	jr L4369
+L4368:
 	ld wa,0
-L4301:
+L4369:
 	ld (_road_course__30),a
 	push xix
 	ld wa,0
@@ -21562,7 +21945,7 @@ L4301:
 	call _uses_akina__30
 	pop xix
 	cp a,0
-	jr nz,L4302
+	jr nz,L4370
 	push xix
 	ld xwa,_art__30
 	push xwa
@@ -21572,12 +21955,12 @@ L4301:
 	lda xsp,(xsp+8)
 	pop xix
 	ldb (_rally_scanned__30),0
-L4302:
+L4370:
 	push xix
 	call _uses_akina__30
 	pop xix
 	cp a,0
-	jr nz,L4303
+	jr nz,L4371
 	ldb (_road_base_x__30),48
 	ldb (_road_top__30),88
 	push xwa
@@ -21587,23 +21970,23 @@ L4302:
 	pop xix
 	pop xwa
 	cp c,0
-	jr z,L4304
+	jr z,L4372
 	ld a,88
 	extz wa
-	jr L4305
-L4304:
+	jr L4373
+L4372:
 	ld a,88
 	extz wa
-L4305:
+L4373:
 	ld (_road_plane0__30),a
 	ldb (_road_lines__30),64
-	jr L4306
-L4303:
+	jr L4374
+L4371:
 	ldb (_road_base_x__30),7
 	ldb (_road_top__30),72
 	ldb (_road_plane0__30),72
 	ldb (_road_lines__30),40
-L4306:
+L4374:
 	ld a,(_road_top__30)
 	add a,(_road_lines__30)
 	sub a,1
@@ -21615,11 +21998,11 @@ L4306:
 	ld (_car_stand__30),a
 	ld a,(_car_stand__30)
 	cp a,(_road_lines__30)
-	jr ult,L4307
+	jr ult,L4375
 	ld a,(_road_lines__30)
 	sub a,1
 	ld (_car_stand__30),a
-L4307:
+L4375:
 	push xix
 	call _id_load_chars__30
 	pop xix
@@ -21630,19 +22013,19 @@ L4307:
 	call _uses_akina__30
 	pop xix
 	cp a,0
-	jr nz,L4308
+	jr nz,L4376
 	push xix
 	call _id_load_maps_rally__30
 	pop xix
-	jr L4309
-L4308:
+	jr L4377
+L4376:
 	push xix
 	call _id_load_maps__30
 	pop xix
-L4309:
+L4377:
 	ldb (xsp+0),0
-	jr L4313
-L4310:
+	jr L4381
+L4378:
 	ld wa,0
 	ld xbc,_id_shear__30
 	ld e,(xsp+0)
@@ -21651,13 +22034,13 @@ L4310:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4312:
+L4380:
 	incb 1,(xsp+0)
-L4313:
+L4381:
 	ld a,(xsp+0)
 	cp a,(_road_lines__30)
-	jr ult,L4310
-L4311:
+	jr ult,L4378
+L4379:
 	ldw (_band_top__30),65535
 	ldw (_band_top__30+2),65535
 	ldw (_band_mid__30),65535
@@ -21673,12 +22056,12 @@ L4311:
 	pop xix
 	pop xwa
 	cp c,0
-	jr z,L4314
+	jr z,L4382
 	ld wa,3
-	jr L4315
-L4314:
+	jr L4383
+L4382:
 	ld wa,0
-L4315:
+L4383:
 	ld (_road_band_pal__30),a
 	ld xwa,33536
 	ld c,(_road_band_pal__30)
@@ -21691,8 +22074,8 @@ L4315:
 	ld wa,(xwa)
 	ld (xsp+2),wa
 	ld izl,0
-	jp L4319
-L4316:
+	jp L4387
+L4384:
 	ld wa,3
 	ld c,izl
 	extz bc
@@ -21711,33 +22094,33 @@ L4316:
 	ld (xsp+12),wa
 	ld bc,(xsp+8)
 	cp bc,ix
-	jr ule,L4320
+	jr ule,L4388
 	ld wa,(xsp+8)
 	sub wa,ix
-	jr L4321
-L4320:
+	jr L4389
+L4388:
 	ld wa,0
-L4321:
+L4389:
 	ld (xsp+8),wa
 	ld bc,(xsp+10)
 	cp bc,ix
-	jr ule,L4322
+	jr ule,L4390
 	ld wa,(xsp+10)
 	sub wa,ix
-	jr L4323
-L4322:
+	jr L4391
+L4390:
 	ld wa,0
-L4323:
+L4391:
 	ld (xsp+10),wa
 	ld bc,(xsp+12)
 	cp bc,ix
-	jr ule,L4324
+	jr ule,L4392
 	ld wa,(xsp+12)
 	sub wa,ix
-	jr L4325
-L4324:
+	jr L4393
+L4392:
 	ld wa,0
-L4325:
+L4393:
 	ld (xsp+12),wa
 	ld wa,(xsp+8)
 	sll 8,wa
@@ -21752,21 +22135,21 @@ L4325:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4318:
+L4386:
 	inc 1,izl
-L4319:
+L4387:
 	ld a,izl
 	cp a,4
-	jp ult,L4316
-L4317:
+	jp ult,L4384
+L4385:
 	push xix
 	call _road_is_tarmac__30
 	pop xix
 	cp a,0
-	jr z,L4326
+	jr z,L4394
 	ld izl,0
-	jr L4330
-L4327:
+	jr L4398
+L4395:
 	ld xwa,_course_sol__30
 	ld c,(_road_course__30)
 	extz bc
@@ -21786,23 +22169,23 @@ L4327:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4329:
+L4397:
 	inc 1,izl
-L4330:
+L4398:
 	ld a,izl
 	cp a,4
-	jr ult,L4327
-L4328:
-	jr L4331
-L4326:
+	jr ult,L4395
+L4396:
+	jr L4399
+L4394:
 	push xix
 	call _uses_akina__30
 	pop xix
 	cp a,0
-	jr nz,L4332
+	jr nz,L4400
 	ld izl,0
-	jr L4336
-L4333:
+	jr L4404
+L4401:
 	ld wa,(xsp+2)
 	ld xbc,_band_col__30
 	ld e,izl
@@ -21811,15 +22194,15 @@ L4333:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4335:
+L4403:
 	inc 1,izl
-L4336:
+L4404:
 	ld a,izl
 	cp a,4
-	jr ult,L4333
-L4334:
-L4332:
-L4331:
+	jr ult,L4401
+L4402:
+L4400:
+L4399:
 	push xix
 	call _id_build_weights__30
 	pop xix
@@ -21839,7 +22222,7 @@ L4331:
 	call _id_road_frame
 	lda xsp,(xsp+12)
 	pop xix
-L4299:
+L4367:
 	lda xsp,(xsp+14)
 	pop xiz
 	ret
@@ -21848,12 +22231,12 @@ L4299:
 _id_road_dma_pause:
 	ld a,(_road_dma_depth__30)
 	cp a,255
-	jr uge,L4341
+	jr uge,L4409
 	incb 1,(_road_dma_depth__30)
-L4341:
+L4409:
 	ld a,(_road_dma_live__30)
 	cp a,0
-	jr z,L4342
+	jr z,L4410
 	ld xwa,0
 	push xwa
 	call _ngpc_set_vblank_hook
@@ -21867,25 +22250,25 @@ L4341:
 	call _ngpc_dma_stream_end_u16
 	lda xsp,(xsp+4)
 	ldb (_road_dma_live__30),0
-L4342:
-L4340:
+L4410:
+L4408:
 	ret
 
 ; function id_road_dma_resume
 _id_road_dma_resume:
 	ld a,(_road_dma_depth__30)
 	cp a,0
-	jr z,L4349
+	jr z,L4417
 	decb 1,(_road_dma_depth__30)
-L4349:
+L4417:
 	ld a,(_road_dma_depth__30)
 	cp a,0
-	jr z,L4350
-	jp L4348
-L4350:
+	jr z,L4418
+	jp L4416
+L4418:
 	ld a,(_road_dma_live__30)
 	cp a,0
-	jp nz,L4351
+	jp nz,L4419
 	ld xwa,(_id_xy_live__30)
 	push xwa
 	ld wa,1
@@ -21900,18 +22283,18 @@ L4350:
 	lda xsp,(xsp+4)
 	call _uses_akina__30
 	cp a,0
-	jr nz,L4352
+	jr nz,L4420
 	call _road_is_tarmac__30
 	cp a,0
-	jr nz,L4352
+	jr nz,L4420
 	ldw (_id_bandstream__30+10),0
 	ldb (_road_dma_live__30),1
 	ld xwa,_id_road_rearm
 	push xwa
 	call _ngpc_set_vblank_hook
 	lda xsp,(xsp+4)
-	jr L4348
-L4352:
+	jr L4416
+L4420:
 	call _ngpc_dma_timer01_hblank_enable
 	ld wa,17
 	push xwa
@@ -21944,8 +22327,8 @@ L4352:
 	push xwa
 	call _ngpc_set_vblank_hook
 	lda xsp,(xsp+4)
-L4351:
-L4348:
+L4419:
+L4416:
 	ret
 
 ; function id_road_init
@@ -21956,7 +22339,7 @@ _id_road_init:
 	lda xsp,(xsp+4)
 	call _ngpc_dma_init
 	call _id_road_dma_resume
-L4354:
+L4422:
 	ret
 
 ; function id_road_flat
@@ -21964,8 +22347,8 @@ _id_road_flat:
 	push xiz
 	lda xsp,(xsp-2)
 	ld iz,0
-	jr L4364
-L4361:
+	jr L4432
+L4429:
 	ld wa,0
 	ld xbc,_id_xy_a__30
 	ld de,iz
@@ -21994,13 +22377,13 @@ L4361:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4363:
+L4431:
 	inc 1,iz
-L4364:
+L4432:
 	ld wa,iz
 	cp wa,152
-	jr ult,L4361
-L4362:
+	jr ult,L4429
+L4430:
 	ldw (_bc_rest__30),65535
 	ldw (_bc_rest__30+2),65535
 	ld wa,0
@@ -22017,7 +22400,7 @@ L4362:
 	ldw (_band_tree__30+2),65535
 	ldb (08034h),0
 	ldb (08035h),0
-L4360:
+L4428:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -22026,7 +22409,7 @@ L4360:
 _id_road_rearm:
 	ld xwa,(_id_xy_done__30)
 	cp xwa,0
-	jr z,L4369
+	jr z,L4437
 	ld xwa,(_id_xy_done__30)
 	ld (_id_xy_live__30),xwa
 	ld xwa,(_id_xy_done__30)
@@ -22041,20 +22424,20 @@ _id_road_rearm:
 	ld wa,0
 	exts xwa
 	ld (_id_bandcol_done__30),xwa
-L4369:
+L4437:
 	ld xwa,_id_raster__30
 	push xwa
 	call _ngpc_dma_raster_xy_rearm
 	lda xsp,(xsp+4)
 	ld wa,(_id_bandstream__30+10)
 	cp wa,0
-	jr z,L4370
+	jr z,L4438
 	ld xwa,_id_bandstream__30
 	push xwa
 	call _ngpc_dma_stream_rearm_u16
 	lda xsp,(xsp+4)
-L4370:
-L4368:
+L4438:
+L4436:
 	ret
 
 ; function id_road_dma_state
@@ -22063,15 +22446,15 @@ _id_road_dma_state:
 	extz wa
 	ld xde,(_id_raster__30+2)
 	cp xde,0
-	jr z,L4375
+	jr z,L4443
 	ld bc,2
-	jr L4376
-L4375:
+	jr L4444
+L4443:
 	ld bc,0
-L4376:
+L4444:
 	or wa,bc
-	jr L4374
-L4374:
+	jr L4442
+L4442:
 	ret
 
 ; function id_road_xy_at
@@ -22083,21 +22466,21 @@ _id_road_xy_at:
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	jr L4378
-L4378:
+	jr L4446
+L4446:
 	ret
 
 ; function id_road_restore_map
 _id_road_restore_map:
 	call _uses_akina__30
 	cp a,0
-	jr nz,L4383
+	jr nz,L4451
 	call _id_load_maps_rally__30
-	jr L4384
-L4383:
+	jr L4452
+L4451:
 	call _id_load_maps__30
-L4384:
-L4382:
+L4452:
+L4450:
 	ret
 
 ; function id_road_reload
@@ -22110,13 +22493,13 @@ _id_road_reload:
 	call _id_load_palettes__30
 	call _uses_akina__30
 	cp a,0
-	jr nz,L4389
+	jr nz,L4457
 	call _id_load_maps_rally__30
-	jr L4390
-L4389:
+	jr L4458
+L4457:
 	call _id_load_maps__30
-L4390:
-L4388:
+L4458:
+L4456:
 	ret
 
 ; function wide_rows
@@ -22125,7 +22508,7 @@ _wide_rows__30:
 	lda xsp,(xsp-12)
 	ld a,(_road_bottom__30)
 	ld ixl,a
-L4410:
+L4478:
 	ld xwa,(xsp+20)
 	ld c,ixl
 	extz bc
@@ -22145,46 +22528,46 @@ L4410:
 	ld (xsp+6),a
 	ld a,(xsp+6)
 	cp a,48
-	jr ult,L4415
+	jr ult,L4483
 	ld a,(xsp+6)
 	cp a,88
-	jr ult,L4414
-L4415:
-	jp L4411
-L4414:
+	jr ult,L4482
+L4483:
+	jp L4479
+L4482:
 	ld a,(xsp+5)
 	sub a,(xsp+24)
 	ld izl,a
 	ld wa,(xsp+36)
 	cp wa,0
-	jr lt,L4416
+	jr lt,L4484
 	ld c,izl
 	cp c,144
-	jr ult,L4417
+	jr ult,L4485
 	ld a,izl
 	extz wa
 	sub wa,256
-	jr L4418
-L4417:
+	jr L4486
+L4485:
 	ld a,izl
 	extz wa
-L4418:
+L4486:
 	ld iy,wa
-	jr L4419
-L4416:
+	jr L4487
+L4484:
 	ld c,izl
 	cp c,112
-	jr ule,L4420
+	jr ule,L4488
 	ld a,izl
 	extz wa
 	sub wa,256
-	jr L4421
-L4420:
+	jr L4489
+L4488:
 	ld a,izl
 	extz wa
-L4421:
+L4489:
 	ld iy,wa
-L4419:
+L4487:
 	ld xwa,_id_route_lim0
 	ld c,(xsp+6)
 	extz bc
@@ -22194,12 +22577,12 @@ L4419:
 	ld (xsp+10),a
 	ld wa,iy
 	cp wa,0
-	jr lt,L4422
+	jr lt,L4490
 	ld wa,iy
 	ld c,(xsp+10)
 	extz bc
 	cp wa,bc
-	jr ult,L4423
+	jr ult,L4491
 	ld a,(xsp+4)
 	add a,40
 	extz wa
@@ -22215,15 +22598,15 @@ L4419:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4423:
-	jr L4424
-L4422:
+L4491:
+	jr L4492
+L4490:
 	ld wa,iy
 	neg wa
 	ld c,(xsp+10)
 	extz bc
 	cp wa,bc
-	jr ult,L4425
+	jr ult,L4493
 	ld a,(xsp+4)
 	add a,80
 	extz wa
@@ -22239,22 +22622,22 @@ L4422:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4425:
-L4424:
+L4493:
+L4492:
 	ld a,ixl
 	extz wa
 	ld bc,(xsp+32)
 	add bc,1
 	cp wa,bc
-	jr gt,L4426
-	jr L4411
-L4426:
+	jr gt,L4494
+	jr L4479
+L4494:
 	dec 1,ixl
-L4412:
-L4413:
-	jp L4410
-L4411:
-L4409:
+L4480:
+L4481:
+	jp L4478
+L4479:
+L4477:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -22322,7 +22705,7 @@ _id_road_write__30:
 	ld (xsp+18),wa
 	ld a,(_road_lines__30)
 	cp a,0
-	jr z,L4527
+	jr z,L4595
 	ld xwa,_id_w_lat__30
 	ld (xsp+42),xwa
 	ld xwa,_id_curve_dx__30
@@ -22344,23 +22727,23 @@ _id_road_write__30:
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-L4527:
+L4595:
 	ld a,(_road_lines__30)
 	cp a,0
-	jp z,L4528
+	jp z,L4596
 	ld wa,(xsp+22)
 	cp wa,2
-	jp lt,L4528
+	jp lt,L4596
 	ld wa,(xsp+22)
 	cp wa,255
-	jp gt,L4528
+	jp gt,L4596
 	ld a,(_road_lines__30)
 	extz wa
 	sub wa,1
 	ld (xsp+24),wa
 	ld wa,iz
 	cp wa,(xsp+22)
-	jp lt,L4529
+	jp lt,L4597
 	ld xwa,(xsp+32)
 	ld bc,iz
 	exts xbc
@@ -22426,15 +22809,15 @@ L4527:
 	ld a,(xsp+80)
 	extz wa
 	ld iz,wa
-L4529:
-	jp L4530
-L4528:
+L4597:
+	jp L4598
+L4596:
 	ld a,(_road_lines__30)
 	extz wa
 	sub wa,1
 	ld (xsp+24),wa
-	jp L4534
-L4531:
+	jp L4602
+L4599:
 	ld xwa,_hill_rate__30
 	ld bc,20
 	ld xde,_id_sl__30+64
@@ -22471,12 +22854,12 @@ L4531:
 	ld (xsp+46),wa
 	ld bc,iz
 	cp bc,(xsp+22)
-	jr ge,L4535
+	jr ge,L4603
 	ld wa,(xsp+22)
-	jr L4536
-L4535:
+	jr L4604
+L4603:
 	ld wa,iz
-L4536:
+L4604:
 	ld xbc,_id_sl__30
 	ld de,(xsp+24)
 	exts xde
@@ -22501,10 +22884,10 @@ L4536:
 	ld (xsp+14),wa
 	ld a,(xsp+43)
 	cp a,1
-	jr ult,L4537
+	jr ult,L4605
 	ld wa,iz
 	cp wa,(xsp+22)
-	jr lt,L4537
+	jr lt,L4605
 	ld a,izl
 	ld (xsp+48),a
 	ld wa,(xsp+16)
@@ -22536,13 +22919,13 @@ L4536:
 	add xbc,xde
 	ld (xbc),wa
 	dec 1,iz
-L4537:
+L4605:
 	ld a,(xsp+43)
 	cp a,2
-	jr nz,L4538
+	jr nz,L4606
 	ld wa,iz
 	cp wa,(xsp+22)
-	jr lt,L4538
+	jr lt,L4606
 	ld a,izl
 	ld (xsp+48),a
 	ld wa,(xsp+18)
@@ -22550,13 +22933,13 @@ L4537:
 	ld (xsp+50),wa
 	ld bc,(xsp+16)
 	cp bc,(xsp+50)
-	jr ule,L4539
+	jr ule,L4607
 	ld wa,(xsp+16)
 	sub wa,(xsp+50)
-	jr L4540
-L4539:
+	jr L4608
+L4607:
 	ld wa,(xsp+16)
-L4540:
+L4608:
 	ld (xsp+52),wa
 	ld wa,(xsp+52)
 	srl 8,wa
@@ -22587,24 +22970,24 @@ L4540:
 	add xbc,xde
 	ld (xbc),wa
 	dec 1,iz
-L4538:
+L4606:
 	ld wa,(xsp+16)
 	ld bc,(xsp+18)
 	sub wa,bc
 	ld (xsp+16),wa
 	ld wa,iz
 	cp wa,(xsp+22)
-	jr ge,L4541
-	jr L4532
-L4541:
-L4533:
+	jr ge,L4609
+	jr L4600
+L4609:
+L4601:
 	decw 1,(xsp+24)
-L4534:
+L4602:
 	ld wa,(xsp+24)
 	cp wa,0
-	jp ge,L4531
-L4532:
-L4530:
+	jp ge,L4599
+L4600:
+L4598:
 	ld xwa,_id_shear__30
 	ld c,(_wide_k0__30)
 	extz bc
@@ -22624,25 +23007,25 @@ L4530:
 	ld (xsp+44),wa
 	ld wa,(xsp+42)
 	cp wa,0
-	jr ge,L4542
+	jr ge,L4610
 	ld wa,(xsp+42)
 	neg wa
 	ld (xsp+42),wa
-L4542:
+L4610:
 	ld wa,(xsp+44)
 	cp wa,0
-	jr ge,L4543
+	jr ge,L4611
 	ld wa,(xsp+44)
 	neg wa
 	ld (xsp+44),wa
-L4543:
+L4611:
 	ld wa,(xsp+42)
 	cp wa,46
-	jr ge,L4545
+	jr ge,L4613
 	ld wa,(xsp+44)
 	cp wa,46
-	jr lt,L4544
-L4545:
+	jr lt,L4612
+L4613:
 	push xix
 	push xiy
 	ld wa,(xsp+98)
@@ -22659,18 +23042,18 @@ L4545:
 	lda xsp,(xsp+20)
 	pop xiy
 	pop xix
-L4544:
+L4612:
 	ld bc,(xsp+24)
 	cp bc,0
-	jr ge,L4546
+	jr ge,L4614
 	ld wa,1
-	jr L4547
-L4546:
+	jr L4615
+L4614:
 	ld wa,0
-L4547:
+L4615:
 	ld (xsp+26),a
-	jr L4550
-L4548:
+	jr L4618
+L4616:
 	ld a,(xsp+22)
 	ld xbc,_id_sl__30
 	ld de,(xsp+24)
@@ -22678,31 +23061,31 @@ L4548:
 	add xbc,xde
 	ld (xbc),a
 	decw 1,(xsp+24)
-L4550:
+L4618:
 	ld wa,(xsp+24)
 	cp wa,0
-	jr ge,L4548
-L4549:
+	jr ge,L4616
+L4617:
 	ld a,izl
 	add a,1
 	ld (_band_first__30),a
 	ld a,(_band_first__30)
 	cp a,(_band_held__30)
-	jp ule,L4551
+	jp ule,L4619
 	ld a,(_band_first__30)
 	sub a,(_band_held__30)
 	cp a,2
-	jr uge,L4553
+	jr uge,L4621
 	ld a,(_band_wait__30)
 	cp a,16
-	jr ult,L4552
-L4553:
+	jr ult,L4620
+L4621:
 	ldb (_band_wait__30),0
-	jr L4554
-L4552:
+	jr L4622
+L4620:
 	incb 1,(_band_wait__30)
-	jr L4557
-L4555:
+	jr L4625
+L4623:
 	decb 1,(_band_first__30)
 	ld xwa,(_id_xy__30)
 	ld c,(_band_first__30)
@@ -22734,16 +23117,16 @@ L4555:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4557:
+L4625:
 	ld a,(_band_first__30)
 	cp a,(_band_held__30)
-	jr ugt,L4555
-L4556:
-L4554:
-	jr L4558
-L4551:
+	jr ugt,L4623
+L4624:
+L4622:
+	jr L4626
+L4619:
 	ldb (_band_wait__30),0
-L4558:
+L4626:
 	ld a,(_band_first__30)
 	ld (_band_held__30),a
 	ld a,(_road_top__30)
@@ -22760,7 +23143,7 @@ L4558:
 	pop xiy
 	pop xix
 	cp a,0
-	jp z,L4559
+	jp z,L4627
 	ld wa,(_band_col__30)
 	ld (xsp+56),wa
 	ld wa,0
@@ -22775,11 +23158,11 @@ L4558:
 	ld c,(_road_bottom__30)
 	extz bc
 	cp wa,bc
-	jr ule,L4560
+	jr ule,L4628
 	ld a,(_road_bottom__30)
 	extz wa
 	ld (xsp+44),wa
-L4560:
+L4628:
 	ld xwa,(_id_bandcol__30)
 	ld c,(_band_first__30)
 	extz bc
@@ -22793,57 +23176,57 @@ L4560:
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+52),xwa
-	jr L4563
-L4561:
+	jr L4631
+L4629:
 	ld c,(xsp+58)
 	incb 1,(xsp+58)
 	extz bc
 	and bc,2
 	cp bc,0
-	jr z,L4564
+	jr z,L4632
 	ld wa,(xsp+46)
-	jr L4565
-L4564:
+	jr L4633
+L4632:
 	ld wa,(xsp+56)
-L4565:
+L4633:
 	ld xbc,(xsp+48)
 	inc 2,xbc
 	ld (xsp+48),xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4563:
+L4631:
 	ld xwa,(xsp+48)
 	cp xwa,(xsp+52)
-	jr ult,L4561
-L4562:
-	jr L4566
-L4559:
+	jr ult,L4629
+L4630:
+	jr L4634
+L4627:
 	ld wa,(xsp+42)
 	cp wa,24
-	jr le,L4567
+	jr le,L4635
 	ldw (xsp+42),24
-L4567:
+L4635:
 	ld a,(_band_first__30)
 	extz wa
 	ld de,(xsp+42)
 	cp de,0
-	jr le,L4568
+	jr le,L4636
 	ld bc,(xsp+42)
-	jr L4569
-L4568:
+	jr L4637
+L4636:
 	ld bc,0
-L4569:
+L4637:
 	add wa,bc
 	ld (xsp+44),wa
 	ld wa,(xsp+44)
 	ld c,(_road_bottom__30)
 	extz bc
 	cp wa,bc
-	jr ule,L4570
+	jr ule,L4638
 	ld a,(_road_bottom__30)
 	extz wa
 	ld (xsp+44),wa
-L4570:
+L4638:
 	ld xwa,(_id_bandcol__30)
 	ld c,(_band_first__30)
 	extz bc
@@ -22857,20 +23240,20 @@ L4570:
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+52),xwa
-	jr L4573
-L4571:
+	jr L4641
+L4639:
 	ld wa,(xsp+46)
 	ld xbc,(xsp+48)
 	inc 2,xbc
 	ld (xsp+48),xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4573:
+L4641:
 	ld xwa,(xsp+48)
 	cp xwa,(xsp+52)
-	jr ult,L4571
-L4572:
-L4566:
+	jr ult,L4639
+L4640:
+L4634:
 	ld a,(_band_first__30)
 	extz wa
 	ld c,(_road_top__30)
@@ -22894,7 +23277,7 @@ L4566:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,(xsp+12)
-	jr z,L4574
+	jr z,L4642
 	ld wa,(xsp+12)
 	ld xbc,_bc_rest__30
 	ld e,(xsp+14)
@@ -22926,20 +23309,20 @@ L4566:
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+20),xwa
-	jr L4577
-L4575:
+	jr L4645
+L4643:
 	ld wa,(xsp+12)
 	ld xbc,(xsp+16)
 	inc 2,xbc
 	ld (xsp+16),xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4577:
+L4645:
 	ld xwa,(xsp+16)
 	cp xwa,(xsp+20)
-	jr ult,L4575
-L4576:
-L4574:
+	jr ult,L4643
+L4644:
+L4642:
 	ld xwa,_bc_top__30
 	ld c,(xsp+14)
 	extz bc
@@ -22947,7 +23330,7 @@ L4574:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,(_band_first__30)
-	jr uge,L4578
+	jr uge,L4646
 	ld xwa,(_id_bandcol__30)
 	ld xbc,_bc_top__30
 	ld e,(xsp+14)
@@ -22967,20 +23350,20 @@ L4574:
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+20),xwa
-	jr L4581
-L4579:
+	jr L4649
+L4647:
 	ld wa,(xsp+12)
 	ld xbc,(xsp+16)
 	inc 2,xbc
 	ld (xsp+16),xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4581:
+L4649:
 	ld xwa,(xsp+16)
 	cp xwa,(xsp+20)
-	jr ult,L4579
-L4580:
-L4578:
+	jr ult,L4647
+L4648:
+L4646:
 	ld a,(_band_first__30)
 	ld xbc,_bc_top__30
 	ld e,(xsp+14)
@@ -23008,12 +23391,12 @@ L4578:
 	ld (xbc+304),wa
 	ld bc,(_band_shift__30)
 	cp bc,0
-	jr le,L4582
+	jr le,L4650
 	ld wa,(_band_shift__30)
-	jr L4583
-L4582:
+	jr L4651
+L4650:
 	ld wa,0
-L4583:
+L4651:
 	ld (xsp+10),wa
 	ldw (xsp+8),0
 	ld wa,(xsp+94)
@@ -23036,27 +23419,27 @@ L4583:
 	pop xiy
 	pop xix
 	cp a,0
-	jp nz,L4584
+	jp nz,L4652
 	ld a,(_road_base_x__30)
 	extz wa
 	ld e,(_pan_fine__30)
 	cp e,0
-	jr z,L4585
+	jr z,L4653
 	ld bc,(_pan_head__30)
 	exts xbc
 	divs xbc,2
 	neg bc
 	exts xbc
 	divs xbc,16
-	jr L4586
-L4585:
+	jr L4654
+L4653:
 	ld bc,(xsp+94)
 	sra 1,bc
 	neg bc
 	ld de,(xsp+90)
 	sra 4,de
 	add bc,de
-L4586:
+L4654:
 	add wa,bc
 	extz wa
 	ld (xsp+12),wa
@@ -23064,57 +23447,57 @@ L4586:
 	extz wa
 	ld e,(_pan_fine__30)
 	cp e,0
-	jr z,L4587
+	jr z,L4655
 	ld bc,(_pan_head__30)
 	sll 1,bc
 	neg bc
 	exts xbc
 	divs xbc,16
-	jr L4588
-L4587:
+	jr L4656
+L4655:
 	ld bc,(xsp+94)
 	sll 1,bc
 	neg bc
 	ld de,(xsp+90)
 	sra 2,de
 	add bc,de
-L4588:
+L4656:
 	add wa,bc
 	extz wa
 	ld (xsp+14),wa
 	ld c,(_band_first__30)
 	cp c,244
-	jr uge,L4589
+	jr uge,L4657
 	ld a,(_band_first__30)
 	extz wa
 	add wa,0
-	jr L4590
-L4589:
+	jr L4658
+L4657:
 	ld a,(_band_first__30)
 	extz wa
-L4590:
+L4658:
 	ld (xsp+16),a
 	ld c,(xsp+16)
 	cp c,0
-	jr ule,L4591
+	jr ule,L4659
 	ld a,(xsp+16)
 	extz wa
-	jr L4592
-L4591:
+	jr L4660
+L4659:
 	ld a,0
 	extz wa
-L4592:
+L4660:
 	ld (xsp+17),a
 	ld c,(_band_first__30)
 	cp c,(xsp+17)
-	jr uge,L4593
+	jr uge,L4661
 	ld a,(_band_first__30)
 	extz wa
-	jr L4594
-L4593:
+	jr L4662
+L4661:
 	ld a,(xsp+17)
 	extz wa
-L4594:
+L4662:
 	ld (xsp+18),a
 	ld a,(xsp+18)
 	extz wa
@@ -23128,7 +23511,7 @@ L4594:
 	add xbc,xde
 	ld bc,(xbc)
 	cp wa,bc
-	jr nz,L4596
+	jr nz,L4664
 	ld wa,(xsp+14)
 	ld xbc,_band_mid__30
 	ld e,(_id_buf__30)
@@ -23138,7 +23521,7 @@ L4594:
 	add xbc,xde
 	ld bc,(xbc)
 	cp wa,bc
-	jr nz,L4596
+	jr nz,L4664
 	ld a,(xsp+17)
 	ld xbc,_band_bg_end__30
 	ld e,(_id_buf__30)
@@ -23147,7 +23530,7 @@ L4594:
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jr nz,L4596
+	jr nz,L4664
 	ld wa,(xsp+10)
 	ld xbc,_band_pitch__30
 	ld e,(_id_buf__30)
@@ -23157,7 +23540,7 @@ L4594:
 	ld c,(xbc)
 	exts bc
 	cp wa,bc
-	jr nz,L4596
+	jr nz,L4664
 	ld a,(_band_first__30)
 	ld xbc,_band_bg_first__30
 	ld e,(_id_buf__30)
@@ -23166,8 +23549,8 @@ L4594:
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jr z,L4595
-L4596:
+	jr z,L4663
+L4664:
 	ld wa,(xsp+12)
 	ld xbc,_band_top__30
 	ld e,(_id_buf__30)
@@ -23199,7 +23582,7 @@ L4596:
 	add xbc,xde
 	ld (xbc),a
 	ldw (xsp+20),0
-L4595:
+L4663:
 	push xix
 	push xiy
 	call _sky_is_tall_course__30
@@ -23221,22 +23604,22 @@ L4595:
 	ld (xsp+28),xwa
 	ld a,(xsp+22)
 	cp a,0
-	jr z,L4597
-	jr L4600
-L4598:
+	jr z,L4665
+	jr L4668
+L4666:
 	ld wa,(xsp+14)
 	ld xbc,xix
 	inc 2,xbc
 	ld xix,xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4600:
+L4668:
 	ld xwa,xix
 	cp xwa,(xsp+28)
-	jr ult,L4598
-L4599:
-	jp L4601
-L4597:
+	jr ult,L4666
+L4667:
+	jp L4669
+L4665:
 	ld a,(xsp+10)
 	neg a
 	extz wa
@@ -23244,16 +23627,16 @@ L4597:
 	ld (xsp+36),wa
 	ld wa,(xsp+20)
 	ld iy,wa
-	jr L4604
-L4602:
+	jr L4672
+L4670:
 	ld bc,iy
 	cp bc,0
-	jr uge,L4605
+	jr uge,L4673
 	ld wa,(xsp+12)
-	jr L4606
-L4605:
+	jr L4674
+L4673:
 	ld wa,(xsp+14)
-L4606:
+L4674:
 	ld c,iyl
 	neg c
 	extz bc
@@ -23265,15 +23648,15 @@ L4606:
 	dec 2,xbc
 	ld (xbc),wa
 	inc 1,iy
-L4604:
+L4672:
 	ld xwa,xix
 	cp xwa,(xsp+28)
-	jr uge,L4607
+	jr uge,L4675
 	ld wa,iy
 	cp wa,(xsp+10)
-	jr lt,L4602
-L4607:
-L4603:
+	jr lt,L4670
+L4675:
+L4671:
 	ld xwa,(_id_xy__30)
 	ld bc,0
 	extz xbc
@@ -23282,12 +23665,12 @@ L4603:
 	ld (xsp+32),xwa
 	ld xwa,(xsp+32)
 	cp xwa,(xsp+28)
-	jr ule,L4608
+	jr ule,L4676
 	ld xwa,(xsp+28)
 	ld (xsp+32),xwa
-L4608:
-	jr L4611
-L4609:
+L4676:
+	jr L4679
+L4677:
 	ld wa,(xsp+12)
 	or wa,(xsp+36)
 	ld xbc,xix
@@ -23295,13 +23678,13 @@ L4609:
 	ld xix,xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4611:
+L4679:
 	ld xwa,xix
 	cp xwa,(xsp+32)
-	jr ult,L4609
-L4610:
-	jr L4614
-L4612:
+	jr ult,L4677
+L4678:
+	jr L4682
+L4680:
 	ld wa,(xsp+14)
 	or wa,(xsp+36)
 	ld xbc,xix
@@ -23309,12 +23692,12 @@ L4612:
 	ld xix,xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4614:
+L4682:
 	ld xwa,xix
 	cp xwa,(xsp+28)
-	jr ult,L4612
-L4613:
-L4601:
+	jr ult,L4680
+L4681:
+L4669:
 	ld a,(xsp+10)
 	ld xbc,_band_pitch__30
 	ld e,(_id_buf__30)
@@ -23324,8 +23707,8 @@ L4601:
 	ld (xbc),a
 	ld wa,(xsp+14)
 	ld (xsp+8),wa
-	jp L4615
-L4584:
+	jp L4683
+L4652:
 	ld a,(_road_base_x__30)
 	add a,(xsp+2)
 	extz wa
@@ -23347,7 +23730,7 @@ L4584:
 	add xbc,xde
 	ld bc,(xbc)
 	cp wa,bc
-	jr nz,L4617
+	jr nz,L4685
 	ld wa,(xsp+10)
 	ld xbc,_band_pitch__30
 	ld e,(_id_buf__30)
@@ -23357,7 +23740,7 @@ L4584:
 	ld c,(xbc)
 	exts bc
 	cp wa,bc
-	jr nz,L4617
+	jr nz,L4685
 	ld a,(_band_first__30)
 	ld xbc,_band_bg_end__30
 	ld e,(_id_buf__30)
@@ -23366,8 +23749,8 @@ L4584:
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jp z,L4616
-L4617:
+	jp z,L4684
+L4685:
 	ld a,(xsp+10)
 	ld xbc,_band_pitch__30
 	ld e,(_id_buf__30)
@@ -23399,8 +23782,8 @@ L4617:
 	add xbc,xde
 	ld (xbc),wa
 	ld iy,0
-	jr L4621
-L4618:
+	jr L4689
+L4686:
 	push xwa
 	push xix
 	push xiy
@@ -23410,22 +23793,22 @@ L4618:
 	pop xix
 	pop xwa
 	cp c,0
-	jr z,L4622
+	jr z,L4690
 	ld wa,0
-	jr L4623
-L4622:
+	jr L4691
+L4690:
 	ld wa,(xsp+10)
 	neg wa
-L4623:
+L4691:
 	ld (xsp+18),wa
 	ld wa,iy
 	add wa,(xsp+18)
 	cp wa,0
-	jr ge,L4624
+	jr ge,L4692
 	ld wa,iy
 	neg wa
 	ld (xsp+18),wa
-L4624:
+L4692:
 	ld wa,(xsp+16)
 	ld c,(xsp+18)
 	extz bc
@@ -23437,20 +23820,20 @@ L4624:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4620:
+L4688:
 	inc 1,iy
-L4621:
+L4689:
 	ld wa,iy
 	ld c,(_band_first__30)
 	extz bc
 	cp wa,bc
-	jr ult,L4618
-L4619:
-L4616:
+	jr ult,L4686
+L4687:
+L4684:
 	ld wa,(xsp+16)
 	ld (xsp+8),wa
-L4615:
-L4526:
+L4683:
+L4594:
 	lda xsp,(xsp+82)
 	pop xiz
 	ret
@@ -23461,7 +23844,7 @@ _id_road_ready:
 	ld (_id_xy_done__30),xwa
 	ld xwa,(_id_bandcol__30)
 	ld (_id_bandcol_done__30),xwa
-L4626:
+L4694:
 	ret
 
 ; function id_road_pan
@@ -23471,35 +23854,35 @@ _id_road_pan:
 	ld wa,(xsp+8)
 	ld (_pan_lat__30),wa
 	ldb (_pan_fine__30),1
-L4628:
+L4696:
 	ret
 
 ; function id_road_begin
 _id_road_begin:
 	ld xwa,(_id_xy_live__30)
 	cp xwa,_id_xy_a__30
-	jr nz,L4635
+	jr nz,L4703
 	ld xwa,_id_xy_b__30
 	ld (_id_xy__30),xwa
 	ld xwa,_id_bandcol_b__30
 	ld (_id_bandcol__30),xwa
-	jr L4636
-L4635:
+	jr L4704
+L4703:
 	ld xwa,_id_xy_a__30
 	ld (_id_xy__30),xwa
 	ld xwa,_id_bandcol_a__30
 	ld (_id_bandcol__30),xwa
-L4636:
+L4704:
 	ld xbc,(_id_xy__30)
 	cp xbc,_id_xy_a__30
-	jr nz,L4637
+	jr nz,L4705
 	ld wa,0
-	jr L4638
-L4637:
+	jr L4706
+L4705:
 	ld wa,1
-L4638:
+L4706:
 	ld (_id_buf__30),a
-L4634:
+L4702:
 	ret
 
 ; function id_road_frame
@@ -23511,8 +23894,8 @@ _id_road_frame:
 	call _id_road_begin
 	pop xix
 	ld izl,0
-	jr L4648
-L4645:
+	jr L4716
+L4713:
 	ld wa,ix
 	ld xbc,_id_w_curve__30
 	ld e,izl
@@ -23530,13 +23913,13 @@ L4645:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4647:
+L4715:
 	inc 1,izl
-L4648:
+L4716:
 	ld a,izl
 	cp a,(_road_lines__30)
-	jr ult,L4645
-L4646:
+	jr ult,L4713
+L4714:
 	push xix
 	ld wa,(xsp+22)
 	push xwa
@@ -23548,7 +23931,7 @@ L4646:
 	push xix
 	call _id_road_ready
 	pop xix
-L4644:
+L4712:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -23556,15 +23939,15 @@ L4644:
 ; function id_road_ahead
 _id_road_ahead:
 	ld xwa,_id_ahead__30
-	jr L4650
-L4650:
+	jr L4718
+L4718:
 	ret
 
 ; function id_road_lines
 _id_road_lines:
 	ld a,(_road_lines__30)
-	jr L4652
-L4652:
+	jr L4720
+L4720:
 	ret
 
 ; function id_road_frame_ahead
@@ -23580,7 +23963,7 @@ _id_road_frame_ahead:
 	call _id_road_begin
 	ld a,izl
 	cp a,0
-	jr z,L4656
+	jr z,L4724
 	ld xwa,(xsp+30)
 	ld c,izl
 	extz bc
@@ -23604,7 +23987,7 @@ _id_road_frame_ahead:
 	push xwa
 	call _id_road_curve_asm
 	lda xsp,(xsp+4)
-L4656:
+L4724:
 	ld wa,(xsp+34)
 	push xwa
 	ld wa,(xsp+30)
@@ -23612,7 +23995,7 @@ L4656:
 	call _id_road_write__30
 	lda xsp,(xsp+8)
 	call _id_road_ready
-L4655:
+L4723:
 	lda xsp,(xsp+18)
 	pop xiz
 	ret
@@ -23622,8 +24005,8 @@ _id_fill_hud_band__30:
 	push xiz
 	lda xsp,(xsp-2)
 	ld iz,152
-	jr L4666
-L4663:
+	jr L4734
+L4731:
 	ld wa,2048
 	ld c,(_road_base_x__30)
 	extz bc
@@ -23646,14 +24029,14 @@ L4663:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4665:
+L4733:
 	inc 1,iz
-L4666:
+L4734:
 	ld wa,iz
 	cp wa,152
-	jr ult,L4663
-L4664:
-L4662:
+	jr ult,L4731
+L4732:
+L4730:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -23667,18 +24050,18 @@ _id_road_sprite_sample:
 	ld xiy,(xsp+14)
 	ld a,izl
 	cp a,(_road_top__30)
-	jr uge,L4672
+	jr uge,L4740
 	ld a,(_road_top__30)
 	ld izl,a
-	jr L4673
-L4672:
+	jr L4741
+L4740:
 	ld a,izl
 	cp a,(_road_bottom__30)
-	jr ule,L4674
+	jr ule,L4742
 	ld a,(_road_bottom__30)
 	ld izl,a
-L4674:
-L4673:
+L4742:
+L4741:
 	ld a,izl
 	sub a,(_road_top__30)
 	ld ixl,a
@@ -23712,7 +24095,7 @@ L4673:
 	add xwa,xbc
 	ld a,(xwa)
 	ld (xiy+4),a
-L4671:
+L4739:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -23725,18 +24108,18 @@ _id_road_centre_at:
 	ld izl,a
 	ld a,izl
 	cp a,(_road_top__30)
-	jr uge,L4680
+	jr uge,L4748
 	ld a,(_road_top__30)
 	ld izl,a
-	jr L4681
-L4680:
+	jr L4749
+L4748:
 	ld a,izl
 	cp a,(_road_bottom__30)
-	jr ule,L4682
+	jr ule,L4750
 	ld a,(_road_bottom__30)
 	ld izl,a
-L4682:
-L4681:
+L4750:
+L4749:
 	ld a,izl
 	sub a,(_road_top__30)
 	ld (xsp+0),a
@@ -23749,8 +24132,8 @@ L4681:
 	add xbc,xde
 	ld bc,(xbc)
 	sub wa,bc
-	jr L4679
-L4679:
+	jr L4747
+L4747:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -23759,27 +24142,27 @@ L4679:
 _id_road_band_phase:
 	ld wa,(xsp+4)
 	ld (_band_phase__30),wa
-L4684:
+L4752:
 	ret
 
 ; function id_road_join
 _id_road_join:
 	ld c,(xsp+4)
 	cp c,1
-	jr uge,L4689
+	jr uge,L4757
 	ld a,(xsp+4)
 	extz wa
-	jr L4690
-L4689:
+	jr L4758
+L4757:
 	ld wa,0
-L4690:
+L4758:
 	ld (_road_course__30),a
 	call _id_load_palettes__30
 	ld wa,0
 	push xwa
 	call _id_road_join_white
 	lda xsp,(xsp+4)
-L4688:
+L4756:
 	ret
 
 ; function id_road_join_white
@@ -23787,8 +24170,8 @@ _id_road_join_white:
 	push xiz
 	lda xsp,(xsp-10)
 	ld izl,0
-	jp L4700
-L4697:
+	jp L4768
+L4765:
 	ld xwa,_course_sol__30
 	ld c,(_road_course__30)
 	extz bc
@@ -23859,13 +24242,13 @@ L4697:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4699:
+L4767:
 	inc 1,izl
-L4700:
+L4768:
 	ld a,izl
 	cp a,4
-	jp ult,L4697
-L4698:
+	jp ult,L4765
+L4766:
 	ld wa,65535
 	ld (_band_top__30+2),wa
 	ld (_band_top__30),wa
@@ -23875,7 +24258,7 @@ L4698:
 	ld wa,65535
 	ld (_band_tree__30+2),wa
 	ld (_band_tree__30),wa
-L4696:
+L4764:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -23896,11 +24279,11 @@ _id_road_hill_ahead:
 	ld ixl,a
 	ld xwa,(xsp+0)
 	cp xwa,xiy
-	jr nz,L4710
+	jr nz,L4778
 	ld ixl,0
-L4710:
-	jr L4713
-L4711:
+L4778:
+	jr L4781
+L4779:
 	ld xwa,(xsp+0)
 	inc 1,xwa
 	ld (xsp+0),xwa
@@ -23909,18 +24292,18 @@ L4711:
 	ld izl,a
 	ld a,izl
 	cp a,(xsp+8)
-	jr le,L4714
+	jr le,L4782
 	ld a,(xsp+8)
 	ld izl,a
-	jr L4715
-L4714:
+	jr L4783
+L4782:
 	ld a,izl
 	cp a,(xsp+9)
-	jr ge,L4716
+	jr ge,L4784
 	ld a,(xsp+9)
 	ld izl,a
-L4716:
-L4715:
+L4784:
+L4783:
 	ld a,izl
 	ld xbc,xiy
 	inc 1,xbc
@@ -23928,11 +24311,11 @@ L4715:
 	dec 1,xbc
 	ld (xbc),a
 	dec 1,ixl
-L4713:
+L4781:
 	ld a,ixl
 	cp a,0
-	jr nz,L4711
-L4712:
+	jr nz,L4779
+L4780:
 	ld xwa,_id_sl__30+64
 	ld c,(_road_lines__30)
 	extz bc
@@ -23941,7 +24324,7 @@ L4712:
 	add xwa,xbc
 	ld a,(xwa)
 	ld (_road_grade__30),a
-L4709:
+L4777:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -23949,15 +24332,15 @@ L4709:
 ; function id_road_grade_buf
 _id_road_grade_buf:
 	ld xwa,_id_sl__30+64
-	jr L4718
-L4718:
+	jr L4786
+L4786:
 	ret
 
 ; function id_road_band_first
 _id_road_band_first:
 	ld a,(_band_first__30)
-	jr L4720
-L4720:
+	jr L4788
+L4788:
 	ret
 
 ; function id_road_visible_top
@@ -23966,33 +24349,33 @@ _id_road_visible_top:
 	lda xsp,(xsp-2)
 	ld c,(_band_first__30)
 	cp c,244
-	jr uge,L4728
+	jr uge,L4796
 	ld a,(_band_first__30)
 	add a,0
 	extz wa
-	jr L4729
-L4728:
+	jr L4797
+L4796:
 	ld a,(_band_first__30)
 	extz wa
-L4729:
+L4797:
 	ld izl,a
 	ld a,izl
 	cp a,0
-	jr uge,L4730
+	jr uge,L4798
 	ld izl,0
-L4730:
+L4798:
 	ld c,izl
 	cp c,(_road_bottom__30)
-	jr ule,L4731
+	jr ule,L4799
 	ld a,(_road_bottom__30)
 	extz wa
-	jr L4732
-L4731:
+	jr L4800
+L4799:
 	ld a,izl
 	extz wa
-L4732:
-	jr L4727
-L4727:
+L4800:
+	jr L4795
+L4795:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -24000,15 +24383,15 @@ L4727:
 ; function id_road_grade_hi
 _id_road_grade_hi:
 	ld a,(_grade_hi__30)
-	jr L4734
-L4734:
+	jr L4802
+L4802:
 	ret
 
 ; function id_road_grade_lo
 _id_road_grade_lo:
 	ld a,(_grade_lo__30)
-	jr L4736
-L4736:
+	jr L4804
+L4804:
 	ret
 
 ; function id_road_set_hill
@@ -24019,23 +24402,23 @@ _id_road_set_hill:
 	ld ixl,a
 	ld a,ixl
 	cp a,(_grade_hi__30)
-	jr le,L4746
+	jr le,L4814
 	ld a,(_grade_hi__30)
 	ld ixl,a
-	jr L4747
-L4746:
+	jr L4815
+L4814:
 	ld a,ixl
 	cp a,(_grade_lo__30)
-	jr ge,L4748
+	jr ge,L4816
 	ld a,(_grade_lo__30)
 	ld ixl,a
-L4748:
-L4747:
+L4816:
+L4815:
 	ld a,ixl
 	ld (_road_grade__30),a
 	ld izl,0
-	jr L4752
-L4749:
+	jr L4820
+L4817:
 	ld a,ixl
 	ld xbc,_id_sl__30+64
 	ld e,izl
@@ -24043,14 +24426,14 @@ L4749:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L4751:
+L4819:
 	inc 1,izl
-L4752:
+L4820:
 	ld a,izl
 	cp a,(_road_lines__30)
-	jr ult,L4749
-L4750:
-L4745:
+	jr ult,L4817
+L4818:
+L4813:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -24063,14 +24446,14 @@ _id_road_line_shift:
 	ld ixl,a
 	ld a,ixl
 	cp a,(_road_top__30)
-	jr ult,L4759
+	jr ult,L4827
 	ld a,ixl
 	cp a,(_road_bottom__30)
-	jr ule,L4758
-L4759:
+	jr ule,L4826
+L4827:
 	ld wa,0
-	jr L4757
-L4758:
+	jr L4825
+L4826:
 	ld a,ixl
 	extz wa
 	ld c,(_road_top__30)
@@ -24081,12 +24464,12 @@ L4758:
 	ld c,(_road_lines__30)
 	extz bc
 	cp wa,bc
-	jr lt,L4760
+	jr lt,L4828
 	ld a,(_road_lines__30)
 	extz wa
 	sub wa,1
 	ld iz,wa
-L4760:
+L4828:
 	ld xwa,_id_sl__30
 	ld bc,iz
 	exts xbc
@@ -24097,8 +24480,8 @@ L4760:
 	ld a,iyl
 	ld c,ixl
 	sub a,c
-	jr L4757
-L4757:
+	jr L4825
+L4825:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -24117,19 +24500,19 @@ _id_road_car_lift:
 	ld iz,wa
 	ld wa,iz
 	cp wa,8
-	jr le,L4766
+	jr le,L4834
 	ld iz,8
-	jr L4767
-L4766:
+	jr L4835
+L4834:
 	ld wa,iz
 	cp wa,65531
-	jr ge,L4768
+	jr ge,L4836
 	ld iz,65531
-L4768:
-L4767:
+L4836:
+L4835:
 	ld a,izl
-	jr L4765
-L4765:
+	jr L4833
+L4833:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -24141,18 +24524,18 @@ _id_road_half_at:
 	ld izl,a
 	ld a,izl
 	cp a,(_road_top__30)
-	jr uge,L4774
+	jr uge,L4842
 	ld a,(_road_top__30)
 	ld izl,a
-	jr L4775
-L4774:
+	jr L4843
+L4842:
 	ld a,izl
 	cp a,(_road_bottom__30)
-	jr ule,L4776
+	jr ule,L4844
 	ld a,(_road_bottom__30)
 	ld izl,a
-L4776:
-L4775:
+L4844:
+L4843:
 	ld xwa,_id_half__30
 	ld c,izl
 	sub c,(_road_top__30)
@@ -24160,8 +24543,8 @@ L4775:
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
-	jr L4773
-L4773:
+	jr L4841
+L4841:
 	pop xiz
 	ret
 
@@ -24176,12 +24559,12 @@ _id_road_line_at_distance:
 	ld iyl,a
 	ld wa,(xsp+12)
 	cp wa,(_id_ahead__30)
-	jr ule,L4785
+	jr ule,L4853
 	ld wa,255
-	jr L4784
-L4785:
-	jr L4788
-L4786:
+	jr L4852
+L4853:
+	jr L4856
+L4854:
 	ld a,izl
 	extz wa
 	ld c,iyl
@@ -24198,24 +24581,24 @@ L4786:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,(xsp+12)
-	jr ult,L4789
+	jr ult,L4857
 	ld a,ixl
 	ld izl,a
-	jr L4790
-L4789:
+	jr L4858
+L4857:
 	ld a,ixl
 	sub a,1
 	ld iyl,a
-L4790:
-L4788:
+L4858:
+L4856:
 	ld a,izl
 	cp a,iyl
-	jr ult,L4786
-L4787:
+	jr ult,L4854
+L4855:
 	ld a,(_road_top__30)
 	add a,izl
-	jr L4784
-L4784:
+	jr L4852
+L4852:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -24227,18 +24610,18 @@ _id_road_distance_at_line:
 	ld izl,a
 	ld a,izl
 	cp a,(_road_top__30)
-	jr uge,L4796
+	jr uge,L4864
 	ld a,(_road_top__30)
 	ld izl,a
-	jr L4797
-L4796:
+	jr L4865
+L4864:
 	ld a,izl
 	cp a,(_road_bottom__30)
-	jr ule,L4798
+	jr ule,L4866
 	ld a,(_road_bottom__30)
 	ld izl,a
-L4798:
-L4797:
+L4866:
+L4865:
 	ld xwa,_id_ahead__30
 	ld c,izl
 	sub c,(_road_top__30)
@@ -24247,16 +24630,16 @@ L4797:
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	jr L4795
-L4795:
+	jr L4863
+L4863:
 	pop xiz
 	ret
 
 ; function id_scenery_char_count
 _id_scenery_char_count:
 	ld wa,0
-	jr L4800
-L4800:
+	jr L4868
+L4868:
 	ret
 
 ; function id_scenery_init
@@ -24271,61 +24654,95 @@ _id_scenery_init:
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-L4802:
+L4870:
 	ret
 
 ; function scenery_mode
 _scenery_mode:
-	ld a,(xsp+4)
+	push xiz
+	ld a,(xsp+8)
+	ld izl,a
+	ld c,izl
+	cp c,5
+	jr nz,L4881
+	ld wa,1
+	jr L4882
+L4881:
+	ld wa,0
+L4882:
+	ld e,(_scn_mode__31)
+	cp e,5
+	jr nz,L4883
+	ld bc,1
+	jr L4884
+L4883:
+	ld bc,0
+L4884:
+	cp wa,bc
+	jr z,L4880
+	ld c,izl
+	cp c,5
+	jr nz,L4885
+	ld wa,1
+	jr L4886
+L4885:
+	ld wa,0
+L4886:
+	push xwa
+	call _theme_crowd_colours
+	lda xsp,(xsp+4)
+L4880:
+	ld a,izl
 	ld (_scn_mode__31),a
-L4804:
+L4879:
+	pop xiz
 	ret
 
 ; function id_scenery_passed
 _id_scenery_passed:
 	ld a,(_scn_passed__31)
-	jr L4806
-L4806:
+	jr L4888
+L4888:
 	ret
 
 ; function kind_of
 _kind_of__31:
 	ld a,(_scn_mode__31)
 	cp a,5
-	jr nz,L4815
+	jr nz,L4897
 	ld wa,14
-	jr L4814
-L4815:
+	jr L4896
+L4897:
 	ld a,(_scn_mode__31)
 	cp a,1
-	jr nz,L4816
+	jr nz,L4898
 	ld wa,12
-	jr L4814
-L4816:
+	jr L4896
+L4898:
 	ld a,(_scn_mode__31)
 	cp a,3
-	jr ult,L4817
+	jr ult,L4899
 	ld wa,11
-	jr L4814
-L4817:
+	jr L4896
+L4899:
 	ld a,(_scn_mode__31)
 	cp a,2
-	jr nz,L4818
+	jr nz,L4900
 	ld wa,13
-	jr L4814
-L4818:
+	jr L4896
+L4900:
 	ld c,(xsp+4)
 	cp c,0
-	jr z,L4819
+	jr z,L4901
 	call _theme_obj_kind_right
 	extz wa
-	jr L4820
-L4819:
+	jr L4902
+L4901:
 	call _theme_obj_kind_left
 	extz wa
-L4820:
-	jr L4814
-L4814:
+L4902:
+	jr L4896
+L4896:
 	ret
 
 ; function id_scenery_hit
@@ -24355,24 +24772,24 @@ _id_scenery_hit:
 	add wa,bc
 	ld (xsp+4),wa
 	ld izl,0
-	jp L4837
-L4834:
+	jp L4919
+L4916:
 	ld a,(_scn_passed__31)
 	extz wa
 	ld bc,1
 	ld e,izl
 	cp e,0
-	jr z,L4840
-L4839:
+	jr z,L4922
+L4921:
 	sll 1,bc
-	djnz e,L4839
-L4840:
+	djnz e,L4921
+L4922:
 	extz bc
 	and wa,bc
 	cp wa,0
-	jr nz,L4838
-	jp L4836
-L4838:
+	jr nz,L4920
+	jp L4918
+L4920:
 	ld xwa,_gfx_obj_frames
 	push xwa
 	push xix
@@ -24410,44 +24827,44 @@ L4838:
 	ld (xsp+14),wa
 	ld a,izl
 	cp a,0
-	jr nz,L4841
+	jr nz,L4923
 	ld wa,iy
 	neg wa
 	add wa,12
 	cp wa,(xsp+12)
-	jr lt,L4842
+	jr lt,L4924
 	ld wa,iy
 	neg wa
 	sub wa,12
 	cp wa,(xsp+14)
-	jr gt,L4842
+	jr gt,L4924
 	ld wa,1
-	jr L4833
-L4842:
-	jr L4843
-L4841:
+	jr L4915
+L4924:
+	jr L4925
+L4923:
 	ld wa,iy
 	add wa,12
 	cp wa,(xsp+12)
-	jr lt,L4844
+	jr lt,L4926
 	ld wa,iy
 	sub wa,12
 	cp wa,(xsp+14)
-	jr gt,L4844
+	jr gt,L4926
 	ld wa,1
-	jr L4833
-L4844:
-L4843:
-L4836:
+	jr L4915
+L4926:
+L4925:
+L4918:
 	inc 1,izl
-L4837:
+L4919:
 	ld a,izl
 	cp a,2
-	jp ult,L4834
-L4835:
+	jp ult,L4916
+L4917:
 	ld wa,0
-	jr L4833
-L4833:
+	jr L4915
+L4915:
 	lda xsp,(xsp+16)
 	pop xiz
 	ret
@@ -24461,8 +24878,8 @@ _obj_phase__31:
 	mul xbc,43
 	extz bc
 	add wa,bc
-	jr L4846
-L4846:
+	jr L4928
+L4928:
 	ret
 
 ; function id_scenery_advance
@@ -24489,8 +24906,8 @@ _id_scenery_advance:
 	ld (_scn_phase__31),a
 	ldb (_scn_passed__31),0
 	ld izl,0
-	jr L4859
-L4856:
+	jr L4941
+L4938:
 	ld a,izl
 	extz wa
 	mul xwa,43
@@ -24500,31 +24917,31 @@ L4856:
 	ld c,iyl
 	add c,ixl
 	cp a,c
-	jr uge,L4860
+	jr uge,L4942
 	ld a,(_scn_passed__31)
 	extz wa
 	ld e,izl
 	extz de
 	and de,1
 	cp de,0
-	jr z,L4861
+	jr z,L4943
 	ld bc,2
-	jr L4862
-L4861:
+	jr L4944
+L4943:
 	ld bc,1
-L4862:
+L4944:
 	extz bc
 	or wa,bc
 	ld (_scn_passed__31),a
-L4860:
-L4858:
+L4942:
+L4940:
 	inc 1,izl
-L4859:
+L4941:
 	ld a,izl
 	cp a,6
-	jr ult,L4856
-L4857:
-L4855:
+	jr ult,L4938
+L4939:
+L4937:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -24536,7 +24953,7 @@ _id_scenery_frame:
 	call _id_scenery_advance
 	lda xsp,(xsp+4)
 	call _id_scenery_draw
-L4864:
+L4946:
 	ret
 
 ; function id_scenery_draw
@@ -24550,12 +24967,12 @@ _id_scenery_draw:
 	ld xbc,xwa
 	pop xwa
 	cp c,0
-	jr z,L4916
+	jr z,L4999
 	ld wa,58
-	jr L4917
-L4916:
+	jr L5000
+L4999:
 	ld wa,64
-L4917:
+L5000:
 	ld (xsp+3),a
 	call _id_road_top
 	ld (xsp+4),a
@@ -24572,8 +24989,8 @@ L4917:
 	ld (xsp+10),wa
 	ldb (xsp+1),0
 	ldb (xsp+0),1
-	jr L4921
-L4918:
+	jr L5004
+L5001:
 	ld a,(xsp+0)
 	push xwa
 	call _obj_phase__31
@@ -24586,20 +25003,20 @@ L4918:
 	ld xbc,xwa
 	pop xwa
 	cp a,c
-	jr ule,L4922
+	jr ule,L5005
 	ld a,(xsp+0)
 	ld (xsp+1),a
-L4922:
-L4920:
+L5005:
+L5003:
 	incb 1,(xsp+0)
-L4921:
+L5004:
 	ld a,(xsp+0)
 	cp a,6
-	jr ult,L4918
-L4919:
+	jr ult,L5001
+L5002:
 	ldb (xsp+0),0
-	jp L4926
-L4923:
+	jp L5009
+L5006:
 	ld a,(xsp+1)
 	extz wa
 	add wa,6
@@ -24632,112 +25049,121 @@ L4923:
 	ld iz,wa
 	ld wa,iz
 	cp wa,(xsp+10)
-	jr ule,L4927
+	jr ule,L5010
 	ld wa,(xsp+10)
 	ld iz,wa
-L4927:
+L5010:
 	ld a,(xsp+4)
 	add a,izl
 	ld (xsp+18),a
 	ld wa,iz
 	cp wa,6
-	jr uge,L4928
+	jr uge,L5011
 	ldb (xsp+17),4
-	jr L4929
-L4928:
+	jr L5012
+L5011:
 	ld wa,iz
 	cp wa,10
-	jr uge,L4930
+	jr uge,L5013
 	ldb (xsp+17),3
-	jr L4931
-L4930:
+	jr L5014
+L5013:
 	ld wa,iz
 	cp wa,15
-	jr uge,L4932
+	jr uge,L5015
 	ldb (xsp+17),2
-	jr L4933
-L4932:
+	jr L5016
+L5015:
 	ld wa,iz
 	cp wa,22
-	jr uge,L4934
+	jr uge,L5017
 	ldb (xsp+17),1
-	jr L4935
-L4934:
+	jr L5018
+L5017:
 	ldb (xsp+17),0
-L4935:
-L4933:
-L4931:
-L4929:
+L5018:
+L5016:
+L5014:
+L5012:
 	ld c,(xsp+12)
 	extz bc
 	and bc,1
 	cp bc,0
-	jr z,L4936
+	jr z,L5019
 	ld wa,1
-	jr L4937
-L4936:
+	jr L5020
+L5019:
 	ld wa,0
-L4937:
+L5020:
 	ld (xsp+14),a
 	ld a,(_scn_mode__31)
 	cp a,5
-	jr nz,L4938
+	jr nz,L5021
 	ldb (xsp+15),14
-	ldb (xsp+16),6
-	jr L4939
-L4938:
+	ld xwa,_crowd_pal__31_L5022
+	ld c,(xsp+12)
+	extz bc
+	extz xbc
+	div xbc,3
+	ld bc,qbc
+	extz xbc
+	add xwa,xbc
+	ld a,(xwa)
+	ld (xsp+16),a
+	jr L5023
+L5021:
 	ld a,(_scn_mode__31)
 	cp a,1
-	jr nz,L4940
+	jr nz,L5024
 	ldb (xsp+15),12
 	ldb (xsp+16),4
-	jr L4941
-L4940:
+	jr L5025
+L5024:
 	ld a,(_scn_mode__31)
 	cp a,3
-	jr ult,L4942
+	jr ult,L5026
 	ldb (xsp+15),11
 	ldb (xsp+16),9
-	jr L4943
-L4942:
+	jr L5027
+L5026:
 	ld a,(_scn_mode__31)
 	cp a,2
-	jr nz,L4944
+	jr nz,L5028
 	ldb (xsp+15),13
 	ldb (xsp+16),10
-	jr L4945
-L4944:
+	jr L5029
+L5028:
 	ld a,(xsp+14)
 	cp a,0
-	jr z,L4946
+	jr z,L5030
 	call _theme_obj_kind_right
 	ld (xsp+15),a
 	ldb (xsp+16),2
-	jr L4947
-L4946:
+	jr L5031
+L5030:
 	call _theme_obj_kind_left
 	ld (xsp+15),a
 	ldb (xsp+16),1
-L4947:
-L4945:
-L4943:
-L4941:
-L4939:
+L5031:
+L5029:
+L5027:
+L5025:
+L5023:
 	ld c,(xsp+14)
 	cp c,0
-	jr z,L4948
+	jr z,L5032
 	ld c,(xsp+15)
 	cp c,11
-	jr ult,L4948
+	jr ult,L5032
 	ld wa,1
-	jr L4949
-L4948:
+	jr L5033
+L5032:
 	ld wa,0
-L4949:
+L5033:
 	ld (xsp+20),a
 	ld a,(_scn_mode__31)
 	cp a,5
-	jr nz,L4950
+	jr nz,L5034
 	ld a,(_g_vb_counter)
 	extz wa
 	sra 3,wa
@@ -24746,21 +25172,21 @@ L4949:
 	add wa,bc
 	and wa,1
 	ld (xsp+20),a
-	jr L4951
-L4950:
+	jr L5035
+L5034:
 	ld a,(_scn_mode__31)
 	cp a,3
-	jr nz,L4952
+	jr nz,L5036
 	ldb (xsp+20),0
-	jr L4953
-L4952:
+	jr L5037
+L5036:
 	ld a,(_scn_mode__31)
 	cp a,4
-	jr nz,L4954
+	jr nz,L5038
 	ldb (xsp+20),1
-L4954:
-L4953:
-L4951:
+L5038:
+L5037:
+L5035:
 	ld xwa,_gfx_obj_frames
 	ld c,(xsp+15)
 	extz bc
@@ -24784,15 +25210,15 @@ L4951:
 	ld (xsp+38),wa
 	ld wa,(xsp+38)
 	cp wa,(xsp+8)
-	jr ge,L4955
-	jp L4925
-L4955:
+	jr ge,L5039
+	jp L5008
+L5039:
 	ld wa,(xsp+38)
 	cp wa,(xsp+6)
-	jr le,L4956
+	jr le,L5040
 	ld wa,(xsp+6)
 	ld (xsp+38),wa
-L4956:
+L5040:
 	ld a,(xsp+38)
 	ld (xsp+19),a
 	ld a,(xsp+32)
@@ -24813,12 +25239,12 @@ L4956:
 	ld (xsp+42),wa
 	ld a,(xsp+14)
 	cp a,0
-	jr z,L4957
+	jr z,L5041
 	ld wa,(xsp+40)
 	add wa,(xsp+42)
 	ld (xsp+26),wa
-	jr L4958
-L4957:
+	jr L5042
+L5041:
 	ld wa,(xsp+40)
 	sub wa,(xsp+42)
 	ld xbc,(xsp+34)
@@ -24827,16 +25253,16 @@ L4957:
 	sub wa,bc
 	add wa,1
 	ld (xsp+26),wa
-L4958:
+L5042:
 	ld wa,(xsp+26)
 	cp wa,65504
-	jr lt,L4960
+	jr lt,L5044
 	ld wa,(xsp+26)
 	cp wa,168
-	jr le,L4959
-L4960:
-	jp L4925
-L4959:
+	jr le,L5043
+L5044:
+	jp L5008
+L5043:
 	ld xwa,_gfx_obj_cells
 	ld xbc,(xsp+34)
 	ld bc,(xbc+4)
@@ -24867,24 +25293,24 @@ L4959:
 	ld (xsp+52),a
 	ld c,(xsp+20)
 	cp c,0
-	jr z,L4961
+	jr z,L5045
 	ld wa,128
-	jr L4962
-L4961:
+	jr L5046
+L5045:
 	ld wa,0
-L4962:
+L5046:
 	ld e,(_bridge_line)
 	cp e,0
-	jr z,L4963
+	jr z,L5047
 	ld e,(xsp+19)
 	cp e,(_bridge_line)
-	jr uge,L4963
+	jr uge,L5047
 	ld bc,16
-	jr L4964
-L4963:
+	jr L5048
+L5047:
 	ld c,(_id_spr_priority)
 	extz bc
-L4964:
+L5048:
 	or wa,bc
 	ld (xsp+53),a
 	ld a,(xsp+16)
@@ -24902,20 +25328,20 @@ L4964:
 	lda xsp,(xsp+4)
 	ld a,(xsp+55)
 	ld (xsp+2),a
-L4925:
+L5008:
 	incb 1,(xsp+0)
-L4926:
+L5009:
 	ld a,(xsp+0)
 	cp a,6
-	jp ult,L4923
-L4924:
+	jp ult,L5006
+L5007:
 	ld a,(xsp+3)
 	push xwa
 	ld a,(xsp+6)
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-L4915:
+L4998:
 	lda xsp,(xsp+60)
 	pop xiz
 	ret
@@ -24928,14 +25354,14 @@ _theme_init_tiles:
 	ld (_obj_base__32),wa
 	ld wa,(xsp+12)
 	ld (_obj_end__32),wa
-L4966:
+L5050:
 	ret
 
 ; function theme_obj_map
 _theme_obj_map:
 	ld xwa,_objmap__32
-	jr L4968
-L4968:
+	jr L5052
+L5052:
 	ret
 
 ; function theme_obj_tile
@@ -24947,22 +25373,22 @@ _theme_obj_tile:
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	jr L4970
-L4970:
+	jr L5054
+L5054:
 	ret
 
 ; function theme_obj_kind_left
 _theme_obj_kind_left:
 	ld a,(_kind_l__32)
-	jr L4972
-L4972:
+	jr L5056
+L5056:
 	ret
 
 ; function theme_obj_kind_right
 _theme_obj_kind_right:
 	ld a,(_kind_r__32)
-	jr L4974
-L4974:
+	jr L5058
+L5058:
 	ret
 
 ; function load_tile
@@ -24977,8 +25403,8 @@ _load_tile__32:
 	add xwa,xbc
 	ld xix,xwa
 	ld izl,0
-	jr L4984
-L4981:
+	jr L5068
+L5065:
 	ld xwa,xiy
 	ld c,izl
 	extz bc
@@ -24993,14 +25419,14 @@ L4981:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4983:
+L5067:
 	inc 1,izl
-L4984:
+L5068:
 	ld a,izl
 	cp a,8
-	jr ult,L4981
-L4982:
-L4980:
+	jr ult,L5065
+L5066:
+L5064:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -25016,44 +25442,44 @@ _alloc_slot__32:
 	ld (xsp+2),wa
 	ld wa,iz
 	cp wa,32
-	jr ult,L4992
+	jr ult,L5076
 	ld wa,iz
 	cp wa,101
-	jr uge,L4992
+	jr uge,L5076
 	ld iz,101
-	jr L4993
-L4992:
+	jr L5077
+L5076:
 	ld wa,iz
 	cp wa,125
-	jr ult,L4994
+	jr ult,L5078
 	ld wa,iz
 	cp wa,(_pano_base__32)
-	jr uge,L4994
+	jr uge,L5078
 	ld wa,(_obj_base__32)
 	ld iz,wa
-L4994:
-L4993:
+L5078:
+L5077:
 	ld wa,iz
 	cp wa,(_obj_end__32)
-	jr ult,L4995
+	jr ult,L5079
 	ld wa,(_pano_end__32)
 	ld iz,wa
-L4995:
+L5079:
 	ld wa,iz
 	cp wa,(xsp+2)
-	jr ult,L4996
+	jr ult,L5080
 	ld wa,iz
 	cp wa,(_obj_base__32)
-	jr uge,L4996
+	jr uge,L5080
 	ld wa,0
-	jr L4991
-L4996:
+	jr L5075
+L5080:
 	ld wa,iz
 	add wa,1
 	ld (_next_slot__32),wa
 	ld wa,iz
-	jr L4991
-L4991:
+	jr L5075
+L5075:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -25063,8 +25489,8 @@ _load_kind__32:
 	push xiz
 	lda xsp,(xsp-10)
 	ldb (xsp+0),0
-	jp L5012
-L5009:
+	jp L5096
+L5093:
 	ld xwa,_gfx_obj_frames
 	ld c,(xsp+18)
 	extz bc
@@ -25079,8 +25505,8 @@ L5009:
 	lda xwa,(xwa)
 	ld (xsp+2),xwa
 	ld izl,0
-	jp L5016
-L5013:
+	jp L5100
+L5097:
 	ld xwa,_gfx_obj_cells
 	ld xbc,(xsp+2)
 	ld bc,(xbc+4)
@@ -25099,7 +25525,7 @@ L5013:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,65535
-	jr nz,L5017
+	jr nz,L5101
 	call _alloc_slot__32
 	ld (xsp+8),wa
 	ld wa,(xsp+8)
@@ -25112,7 +25538,7 @@ L5013:
 	ld (xbc),wa
 	ld wa,(xsp+8)
 	cp wa,0
-	jr z,L5018
+	jr z,L5102
 	ld xwa,_gfx_obj_tiles
 	ld c,(xsp+7)
 	extz bc
@@ -25126,25 +25552,25 @@ L5013:
 	push xwa
 	call _load_tile__32
 	lda xsp,(xsp+8)
-L5018:
-L5017:
-L5015:
+L5102:
+L5101:
+L5099:
 	inc 1,izl
-L5016:
+L5100:
 	ld a,izl
 	ld xbc,(xsp+2)
 	ld c,(xbc+2)
 	cp a,c
-	jp ult,L5013
-L5014:
-L5011:
+	jp ult,L5097
+L5098:
+L5095:
 	incb 1,(xsp+0)
-L5012:
+L5096:
 	ld a,(xsp+0)
 	cp a,5
-	jp ult,L5009
-L5010:
-L5008:
+	jp ult,L5093
+L5094:
+L5092:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -25165,8 +25591,8 @@ _set_spr_pal__32:
 	lda xwa,(xwa)
 	ld xix,xwa
 	ld izl,0
-	jr L5028
-L5025:
+	jr L5112
+L5109:
 	ld xwa,xix
 	ld c,izl
 	extz bc
@@ -25187,13 +25613,13 @@ L5025:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L5027:
+L5111:
 	inc 1,izl
-L5028:
+L5112:
 	ld a,izl
 	cp a,4
-	jr ult,L5025
-L5026:
+	jr ult,L5109
+L5110:
 	push xix
 	push xiy
 	ld wa,(xix+6)
@@ -25212,7 +25638,7 @@ L5026:
 	lda xsp,(xsp+24)
 	pop xiy
 	pop xix
-L5024:
+L5108:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -25242,8 +25668,8 @@ _theme_apply:
 	lda xwa,(xwa)
 	ld xiy,xwa
 	ld iz,0
-	jr L5067
-L5064:
+	jr L5151
+L5148:
 	push xix
 	push xiy
 	ld xwa,(xiy)
@@ -25261,16 +25687,16 @@ L5064:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L5066:
+L5150:
 	inc 1,iz
-L5067:
+L5151:
 	ld wa,iz
 	cp wa,(xiy+4)
-	jr ult,L5064
-L5065:
+	jr ult,L5148
+L5149:
 	ld iz,0
-	jr L5071
-L5068:
+	jr L5155
+L5152:
 	ld xwa,(xiy+14)
 	ld bc,iz
 	extz xbc
@@ -25283,19 +25709,19 @@ L5068:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L5070:
+L5154:
 	inc 1,iz
-L5071:
+L5155:
 	ld wa,iz
 	cp wa,52
-	jr ult,L5068
-L5069:
+	jr ult,L5152
+L5153:
 	ldb (xsp+11),0
-	jr L5075
-L5072:
+	jr L5159
+L5156:
 	ld ixl,0
-	jr L5079
-L5076:
+	jr L5163
+L5160:
 	ld a,(xsp+11)
 	extz wa
 	sll 5,wa
@@ -25330,20 +25756,20 @@ L5076:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L5078:
+L5162:
 	inc 1,ixl
-L5079:
+L5163:
 	ld a,ixl
 	cp a,32
-	jr ult,L5076
-L5077:
-L5074:
+	jr ult,L5160
+L5161:
+L5158:
 	incb 1,(xsp+11)
-L5075:
+L5159:
 	ld a,(xsp+11)
 	cp a,11
-	jr ult,L5072
-L5073:
+	jr ult,L5156
+L5157:
 	ld wa,(_pano_base__32)
 	add wa,(xiy+4)
 	ld (_pano_end__32),wa
@@ -25362,8 +25788,8 @@ L5073:
 	ld wa,(xwa+6)
 	ld (_cur_road__32+6),wa
 	ld iz,0
-	jr L5083
-L5080:
+	jr L5167
+L5164:
 	ld xwa,(xsp+0)
 	lda xwa,(xwa+8)
 	ld bc,iz
@@ -25377,16 +25803,16 @@ L5080:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L5082:
+L5166:
 	inc 1,iz
-L5083:
+L5167:
 	ld wa,iz
 	cp wa,4
-	jr ult,L5080
-L5081:
+	jr ult,L5164
+L5165:
 	ld iz,0
-	jr L5087
-L5084:
+	jr L5171
+L5168:
 	ld wa,65535
 	ld xbc,_objmap__32
 	ld de,iz
@@ -25394,13 +25820,13 @@ L5084:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L5086:
+L5170:
 	inc 1,iz
-L5087:
+L5171:
 	ld wa,iz
 	cp wa,256
-	jr ult,L5084
-L5085:
+	jr ult,L5168
+L5169:
 	ldw (_next_slot__32),2
 	ld xwa,(xsp+0)
 	ld a,(xwa+1)
@@ -25418,7 +25844,7 @@ L5085:
 	pop xix
 	ld a,(_kind_r__32)
 	cp a,(_kind_l__32)
-	jr z,L5088
+	jr z,L5172
 	push xix
 	push xiy
 	ld a,(_kind_r__32)
@@ -25427,7 +25853,7 @@ L5085:
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-L5088:
+L5172:
 	push xix
 	push xiy
 	ld wa,11
@@ -25438,7 +25864,7 @@ L5088:
 	pop xix
 	ld a,(xsp+22)
 	cp a,10
-	jr uge,L5089
+	jr uge,L5173
 	push xix
 	push xiy
 	ld wa,12
@@ -25447,7 +25873,7 @@ L5088:
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-L5089:
+L5173:
 	push xix
 	push xiy
 	ld wa,13
@@ -25458,11 +25884,11 @@ L5089:
 	pop xix
 	ld a,(xsp+22)
 	cp a,0
-	jr z,L5091
+	jr z,L5175
 	ld a,(xsp+22)
 	cp a,10
-	jr ult,L5090
-L5091:
+	jr ult,L5174
+L5175:
 	push xix
 	push xiy
 	ld wa,14
@@ -25471,10 +25897,10 @@ L5091:
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-L5090:
+L5174:
 	ld iz,0
-	jr L5095
-L5092:
+	jr L5179
+L5176:
 	ld xwa,_objmap__32
 	ld bc,iz
 	extz xbc
@@ -25482,7 +25908,7 @@ L5092:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,65535
-	jr nz,L5096
+	jr nz,L5180
 	ld wa,0
 	ld xbc,_objmap__32
 	ld de,iz
@@ -25490,14 +25916,14 @@ L5092:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L5096:
-L5094:
+L5180:
+L5178:
 	inc 1,iz
-L5095:
+L5179:
 	ld wa,iz
 	cp wa,256
-	jr ult,L5092
-L5093:
+	jr ult,L5176
+L5177:
 	push xix
 	push xiy
 	ld wa,0
@@ -25578,9 +26004,68 @@ L5093:
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-L5063:
+L5147:
 	lda xsp,(xsp+14)
 	pop xiz
+	ret
+
+; function theme_crowd_colours
+_theme_crowd_colours:
+	lda xsp,(xsp-4)
+	ld xwa,_gfx_obj_pals+112
+	ld (xsp+0),xwa
+	ld a,(xsp+8)
+	cp a,0
+	jr z,L5185
+	ld xwa,(xsp+0)
+	ld wa,(xwa+6)
+	push xwa
+	ld wa,3683
+	push xwa
+	ld wa,1197
+	push xwa
+	ld wa,0
+	push xwa
+	ld wa,8
+	push xwa
+	ld a,2
+	push xwa
+	call _ngpc_gfx_set_palette
+	lda xsp,(xsp+24)
+	ld xwa,(xsp+0)
+	ld wa,(xwa+6)
+	push xwa
+	ld wa,1202
+	push xwa
+	ld wa,274
+	push xwa
+	ld wa,0
+	push xwa
+	ld a,10
+	push xwa
+	ld a,2
+	push xwa
+	call _ngpc_gfx_set_palette
+	lda xsp,(xsp+24)
+	jr L5186
+L5185:
+	ld wa,(_cur_spr__32+24+6)
+	push xwa
+	ld wa,(_cur_spr__32+24+4)
+	push xwa
+	ld wa,(_cur_spr__32+24+2)
+	push xwa
+	ld wa,(_cur_spr__32+24)
+	push xwa
+	ld a,10
+	push xwa
+	ld a,2
+	push xwa
+	call _ngpc_gfx_set_palette
+	lda xsp,(xsp+24)
+L5186:
+L5184:
+	lda xsp,(xsp+4)
 	ret
 
 ; function to_white
@@ -25600,10 +26085,10 @@ _to_white__32:
 	ld iz,wa
 	ld a,(xsp+18)
 	cp a,4
-	jr ult,L5100
+	jr ult,L5190
 	ld wa,4095
-	jr L5099
-L5100:
+	jr L5189
+L5190:
 	ld wa,iy
 	ld bc,15
 	sub bc,iy
@@ -25638,8 +26123,8 @@ L5100:
 	ld bc,iz
 	sll 8,bc
 	or wa,bc
-	jr L5099
-L5099:
+	jr L5189
+L5189:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -25649,8 +26134,8 @@ _theme_flash:
 	push xiz
 	lda xsp,(xsp-10)
 	ld izl,0
-	jp L5114
-L5111:
+	jp L5204
+L5201:
 	ld a,(xsp+18)
 	push xwa
 	ld xwa,_cur_pals__32
@@ -25721,16 +26206,16 @@ L5111:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-L5113:
+L5203:
 	inc 1,izl
-L5114:
+L5204:
 	ld a,izl
 	cp a,13
-	jp ult,L5111
-L5112:
+	jp ult,L5201
+L5202:
 	ldb (xsp+1),0
-	jr L5118
-L5115:
+	jr L5208
+L5205:
 	ld a,(xsp+18)
 	push xwa
 	ld xwa,_cur_band__32
@@ -25750,13 +26235,13 @@ L5115:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L5117:
+L5207:
 	incb 1,(xsp+1)
-L5118:
+L5208:
 	ld a,(xsp+1)
 	cp a,4
-	jr ult,L5115
-L5116:
+	jr ult,L5205
+L5206:
 	lda xwa,(xsp+2)
 	push xwa
 	ld a,(xsp+22)
@@ -25782,7 +26267,7 @@ L5116:
 	push xwa
 	call _id_road_set_colors
 	lda xsp,(xsp+16)
-L5110:
+L5200:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -25793,14 +26278,14 @@ _traffic_set_hard:
 	ld (_hard__33),a
 	ld c,(xsp+4)
 	cp c,0
-	jr z,L5123
+	jr z,L5213
 	ld wa,7
-	jr L5124
-L5123:
+	jr L5214
+L5213:
 	ld wa,6
-L5124:
+L5214:
 	ld (_trf_cap__33),a
-L5122:
+L5212:
 	ret
 
 ; function rnd8
@@ -25811,8 +26296,8 @@ _rnd8__33:
 	ld (_rng__33),wa
 	ld wa,(_rng__33)
 	srl 8,wa
-	jr L5126
-L5126:
+	jr L5216
+L5216:
 	ret
 
 ; function traffic_init
@@ -25822,8 +26307,8 @@ _traffic_init:
 	ld wa,(xsp+10)
 	ld (_trf_tiles__33),wa
 	ld iz,0
-	jr L5140
-L5137:
+	jr L5230
+L5227:
 	ld xwa,_gfx_traffic_tiles
 	ld bc,iz
 	extz xbc
@@ -25840,18 +26325,18 @@ L5137:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L5139:
+L5229:
 	inc 1,iz
-L5140:
+L5230:
 	ld wa,iz
 	ld bc,(_gfx_traffic_tiles_count)
 	sll 3,bc
 	cp wa,bc
-	jr ult,L5137
-L5138:
+	jr ult,L5227
+L5228:
 	ld iz,0
-	jr L5144
-L5141:
+	jr L5234
+L5231:
 	ld xwa,_gfx_traffic_pals
 	ld bc,iz
 	sll 2,bc
@@ -25894,15 +26379,15 @@ L5141:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-L5143:
+L5233:
 	inc 1,iz
-L5144:
+L5234:
 	ld wa,iz
 	cp wa,5
-	jr ult,L5141
-L5142:
+	jr ult,L5231
+L5232:
 	call _traffic_clear
-L5136:
+L5226:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -25921,10 +26406,10 @@ _traffic_set_car_line:
 	ld (_half_wheel__33),a
 	ld a,(_half_wheel__33)
 	cp a,0
-	jr nz,L5148
+	jr nz,L5238
 	ldb (_half_wheel__33),1
-L5148:
-L5147:
+L5238:
+L5237:
 	ret
 
 ; function traffic_clear
@@ -25932,8 +26417,8 @@ _traffic_clear:
 	push xiz
 	lda xsp,(xsp-2)
 	ld izl,0
-	jr L5158
-L5155:
+	jr L5248
+L5245:
 	ld a,0
 	ld xbc,_cars__33
 	ld e,izl
@@ -25941,20 +26426,20 @@ L5155:
 	muls xde,14
 	add xbc,xde
 	ld (xbc),a
-L5157:
+L5247:
 	inc 1,izl
-L5158:
+L5248:
 	ld a,izl
 	cp a,7
-	jr ult,L5155
-L5156:
+	jr ult,L5245
+L5246:
 	ld a,50
 	push xwa
 	ld a,28
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-L5154:
+L5244:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -25966,27 +26451,27 @@ _traffic_reset:
 	ld izl,a
 	ld a,izl
 	cp a,(_trf_cap__33)
-	jr ule,L5164
+	jr ule,L5254
 	ld a,(_trf_cap__33)
 	ld izl,a
-L5164:
+L5254:
 	ld a,izl
 	ld (_dens_min__33),a
 	ld c,(xsp+12)
 	cp c,(_trf_cap__33)
-	jr ule,L5165
+	jr ule,L5255
 	ld a,(_trf_cap__33)
 	extz wa
-	jr L5166
-L5165:
+	jr L5256
+L5255:
 	ld a,(xsp+12)
 	extz wa
-L5166:
+L5256:
 	ld (_dens_max__33),a
 	ld a,(_dens_min__33)
 	ld (_target__33),a
 	ldb (_cooldown__33),30
-L5163:
+L5253:
 	pop xiz
 	ret
 
@@ -26006,8 +26491,8 @@ _lane_lat__33:
 	mul xbc,de
 	sub bc,3
 	mul xwa,bc
-	jr L5168
-L5168:
+	jr L5258
+L5258:
 	lda xsp,(xsp+2)
 	ret
 
@@ -26032,17 +26517,17 @@ _lane_of__33:
 	ld iz,wa
 	ld wa,iz
 	cp wa,0
-	jr ge,L5173
+	jr ge,L5263
 	ld iz,0
-L5173:
+L5263:
 	ld wa,iz
 	cp wa,3
-	jr le,L5174
+	jr le,L5264
 	ld iz,3
-L5174:
+L5264:
 	ld a,izl
-	jr L5172
-L5172:
+	jr L5262
+L5262:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -26055,8 +26540,8 @@ _spawn__33:
 	exts xwa
 	ld (xsp+4),xwa
 	ld izl,0
-	jr L5200
-L5197:
+	jr L5290
+L5287:
 	ld xwa,_cars__33
 	ld c,izl
 	extz bc
@@ -26064,7 +26549,7 @@ L5197:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr nz,L5201
+	jr nz,L5291
 	ld xwa,_cars__33
 	ld c,izl
 	extz bc
@@ -26072,23 +26557,23 @@ L5197:
 	add xwa,xbc
 	lda xwa,(xwa)
 	ld (xsp+4),xwa
-	jr L5198
-L5201:
-L5199:
+	jr L5288
+L5291:
+L5289:
 	inc 1,izl
-L5200:
+L5290:
 	ld a,izl
 	cp a,7
-	jr ult,L5197
-L5198:
+	jr ult,L5287
+L5288:
 	ld xwa,(xsp+4)
 	cp xwa,0
-	jr nz,L5202
-	jp L5196
-L5202:
+	jr nz,L5292
+	jp L5286
+L5292:
 	ldb (xsp+2),0
-	jp L5206
-L5203:
+	jp L5296
+L5293:
 	ld wa,0
 	ld (xsp+8),a
 	call _rnd8__33
@@ -26096,8 +26581,8 @@ L5203:
 	and wa,3
 	ld (xsp+1),a
 	ld izl,0
-	jr L5210
-L5207:
+	jr L5300
+L5297:
 	ld xwa,_cars__33
 	ld c,izl
 	extz bc
@@ -26105,7 +26590,7 @@ L5207:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L5211
+	jr z,L5301
 	ld xwa,_cars__33
 	ld c,izl
 	extz bc
@@ -26120,7 +26605,7 @@ L5207:
 	ld xbc,xwa
 	pop xwa
 	cp wa,bc
-	jr nz,L5211
+	jr nz,L5301
 	ld xwa,_cars__33
 	ld c,izl
 	extz bc
@@ -26133,33 +26618,33 @@ L5207:
 	sub bc,400
 	sll 4,bc
 	cp wa,bc
-	jr le,L5211
+	jr le,L5301
 	ldb (xsp+8),1
-L5211:
-L5209:
+L5301:
+L5299:
 	inc 1,izl
-L5210:
+L5300:
 	ld a,izl
 	cp a,7
-	jr ult,L5207
-L5208:
+	jr ult,L5297
+L5298:
 	ld a,(xsp+8)
 	cp a,0
-	jr nz,L5212
-	jr L5204
-L5212:
-L5205:
+	jr nz,L5302
+	jr L5294
+L5302:
+L5295:
 	incb 1,(xsp+2)
-L5206:
+L5296:
 	ld a,(xsp+2)
 	cp a,3
-	jp ult,L5203
-L5204:
+	jp ult,L5293
+L5294:
 	ld a,(xsp+2)
 	cp a,3
-	jr nz,L5213
-	jp L5196
-L5213:
+	jr nz,L5303
+	jp L5286
+L5303:
 	ld a,1
 	ld xbc,(xsp+4)
 	ld (xbc),a
@@ -26184,12 +26669,12 @@ L5213:
 	ld (xbc+2),a
 	ld c,(_hard__33)
 	cp c,0
-	jr z,L5214
+	jr z,L5304
 	ld wa,42
-	jr L5215
-L5214:
+	jr L5305
+L5304:
 	ld wa,55
-L5215:
+L5305:
 	push xwa
 	call _rnd8__33
 	ld xbc,xwa
@@ -26204,13 +26689,13 @@ L5215:
 	ld xwa,(xsp+4)
 	ld a,(xwa+1)
 	cp a,2
-	jr nz,L5216
+	jr nz,L5306
 	ld xwa,(xsp+4)
 	ld a,(xwa+3)
 	sub a,15
 	ld xbc,(xsp+4)
 	ld (xbc+3),a
-L5216:
+L5306:
 	ld a,(xsp+1)
 	push xwa
 	call _lane_lat__33
@@ -26234,7 +26719,7 @@ L5216:
 	ld wa,0
 	ld xbc,(xsp+4)
 	ld (xbc+8),wa
-L5196:
+L5286:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -26246,8 +26731,8 @@ _traffic_update:
 	ld wa,0
 	ld (xsp+1),a
 	ldb (xsp+0),0
-	jp L5249
-L5246:
+	jp L5339
+L5336:
 	ld xwa,_cars__33
 	ld c,(xsp+0)
 	extz bc
@@ -26257,9 +26742,9 @@ L5246:
 	ld xiz,xwa
 	ld a,(xiz)
 	cp a,0
-	jr nz,L5250
-	jp L5248
-L5250:
+	jr nz,L5340
+	jp L5338
+L5340:
 	ld wa,(xiz+6)
 	ld (xiz+12),wa
 	ld wa,(xiz+8)
@@ -26285,44 +26770,44 @@ L5250:
 	ld (xiz+8),wa
 	ld wa,(xiz+4)
 	cp wa,(xiz+10)
-	jr z,L5251
+	jr z,L5341
 	ld wa,(xiz+4)
 	cp wa,(xiz+10)
-	jr ge,L5252
+	jr ge,L5342
 	ld wa,(xiz+4)
 	add wa,8
 	ld (xiz+4),wa
 	ld wa,(xiz+4)
 	cp wa,(xiz+10)
-	jr le,L5253
+	jr le,L5343
 	ld wa,(xiz+10)
 	ld (xiz+4),wa
-L5253:
-	jr L5254
-L5252:
+L5343:
+	jr L5344
+L5342:
 	ld wa,(xiz+4)
 	sub wa,8
 	ld (xiz+4),wa
 	ld wa,(xiz+4)
 	cp wa,(xiz+10)
-	jr ge,L5255
+	jr ge,L5345
 	ld wa,(xiz+10)
 	ld (xiz+4),wa
-L5255:
-L5254:
-	jr L5256
-L5251:
+L5345:
+L5344:
+	jr L5346
+L5341:
 	call _rnd8__33
 	ld e,(_hard__33)
 	cp e,0
-	jr z,L5258
+	jr z,L5348
 	ld bc,6
-	jr L5259
-L5258:
+	jr L5349
+L5348:
 	ld bc,2
-L5259:
+L5349:
 	cp a,c
-	jr uge,L5257
+	jr uge,L5347
 	ld wa,(xiz+4)
 	push xwa
 	call _lane_of__33
@@ -26330,16 +26815,16 @@ L5259:
 	ld (xsp+8),a
 	ld a,(xsp+8)
 	cp a,0
-	jr nz,L5260
+	jr nz,L5350
 	ldb (xsp+8),1
-	jr L5261
-L5260:
+	jr L5351
+L5350:
 	ld a,(xsp+8)
 	cp a,3
-	jr nz,L5262
+	jr nz,L5352
 	ldb (xsp+8),2
-	jr L5263
-L5262:
+	jr L5353
+L5352:
 	push xwa
 	call _rnd8__33
 	ld xbc,xwa
@@ -26347,78 +26832,78 @@ L5262:
 	extz bc
 	and bc,1
 	cp bc,0
-	jr z,L5264
+	jr z,L5354
 	ld a,(xsp+8)
 	add a,1
 	extz wa
-	jr L5265
-L5264:
+	jr L5355
+L5354:
 	ld a,(xsp+8)
 	sub a,1
 	extz wa
-L5265:
+L5355:
 	ld (xsp+8),a
-L5263:
-L5261:
+L5353:
+L5351:
 	ld a,(xsp+8)
 	push xwa
 	call _lane_lat__33
 	lda xsp,(xsp+4)
 	ld (xiz+10),wa
-L5257:
-L5256:
+L5347:
+L5346:
 	ld wa,(xiz+6)
 	ld bc,(_car_d__33)
 	neg bc
 	sll 4,bc
 	sub bc,64
 	cp wa,bc
-	jr lt,L5267
+	jr lt,L5357
 	ld wa,(xiz+6)
 	ld bc,1600
 	ld de,(_car_d__33)
 	sub bc,de
 	sll 4,bc
 	cp wa,bc
-	jr le,L5266
-L5267:
+	jr le,L5356
+L5357:
 	ldb (xiz),0
-	jr L5248
-L5266:
+	jr L5338
+L5356:
 	incb 1,(xsp+1)
-L5248:
+L5338:
 	incb 1,(xsp+0)
-L5249:
+L5339:
 	ld a,(xsp+0)
 	cp a,7
-	jp ult,L5246
-L5247:
+	jp ult,L5336
+L5337:
 	ld a,(_cooldown__33)
 	cp a,0
-	jr z,L5268
+	jr z,L5358
 	decb 1,(_cooldown__33)
-L5268:
+L5358:
 	ld a,(xsp+22)
 	cp a,0
-	jr z,L5269
+	jr z,L5359
 	ld a,(xsp+1)
 	cp a,(_target__33)
-	jr uge,L5269
+	jr uge,L5359
 	ld a,(_cooldown__33)
 	cp a,0
-	jr nz,L5269
+	jr nz,L5359
 	ld a,(xsp+18)
 	cp a,50
-	jr ule,L5269
+	jr ule,L5359
 	call _spawn__33
 	ld c,(_hard__33)
 	cp c,0
-	jr z,L5270
+	jr z,L5360
 	ld wa,16
-	jr L5271
-L5270:
+	jr L5361
+L5360:
 	ld wa,25
-L5271:
+L5361:
 	push xwa
 	call _rnd8__33
 	ld xbc,xwa
@@ -26429,7 +26914,7 @@ L5271:
 	ld (_cooldown__33),a
 	ld a,(_dens_max__33)
 	cp a,(_dens_min__33)
-	jr ule,L5272
+	jr ule,L5362
 	ld a,(_dens_min__33)
 	extz wa
 	push xwa
@@ -26446,9 +26931,9 @@ L5271:
 	ld bc,qbc
 	add wa,bc
 	ld (_target__33),a
-L5272:
-L5269:
-L5245:
+L5362:
+L5359:
+L5335:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -26458,8 +26943,8 @@ _traffic_collide:
 	push xiz
 	lda xsp,(xsp-12)
 	ld iyl,0
-	jp L5293
-L5290:
+	jp L5383
+L5380:
 	ld xwa,_cars__33
 	ld c,iyl
 	extz bc
@@ -26469,49 +26954,49 @@ L5290:
 	ld xiz,xwa
 	ld a,(xiz)
 	cp a,0
-	jr nz,L5294
-	jp L5292
-L5294:
+	jr nz,L5384
+	jp L5382
+L5384:
 	ld bc,(xiz+12)
 	cp bc,(xiz+6)
-	jr ge,L5295
+	jr ge,L5385
 	ld wa,(xiz+12)
-	jr L5296
-L5295:
+	jr L5386
+L5385:
 	ld wa,(xiz+6)
-L5296:
+L5386:
 	ld (xsp+8),wa
 	ld bc,(xiz+12)
 	cp bc,(xiz+6)
-	jr ge,L5297
+	jr ge,L5387
 	ld wa,(xiz+6)
-	jr L5298
-L5297:
+	jr L5388
+L5387:
 	ld wa,(xiz+12)
-L5298:
+L5388:
 	ld (xsp+10),wa
 	ld wa,(xsp+8)
 	cp wa,224
-	jr gt,L5300
+	jr gt,L5390
 	ld wa,(xsp+10)
 	cp wa,65440
-	jr ge,L5299
-L5300:
-	jr L5292
-L5299:
+	jr ge,L5389
+L5390:
+	jr L5382
+L5389:
 	ld wa,(xiz+4)
 	sub wa,(xsp+20)
 	ld ix,wa
 	ld wa,ix
 	cp wa,0
-	jr ge,L5301
+	jr ge,L5391
 	ld wa,ix
 	neg wa
 	ld ix,wa
-L5301:
+L5391:
 	ld wa,ix
 	cp wa,416
-	jr ge,L5302
+	jr ge,L5392
 	ld wa,(xiz+6)
 	add wa,960
 	ld (xiz+6),wa
@@ -26522,24 +27007,24 @@ L5301:
 	ld (xiz+3),a
 	ld bc,(xiz+4)
 	cp bc,(xsp+20)
-	jr ge,L5303
+	jr ge,L5393
 	ld wa,1
-	jr L5304
-L5303:
+	jr L5394
+L5393:
 	ld wa,2
-L5304:
-	jr L5289
-L5302:
-L5292:
+L5394:
+	jr L5379
+L5392:
+L5382:
 	inc 1,iyl
-L5293:
+L5383:
 	ld a,iyl
 	cp a,7
-	jp ult,L5290
-L5291:
+	jp ult,L5380
+L5381:
 	ld wa,0
-	jr L5289
-L5289:
+	jr L5379
+L5379:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -26558,8 +27043,8 @@ _traffic_draw:
 	extz wa
 	ld (xsp+12),wa
 	ld izl,0
-	jr L5341
-L5338:
+	jr L5431
+L5428:
 	ld xwa,_cars__33
 	ld c,izl
 	extz bc
@@ -26567,7 +27052,7 @@ L5338:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L5342
+	jr z,L5432
 	ld a,izl
 	lda xbc,(xsp+0)
 	ld e,(xsp+7)
@@ -26576,17 +27061,17 @@ L5338:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L5342:
-L5340:
+L5432:
+L5430:
 	inc 1,izl
-L5341:
+L5431:
 	ld a,izl
 	cp a,7
-	jr ult,L5338
-L5339:
+	jr ult,L5428
+L5429:
 	ld izl,1
-	jp L5346
-L5343:
+	jp L5436
+L5433:
 	lda xwa,(xsp+0)
 	ld c,izl
 	extz bc
@@ -26596,8 +27081,8 @@ L5343:
 	ld (xsp+14),a
 	ld a,izl
 	ld ixl,a
-	jr L5349
-L5347:
+	jr L5439
+L5437:
 	lda xwa,(xsp+0)
 	ld c,ixl
 	sub c,1
@@ -26612,10 +27097,10 @@ L5347:
 	add xbc,xde
 	ld (xbc),a
 	dec 1,ixl
-L5349:
+L5439:
 	ld a,ixl
 	cp a,0
-	jr ule,L5350
+	jr ule,L5440
 	ld xwa,_cars__33
 	lda xbc,(xsp+0)
 	ld e,ixl
@@ -26635,9 +27120,9 @@ L5349:
 	add xbc,xde
 	ld bc,(xbc+6)
 	cp wa,bc
-	jr gt,L5347
-L5350:
-L5348:
+	jr gt,L5437
+L5440:
+L5438:
 	ld a,(xsp+14)
 	lda xbc,(xsp+0)
 	ld e,ixl
@@ -26645,16 +27130,16 @@ L5348:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L5345:
+L5435:
 	inc 1,izl
-L5346:
+L5436:
 	ld a,izl
 	cp a,(xsp+7)
-	jp ult,L5343
-L5344:
+	jp ult,L5433
+L5434:
 	ld izl,0
-	jp L5354
-L5351:
+	jp L5444
+L5441:
 	ld xwa,_cars__33
 	lda xbc,(xsp+0)
 	ld e,izl
@@ -26676,9 +27161,9 @@ L5351:
 	ld (xsp+18),wa
 	ld wa,(xsp+18)
 	cp wa,0
-	jr ge,L5355
-	jp L5353
-L5355:
+	jr ge,L5445
+	jp L5443
+L5445:
 	push xix
 	ld wa,(xsp+22)
 	push xwa
@@ -26688,9 +27173,9 @@ L5355:
 	ld (xsp+20),a
 	ld a,(xsp+20)
 	cp a,255
-	jr nz,L5356
-	jp L5353
-L5356:
+	jr nz,L5446
+	jp L5443
+L5446:
 	push xix
 	lda xwa,(xsp+28)
 	push xwa
@@ -26701,9 +27186,9 @@ L5356:
 	pop xix
 	ld wa,(xsp+26)
 	cp wa,(xsp+12)
-	jr ge,L5357
-	jp L5353
-L5357:
+	jr ge,L5447
+	jp L5443
+L5447:
 	ld a,(xsp+28)
 	extz wa
 	sll 5,wa
@@ -26714,33 +27199,33 @@ L5357:
 	ld (xsp+22),a
 	ld a,(xsp+22)
 	cp a,28
-	jr ult,L5358
+	jr ult,L5448
 	ldb (xsp+21),0
-	jr L5359
-L5358:
+	jr L5449
+L5448:
 	ld a,(xsp+22)
 	cp a,20
-	jr ult,L5360
+	jr ult,L5450
 	ldb (xsp+21),1
-	jr L5361
-L5360:
+	jr L5451
+L5450:
 	ld a,(xsp+22)
 	cp a,13
-	jr ult,L5362
+	jr ult,L5452
 	ldb (xsp+21),2
-	jr L5363
-L5362:
+	jr L5453
+L5452:
 	ld a,(xsp+22)
 	cp a,9
-	jr ult,L5364
+	jr ult,L5454
 	ldb (xsp+21),3
-	jr L5365
-L5364:
+	jr L5455
+L5454:
 	ldb (xsp+21),4
-L5365:
-L5363:
-L5361:
-L5359:
+L5455:
+L5453:
+L5451:
+L5449:
 	ld xwa,_gfx_traffic_frames
 	ld xbc,(xsp+14)
 	ld c,(xbc+1)
@@ -26777,9 +27262,9 @@ L5359:
 	ld (xsp+38),wa
 	ld wa,(xsp+26)
 	cp wa,151
-	jr le,L5366
-	jp L5353
-L5366:
+	jr le,L5456
+	jp L5443
+L5456:
 	ld wa,(xsp+26)
 	add wa,1
 	ld xbc,(xsp+30)
@@ -26810,25 +27295,26 @@ L5366:
 	ldb (xsp+58),0
 	ld c,(_bridge_line)
 	cp c,0
-	jr z,L5367
+	jr z,L5457
 	ld bc,(xsp+26)
 	ld e,(_bridge_line)
 	extz de
 	cp bc,de
-	jr ge,L5367
+	jr ge,L5457
 	ld wa,16
-	jr L5368
-L5367:
+	jr L5458
+L5457:
 	ld a,(_id_spr_priority)
 	extz wa
-L5368:
+L5458:
 	ld (xsp+59),a
 	ld xwa,(xsp+14)
 	ld a,(xwa+2)
 	ld (xsp+60),a
 	ld a,(xsp+10)
 	ld (xsp+61),a
-	ldb (xsp+62),50
+	ld a,(_trf_spr_end)
+	ld (xsp+62),a
 	ldb (xsp+63),0
 	ldb (xsp+64),0
 	push xix
@@ -26839,22 +27325,22 @@ L5368:
 	pop xix
 	ld a,(xsp+61)
 	ld (xsp+10),a
-L5353:
+L5443:
 	inc 1,izl
-L5354:
+L5444:
 	ld a,izl
 	cp a,(xsp+7)
-	jp ult,L5351
-L5352:
+	jp ult,L5441
+L5442:
 	push xix
-	ld a,50
+	ld a,(_trf_spr_end)
 	push xwa
 	ld a,(xsp+18)
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
 	pop xix
-L5337:
+L5427:
 	lda xsp,(xsp+66)
 	pop xiz
 	ret
@@ -26868,8 +27354,8 @@ _traffic_ap_target:
 	ld wa,65535
 	ld (xsp+4),wa
 	ld iyl,0
-	jp L5391
-L5388:
+	jp L5481
+L5478:
 	push xix
 	push xiy
 	ld a,iyl
@@ -26882,8 +27368,8 @@ L5388:
 	ld wa,32767
 	ld (xsp+8),wa
 	ld izl,0
-	jp L5395
-L5392:
+	jp L5485
+L5482:
 	ld xwa,_cars__33
 	ld c,izl
 	extz bc
@@ -26891,7 +27377,7 @@ L5392:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L5397
+	jr z,L5487
 	ld xwa,_cars__33
 	ld c,izl
 	extz bc
@@ -26899,10 +27385,10 @@ L5392:
 	add xwa,xbc
 	ld wa,(xwa+6)
 	cp wa,65280
-	jr ge,L5396
-L5397:
-	jr L5394
-L5396:
+	jr ge,L5486
+L5487:
+	jr L5484
+L5486:
 	ld xwa,_cars__33
 	ld c,izl
 	extz bc
@@ -26913,14 +27399,14 @@ L5396:
 	ld ix,wa
 	ld wa,ix
 	cp wa,0
-	jr ge,L5398
+	jr ge,L5488
 	ld wa,ix
 	neg wa
 	ld ix,wa
-L5398:
+L5488:
 	ld wa,ix
 	cp wa,480
-	jr ge,L5399
+	jr ge,L5489
 	ld xwa,_cars__33
 	ld c,izl
 	extz bc
@@ -26928,7 +27414,7 @@ L5398:
 	add xwa,xbc
 	ld wa,(xwa+6)
 	cp wa,(xsp+8)
-	jr ge,L5399
+	jr ge,L5489
 	ld xwa,_cars__33
 	ld c,izl
 	extz bc
@@ -26936,56 +27422,56 @@ L5398:
 	add xwa,xbc
 	ld wa,(xwa+6)
 	ld (xsp+8),wa
-L5399:
-L5394:
+L5489:
+L5484:
 	inc 1,izl
-L5395:
+L5485:
 	ld a,izl
 	cp a,7
-	jp ult,L5392
-L5393:
+	jp ult,L5482
+L5483:
 	ld wa,(xsp+8)
 	cp wa,(xsp+4)
-	jr gt,L5401
+	jr gt,L5491
 	ld wa,(xsp+8)
 	cp wa,(xsp+4)
-	jr nz,L5400
+	jr nz,L5490
 	ld wa,(xsp+24)
 	cp wa,0
-	jr ge,L5403
+	jr ge,L5493
 	ld a,iyl
 	cp a,0
-	jr z,L5402
-L5403:
+	jr z,L5492
+L5493:
 	ld wa,(xsp+24)
 	cp wa,0
-	jr le,L5400
+	jr le,L5490
 	ld a,iyl
 	cp a,3
-	jr nz,L5400
-L5402:
-L5401:
+	jr nz,L5490
+L5492:
+L5491:
 	ld wa,(xsp+8)
 	ld (xsp+4),wa
 	ld a,iyl
 	ld (xsp+2),a
-L5400:
-L5390:
+L5490:
+L5480:
 	inc 1,iyl
-L5391:
+L5481:
 	ld a,iyl
 	cp a,4
-	jp ult,L5388
-L5389:
+	jp ult,L5478
+L5479:
 	ld wa,(xsp+4)
 	cp wa,14400
-	jr le,L5404
+	jr le,L5494
 	ld wa,(xsp+24)
 	cp wa,0
-	jr z,L5404
+	jr z,L5494
 	ld wa,(xsp+24)
-	jr L5387
-L5404:
+	jr L5477
+L5494:
 	push xix
 	push xiy
 	ld a,(xsp+10)
@@ -26994,8 +27480,8 @@ L5404:
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-	jr L5387
-L5387:
+	jr L5477
+L5477:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -28220,12 +28706,11 @@ _gfx_logo_map__0:
 _stage_time__0:
 	db 74,58,56,54,52,71,55,53,51,49
 _S0_0:
-	db 83,85,77,77,69,82,32,79,86,69,82,68,82,73,86,69
-	db 0
+	db 84,72,85,78,68,69,82,32,80,79,76,75,65,0
 _S0_1:
-	db 77,73,68,78,73,71,72,84,32,67,79,65,83,84,0
+	db 82,65,71,84,73,77,69,0
 _S0_2:
-	db 80,65,76,77,32,66,79,85,76,69,86,65,82,68,0
+	db 77,79,85,78,84,65,73,78,32,75,73,78,71,0
 _S0_3:
 	db 83,73,76,69,78,67,73,79,0
 	align 2
@@ -28318,7 +28803,7 @@ _S0_29:
 _S0_30:
 	db 71,79,33,0
 	align 2
-_cd__0_L1126:
+_cd__0_L1181:
 	dd _S0_27
 	dd _S0_28
 	dd _S0_29
@@ -28394,26 +28879,23 @@ _leg5_seg__1:
 	db 132,3,0,0,0,0,32,3,28,0,0,0,144,1,0,0
 	db 1,0,144,1,0,0,2,0,244,1,190,255,0,0,144,1
 	db 0,0,0,0,144,1,66,0,0,0,32,3,238,255,0,0
-	db 144,1,232,255,0,0,244,1,0,0,0,0,94,1,198,255
-	db 0,0,32,3,238,255,255,0,88,2,237,255,0,0,244,1
-	db 18,0,0,0,188,2,232,255,0,0,144,1,0,0,254,0
-	db 144,1,190,255,0,0,144,1,0,0,2,0,94,1,53,0
-	db 0,0,150,0,0,0,0,0,94,1,190,255,0,0,244,1
-	db 0,0,0,0,144,1,24,0,0,0,244,1,0,0,1,0
-	db 96,9,0,0,0,0
+	db 242,3,0,0,0,0,98,2,0,0,253,0,108,2,0,0
+	db 3,0,218,2,230,255,0,0,144,1,232,255,0,0,244,1
+	db 0,0,0,0,94,1,198,255,0,0,32,3,238,255,255,0
+	db 88,2,237,255,0,0,244,1,18,0,0,0,188,2,232,255
+	db 0,0,144,1,0,0,254,0,144,1,190,255,0,0,96,9
+	db 0,0,0,0
 	align 2
 _leg6_seg__1:
 	db 132,3,0,0,0,0,32,3,220,255,255,0,88,2,41,0
 	db 2,0,244,1,0,0,0,0,144,1,187,255,0,0,144,1
 	db 0,0,0,0,144,1,0,0,254,0,144,1,195,255,0,0
-	db 32,3,23,0,253,0,144,1,41,0,0,0,244,1,23,0
-	db 3,0,144,1,227,255,254,0,144,1,0,0,253,0,144,1
-	db 55,0,0,0,88,2,238,255,1,0,244,1,0,0,3,0
-	db 144,1,55,0,0,0,144,1,0,0,255,0,144,1,69,0
-	db 0,0,144,1,0,0,0,0,44,1,187,255,0,0,150,0
-	db 0,0,0,0,44,1,55,0,0,0,244,1,0,0,0,0
-	db 94,1,187,255,0,0,150,0,0,0,0,0,94,1,69,0
-	db 0,0,96,9,0,0,0,0
+	db 32,3,23,0,253,0,242,3,0,0,0,0,98,2,0,0
+	db 253,0,108,2,0,0,3,0,218,2,26,0,0,0,144,1
+	db 41,0,0,0,244,1,23,0,3,0,144,1,227,255,254,0
+	db 144,1,0,0,253,0,144,1,55,0,0,0,88,2,238,255
+	db 1,0,244,1,0,0,3,0,144,1,55,0,0,0,96,9
+	db 0,0,0,0
 	align 2
 _leg7_seg__1:
 	db 132,3,0,0,0,0,244,1,0,0,0,0,44,1,56,0
@@ -28447,13 +28929,11 @@ _leg9_seg__1:
 	db 0,0,100,0,0,0,0,0,44,1,189,255,0,0,88,2
 	db 32,0,0,0,244,1,0,0,254,0,144,1,189,255,0,0
 	db 88,2,0,0,0,0,144,1,234,255,0,0,244,1,0,0
-	db 0,0,244,1,189,255,0,0,244,1,0,0,0,0,244,1
-	db 53,0,0,0,144,1,0,0,0,0,144,1,197,255,0,0
-	db 188,2,18,0,0,0,144,1,0,0,0,0,144,1,59,0
-	db 0,0,32,3,22,0,1,0,244,1,0,0,2,0,244,1
-	db 0,0,0,0,144,1,189,255,0,0,244,1,0,0,0,0
-	db 94,1,197,255,0,0,100,0,0,0,0,0,94,1,67,0
-	db 0,0,96,9,0,0,0,0
+	db 0,0,244,1,189,255,0,0,242,3,0,0,0,0,98,2
+	db 0,0,253,0,108,2,0,0,3,0,218,2,230,255,0,0
+	db 244,1,0,0,0,0,244,1,53,0,0,0,144,1,0,0
+	db 0,0,144,1,197,255,0,0,188,2,18,0,0,0,144,1
+	db 0,0,0,0,144,1,59,0,0,0,96,9,0,0,0,0
 	align 2
 _leg10_seg__1:
 	db 132,3,0,0,0,0,244,1,0,0,0,0,94,1,199,255
@@ -28488,13 +28968,11 @@ _leg12_seg__1:
 	db 0,0,32,3,0,0,254,0,32,3,23,0,255,0,144,1
 	db 0,0,2,0,44,1,69,0,0,0,100,0,0,0,0,0
 	db 44,1,195,255,0,0,244,1,0,0,254,0,94,1,55,0
-	db 0,0,144,1,0,0,255,0,94,1,69,0,0,0,94,1
-	db 201,255,0,0,244,1,0,0,0,0,144,1,69,0,0,0
-	db 144,1,0,0,0,0,244,1,195,255,0,0,188,2,18,0
-	db 0,0,244,1,0,0,0,0,94,1,55,0,0,0,88,2
-	db 215,255,0,0,188,2,215,255,0,0,144,1,0,0,2,0
-	db 94,1,69,0,0,0,100,0,0,0,0,0,94,1,187,255
-	db 0,0,96,9,0,0,0,0
+	db 0,0,242,3,0,0,0,0,98,2,0,0,253,0,108,2
+	db 0,0,3,0,218,2,26,0,0,0,144,1,0,0,255,0
+	db 94,1,69,0,0,0,94,1,201,255,0,0,244,1,0,0
+	db 0,0,144,1,69,0,0,0,144,1,0,0,0,0,244,1
+	db 195,255,0,0,188,2,18,0,0,0,96,9,0,0,0,0
 	align 2
 _leg13_seg__1:
 	db 132,3,0,0,0,0,244,1,0,0,0,0,144,1,195,255
@@ -28515,12 +28993,11 @@ _leg14_seg__1:
 	db 0,0,150,0,0,0,0,0,44,1,62,0,0,0,244,1
 	db 236,255,0,0,244,1,0,0,0,0,244,1,70,0,0,0
 	db 244,1,0,0,0,0,244,1,62,0,0,0,144,1,0,0
-	db 0,0,94,1,56,0,0,0,94,1,194,255,0,0,244,1
-	db 0,0,0,0,144,1,70,0,0,0,244,1,0,0,0,0
-	db 244,1,186,255,0,0,188,2,236,255,1,0,32,3,224,255
-	db 254,0,244,1,0,0,0,0,244,1,186,255,0,0,144,1
-	db 0,0,2,0,144,1,186,255,0,0,144,1,0,0,2,0
-	db 244,1,194,255,0,0,96,9,0,0,0,0
+	db 0,0,94,1,56,0,0,0,94,1,194,255,0,0,242,3
+	db 0,0,0,0,98,2,0,0,253,0,108,2,0,0,3,0
+	db 218,2,230,255,0,0,244,1,0,0,0,0,144,1,70,0
+	db 0,0,244,1,0,0,0,0,244,1,186,255,0,0,188,2
+	db 236,255,1,0,32,3,224,255,254,0,96,9,0,0,0,0
 	align 2
 _gfx_legs:
 	dd _leg0_seg__1
@@ -28534,25 +29011,25 @@ _gfx_legs:
 	dd _leg4_seg__1
 	db 25,4
 	dd _leg5_seg__1
-	db 25,5
+	db 22,5
 	dd _leg6_seg__1
-	db 28,6
+	db 22,6
 	dd _leg7_seg__1
 	db 31,7
 	dd _leg8_seg__1
 	db 27,8
 	dd _leg9_seg__1
-	db 28,9
+	db 24,9
 	dd _leg10_seg__1
 	db 31,10
 	dd _leg11_seg__1
 	db 32,11
 	dd _leg12_seg__1
-	db 28,12
+	db 24,12
 	dd _leg13_seg__1
 	db 30,13
 	dd _leg14_seg__1
-	db 26,14
+	db 24,14
 	align 2
 _gfx_themes:
 	db 0,0,0,0,153,10,255,15,153,10,170,11,204,13,255,15
@@ -28576,7 +29053,7 @@ _gfx_themes:
 	db 153,8,170,9,204,11,255,14,10,2,20,1
 	align 2
 _gfx_leg_ref_cost:
-	db 212,3,30,4,211,3,27,4,52,4
+	db 212,3,30,4,211,3,247,3,31,4
 	align 2
 _gfx_banner_tiles:
 	db 85,85,85,85,170,170,170,170,170,170,170,170,170,170,170,170
@@ -32770,2481 +33247,2507 @@ _NOTE_TABLE:
 	db 1,6,12,5,7,5,2,5,13,4,9,4,5,4,1,4
 	db 13,3,10,3,7,3
 _song0_v0__9:
-	db 244,10,240,5,255,96,255,96,255,96,255,48,39,12,41,12
-	db 43,12,46,12,244,10,240,5,36,12,39,12,255,12,39,12
-	db 41,12,39,12,36,24,34,12,36,12,255,12,34,12,31,24
-	db 27,24,32,12,36,12,255,12,36,12,39,12,41,12,44,24
-	db 41,36,39,12,37,24,255,24,36,12,39,12,255,12,39,12
-	db 41,12,39,12,44,24,46,12,44,12,43,12,39,12,255,12
-	db 39,12,41,24,44,18,41,18,37,12,41,24,44,24,43,36
-	db 41,12,39,24,34,24,244,10,240,5,36,12,39,12,255,12
-	db 39,12,41,12,39,12,36,24,34,12,36,12,255,12,34,12
-	db 31,24,27,24,32,12,36,12,255,12,36,12,39,12,41,12
-	db 44,24,41,36,39,12,37,24,255,24,36,12,39,12,255,12
-	db 39,12,41,12,39,12,44,24,46,12,44,12,43,12,39,12
-	db 255,12,39,12,41,24,44,12,43,12,41,12,37,12,41,12
-	db 44,12,46,24,46,48,255,24,39,12,41,12,244,10,240,5
-	db 37,12,37,12,41,12,37,12,34,24,37,24,39,12,39,12
-	db 43,12,39,12,36,24,39,24,41,12,41,12,44,12,41,12
-	db 37,12,41,12,44,24,43,24,46,24,43,24,39,24,37,12
-	db 41,12,46,12,41,12,37,12,41,12,46,24,39,12,43,12
-	db 48,12,43,12,39,12,43,12,48,24,49,24,48,24,46,24
-	db 44,24,43,12,46,12,49,12,46,12,43,12,39,12,255,24
-	db 244,11,240,4,39,12,44,12,255,12,44,12,46,12,48,24
-	db 44,12,46,24,43,12,39,36,255,24,39,12,44,12,255,12
-	db 44,12,46,12,48,24,51,12,48,24,46,12,43,36,255,24
-	db 41,12,44,12,255,12,44,12,49,12,48,12,46,12,44,12
-	db 48,24,46,12,44,12,39,24,36,24,37,12,41,12,46,12
-	db 49,12,48,12,46,12,44,12,46,12,46,48,43,24,39,24
-	db 244,11,240,4,39,12,44,12,255,12,44,12,46,12,48,24
-	db 44,12,46,24,43,12,39,36,255,24,39,12,44,12,255,12
-	db 44,12,46,12,48,24,51,12,48,24,46,12,43,36,255,24
-	db 41,12,44,12,255,12,44,12,49,12,48,12,46,12,44,12
-	db 48,24,46,12,44,12,39,24,36,24,37,12,41,12,46,12
-	db 49,12,48,24,46,24,44,72,255,24,244,4,240,5,27,12
-	db 32,12,255,12,32,12,34,12,36,24,32,12,34,24,31,12
-	db 27,36,255,24,27,12,32,12,255,12,32,12,34,12,36,24
-	db 39,12,36,24,34,12,31,36,255,24,39,12,44,12,255,12
-	db 44,12,46,12,48,24,44,12,46,24,43,12,39,36,255,24
-	db 39,12,44,12,255,12,44,12,46,12,48,24,51,12,48,24
-	db 46,12,43,36,255,24,244,10,240,5,36,12,39,12,255,12
-	db 39,12,41,12,39,12,36,24,34,12,36,12,255,12,34,12
-	db 31,24,27,24,32,12,36,12,255,12,36,12,39,12,41,12
-	db 44,24,41,36,39,12,37,24,255,24,36,12,39,12,255,12
-	db 39,12,41,12,39,12,44,24,46,12,44,12,43,12,39,12
-	db 255,12,39,12,41,24,44,18,41,18,37,12,41,24,44,24
-	db 43,36,41,12,39,24,34,24,244,10,240,5,37,12,37,12
-	db 41,12,37,12,34,24,37,24,39,12,39,12,43,12,39,12
-	db 36,24,39,24,41,12,41,12,44,12,41,12,37,12,41,12
-	db 44,24,43,24,46,24,43,24,39,24,37,12,41,12,46,12
-	db 41,12,37,12,41,12,46,24,39,12,43,12,48,12,43,12
-	db 39,12,43,12,48,24,49,24,48,24,46,24,44,24,43,12
-	db 46,12,49,12,46,12,43,12,39,12,255,24,244,11,240,4
-	db 39,12,44,12,255,12,44,12,46,12,48,24,44,12,46,24
-	db 43,12,39,36,255,24,39,12,44,12,255,12,44,12,46,12
-	db 48,24,51,12,48,24,46,12,43,36,255,24,41,12,44,12
-	db 255,12,44,12,49,12,48,12,46,12,44,12,48,24,46,12
-	db 44,12,39,24,36,24,37,12,41,12,46,12,49,12,48,12
-	db 46,12,44,12,46,12,46,48,43,24,39,24,244,11,240,4
-	db 39,12,44,12,255,12,44,12,46,12,48,24,44,12,46,24
-	db 43,12,39,36,255,24,39,12,44,12,255,12,44,12,46,12
-	db 48,24,51,12,48,24,46,12,43,36,255,24,41,12,44,12
-	db 255,12,44,12,49,12,48,12,46,12,44,12,48,24,46,12
-	db 44,12,39,24,36,24,37,12,41,12,46,12,49,12,48,24
-	db 46,24,44,72,255,24,244,10,240,5,48,36,46,12,44,48
-	db 41,36,44,12,49,48,48,24,46,24,44,24,39,24,43,48
-	db 46,48,44,36,43,12,41,48,37,24,41,24,44,24,49,24
-	db 49,24,48,24,46,24,44,24,46,24,43,24,39,24,34,24
-	db 244,4,240,5,27,6,32,6,36,6,39,6,27,6,32,6
-	db 36,6,39,6,27,6,32,6,36,6,39,6,27,6,32,6
-	db 36,6,39,6,39,12,34,12,31,12,27,12,31,12,34,12
-	db 39,24,29,18,36,18,41,12,36,24,32,24,27,6,31,6
-	db 36,6,39,6,43,6,48,6,43,6,39,6,36,48,37,12
-	db 41,12,255,12,41,12,44,12,41,12,37,24,44,36,39,12
-	db 36,24,27,24,29,6,34,6,37,6,41,6,29,6,34,6
-	db 37,6,41,6,29,6,34,6,37,6,41,6,29,6,34,6
-	db 37,6,41,6,39,12,34,12,31,12,27,12,31,12,34,12
-	db 39,24,244,4,240,5,27,6,32,6,36,6,39,6,44,6
-	db 48,6,44,6,39,6,36,48,34,12,39,12,255,12,39,12
-	db 43,12,39,12,34,24,44,36,41,12,36,24,29,24,29,6
-	db 32,6,37,6,41,6,29,6,32,6,37,6,41,6,29,6
-	db 32,6,37,6,41,6,29,6,32,6,37,6,41,6,39,12
-	db 36,12,32,12,27,12,32,12,36,12,39,24,27,18,34,18
-	db 39,12,34,24,31,24,29,6,32,6,37,6,41,6,44,6
-	db 49,6,44,6,41,6,37,48,34,12,39,12,255,12,39,12
-	db 43,12,39,12,34,24,244,10,240,5,37,12,37,12,41,12
-	db 37,12,34,24,37,24,39,12,39,12,43,12,39,12,36,24
-	db 39,24,41,12,41,12,44,12,41,12,37,12,41,12,44,24
-	db 43,24,46,24,43,24,39,24,37,12,41,12,46,12,41,12
-	db 37,12,41,12,46,24,39,12,43,12,48,12,43,12,39,12
-	db 43,12,48,24,49,24,48,24,46,24,44,24,43,12,46,12
-	db 49,12,46,12,43,12,39,12,255,24,244,11,240,4,39,12
-	db 44,12,255,12,44,12,46,12,48,24,44,12,46,24,43,12
-	db 39,36,255,24,39,12,44,12,255,12,44,12,46,12,48,24
-	db 51,12,48,24,46,12,43,36,255,24,41,12,44,12,255,12
-	db 44,12,49,12,48,12,46,12,44,12,48,24,46,12,44,12
-	db 39,24,36,24,37,12,41,12,46,12,49,12,48,12,46,12
-	db 44,12,46,12,46,48,43,24,39,24,244,11,240,4,39,12
-	db 44,12,255,12,44,12,46,12,48,24,44,12,46,24,43,12
-	db 39,36,255,24,39,12,44,12,255,12,44,12,46,12,48,24
-	db 51,12,48,24,46,12,43,36,255,24,41,12,44,12,255,12
-	db 44,12,49,12,48,12,46,12,44,12,48,24,46,12,44,12
-	db 39,24,36,24,37,12,41,12,46,12,49,12,48,24,46,24
-	db 44,72,255,24,244,10,240,5,44,96,43,96,41,96,39,48
-	db 255,48,0
+	db 244,10,240,5,44,12,255,12,44,12,255,11,44,12,255,12
+	db 44,12,255,12,44,12,255,11,44,12,255,12,44,12,255,12
+	db 36,12,48,6,46,5,42,24,36,24,42,24,36,23,46,12
+	db 255,6,46,6,46,12,255,6,46,6,46,35,48,6,46,6
+	db 41,24,37,23,41,24,37,24,46,12,255,5,46,6,46,12
+	db 255,6,46,6,46,36,48,5,46,6,42,24,48,24,48,23
+	db 42,24,48,12,255,6,48,6,48,12,255,6,48,6,48,29
+	db 46,6,44,6,42,6,41,24,49,23,49,24,41,24,49,11
+	db 255,6,49,6,49,12,255,6,49,6,49,36,48,5,46,6
+	db 42,24,36,24,42,23,36,24,46,12,255,6,46,6,46,12
+	db 255,6,46,5,46,36,48,6,46,6,41,24,37,23,41,24
+	db 37,24,46,11,255,6,46,6,46,12,255,6,46,6,46,35
+	db 46,6,44,6,43,24,49,24,49,23,41,24,51,18,51,6
+	db 51,17,51,6,51,24,41,6,51,6,50,6,51,6,41,12
+	db 49,11,46,12,48,12,49,12,51,12,41,12,43,12,44,11
+	db 44,12,44,12,44,12,45,12,44,12,46,11,44,12,47,36
+	db 44,12,45,11,44,12,46,12,44,12,48,36,44,11,50,12
+	db 255,12,44,12,255,12,50,12,255,11,44,12,255,12,51,12
+	db 255,24,46,11,44,12,42,12,41,12,51,12,42,12,44,12
+	db 41,11,44,12,51,12,44,12,49,12,44,12,48,11,255,12
+	db 46,12,255,12,45,12,255,12,46,11,255,12,44,24,42,18
+	db 48,6,48,47,44,24,41,17,49,6,49,12,44,12,46,12
+	db 44,12,42,12,44,11,41,12,44,12,51,12,44,12,49,12
+	db 44,12,48,11,255,12,46,12,255,12,45,12,255,12,46,11
+	db 255,12,44,24,41,18,49,6,44,23,44,18,41,6,46,12
+	db 44,12,51,12,41,11,49,12,44,12,46,12,44,12,42,12
+	db 32,11,41,12,32,12,39,12,32,12,37,12,32,11,36,12
+	db 255,12,34,12,255,12,33,12,255,12,34,11,255,12,32,24
+	db 42,18,36,6,36,47,32,24,41,17,37,6,37,12,44,12
+	db 46,12,44,12,42,12,32,11,41,12,32,12,39,12,32,12
+	db 37,12,32,11,36,12,255,12,34,12,255,12,33,12,255,11
+	db 34,12,255,12,32,24,41,18,37,6,32,23,44,18,41,6
+	db 46,12,44,12,39,11,41,12,25,12,25,12,25,12,255,12
+	db 39,6,37,5,35,6,34,6,32,12,255,12,35,6,34,6
+	db 32,6,30,6,29,12,255,11,37,12,35,12,32,12,29,12
+	db 25,12,255,23,25,12,18,24,22,23,27,42,25,6,23,24
+	db 17,11,25,12,25,48,23,23,17,12,25,12,25,47,22,24
+	db 18,18,15,6,25,23,255,12,25,12,18,24,22,23,27,42
+	db 25,6,23,23,17,12,25,12,25,48,26,11,255,12,27,12
+	db 255,12,28,12,255,12,29,11,255,12,32,12,34,12,35,12
+	db 36,12,37,11,255,24,25,12,18,24,22,23,27,42,25,6
+	db 23,23,17,12,25,12,25,47,23,24,17,12,25,12,25,47
+	db 22,24,18,18,15,6,25,23,255,12,25,12,18,24,22,23
+	db 27,42,25,6,23,23,17,12,25,12,25,47,26,12,255,12
+	db 27,12,255,12,28,12,255,11,29,12,255,12,32,12,34,12
+	db 35,12,36,12,49,11,255,36,51,12,255,12,49,11,255,12
+	db 44,18,42,6,49,12,255,12,51,11,255,12,49,12,255,12
+	db 42,18,41,6,49,12,255,11,51,12,255,12,49,12,255,12
+	db 49,23,49,12,255,12,51,12,255,12,49,12,255,11,49,24
+	db 49,12,255,12,51,12,255,12,49,11,255,12,44,18,42,6
+	db 49,12,255,12,51,11,255,12,49,12,255,12,42,18,41,6
+	db 49,11,255,12,41,12,255,12,44,12,255,12,46,23,46,12
+	db 255,12,48,24,48,12,255,11,49,24,49,12,255,12,51,12
+	db 255,11,49,12,255,12,44,18,42,6,49,12,255,12,51,11
+	db 255,12,49,12,255,12,42,18,41,6,49,11,255,12,51,12
+	db 255,12,49,12,255,12,49,23,49,12,255,12,51,12,255,12
+	db 49,12,255,11,49,24,49,12,255,12,51,12,255,11,49,12
+	db 255,12,44,18,42,6,49,12,255,11,51,12,255,12,49,12
+	db 255,12,42,18,41,6,49,11,255,12,41,12,255,12,44,12
+	db 255,12,46,23,46,12,255,12,48,24,48,11,255,12,49,12
+	db 255,12,42,24,41,12,255,11,51,24,49,12,255,12,51,12
+	db 255,11,49,12,255,12,47,12,37,12,42,23,46,24,51,42
+	db 49,6,47,23,41,12,37,12,49,47,47,24,41,12,37,12
+	db 49,47,46,24,42,17,39,6,37,24,255,12,37,12,42,23
+	db 46,24,51,42,49,5,47,24,46,12,44,12,41,35,51,12
+	db 51,12,255,12,49,12,255,12,48,11,49,12,42,12,46,12
+	db 46,24,44,23,42,12,42,12,42,12,255,12,44,12,255,11
+	db 44,12,255,12,44,12,255,12,44,12,255,11,44,12,255,12
+	db 44,12,255,12,44,12,255,11,36,12,48,6,46,6,42,24
+	db 36,24,42,23,36,24,46,12,255,6,46,6,46,11,255,6
+	db 46,6,46,36,48,6,46,6,41,23,37,24,41,24,37,23
+	db 46,12,255,6,46,6,46,12,255,6,46,6,46,35,48,6
+	db 46,6,42,24,48,23,48,24,42,24,48,12,255,6,48,6
+	db 48,11,255,6,48,6,48,30,46,6,44,6,42,6,41,23
+	db 49,24,49,24,41,23,49,12,255,6,49,6,49,12,255,6
+	db 49,6,49,35,48,6,46,6,42,24,36,23,42,24,36,24
+	db 46,12,255,6,46,5,46,12,255,6,46,6,46,36,48,6
+	db 46,6,41,23,37,24,41,24,37,23,46,12,255,6,46,6
+	db 46,12,255,6,46,6,46,35,46,6,44,6,43,24,49,23
+	db 49,24,41,24,51,18,51,5,51,18,51,6,51,24,41,6
+	db 51,6,50,6,51,5,41,12,49,12,46,12,48,12,49,12
+	db 51,12,41,11,43,12,44,12,44,12,44,12,44,12,45,11
+	db 44,12,46,12,44,12,47,35,44,12,45,12,44,12,46,12
+	db 44,12,48,35,44,12,50,12,255,12,44,12,255,11,50,12
+	db 255,12,44,12,255,12,51,12,255,23,46,12,44,12,42,12
+	db 41,12,51,12,42,11,44,12,41,12,44,12,51,12,44,12
+	db 49,11,44,12,48,12,255,12,46,12,255,12,45,11,255,12
+	db 46,12,255,12,44,24,42,17,48,6,48,48,44,23,41,18
+	db 49,6,49,12,44,12,46,12,44,11,42,12,44,12,41,12
+	db 44,12,51,12,44,12,49,11,44,12,48,12,255,12,46,12
+	db 255,12,45,11,255,12,46,12,255,12,44,24,41,17,49,6
+	db 44,24,44,18,41,6,46,12,44,11,51,12,41,12,49,12
+	db 44,12,46,12,44,11,42,12,32,12,41,12,32,12,39,12
+	db 32,11,37,12,32,12,36,12,255,12,34,12,255,12,33,11
+	db 255,12,34,12,255,12,32,24,42,17,36,6,36,48,32,23
+	db 41,18,37,6,37,12,44,12,46,12,44,11,42,12,32,12
+	db 41,12,32,12,39,12,32,11,37,12,32,12,36,12,255,12
+	db 34,12,255,11,33,12,255,12,34,12,255,12,32,24,41,17
+	db 37,6,32,24,44,18,41,6,46,11,44,12,39,12,41,12
+	db 37,12,37,12,37,11,255,12,25,48,25,47,27,24,28,23
+	db 29,12,25,12,20,12,255,12,25,47,25,48,29,23,27,24
+	db 25,12,255,12,19,11,255,12,25,12,255,12,19,12,255,12
+	db 20,6,22,5,24,6,25,6,15,6,17,6,18,6,20,6
+	db 18,6,17,6,15,6,17,6,18,6,20,6,22,5,24,6
+	db 25,12,24,12,25,12,24,12,25,12,24,11,25,12,24,12
+	db 25,12,255,35,29,12,255,36,25,47,0
 _song0_v1__9:
-	db 244,6,240,6,10,12,10,12,10,12,10,12,10,12,17,12
-	db 22,12,10,12,5,12,5,12,5,12,5,12,5,12,12,12
-	db 17,12,5,12,3,12,3,12,3,12,3,12,3,12,10,12
-	db 15,12,3,12,5,12,5,12,5,12,5,12,5,12,12,12
-	db 17,12,5,12,244,6,240,6,10,12,22,12,10,12,22,12
-	db 10,12,22,12,10,12,22,12,5,12,17,12,5,12,17,12
-	db 5,12,17,12,5,12,17,12,7,12,19,12,7,12,19,12
-	db 7,12,19,12,7,12,19,12,3,12,15,12,3,12,15,12
-	db 3,12,15,12,3,12,15,12,10,12,22,12,10,12,22,12
-	db 10,12,22,12,10,12,22,12,5,12,17,12,5,12,17,12
-	db 5,12,17,12,5,12,17,12,3,12,15,12,3,12,15,12
-	db 3,12,15,12,3,12,15,12,5,12,17,12,5,12,17,12
-	db 5,12,17,12,5,12,17,12,244,6,240,6,10,12,22,12
-	db 10,12,22,12,10,12,22,12,10,12,22,12,5,12,17,12
-	db 5,12,17,12,5,12,17,12,5,12,17,12,7,12,19,12
-	db 7,12,19,12,7,12,19,12,7,12,19,12,3,12,15,12
-	db 3,12,15,12,3,12,15,12,3,12,15,12,10,12,22,12
-	db 10,12,22,12,10,12,22,12,10,12,22,12,5,12,17,12
-	db 5,12,17,12,5,12,17,12,5,12,17,12,3,12,15,12
-	db 3,12,15,12,3,12,15,12,3,12,15,12,5,12,17,12
-	db 5,12,17,12,5,12,17,12,5,12,17,12,244,6,240,6
-	db 12,12,12,12,12,12,12,12,12,12,19,12,24,12,12,12
-	db 2,12,2,12,2,12,2,12,2,12,9,12,14,12,2,12
-	db 3,12,3,12,3,12,3,12,3,12,10,12,15,12,3,12
-	db 5,12,5,12,5,12,5,12,5,12,12,12,17,12,5,12
-	db 12,12,12,12,12,12,12,12,12,12,19,12,24,12,12,12
-	db 2,12,2,12,2,12,2,12,2,12,9,12,14,12,2,12
-	db 3,12,3,12,3,12,3,12,3,12,10,12,15,12,3,12
-	db 5,12,5,12,5,12,5,12,5,12,12,12,17,12,5,12
-	db 244,6,240,6,10,12,22,12,10,12,22,12,10,12,22,12
-	db 10,12,22,12,5,12,17,12,5,12,17,12,5,12,17,12
-	db 5,12,17,12,7,12,19,12,7,12,19,12,7,12,19,12
-	db 7,12,19,12,2,12,14,12,2,12,14,12,2,12,14,12
-	db 2,12,14,12,3,12,15,12,3,12,15,12,3,12,15,12
-	db 3,12,15,12,10,12,22,12,10,12,22,12,10,12,22,12
-	db 10,12,22,12,12,12,24,12,12,12,24,12,12,12,24,12
-	db 12,12,24,12,5,12,17,12,5,12,17,12,5,12,17,12
-	db 5,12,17,12,244,6,240,6,10,12,22,12,10,12,22,12
-	db 10,12,22,12,10,12,22,12,5,12,17,12,5,12,17,12
-	db 5,12,17,12,5,12,17,12,7,12,19,12,7,12,19,12
-	db 7,12,19,12,7,12,19,12,2,12,14,12,2,12,14,12
-	db 2,12,14,12,2,12,14,12,3,12,15,12,3,12,15,12
-	db 3,12,15,12,3,12,15,12,10,12,22,12,10,12,22,12
-	db 10,12,22,12,10,12,22,12,12,12,24,12,12,12,24,12
-	db 12,12,24,12,12,12,24,12,5,12,17,12,5,12,17,12
-	db 5,12,17,12,5,12,17,12,244,6,240,6,10,12,22,12
-	db 10,12,22,12,10,12,22,12,10,12,22,12,5,12,17,12
-	db 5,12,17,12,5,12,17,12,5,12,17,12,7,12,19,12
-	db 7,12,19,12,7,12,19,12,7,12,19,12,2,12,14,12
-	db 2,12,14,12,2,12,14,12,2,12,14,12,3,12,15,12
-	db 3,12,15,12,3,12,15,12,3,12,15,12,10,12,22,12
-	db 10,12,22,12,10,12,22,12,10,12,22,12,12,12,24,12
-	db 12,12,24,12,12,12,24,12,12,12,24,12,5,12,17,12
-	db 5,12,17,12,5,12,17,12,5,12,17,12,244,6,240,6
-	db 10,12,22,12,10,12,22,12,10,12,22,12,10,12,22,12
-	db 5,12,17,12,5,12,17,12,5,12,17,12,5,12,17,12
-	db 7,12,19,12,7,12,19,12,7,12,19,12,7,12,19,12
-	db 3,12,15,12,3,12,15,12,3,12,15,12,3,12,15,12
-	db 10,12,22,12,10,12,22,12,10,12,22,12,10,12,22,12
-	db 5,12,17,12,5,12,17,12,5,12,17,12,5,12,17,12
-	db 3,12,15,12,3,12,15,12,3,12,15,12,3,12,15,12
-	db 5,12,17,12,5,12,17,12,5,12,17,12,5,12,17,12
-	db 244,6,240,6,12,12,12,12,12,12,12,12,12,12,19,12
-	db 24,12,12,12,2,12,2,12,2,12,2,12,2,12,9,12
-	db 14,12,2,12,3,12,3,12,3,12,3,12,3,12,10,12
-	db 15,12,3,12,5,12,5,12,5,12,5,12,5,12,12,12
-	db 17,12,5,12,12,12,12,12,12,12,12,12,12,12,19,12
-	db 24,12,12,12,2,12,2,12,2,12,2,12,2,12,9,12
-	db 14,12,2,12,3,12,3,12,3,12,3,12,3,12,10,12
-	db 15,12,3,12,5,12,5,12,5,12,5,12,5,12,12,12
-	db 17,12,5,12,244,6,240,6,10,12,22,12,10,12,22,12
-	db 10,12,22,12,10,12,22,12,5,12,17,12,5,12,17,12
-	db 5,12,17,12,5,12,17,12,7,12,19,12,7,12,19,12
-	db 7,12,19,12,7,12,19,12,2,12,14,12,2,12,14,12
-	db 2,12,14,12,2,12,14,12,3,12,15,12,3,12,15,12
-	db 3,12,15,12,3,12,15,12,10,12,22,12,10,12,22,12
-	db 10,12,22,12,10,12,22,12,12,12,24,12,12,12,24,12
-	db 12,12,24,12,12,12,24,12,5,12,17,12,5,12,17,12
-	db 5,12,17,12,5,12,17,12,244,6,240,6,10,12,22,12
-	db 10,12,22,12,10,12,22,12,10,12,22,12,5,12,17,12
-	db 5,12,17,12,5,12,17,12,5,12,17,12,7,12,19,12
-	db 7,12,19,12,7,12,19,12,7,12,19,12,2,12,14,12
-	db 2,12,14,12,2,12,14,12,2,12,14,12,3,12,15,12
-	db 3,12,15,12,3,12,15,12,3,12,15,12,10,12,22,12
-	db 10,12,22,12,10,12,22,12,10,12,22,12,12,12,24,12
-	db 12,12,24,12,12,12,24,12,12,12,24,12,5,12,17,12
-	db 5,12,17,12,5,12,17,12,5,12,17,12,244,6,240,6
-	db 7,24,10,24,14,24,19,24,3,24,7,24,10,24,15,24
-	db 10,24,14,24,17,24,22,24,5,24,9,24,12,24,17,24
-	db 7,24,10,24,14,24,19,24,3,24,7,24,10,24,15,24
-	db 12,24,15,24,19,24,24,24,5,24,9,24,12,24,17,24
-	db 244,6,240,6,10,12,22,12,10,12,22,12,10,12,22,12
-	db 10,12,22,12,5,12,17,12,5,12,17,12,5,12,17,12
-	db 5,12,17,12,7,12,19,12,7,12,19,12,7,12,19,12
-	db 7,12,19,12,2,12,14,12,2,12,14,12,2,12,14,12
-	db 2,12,14,12,3,12,15,12,3,12,15,12,3,12,15,12
-	db 3,12,15,12,10,12,22,12,10,12,22,12,10,12,22,12
-	db 10,12,22,12,12,12,24,12,12,12,24,12,12,12,24,12
-	db 12,12,24,12,5,12,17,12,5,12,17,12,5,12,17,12
-	db 5,12,17,12,244,6,240,6,10,12,22,12,10,12,22,12
-	db 10,12,22,12,10,12,22,12,5,12,17,12,5,12,17,12
-	db 5,12,17,12,5,12,17,12,7,12,19,12,7,12,19,12
-	db 7,12,19,12,7,12,19,12,3,12,15,12,3,12,15,12
-	db 3,12,15,12,3,12,15,12,10,12,22,12,10,12,22,12
-	db 10,12,22,12,10,12,22,12,5,12,17,12,5,12,17,12
-	db 5,12,17,12,5,12,17,12,3,12,15,12,3,12,15,12
-	db 3,12,15,12,3,12,15,12,5,12,17,12,5,12,17,12
-	db 5,12,17,12,5,12,17,12,244,6,240,6,12,12,12,12
-	db 12,12,12,12,12,12,19,12,24,12,12,12,2,12,2,12
-	db 2,12,2,12,2,12,9,12,14,12,2,12,3,12,3,12
-	db 3,12,3,12,3,12,10,12,15,12,3,12,5,12,5,12
-	db 5,12,5,12,5,12,12,12,17,12,5,12,12,12,12,12
-	db 12,12,12,12,12,12,19,12,24,12,12,12,2,12,2,12
-	db 2,12,2,12,2,12,9,12,14,12,2,12,3,12,3,12
-	db 3,12,3,12,3,12,10,12,15,12,3,12,5,12,5,12
-	db 5,12,5,12,5,12,12,12,17,12,5,12,244,6,240,6
-	db 10,12,22,12,10,12,22,12,10,12,22,12,10,12,22,12
-	db 5,12,17,12,5,12,17,12,5,12,17,12,5,12,17,12
-	db 7,12,19,12,7,12,19,12,7,12,19,12,7,12,19,12
-	db 2,12,14,12,2,12,14,12,2,12,14,12,2,12,14,12
-	db 3,12,15,12,3,12,15,12,3,12,15,12,3,12,15,12
-	db 10,12,22,12,10,12,22,12,10,12,22,12,10,12,22,12
-	db 12,12,24,12,12,12,24,12,12,12,24,12,12,12,24,12
-	db 5,12,17,12,5,12,17,12,5,12,17,12,5,12,17,12
-	db 244,6,240,6,10,12,22,12,10,12,22,12,10,12,22,12
-	db 10,12,22,12,5,12,17,12,5,12,17,12,5,12,17,12
-	db 5,12,17,12,7,12,19,12,7,12,19,12,7,12,19,12
-	db 7,12,19,12,2,12,14,12,2,12,14,12,2,12,14,12
-	db 2,12,14,12,3,12,15,12,3,12,15,12,3,12,15,12
-	db 3,12,15,12,10,12,22,12,10,12,22,12,10,12,22,12
-	db 10,12,22,12,12,12,24,12,12,12,24,12,12,12,24,12
-	db 12,12,24,12,5,12,17,12,5,12,17,12,5,12,17,12
-	db 5,12,17,12,244,6,240,6,10,24,14,24,17,24,22,24
-	db 5,24,9,24,12,24,17,24,3,24,7,24,10,24,15,24
-	db 5,24,9,24,12,24,17,24,0
+	db 244,6,240,6,8,47,8,3,8,3,8,3,8,3,8,3
+	db 8,3,8,3,8,3,8,3,8,3,8,3,8,3,8,3
+	db 8,3,8,3,8,3,8,3,8,3,8,3,8,3,8,3
+	db 8,3,8,2,8,3,8,3,8,3,8,3,8,3,8,3
+	db 8,3,8,3,8,3,8,3,8,3,8,3,8,3,8,3
+	db 8,3,8,3,8,3,8,3,8,3,8,3,8,3,8,3
+	db 8,3,8,3,8,2,3,12,8,12,8,12,8,12,3,12
+	db 8,12,8,11,8,12,12,12,8,12,8,12,8,12,12,11
+	db 8,12,8,12,8,12,1,12,8,12,5,11,8,12,1,12
+	db 8,12,5,12,8,12,1,12,8,11,5,12,8,12,1,12
+	db 8,12,8,12,8,11,3,12,8,12,8,12,8,12,3,12
+	db 8,11,8,12,8,12,3,12,8,12,8,12,8,12,3,11
+	db 8,12,8,12,8,12,1,12,8,12,8,11,8,12,1,12
+	db 8,12,8,12,8,12,1,11,8,12,8,12,8,12,1,12
+	db 8,12,8,12,8,11,3,12,8,12,8,12,8,12,3,12
+	db 8,11,8,12,8,12,12,12,8,12,8,12,8,11,12,12
+	db 8,12,8,12,8,12,1,12,8,12,5,11,8,12,1,12
+	db 8,12,5,12,8,12,1,11,8,12,5,12,8,12,1,12
+	db 8,12,8,11,8,12,10,12,15,12,3,12,15,12,10,12
+	db 15,11,3,12,15,12,8,12,15,12,8,12,15,11,8,12
+	db 15,12,15,12,15,12,13,12,17,11,13,12,17,12,3,12
+	db 15,12,3,12,15,12,20,11,8,12,8,12,8,12,21,12
+	db 20,12,22,11,20,12,8,12,8,12,8,12,20,12,21,11
+	db 20,12,22,12,20,12,8,12,8,12,8,12,20,11,255,24
+	db 8,12,255,35,8,12,255,12,8,12,8,12,8,12,255,11
+	db 10,48,1,12,5,12,1,11,5,12,1,12,5,12,1,12
+	db 5,12,6,11,10,12,6,12,10,12,6,12,10,12,6,11
+	db 10,12,8,12,12,12,8,12,12,12,8,12,3,11,12,12
+	db 8,12,1,12,5,12,1,12,5,11,1,12,8,12,8,12
+	db 8,12,1,12,5,11,1,12,5,12,1,12,5,12,1,12
+	db 5,12,6,11,10,12,6,12,10,12,6,12,10,12,6,11
+	db 10,12,8,12,255,36,8,11,255,36,8,12,8,12,8,12
+	db 8,11,13,12,255,36,13,12,13,11,13,12,255,12,1,12
+	db 255,35,1,12,255,36,1,12,255,35,10,48,6,11,13,12
+	db 6,12,13,12,6,12,13,12,13,11,13,12,8,12,13,12
+	db 1,12,13,12,8,12,13,11,13,12,13,12,8,12,13,12
+	db 1,12,13,11,8,12,13,12,13,12,13,12,6,12,13,11
+	db 1,12,13,12,6,12,13,12,13,12,13,12,6,11,13,12
+	db 6,12,13,12,6,12,13,12,13,11,13,12,8,12,13,12
+	db 1,12,13,12,8,11,13,12,13,12,13,12,13,12,255,12
+	db 13,12,255,11,13,12,255,12,13,12,255,12,1,12,1,11
+	db 1,12,1,12,1,12,255,35,1,12,255,12,1,24,10,47
+	db 6,12,13,12,10,12,13,12,6,11,13,12,10,12,13,12
+	db 8,12,13,12,1,11,13,12,8,12,13,12,1,12,13,12
+	db 13,12,17,11,13,12,17,12,13,12,17,12,13,12,17,11
+	db 6,12,13,12,13,12,255,12,6,12,13,11,10,12,13,12
+	db 6,12,13,12,10,12,13,12,6,11,13,12,10,12,13,12
+	db 13,12,17,12,13,11,17,12,13,12,17,12,13,12,17,12
+	db 6,23,255,24,8,24,255,23,13,12,1,12,1,12,255,12
+	db 13,12,255,11,15,24,13,12,255,12,13,23,13,12,255,36
+	db 10,47,6,12,13,12,6,12,13,12,6,11,13,12,13,12
+	db 13,12,8,12,13,12,1,11,13,12,8,12,13,12,13,12
+	db 13,12,8,12,13,11,1,12,13,12,8,12,13,12,13,12
+	db 13,11,6,12,13,12,1,12,13,12,6,12,13,11,13,12
+	db 13,12,6,12,13,12,6,12,13,12,6,11,13,12,13,12
+	db 13,12,11,12,15,12,11,11,15,12,11,12,15,12,15,12
+	db 15,12,13,11,18,12,13,12,18,12,13,12,18,12,18,12
+	db 18,11,1,24,1,24,6,12,10,11,6,12,255,12,8,12
+	db 255,35,8,3,8,3,8,3,8,3,8,3,8,3,8,3
+	db 8,3,8,3,8,3,8,3,8,3,8,3,8,3,8,3
+	db 8,3,8,3,8,3,8,3,8,3,8,3,8,3,8,3
+	db 8,3,8,2,8,3,8,3,8,3,8,3,8,3,8,3
+	db 8,3,8,3,8,3,8,3,8,3,8,3,8,3,8,3
+	db 8,3,8,3,8,3,8,3,8,3,8,3,8,3,8,3
+	db 8,3,3,11,8,12,8,12,8,12,3,12,8,12,8,11
+	db 8,12,12,12,8,12,8,12,8,12,12,12,8,11,8,12
+	db 8,12,1,12,8,12,5,12,8,11,1,12,8,12,5,12
+	db 8,12,1,12,8,11,5,12,8,12,1,12,8,12,8,12
+	db 8,12,3,11,8,12,8,12,8,12,3,12,8,12,8,11
+	db 8,12,3,12,8,12,8,12,8,12,3,11,8,12,8,12
+	db 8,12,1,12,8,12,8,12,8,11,1,12,8,12,8,12
+	db 8,12,1,12,8,11,8,12,8,12,1,12,8,12,8,12
+	db 8,11,3,12,8,12,8,12,8,12,3,12,8,12,8,11
+	db 8,12,12,12,8,12,8,12,8,12,12,11,8,12,8,12
+	db 8,12,1,12,8,12,5,11,8,12,1,12,8,12,5,12
+	db 8,12,1,12,8,11,5,12,8,12,1,12,8,12,8,12
+	db 8,11,10,12,15,12,3,12,15,12,10,12,15,11,3,12
+	db 15,12,8,12,15,12,8,12,15,12,8,11,15,12,15,12
+	db 15,12,13,12,17,12,13,11,17,12,3,12,15,12,3,12
+	db 15,12,20,11,8,12,8,12,8,12,21,12,20,12,22,12
+	db 20,11,8,12,8,12,8,12,20,12,21,12,20,11,22,12
+	db 20,12,8,12,8,12,8,12,20,11,255,24,8,12,255,36
+	db 8,11,255,12,8,12,8,12,8,12,255,12,10,47,1,12
+	db 5,12,1,11,5,12,1,12,5,12,1,12,5,12,6,12
+	db 10,11,6,12,10,12,6,12,10,12,6,12,10,11,8,12
+	db 12,12,8,12,12,12,8,12,3,11,12,12,8,12,1,12
+	db 5,12,1,12,5,12,1,11,8,12,8,12,8,12,1,12
+	db 5,12,1,11,5,12,1,12,5,12,1,12,5,12,6,11
+	db 10,12,6,12,10,12,6,12,10,12,6,12,10,11,8,12
+	db 255,36,8,12,255,35,8,12,8,12,8,12,8,11,13,12
+	db 255,36,13,12,13,12,13,11,255,12,11,24,11,24,22,11
+	db 13,12,13,12,255,12,8,24,8,23,1,12,13,12,13,12
+	db 255,12,11,23,11,24,22,12,13,12,13,12,255,11,8,24
+	db 8,24,255,23,1,12,255,36,1,12,255,12,8,59,8,12
+	db 8,11,8,12,1,12,8,12,1,12,8,12,1,11,8,12
+	db 1,12,8,12,1,3,1,3,1,3,1,3,1,3,1,3
+	db 1,3,1,3,1,3,1,3,1,3,1,3,1,2,1,3
+	db 1,3,1,3,1,3,1,3,1,3,1,3,1,3,1,3
+	db 1,3,1,3,1,3,1,3,1,3,1,3,1,3,1,3
+	db 1,3,1,3,1,3,1,3,1,3,1,3,1,3,1,3
+	db 1,2,1,3,1,24,255,240,255,240,255,240,255,240,255,240
+	db 255,240,255,240,255,240,255,240,255,240,255,240,255,202,0
 _song0_v2__9:
-	db 244,6,240,8,22,6,26,6,29,6,22,6,29,6,26,6
-	db 22,6,26,6,29,6,22,6,29,6,26,6,22,6,29,6
-	db 26,6,22,6,29,6,33,6,36,6,29,6,36,6,33,6
-	db 29,6,33,6,36,6,29,6,36,6,33,6,29,6,36,6
-	db 33,6,29,6,27,6,31,6,34,6,27,6,34,6,31,6
-	db 27,6,31,6,34,6,27,6,34,6,31,6,27,6,34,6
-	db 31,6,27,6,29,6,33,6,36,6,29,6,36,6,33,6
-	db 29,6,33,6,36,6,29,6,36,6,33,6,29,6,36,6
-	db 33,6,29,6,244,6,240,8,255,12,26,12,255,12,29,12
-	db 255,12,26,6,22,6,255,12,29,12,255,12,33,12,255,12
-	db 36,12,255,12,33,6,29,6,255,12,36,12,255,12,34,12
-	db 255,12,38,12,255,12,34,6,31,6,255,12,38,12,255,12
-	db 31,12,255,12,34,12,255,12,31,6,27,6,255,12,34,12
-	db 255,12,26,12,255,12,29,12,255,12,26,6,22,6,255,12
-	db 29,12,255,12,33,12,255,12,36,12,255,12,33,6,29,6
-	db 255,12,36,12,255,12,31,12,255,12,34,12,255,12,31,6
-	db 27,6,255,12,34,12,255,12,33,12,255,12,36,12,255,12
-	db 33,6,29,6,255,12,36,12,244,6,240,8,255,12,26,12
-	db 255,12,29,12,255,12,26,6,22,6,255,12,29,12,255,12
-	db 33,12,255,12,36,12,255,12,33,6,29,6,255,12,36,12
-	db 255,12,34,12,255,12,38,12,255,12,34,6,31,6,255,12
-	db 38,12,255,12,31,12,255,12,34,12,255,12,31,6,27,6
-	db 255,12,34,12,255,12,26,12,255,12,29,12,255,12,26,6
-	db 22,6,255,12,29,12,255,12,33,12,255,12,36,12,255,12
-	db 33,6,29,6,255,12,36,12,255,12,31,12,255,12,34,12
-	db 255,12,31,6,27,6,255,12,34,12,255,12,33,12,255,12
-	db 36,12,255,12,33,6,29,6,255,12,36,12,244,6,240,8
-	db 24,6,27,6,31,6,24,6,31,6,27,6,24,6,27,6
-	db 31,6,24,6,31,6,27,6,24,6,31,6,27,6,24,6
-	db 26,6,29,6,33,6,26,6,33,6,29,6,26,6,29,6
-	db 33,6,26,6,33,6,29,6,26,6,33,6,29,6,26,6
-	db 27,6,31,6,34,6,27,6,34,6,31,6,27,6,31,6
-	db 34,6,27,6,34,6,31,6,27,6,34,6,31,6,27,6
-	db 29,6,33,6,36,6,29,6,36,6,33,6,29,6,33,6
-	db 36,6,29,6,36,6,33,6,29,6,36,6,33,6,29,6
-	db 24,6,27,6,31,6,24,6,31,6,27,6,24,6,27,6
-	db 31,6,24,6,31,6,27,6,24,6,31,6,27,6,24,6
-	db 26,6,29,6,33,6,26,6,33,6,29,6,26,6,29,6
-	db 33,6,26,6,33,6,29,6,26,6,33,6,29,6,26,6
-	db 27,6,31,6,34,6,27,6,34,6,31,6,27,6,31,6
-	db 34,6,27,6,34,6,31,6,27,6,34,6,31,6,27,6
-	db 29,6,33,6,36,6,39,6,36,6,33,6,29,6,33,6
-	db 36,6,39,6,36,6,33,6,29,6,36,6,33,6,39,6
-	db 244,6,240,8,22,6,26,6,29,6,22,6,29,6,26,6
-	db 22,6,26,6,29,6,22,6,29,6,26,6,22,6,29,6
-	db 26,6,22,6,29,6,33,6,36,6,29,6,36,6,33,6
-	db 29,6,33,6,36,6,29,6,36,6,33,6,29,6,36,6
-	db 33,6,29,6,31,6,34,6,38,6,31,6,38,6,34,6
-	db 31,6,34,6,38,6,31,6,38,6,34,6,31,6,38,6
-	db 34,6,31,6,26,6,29,6,33,6,26,6,33,6,29,6
-	db 26,6,29,6,33,6,26,6,33,6,29,6,26,6,33,6
-	db 29,6,26,6,27,6,31,6,34,6,27,6,34,6,31,6
-	db 27,6,31,6,34,6,27,6,34,6,31,6,27,6,34,6
-	db 31,6,27,6,22,6,26,6,29,6,22,6,29,6,26,6
-	db 22,6,26,6,29,6,22,6,29,6,26,6,22,6,29,6
-	db 26,6,22,6,24,6,27,6,31,6,24,6,31,6,27,6
-	db 24,6,27,6,31,6,24,6,31,6,27,6,24,6,31,6
-	db 27,6,24,6,29,6,33,6,36,6,29,6,36,6,33,6
-	db 29,6,33,6,36,6,29,6,36,6,33,6,29,6,36,6
-	db 33,6,29,6,244,6,240,8,22,6,26,6,29,6,22,6
-	db 29,6,26,6,22,6,26,6,29,6,22,6,29,6,26,6
-	db 22,6,29,6,26,6,22,6,29,6,33,6,36,6,29,6
-	db 36,6,33,6,29,6,33,6,36,6,29,6,36,6,33,6
-	db 29,6,36,6,33,6,29,6,31,6,34,6,38,6,31,6
-	db 38,6,34,6,31,6,34,6,38,6,31,6,38,6,34,6
-	db 31,6,38,6,34,6,31,6,26,6,29,6,33,6,26,6
-	db 33,6,29,6,26,6,29,6,33,6,26,6,33,6,29,6
-	db 26,6,33,6,29,6,26,6,27,6,31,6,34,6,27,6
-	db 34,6,31,6,27,6,31,6,34,6,27,6,34,6,31,6
-	db 27,6,34,6,31,6,27,6,22,6,26,6,29,6,22,6
-	db 29,6,26,6,22,6,26,6,29,6,22,6,29,6,26,6
-	db 22,6,29,6,26,6,22,6,24,6,27,6,31,6,24,6
-	db 31,6,27,6,24,6,27,6,31,6,24,6,31,6,27,6
-	db 24,6,31,6,27,6,24,6,29,6,33,6,36,6,29,6
-	db 36,6,33,6,29,6,33,6,36,6,29,6,36,6,33,6
-	db 29,6,36,6,33,6,29,6,244,6,240,8,255,12,26,12
-	db 255,12,29,12,255,12,26,6,22,6,255,12,29,12,255,12
-	db 33,12,255,12,36,12,255,12,33,6,29,6,255,12,36,12
-	db 255,12,34,12,255,12,38,12,255,12,34,6,31,6,255,12
-	db 38,12,255,12,29,12,255,12,33,12,255,12,29,6,26,6
-	db 255,12,33,12,255,12,31,12,255,12,34,12,255,12,31,6
-	db 27,6,255,12,34,12,255,12,26,12,255,12,29,12,255,12
-	db 26,6,22,6,255,12,29,12,255,12,27,12,255,12,31,12
-	db 255,12,27,6,24,6,255,12,31,12,255,12,33,12,255,12
-	db 36,12,255,12,33,6,29,6,255,12,36,12,244,6,240,8
-	db 255,12,26,12,255,12,29,12,255,12,26,6,22,6,255,12
-	db 29,12,255,12,33,12,255,12,36,12,255,12,33,6,29,6
-	db 255,12,36,12,255,12,34,12,255,12,38,12,255,12,34,6
-	db 31,6,255,12,38,12,255,12,31,12,255,12,34,12,255,12
-	db 31,6,27,6,255,12,34,12,255,12,26,12,255,12,29,12
-	db 255,12,26,6,22,6,255,12,29,12,255,12,33,12,255,12
-	db 36,12,255,12,33,6,29,6,255,12,36,12,255,12,31,12
-	db 255,12,34,12,255,12,31,6,27,6,255,12,34,12,255,12
-	db 33,12,255,12,36,12,255,12,33,6,29,6,255,12,36,12
-	db 244,6,240,8,24,6,27,6,31,6,24,6,31,6,27,6
-	db 24,6,27,6,31,6,24,6,31,6,27,6,24,6,31,6
-	db 27,6,24,6,26,6,29,6,33,6,26,6,33,6,29,6
-	db 26,6,29,6,33,6,26,6,33,6,29,6,26,6,33,6
-	db 29,6,26,6,27,6,31,6,34,6,27,6,34,6,31,6
-	db 27,6,31,6,34,6,27,6,34,6,31,6,27,6,34,6
-	db 31,6,27,6,29,6,33,6,36,6,29,6,36,6,33,6
-	db 29,6,33,6,36,6,29,6,36,6,33,6,29,6,36,6
-	db 33,6,29,6,24,6,27,6,31,6,24,6,31,6,27,6
-	db 24,6,27,6,31,6,24,6,31,6,27,6,24,6,31,6
-	db 27,6,24,6,26,6,29,6,33,6,26,6,33,6,29,6
-	db 26,6,29,6,33,6,26,6,33,6,29,6,26,6,33,6
-	db 29,6,26,6,27,6,31,6,34,6,27,6,34,6,31,6
-	db 27,6,31,6,34,6,27,6,34,6,31,6,27,6,34,6
-	db 31,6,27,6,29,6,33,6,36,6,39,6,36,6,33,6
-	db 29,6,33,6,36,6,39,6,36,6,33,6,29,6,36,6
-	db 33,6,39,6,244,6,240,8,22,6,26,6,29,6,22,6
-	db 29,6,26,6,22,6,26,6,29,6,22,6,29,6,26,6
-	db 22,6,29,6,26,6,22,6,29,6,33,6,36,6,29,6
-	db 36,6,33,6,29,6,33,6,36,6,29,6,36,6,33,6
-	db 29,6,36,6,33,6,29,6,31,6,34,6,38,6,31,6
-	db 38,6,34,6,31,6,34,6,38,6,31,6,38,6,34,6
-	db 31,6,38,6,34,6,31,6,26,6,29,6,33,6,26,6
-	db 33,6,29,6,26,6,29,6,33,6,26,6,33,6,29,6
-	db 26,6,33,6,29,6,26,6,27,6,31,6,34,6,27,6
-	db 34,6,31,6,27,6,31,6,34,6,27,6,34,6,31,6
-	db 27,6,34,6,31,6,27,6,22,6,26,6,29,6,22,6
-	db 29,6,26,6,22,6,26,6,29,6,22,6,29,6,26,6
-	db 22,6,29,6,26,6,22,6,24,6,27,6,31,6,24,6
-	db 31,6,27,6,24,6,27,6,31,6,24,6,31,6,27,6
-	db 24,6,31,6,27,6,24,6,29,6,33,6,36,6,29,6
-	db 36,6,33,6,29,6,33,6,36,6,29,6,36,6,33,6
-	db 29,6,36,6,33,6,29,6,244,6,240,8,22,6,26,6
-	db 29,6,22,6,29,6,26,6,22,6,26,6,29,6,22,6
-	db 29,6,26,6,22,6,29,6,26,6,22,6,29,6,33,6
-	db 36,6,29,6,36,6,33,6,29,6,33,6,36,6,29,6
-	db 36,6,33,6,29,6,36,6,33,6,29,6,31,6,34,6
-	db 38,6,31,6,38,6,34,6,31,6,34,6,38,6,31,6
-	db 38,6,34,6,31,6,38,6,34,6,31,6,26,6,29,6
-	db 33,6,26,6,33,6,29,6,26,6,29,6,33,6,26,6
-	db 33,6,29,6,26,6,33,6,29,6,26,6,27,6,31,6
-	db 34,6,27,6,34,6,31,6,27,6,31,6,34,6,27,6
-	db 34,6,31,6,27,6,34,6,31,6,27,6,22,6,26,6
-	db 29,6,22,6,29,6,26,6,22,6,26,6,29,6,22,6
-	db 29,6,26,6,22,6,29,6,26,6,22,6,24,6,27,6
-	db 31,6,24,6,31,6,27,6,24,6,27,6,31,6,24,6
-	db 31,6,27,6,24,6,31,6,27,6,24,6,29,6,33,6
-	db 36,6,29,6,36,6,33,6,29,6,33,6,36,6,29,6
-	db 36,6,33,6,29,6,36,6,33,6,29,6,244,6,240,8
-	db 34,48,38,48,31,48,34,48,26,48,29,48,33,48,36,48
-	db 34,48,38,48,31,48,34,48,27,48,31,48,33,48,36,48
-	db 244,6,240,8,255,12,26,12,255,12,29,12,255,12,26,6
-	db 22,6,255,12,29,12,255,12,33,12,255,12,36,12,255,12
-	db 33,6,29,6,255,12,36,12,255,12,34,12,255,12,38,12
-	db 255,12,34,6,31,6,255,12,38,12,255,12,29,12,255,12
-	db 33,12,255,12,29,6,26,6,255,12,33,12,255,12,31,12
-	db 255,12,34,12,255,12,31,6,27,6,255,12,34,12,255,12
-	db 26,12,255,12,29,12,255,12,26,6,22,6,255,12,29,12
-	db 255,12,27,12,255,12,31,12,255,12,27,6,24,6,255,12
-	db 31,12,255,12,33,12,255,12,36,12,255,12,33,6,29,6
-	db 255,12,36,12,244,6,240,8,255,12,26,12,255,12,29,12
-	db 255,12,26,6,22,6,255,12,29,12,255,12,33,12,255,12
-	db 36,12,255,12,33,6,29,6,255,12,36,12,255,12,34,12
-	db 255,12,38,12,255,12,34,6,31,6,255,12,38,12,255,12
-	db 31,12,255,12,34,12,255,12,31,6,27,6,255,12,34,12
-	db 255,12,26,12,255,12,29,12,255,12,26,6,22,6,255,12
-	db 29,12,255,12,33,12,255,12,36,12,255,12,33,6,29,6
-	db 255,12,36,12,255,12,31,12,255,12,34,12,255,12,31,6
-	db 27,6,255,12,34,12,255,12,33,12,255,12,36,12,255,12
-	db 33,6,29,6,255,12,36,12,244,6,240,8,24,6,27,6
-	db 31,6,24,6,31,6,27,6,24,6,27,6,31,6,24,6
-	db 31,6,27,6,24,6,31,6,27,6,24,6,26,6,29,6
-	db 33,6,26,6,33,6,29,6,26,6,29,6,33,6,26,6
-	db 33,6,29,6,26,6,33,6,29,6,26,6,27,6,31,6
-	db 34,6,27,6,34,6,31,6,27,6,31,6,34,6,27,6
-	db 34,6,31,6,27,6,34,6,31,6,27,6,29,6,33,6
-	db 36,6,29,6,36,6,33,6,29,6,33,6,36,6,29,6
-	db 36,6,33,6,29,6,36,6,33,6,29,6,24,6,27,6
-	db 31,6,24,6,31,6,27,6,24,6,27,6,31,6,24,6
-	db 31,6,27,6,24,6,31,6,27,6,24,6,26,6,29,6
-	db 33,6,26,6,33,6,29,6,26,6,29,6,33,6,26,6
-	db 33,6,29,6,26,6,33,6,29,6,26,6,27,6,31,6
-	db 34,6,27,6,34,6,31,6,27,6,31,6,34,6,27,6
-	db 34,6,31,6,27,6,34,6,31,6,27,6,29,6,33,6
-	db 36,6,39,6,36,6,33,6,29,6,33,6,36,6,39,6
-	db 36,6,33,6,29,6,36,6,33,6,39,6,244,6,240,8
-	db 22,6,26,6,29,6,22,6,29,6,26,6,22,6,26,6
-	db 29,6,22,6,29,6,26,6,22,6,29,6,26,6,22,6
-	db 29,6,33,6,36,6,29,6,36,6,33,6,29,6,33,6
-	db 36,6,29,6,36,6,33,6,29,6,36,6,33,6,29,6
-	db 31,6,34,6,38,6,31,6,38,6,34,6,31,6,34,6
-	db 38,6,31,6,38,6,34,6,31,6,38,6,34,6,31,6
-	db 26,6,29,6,33,6,26,6,33,6,29,6,26,6,29,6
-	db 33,6,26,6,33,6,29,6,26,6,33,6,29,6,26,6
-	db 27,6,31,6,34,6,27,6,34,6,31,6,27,6,31,6
-	db 34,6,27,6,34,6,31,6,27,6,34,6,31,6,27,6
-	db 22,6,26,6,29,6,22,6,29,6,26,6,22,6,26,6
-	db 29,6,22,6,29,6,26,6,22,6,29,6,26,6,22,6
-	db 24,6,27,6,31,6,24,6,31,6,27,6,24,6,27,6
-	db 31,6,24,6,31,6,27,6,24,6,31,6,27,6,24,6
-	db 29,6,33,6,36,6,29,6,36,6,33,6,29,6,33,6
-	db 36,6,29,6,36,6,33,6,29,6,36,6,33,6,29,6
-	db 244,6,240,8,22,6,26,6,29,6,22,6,29,6,26,6
-	db 22,6,26,6,29,6,22,6,29,6,26,6,22,6,29,6
-	db 26,6,22,6,29,6,33,6,36,6,29,6,36,6,33,6
-	db 29,6,33,6,36,6,29,6,36,6,33,6,29,6,36,6
-	db 33,6,29,6,31,6,34,6,38,6,31,6,38,6,34,6
-	db 31,6,34,6,38,6,31,6,38,6,34,6,31,6,38,6
-	db 34,6,31,6,26,6,29,6,33,6,26,6,33,6,29,6
-	db 26,6,29,6,33,6,26,6,33,6,29,6,26,6,33,6
-	db 29,6,26,6,27,6,31,6,34,6,27,6,34,6,31,6
-	db 27,6,31,6,34,6,27,6,34,6,31,6,27,6,34,6
-	db 31,6,27,6,22,6,26,6,29,6,22,6,29,6,26,6
-	db 22,6,26,6,29,6,22,6,29,6,26,6,22,6,29,6
-	db 26,6,22,6,24,6,27,6,31,6,24,6,31,6,27,6
-	db 24,6,27,6,31,6,24,6,31,6,27,6,24,6,31,6
-	db 27,6,24,6,29,6,33,6,36,6,29,6,36,6,33,6
-	db 29,6,33,6,36,6,29,6,36,6,33,6,29,6,36,6
-	db 33,6,29,6,244,6,240,8,26,48,29,48,33,48,36,48
-	db 31,48,34,48,33,48,36,48,0
+	db 244,6,240,8,255,47,20,3,255,151,30,12,255,12,30,12
+	db 255,12,30,12,255,11,30,12,255,12,30,12,255,12,30,12
+	db 255,11,30,12,30,12,30,12,255,12,29,12,255,11,29,12
+	db 255,12,29,12,255,12,29,12,255,12,29,11,255,12,29,12
+	db 255,12,29,12,29,12,29,11,255,12,30,12,255,12,30,12
+	db 255,12,30,11,255,12,30,12,255,12,30,12,255,12,30,12
+	db 255,11,30,12,30,12,30,12,255,12,29,12,255,11,29,12
+	db 255,12,29,12,255,12,29,12,255,11,29,12,255,12,29,12
+	db 255,12,29,12,29,12,29,11,255,12,30,12,255,12,30,12
+	db 255,12,30,11,255,12,30,12,255,12,30,12,255,12,30,11
+	db 255,12,30,12,30,12,30,12,255,12,29,12,255,11,29,12
+	db 255,12,29,12,255,12,29,12,255,11,29,12,255,12,29,12
+	db 255,12,29,12,29,11,29,12,255,12,37,12,255,12,37,12
+	db 255,12,37,11,255,12,37,12,255,12,36,12,255,12,36,11
+	db 255,12,36,12,36,12,36,12,255,12,37,11,255,12,37,12
+	db 255,12,37,12,255,12,37,12,36,11,32,12,32,12,32,12
+	db 255,47,32,12,32,12,32,12,255,59,32,12,32,12,32,12
+	db 255,35,29,12,255,35,29,12,255,12,30,12,255,95,25,12
+	db 255,11,25,12,255,12,25,12,255,12,25,12,255,11,30,12
+	db 255,12,30,12,255,12,30,12,255,11,30,12,255,12,32,12
+	db 255,12,32,12,255,12,27,11,24,12,20,12,255,12,25,12
+	db 255,12,25,11,255,12,29,12,29,12,29,12,255,12,25,11
+	db 255,12,25,12,255,12,25,12,255,12,25,12,255,11,30,12
+	db 255,12,30,12,255,12,30,12,255,11,30,12,32,12,255,36
+	db 32,11,255,48,30,12,255,12,30,11,29,12,255,36,29,12
+	db 29,11,29,12,255,12,23,12,255,35,23,12,255,36,23,12
+	db 255,94,34,12,255,12,34,12,255,12,34,12,34,11,34,12
+	db 255,12,35,12,255,12,35,12,255,12,35,11,35,12,35,12
+	db 255,12,35,12,255,12,35,11,255,12,35,12,35,12,35,12
+	db 255,12,34,11,255,12,34,12,255,12,34,12,34,12,34,12
+	db 255,11,34,12,255,12,34,12,255,12,34,12,34,11,34,12
+	db 255,12,35,12,255,12,35,12,255,11,35,12,35,12,35,12
+	db 35,12,255,12,35,12,255,11,35,12,255,12,35,12,255,12
+	db 23,12,23,11,23,12,23,12,23,12,255,35,23,12,255,95
+	db 34,12,255,12,34,12,255,11,34,12,255,12,34,12,255,12
+	db 35,12,255,11,35,12,255,12,35,12,255,12,35,12,255,12
+	db 35,11,255,12,35,12,255,12,35,12,255,12,35,11,255,12
+	db 34,12,34,12,255,24,34,11,255,12,34,12,255,12,34,12
+	db 255,12,34,12,255,11,34,12,255,12,34,12,255,12,32,12
+	db 255,11,32,12,255,12,32,12,255,12,32,12,30,23,255,24
+	db 30,24,255,23,29,12,25,12,25,12,255,12,29,12,255,11
+	db 33,24,32,12,255,12,36,23,37,12,255,95,34,12,255,12
+	db 34,12,255,11,34,12,34,12,34,12,255,12,35,12,255,11
+	db 35,12,255,12,35,12,35,12,35,12,255,12,35,11,255,12
+	db 35,12,255,12,35,12,35,12,35,11,255,12,34,12,255,12
+	db 34,12,255,12,34,11,34,12,34,12,255,12,34,12,255,12
+	db 34,12,255,11,34,12,34,12,34,12,255,12,32,12,255,11
+	db 32,12,255,12,35,12,35,12,35,12,255,11,34,12,255,12
+	db 34,12,255,12,34,12,34,12,34,11,13,24,13,24,18,12
+	db 22,11,18,12,255,12,20,47,20,3,255,151,30,12,255,12
+	db 30,12,255,12,30,12,255,11,30,12,255,12,30,12,255,12
+	db 30,12,255,12,30,11,30,12,30,12,255,12,29,12,255,12
+	db 29,11,255,12,29,12,255,12,29,12,255,12,29,11,255,12
+	db 29,12,255,12,29,12,29,12,29,12,255,11,30,12,255,12
+	db 30,12,255,12,30,12,255,11,30,12,255,12,30,12,255,12
+	db 30,12,255,11,30,12,30,12,30,12,255,12,29,12,255,12
+	db 29,11,255,12,29,12,255,12,29,12,255,12,29,11,255,12
+	db 29,12,255,12,29,12,29,12,29,11,255,12,30,12,255,12
+	db 30,12,255,12,30,12,255,11,30,12,255,12,30,12,255,12
+	db 30,12,255,11,30,12,30,12,30,12,255,12,29,12,255,11
+	db 29,12,255,12,29,12,255,12,29,12,255,12,29,11,255,12
+	db 29,12,255,12,29,12,29,12,29,11,255,12,37,12,255,12
+	db 37,12,255,12,37,11,255,12,37,12,255,12,36,12,255,12
+	db 36,12,255,11,36,12,36,12,36,12,255,12,37,12,255,11
+	db 37,12,255,12,37,12,255,12,37,12,36,11,32,12,32,12
+	db 32,12,255,47,32,12,32,12,32,12,255,59,32,12,32,12
+	db 32,12,255,35,29,12,255,36,29,11,255,12,30,12,255,95
+	db 25,12,255,11,25,12,255,12,25,12,255,12,25,12,255,12
+	db 30,11,255,12,30,12,255,12,30,12,255,12,30,11,255,12
+	db 32,12,255,12,32,12,255,12,27,11,24,12,20,12,255,12
+	db 25,12,255,12,25,12,255,11,29,12,29,12,29,12,255,12
+	db 25,12,255,11,25,12,255,12,25,12,255,12,25,12,255,11
+	db 30,12,255,12,30,12,255,12,30,12,255,12,30,11,32,12
+	db 255,36,32,12,255,47,30,12,255,12,30,11,29,12,255,36
+	db 29,12,29,12,29,11,255,12,29,24,29,24,30,11,32,12
+	db 34,12,255,12,20,24,20,23,25,12,37,12,37,12,255,12
+	db 29,23,29,24,30,12,32,12,34,12,255,11,20,24,20,24
+	db 255,95,20,59,20,12,20,11,20,12,20,12,20,12,20,12
+	db 20,12,20,11,20,12,20,12,20,12,255,118,13,24,255,240
+	db 255,240,255,240,255,240,255,240,255,240,255,240,255,240,255,240
+	db 255,240,255,240,255,202,0
 _song0_v3__9:
-	db 244,1,240,5,3,24,244,2,240,12,5,24,244,3,240,7
-	db 6,24,244,2,240,12,5,24,244,1,240,5,3,24,244,2
-	db 240,12,5,24,244,3,240,7,6,24,244,2,240,12,5,24
-	db 244,1,240,5,3,24,244,2,240,12,5,24,244,3,240,7
-	db 6,24,244,2,240,12,5,24,244,3,240,7,6,6,6,6
-	db 6,12,6,6,6,6,6,12,244,1,240,5,3,12,244,3
-	db 240,7,6,12,6,6,6,6,6,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,3
-	db 240,7,6,6,6,6,6,12,6,6,6,6,6,12,244,1
-	db 240,5,3,12,244,3,240,7,6,12,6,6,6,6,6,12
 	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,3,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 6,12,244,2,240,12,5,11,244,1,240,5,3,12,244,2
 	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,3,12,244,3,240,7,6,12,244,2
+	db 244,1,240,5,3,12,244,2,240,12,5,11,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,11
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,11,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,11,244,3
+	db 240,7,6,12,6,6,6,6,6,6,6,6,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,11,244,2
 	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
 	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,3,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,3,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
-	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,3,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,3,240,7,6,6,6,6,6,12,6,6
-	db 6,6,6,12,244,1,240,5,3,12,244,3,240,7,6,12
-	db 6,6,6,6,6,12,244,1,240,5,3,12,244,2,240,11
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,6,5,6
-	db 244,1,240,5,3,12,244,2,240,11,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
-	db 240,11,5,12,244,3,240,7,6,12,244,2,240,12,5,6
-	db 5,6,244,1,240,5,3,12,244,2,240,11,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,11,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,6,5,6,244,1,240,5,3,12,244,2,240,11,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,244,2,240,11,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,6,5,6,244,1,240,5,3,12,244,2,240,11
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,11,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,6,5,6,244,1,240,5,3,12,244,2
-	db 240,11,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,244,2,240,11,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,6,5,6,244,1,240,5,3,12
-	db 244,2,240,11,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,11,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,6,5,6,244,1,240,5
-	db 3,12,244,2,240,11,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,3,240,7,6,6,6,6,6,12,6,6
-	db 6,6,6,12,244,1,240,5,3,12,244,3,240,7,6,12
-	db 6,6,6,6,6,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,3,240,7,6,6
-	db 6,6,6,12,6,6,6,6,6,12,244,1,240,5,3,12
-	db 244,3,240,7,6,12,6,6,6,6,6,12,244,1,240,5
-	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,3,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
-	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,3,12,244,3,240,7,6,12,244,2
+	db 3,12,244,2,240,12,5,11,244,3,240,7,6,12,244,2
 	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,3,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
+	db 244,3,240,7,6,12,244,2,240,12,5,11,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,11
 	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
 	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,3,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,1,240,5,3,11,244,3,240,7,6,12
+	db 6,6,6,6,6,6,6,6,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,11,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,11,244,2
 	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,3,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,3,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,3,240,7,6,6,6,6,6,12,6,6,6,6,6,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,11,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,11,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,11
 	db 244,1,240,5,3,12,244,3,240,7,6,12,6,6,6,6
-	db 6,12,244,1,240,5,3,12,244,2,240,11,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,6,5,6,244,1,240,5
-	db 3,12,244,2,240,11,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,244,2,240,11,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,6,5,6,244,1
-	db 240,5,3,12,244,2,240,11,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,11
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,6,5,6
-	db 244,1,240,5,3,12,244,2,240,11,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
-	db 240,11,5,12,244,3,240,7,6,12,244,2,240,12,5,6
-	db 5,6,244,1,240,5,3,12,244,2,240,11,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,11,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,6,5,6,244,1,240,5,3,12,244,2,240,11,5,12
+	db 6,6,6,6,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,11,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,11,244,2,240,12,5,12
 	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,244,2,240,11,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,6,5,6,244,1,240,5,3,12,244,2,240,11
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,11,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,6,5,6,244,1,240,5,3,12,244,2
-	db 240,11,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,3,240,7,6,6,6,6,6,12,6,6,6,6,6,12
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,11,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,11,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,11,244,1,240,5
+	db 3,12,244,3,240,7,6,12,6,6,6,6,6,6,6,6
+	db 244,1,240,5,3,12,244,2,240,12,5,11,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,11,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,11,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,11,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,11,244,1,240,5,3,12,244,3
+	db 240,7,6,12,6,6,6,6,6,6,6,6,244,1,240,5
+	db 3,12,244,2,240,12,5,11,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,11,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,11,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,11,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,11,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,3,240,7,6,12
+	db 6,6,6,6,6,6,6,6,244,1,240,5,3,12,244,2
+	db 240,12,5,11,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,11,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,11,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,11,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,11,244,2,240,12,5,12
 	db 244,1,240,5,3,12,244,3,240,7,6,12,6,6,6,6
-	db 6,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,3,240,7,6,6,6,6,6,12
-	db 6,6,6,6,6,12,244,1,240,5,3,12,244,3,240,7
-	db 6,12,6,6,6,6,6,12,244,1,240,5,3,12,244,2
-	db 240,11,5,12,244,3,240,7,6,12,244,2,240,12,5,6
-	db 5,6,244,1,240,5,3,12,244,2,240,11,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,11,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,6,5,6,244,1,240,5,3,12,244,2,240,11,5,12
+	db 6,6,6,6,244,1,240,5,3,11,244,2,240,12,5,12
 	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,244,2,240,11,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,6,5,6,244,1,240,5,3,12,244,2,240,11
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,11,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,6,5,6,244,1,240,5,3,12,244,2
-	db 240,11,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,244,2,240,11,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,6,5,6,244,1,240,5,3,12
-	db 244,2,240,11,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,11,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,6,5,6,244,1,240,5
-	db 3,12,244,2,240,11,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,244,2,240,11,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,6,5,6,244,1
-	db 240,5,3,12,244,2,240,11,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,3,240,7,6,6,6,6,6,12
-	db 6,6,6,6,6,12,244,1,240,5,3,12,244,3,240,7
-	db 6,12,6,6,6,6,6,12,244,1,240,5,3,12,244,2
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,11,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,11,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,11,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,11,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,3,240,7,6,12,6,6,6,6,6,6,6,6
+	db 244,1,240,5,3,11,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,11,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,11,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,11,244,1,240,5,3,12,244,2
 	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,3,12,244,3,240,7,6,12,244,2
+	db 244,1,240,5,3,12,244,2,240,12,5,11,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,3
+	db 240,7,6,12,6,6,6,6,6,6,6,6,244,1,240,5
+	db 3,11,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,11,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,11,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,11,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,11,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,3,240,7,6,12
+	db 6,6,6,6,6,6,6,5,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,11,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,11,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,11,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,11,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,3,240,7,6,12,6,6,6,6
+	db 6,5,6,6,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,11,244,3,240,7,6,12,244,2
 	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
 	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,3,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 3,11,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,11,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,11,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,3,240,7,6,12,6,6,6,6,6,5,6,6
 	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,11,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,11,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,11,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,11,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,3
+	db 240,7,6,12,6,6,6,5,6,6,6,6,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,11
 	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
 	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,3,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
-	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,3,12,244,3,240,7,6,12,244,2
+	db 240,12,5,11,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,11,244,3,240,7,6,12,244,2
 	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
 	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,3,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 3,11,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,3,240,7,6,12
+	db 6,6,6,5,6,6,6,6,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,11,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,11
 	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,3,240,7
-	db 6,6,6,6,6,12,6,6,6,6,6,12,244,1,240,5
-	db 3,12,244,3,240,7,6,12,6,6,6,6,6,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,3,240,7,6,6,6,6,6,12,6,6,6,6
-	db 6,12,244,1,240,5,3,12,244,3,240,7,6,12,6,6
-	db 6,6,6,12,244,1,240,5,3,24,244,2,240,12,5,24
-	db 244,3,240,7,6,24,244,2,240,12,5,24,244,1,240,5
-	db 3,24,244,2,240,12,5,24,244,3,240,7,6,24,244,2
-	db 240,12,5,24,244,1,240,5,3,24,244,2,240,12,5,24
-	db 244,3,240,7,6,24,244,2,240,12,5,24,244,1,240,5
-	db 3,24,244,2,240,12,5,24,244,3,240,7,6,24,244,2
-	db 240,12,5,24,244,1,240,5,3,24,244,2,240,12,5,24
-	db 244,3,240,7,6,24,244,2,240,12,5,24,244,1,240,5
-	db 3,24,244,2,240,12,5,24,244,3,240,7,6,24,244,2
-	db 240,12,5,24,244,1,240,5,3,24,244,2,240,12,5,24
-	db 244,3,240,7,6,24,244,2,240,12,5,24,244,3,240,7
-	db 6,6,6,6,6,12,6,6,6,6,6,12,244,1,240,5
-	db 3,12,244,3,240,7,6,12,6,6,6,6,6,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,3,240,7,6,6,6,6,6,12,6,6,6,6
-	db 6,12,244,1,240,5,3,12,244,3,240,7,6,12,6,6
-	db 6,6,6,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,11,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,11,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,3,240,7,6,12,6,5,6,6
+	db 6,6,6,6,244,1,240,5,3,12,244,2,240,12,5,12
 	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,3,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
+	db 3,11,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,11,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,11
 	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
 	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,3,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,11,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,3,240,7,6,11,6,6,6,6,6,6,6,6
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,11,244,2
 	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,3,12,244,3,240,7,6,12,244,2
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,11,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,11,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,11
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,3
+	db 240,7,6,11,6,6,6,6,6,6,6,6,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,11,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,11,244,2
 	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
 	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,3,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,11,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,11,244,2,240,12,5,12,244,1,240,5
 	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,3,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,3,240,7,6,6,6,6
-	db 6,12,6,6,6,6,6,12,244,1,240,5,3,12,244,3
-	db 240,7,6,12,6,6,6,6,6,12,244,1,240,5,3,12
-	db 244,2,240,11,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,6,5,6,244,1,240,5,3,12,244,2,240,11,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,244,2,240,11,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,6,5,6,244,1,240,5,3,12,244,2,240,11
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,11,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,6,5,6,244,1,240,5,3,12,244,2
-	db 240,11,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,244,2,240,11,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,6,5,6,244,1,240,5,3,12
-	db 244,2,240,11,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,11,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,6,5,6,244,1,240,5
-	db 3,12,244,2,240,11,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,244,2,240,11,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,6,5,6,244,1
-	db 240,5,3,12,244,2,240,11,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,11
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,6,5,6
-	db 244,1,240,5,3,12,244,2,240,11,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,3,240,7,6,6,6,6
-	db 6,12,6,6,6,6,6,12,244,1,240,5,3,12,244,3
-	db 240,7,6,12,6,6,6,6,6,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,3
-	db 240,7,6,6,6,6,6,12,6,6,6,6,6,12,244,1
-	db 240,5,3,12,244,3,240,7,6,12,6,6,6,6,6,12
+	db 240,12,5,12,244,1,240,5,3,12,244,3,240,7,6,11
+	db 6,6,6,6,6,6,6,6,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,11
 	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,3,12,244,3,240,7
 	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,11,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,11,244,2
 	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,3,12,244,3,240,7,6,12,244,2
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,11,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,11,244,3,240,7,6,12,6,6,6,6
+	db 6,6,6,6,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,11,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,11
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,11,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,11,244,2
 	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
 	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,3,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 3,11,244,3,240,7,6,12,6,6,6,6,6,6,6,6
 	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
+	db 6,11,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,11,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,11
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,11,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,11,244,3
+	db 240,7,6,12,6,6,6,6,6,6,6,6,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,11,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,11,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,11,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,11
 	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
 	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,3,12,244,3,240,7
+	db 240,12,5,11,244,1,240,5,3,12,244,3,240,7,6,12
+	db 6,6,6,6,6,6,6,6,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,11,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,11,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,11,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,11,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,11
+	db 244,1,240,5,3,12,244,3,240,7,6,12,6,6,6,6
+	db 6,6,6,6,244,1,240,5,3,12,244,2,240,12,5,11
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,11,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,11,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,11,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,11,244,1,240,5
+	db 3,12,244,3,240,7,6,12,6,6,6,6,6,6,6,6
+	db 244,1,240,5,3,12,244,2,240,12,5,11,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,11
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,11,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,11,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,11,244,2,240,12,5,12,244,1,240,5,3,12,244,3
+	db 240,7,6,12,6,6,6,6,6,6,6,6,244,1,240,5
+	db 3,12,244,2,240,12,5,11,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,11,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,11
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,11,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,11,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,3,240,7,6,12
+	db 6,6,6,6,6,6,6,6,244,1,240,5,3,11,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,11,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,11,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,11
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,11,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,3,240,7,6,12,6,6,6,6
+	db 6,6,6,6,244,1,240,5,3,11,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,11,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,11,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,11,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,11
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,3,240,7,6,12,6,6,6,6,6,6,6,6
+	db 244,1,240,5,3,11,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,11,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,11,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,11,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,11,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,3
+	db 240,7,6,12,6,6,6,6,6,6,6,5,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,11,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,11,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,11,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,11,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,3,240,7,6,12
+	db 6,6,6,6,6,6,6,5,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,11,244,3,240,7
 	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
 	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,3,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,3,240,7,6,6,6,6,6,12,6,6
-	db 6,6,6,12,244,1,240,5,3,12,244,3,240,7,6,12
-	db 6,6,6,6,6,12,244,1,240,5,3,24,244,2,240,12
-	db 5,24,244,3,240,7,6,24,244,2,240,12,5,24,244,1
-	db 240,5,3,24,244,2,240,12,5,24,244,3,240,7,6,24
-	db 244,2,240,12,5,24,244,1,240,5,3,24,244,2,240,12
-	db 5,24,244,3,240,7,6,24,244,2,240,12,5,24,244,3
-	db 240,7,6,6,6,6,6,12,6,6,6,6,6,12,244,1
-	db 240,5,3,12,244,3,240,7,6,12,6,6,6,6,6,12
-	db 0
+	db 244,1,240,5,3,11,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,11,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,11,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,3,240,7,6,12,6,6,6,6
+	db 6,5,6,6,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,11,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,11,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,11,244,2,240,12,5,12,0
 _song1_v0__9:
-	db 244,10,240,5,255,96,255,96,255,96,255,48,34,12,38,12
-	db 41,12,44,12,244,10,240,5,39,12,255,12,39,12,42,12
-	db 46,12,44,12,42,12,41,12,42,24,39,12,35,36,255,24
-	db 37,12,255,12,37,12,42,12,46,12,44,12,42,12,44,12
-	db 41,24,37,12,32,36,255,24,39,12,255,12,39,12,42,12
-	db 46,12,49,12,46,12,42,12,47,24,46,12,42,36,39,24
-	db 44,12,42,12,41,12,37,12,41,12,42,12,44,24,41,48
-	db 38,48,244,10,240,5,39,12,255,12,39,12,42,12,46,12
-	db 44,12,42,12,41,12,42,24,39,12,35,36,255,24,37,12
-	db 255,12,37,12,42,12,46,12,44,12,42,12,44,12,41,24
-	db 37,12,32,36,255,24,39,12,255,12,39,12,42,12,46,12
-	db 49,12,46,12,42,12,47,24,46,12,42,36,39,24,49,12
-	db 47,12,46,12,44,12,41,12,37,12,41,12,44,12,46,24
-	db 44,24,41,24,38,24,244,10,240,5,35,12,39,12,44,12
-	db 39,12,47,24,46,24,46,12,42,12,39,12,42,12,46,24
-	db 255,24,35,12,39,12,42,12,47,12,46,12,42,12,39,24
-	db 41,12,44,12,49,24,47,12,44,12,41,24,44,24,47,24
-	db 51,24,47,24,46,24,51,24,46,24,42,24,44,24,47,24
-	db 51,24,47,24,50,24,46,24,41,24,38,24,244,11,240,4
-	db 42,18,42,18,39,12,42,24,47,24,46,18,44,18,41,12
-	db 37,24,44,24,42,18,41,18,39,12,46,48,255,24,39,12
-	db 41,12,42,12,44,12,46,24,47,18,46,18,42,12,39,24
-	db 47,24,49,18,47,18,44,12,41,24,49,24,46,24,49,24
-	db 42,24,46,24,44,24,41,24,38,24,41,24,244,11,240,4
-	db 42,18,42,18,39,12,42,24,47,24,46,18,44,18,41,12
-	db 37,24,44,24,42,18,41,18,39,12,46,48,255,24,39,12
-	db 41,12,42,12,44,12,46,24,47,18,46,18,42,12,39,24
-	db 47,24,49,18,47,18,44,12,41,24,49,24,46,12,47,12
-	db 49,12,46,12,42,24,37,24,38,24,41,24,46,48,244,4
-	db 240,5,30,18,30,18,27,12,30,24,35,24,34,18,32,18
-	db 29,12,25,24,32,24,30,18,29,18,27,12,34,48,255,24
-	db 27,12,29,12,30,12,32,12,34,24,42,18,42,18,39,12
-	db 42,24,47,24,46,18,44,18,41,12,37,24,44,24,42,18
-	db 41,18,39,12,46,48,255,24,39,12,41,12,42,12,44,12
-	db 46,24,244,10,240,5,39,12,255,12,39,12,42,12,46,12
-	db 44,12,42,12,41,12,42,24,39,12,35,36,255,24,37,12
-	db 255,12,37,12,42,12,46,12,44,12,42,12,44,12,41,24
-	db 37,12,32,36,255,24,39,12,255,12,39,12,42,12,46,12
-	db 49,12,46,12,42,12,47,24,46,12,42,36,39,24,44,12
-	db 42,12,41,12,37,12,41,12,42,12,44,24,41,48,38,48
-	db 244,10,240,5,35,12,39,12,44,12,39,12,47,24,46,24
-	db 46,12,42,12,39,12,42,12,46,24,255,24,35,12,39,12
-	db 42,12,47,12,46,12,42,12,39,24,41,12,44,12,49,24
-	db 47,12,44,12,41,24,44,24,47,24,51,24,47,24,46,24
-	db 51,24,46,24,42,24,44,24,47,24,51,24,47,24,50,24
-	db 46,24,41,24,38,24,244,11,240,4,42,18,42,18,39,12
-	db 42,24,47,24,46,18,44,18,41,12,37,24,44,24,42,18
-	db 41,18,39,12,46,48,255,24,39,12,41,12,42,12,44,12
-	db 46,24,47,18,46,18,42,12,39,24,47,24,49,18,47,18
-	db 44,12,41,24,49,24,46,24,49,24,42,24,46,24,44,24
-	db 41,24,38,24,41,24,244,11,240,4,42,18,42,18,39,12
-	db 42,24,47,24,46,18,44,18,41,12,37,24,44,24,42,18
-	db 41,18,39,12,46,48,255,24,39,12,41,12,42,12,44,12
-	db 46,24,47,18,46,18,42,12,39,24,47,24,49,18,47,18
-	db 44,12,41,24,49,24,46,12,47,12,49,12,46,12,42,24
-	db 37,24,38,24,41,24,46,48,244,10,240,5,39,48,44,48
-	db 41,48,46,48,42,24,47,24,51,48,49,36,47,12,44,48
-	db 47,36,46,12,44,48,46,36,44,12,41,48,42,24,39,24
-	db 35,24,39,24,41,24,38,24,34,48,244,4,240,5,27,6
-	db 30,6,35,6,39,6,27,6,30,6,35,6,39,6,27,6
-	db 30,6,35,6,39,6,27,6,30,6,35,6,39,6,41,12
-	db 37,12,32,12,29,12,32,12,37,12,41,24,27,18,34,18
-	db 39,12,34,24,30,24,27,6,30,6,34,6,39,6,42,6
-	db 46,6,42,6,39,6,34,48,35,12,39,12,255,12,39,12
-	db 42,12,39,12,35,24,44,36,41,12,37,24,29,24,30,6
-	db 34,6,37,6,42,6,30,6,34,6,37,6,42,6,30,6
-	db 34,6,37,6,42,6,30,6,34,6,37,6,42,6,38,12
-	db 34,12,29,12,26,12,29,12,34,12,38,24,244,4,240,5
-	db 27,6,30,6,34,6,39,6,42,6,46,6,42,6,39,6
-	db 34,48,35,12,39,12,255,12,39,12,42,12,39,12,35,24
-	db 46,36,42,12,37,24,30,24,29,6,32,6,37,6,41,6
-	db 29,6,32,6,37,6,41,6,29,6,32,6,37,6,41,6
-	db 29,6,32,6,37,6,41,6,39,12,34,12,30,12,27,12
-	db 30,12,34,12,39,24,27,18,35,18,39,12,35,24,30,24
-	db 29,6,32,6,37,6,41,6,44,6,49,6,44,6,41,6
-	db 37,48,34,12,38,12,255,12,38,12,41,12,38,12,34,24
-	db 244,10,240,5,35,12,39,12,44,12,39,12,47,24,46,24
-	db 46,12,42,12,39,12,42,12,46,24,255,24,35,12,39,12
-	db 42,12,47,12,46,12,42,12,39,24,41,12,44,12,49,24
-	db 47,12,44,12,41,24,44,24,47,24,51,24,47,24,46,24
-	db 51,24,46,24,42,24,44,24,47,24,51,24,47,24,50,24
-	db 46,24,41,24,38,24,244,11,240,4,42,18,42,18,39,12
-	db 42,24,47,24,46,18,44,18,41,12,37,24,44,24,42,18
-	db 41,18,39,12,46,48,255,24,39,12,41,12,42,12,44,12
-	db 46,24,47,18,46,18,42,12,39,24,47,24,49,18,47,18
-	db 44,12,41,24,49,24,46,24,49,24,42,24,46,24,44,24
-	db 41,24,38,24,41,24,244,11,240,4,42,18,42,18,39,12
-	db 42,24,47,24,46,18,44,18,41,12,37,24,44,24,42,18
-	db 41,18,39,12,46,48,255,24,39,12,41,12,42,12,44,12
-	db 46,24,47,18,46,18,42,12,39,24,47,24,49,18,47,18
-	db 44,12,41,24,49,24,46,12,47,12,49,12,46,12,42,24
-	db 37,24,38,24,41,24,46,48,244,10,240,5,39,96,42,96
-	db 44,96,41,48,255,48,0
+	db 244,10,240,5,255,27,26,9,33,9,26,9,30,9,33,18
+	db 25,9,33,9,25,9,28,9,33,45,255,9,26,9,33,9
+	db 26,9,30,9,33,18,25,9,33,9,25,9,28,9,33,27
+	db 255,9,33,9,255,9,26,9,29,9,34,9,255,9,33,9
+	db 255,9,33,9,255,9,26,9,29,9,34,9,255,9,33,9
+	db 255,27,26,9,17,9,26,9,255,9,26,9,17,9,26,9
+	db 255,9,26,9,29,9,38,9,255,9,38,9,41,9,50,9
+	db 50,18,50,18,50,18,50,9,50,18,45,9,47,9,42,9
+	db 45,9,47,18,38,18,40,9,41,9,38,9,40,9,42,18
+	db 38,9,42,9,38,9,40,18,38,18,255,9,38,27,38,18
+	db 38,18,38,9,38,18,33,9,35,9,30,9,33,9,35,18
+	db 26,18,28,9,29,9,26,9,28,9,30,18,26,9,30,9
+	db 26,9,28,18,26,18,255,27,38,9,45,9,38,9,42,9
+	db 45,18,37,9,45,9,37,9,40,9,45,45,255,9,38,9
+	db 45,9,38,9,42,9,45,18,37,9,45,9,37,9,40,9
+	db 45,27,255,9,45,9,255,9,38,9,41,9,46,9,255,9
+	db 45,9,255,9,45,9,255,9,38,9,41,9,46,9,255,9
+	db 45,9,255,27,26,9,17,9,26,9,255,9,26,9,29,9
+	db 38,9,255,9,38,9,41,9,50,9,255,9,50,9,41,9
+	db 50,9,50,18,50,18,50,18,50,9,50,18,45,9,47,9
+	db 42,9,45,9,47,18,50,18,40,9,41,9,50,9,40,9
+	db 42,18,50,9,42,9,50,9,40,18,50,18,255,9,50,27
+	db 50,18,50,18,50,9,50,18,45,9,47,9,42,9,45,9
+	db 47,18,38,18,40,9,41,9,38,9,40,9,42,18,38,9
+	db 42,9,38,9,40,18,38,18,255,27,49,9,45,9,49,9
+	db 40,9,44,18,49,9,43,9,49,9,40,9,42,18,45,9
+	db 40,9,45,9,255,9,42,9,50,9,42,9,45,9,47,18
+	db 42,9,50,9,42,9,45,9,47,18,42,9,47,18,255,9
+	db 45,9,49,9,40,9,43,9,47,18,45,9,49,9,40,9
+	db 43,9,47,18,43,9,47,18,255,9,42,9,50,9,42,9
+	db 45,9,47,18,42,9,50,9,42,9,45,9,47,18,42,9
+	db 47,18,255,9,49,9,45,9,49,9,40,9,44,18,49,9
+	db 43,9,49,9,40,9,42,18,45,9,40,9,45,9,255,9
+	db 42,9,50,9,42,9,45,9,47,18,42,9,50,18,50,18
+	db 49,18,48,18,255,9,35,9,39,9,42,9,47,9,42,9
+	db 39,9,35,9,255,9,35,9,40,9,43,9,47,18,43,18
+	db 42,18,255,9,42,9,255,9,40,18,33,9,38,18,45,18
+	db 45,18,45,18,255,9,49,9,45,9,49,9,40,9,44,18
+	db 49,9,43,9,49,9,40,9,42,18,45,9,40,9,45,9
+	db 255,9,42,9,50,9,42,9,45,9,47,18,42,9,50,9
+	db 42,9,45,9,47,18,42,9,47,18,255,9,45,9,49,9
+	db 40,9,43,9,47,18,45,9,49,9,40,9,43,9,47,18
+	db 43,9,47,18,255,9,42,9,50,9,42,9,45,9,47,18
+	db 42,9,50,9,42,9,45,9,47,18,42,9,47,18,255,9
+	db 49,9,45,9,49,9,40,9,44,18,49,9,43,9,49,9
+	db 40,9,42,18,45,9,40,9,45,9,255,9,42,9,50,9
+	db 42,9,45,9,47,18,42,9,50,18,50,18,49,18,48,18
+	db 255,9,47,9,51,9,42,9,47,9,42,9,51,9,47,9
+	db 255,9,47,9,40,9,43,9,47,18,43,18,42,18,255,9
+	db 42,9,255,9,40,18,45,9,255,9,38,9,42,9,45,9
+	db 50,18,255,27,38,9,45,9,38,9,42,9,45,18,37,9
+	db 45,9,37,9,40,9,45,45,255,9,38,9,45,9,38,9
+	db 42,9,45,18,37,9,45,9,37,9,40,9,45,27,255,9
+	db 45,9,255,9,38,9,41,9,46,9,255,9,45,9,255,9
+	db 45,9,255,9,38,9,41,9,46,9,255,9,45,9,255,27
+	db 26,9,17,9,26,9,255,9,26,9,29,9,38,9,255,9
+	db 38,9,41,9,50,9,255,9,50,9,41,9,50,9,50,18
+	db 50,18,50,18,50,9,50,18,45,9,47,9,42,9,45,9
+	db 47,18,50,18,40,9,41,9,50,9,40,9,42,18,50,9
+	db 42,9,50,9,40,18,50,18,255,9,50,27,50,18,50,18
+	db 50,9,50,18,45,9,47,9,42,9,45,9,47,18,38,18
+	db 40,9,41,9,38,9,40,9,42,18,38,9,42,9,38,9
+	db 40,18,38,18,50,18,50,27,50,18,45,9,40,18,50,27
+	db 50,18,45,9,40,9,45,9,38,9,43,9,40,9,43,9
+	db 47,9,38,9,43,9,47,9,40,9,43,9,47,9,38,18
+	db 47,9,40,9,47,9,50,27,50,18,45,9,40,18,50,27
+	db 50,18,45,9,40,9,45,9,38,9,43,9,40,9,43,9
+	db 47,9,38,9,43,9,47,9,40,9,43,9,47,9,38,18
+	db 47,9,39,9,47,9,40,27,40,18,47,9,42,18,40,27
+	db 40,18,47,9,42,9,47,9,255,9,45,9,40,9,45,9
+	db 48,9,42,18,45,9,40,9,45,9,48,9,42,18,45,9
+	db 40,18,43,18,43,18,42,18,40,18,47,9,43,9,45,9
+	db 48,18,40,9,47,18,47,9,43,9,45,9,47,18,42,9
+	db 45,9,43,18,50,18,47,9,50,9,47,9,50,9,47,9
+	db 50,27,50,18,45,9,40,18,50,27,50,18,45,9,40,9
+	db 45,9,38,9,43,9,40,9,43,9,47,9,38,9,43,9
+	db 47,9,40,9,43,9,47,9,38,18,47,9,40,9,47,9
+	db 50,27,50,18,45,9,40,18,50,27,50,18,45,9,40,9
+	db 45,9,38,9,43,9,40,9,43,9,47,9,38,9,43,9
+	db 47,9,40,9,43,9,47,9,38,18,47,9,39,9,47,9
+	db 40,27,40,18,47,9,42,18,40,27,40,18,47,9,42,9
+	db 47,9,255,9,45,9,40,9,45,9,48,9,42,18,45,9
+	db 40,9,45,9,48,9,42,18,45,9,40,18,43,18,43,18
+	db 42,18,40,18,47,9,43,9,45,9,48,18,40,9,47,18
+	db 47,9,43,9,45,9,47,18,42,9,45,9,43,18,43,9
+	db 47,9,50,9,43,18,255,18,50,18,47,18,50,18,47,18
+	db 50,18,40,9,42,18,40,9,50,9,47,9,45,9,47,18
+	db 42,45,255,9,45,9,47,9,42,9,45,9,47,18,42,9
+	db 45,18,47,9,40,45,255,9,43,9,47,9,40,9,43,9
+	db 47,18,42,18,45,9,47,9,42,9,45,9,47,18,42,18
+	db 45,9,47,9,42,9,45,9,47,18,45,9,50,18,47,18
+	db 50,18,47,18,50,18,40,9,42,18,40,9,50,9,47,9
+	db 50,18,47,18,45,9,50,18,42,18,45,9,47,9,42,9
+	db 45,9,47,18,38,18,40,9,38,18,38,18,40,9,38,18
+	db 40,9,42,9,38,9,40,9,42,18,38,18,40,9,42,9
+	db 38,9,255,9,40,18,33,9,38,18,45,18,45,18,45,18
+	db 50,18,47,18,50,18,47,18,50,18,40,9,42,18,40,9
+	db 50,9,47,9,45,9,47,18,42,45,255,9,45,9,47,9
+	db 42,9,45,9,47,18,42,9,45,18,47,9,40,45,255,9
+	db 43,9,47,9,40,9,43,9,47,18,42,18,45,9,47,9
+	db 42,9,45,9,47,18,42,18,45,9,47,9,42,9,45,9
+	db 47,18,45,9,50,18,47,18,50,18,47,18,50,18,40,9
+	db 42,18,40,9,50,9,47,9,50,18,47,18,45,9,50,18
+	db 42,18,45,9,47,9,42,9,45,9,47,18,38,18,40,9
+	db 38,18,38,18,40,9,38,18,40,9,42,9,38,9,40,9
+	db 42,18,38,18,40,9,42,9,38,9,255,9,40,18,33,9
+	db 26,9,33,9,38,9,255,27,244,10,240,5,20,9,22,8
+	db 18,9,15,17,17,9,25,17,20,9,22,9,18,8,15,17
+	db 17,9,25,17,20,9,22,9,18,8,15,18,17,8,15,9
+	db 26,9,25,17,255,17,25,18,20,8,21,9,22,9,18,17
+	db 22,9,18,17,22,9,18,51,18,9,20,9,21,8,22,9
+	db 18,9,20,8,22,18,17,8,20,18,18,52,20,8,21,9
+	db 22,9,18,17,22,8,18,18,22,8,18,61,15,9,25,8
+	db 24,9,15,9,18,8,22,18,20,8,18,9,15,9,20,51
+	db 20,9,21,9,22,8,18,18,22,8,18,18,22,8,18,52
+	db 18,9,20,9,21,8,22,9,18,9,20,8,22,18,17,8
+	db 20,17,18,52,18,9,20,9,22,8,18,9,20,9,22,17
+	db 18,9,20,8,18,9,22,9,18,8,20,9,22,17,18,9
+	db 20,8,18,9,22,9,18,8,20,9,22,17,17,9,20,17
+	db 18,52,20,9,21,9,22,8,18,18,22,8,18,18,22,8
+	db 18,52,18,9,20,8,21,9,22,9,18,8,20,9,22,17
+	db 17,9,20,17,18,52,20,9,21,9,22,8,18,17,22,9
+	db 18,17,22,9,18,61,15,8,25,9,24,9,15,8,18,9
+	db 22,17,20,9,18,9,15,8,20,52,20,9,21,8,22,9
+	db 18,17,22,9,18,17,22,9,18,52,18,9,20,8,21,9
+	db 22,9,18,8,20,9,22,17,17,9,20,17,18,52,18,9
+	db 20,8,22,9,18,9,20,8,22,18,18,8,20,9,18,9
+	db 22,8,18,9,20,9,22,17,18,9,20,8,18,9,22,8
+	db 18,9,20,9,22,17,17,9,20,17,42,43,34,9,35,9
+	db 36,8,37,18,39,8,37,18,34,8,35,9,36,9,37,17
+	db 39,8,37,18,34,8,30,9,25,9,27,8,29,9,30,9
+	db 32,8,34,9,32,9,30,8,32,9,25,9,34,8,35,9
+	db 37,9,39,8,37,9,34,9,35,8,37,18,39,8,37,17
+	db 34,9,35,9,36,8,37,18,39,8,37,18,37,8,39,9
+	db 40,9,41,8,41,18,41,17,39,9,36,8,32,9,37,43
+	db 34,9,35,8,36,9,37,17,39,9,37,17,34,9,35,9
+	db 36,8,37,18,39,8,37,18,34,8,30,9,25,9,27,8
+	db 29,9,30,9,32,8,34,9,32,9,30,8,32,9,30,43
+	db 25,9,24,8,25,9,30,17,27,9,30,17,27,9,30,9
+	db 27,8,25,9,30,9,34,8,37,18,34,8,30,9,25,9
+	db 27,17,30,17,34,9,32,17,30,52,46,9,47,8,48,9
+	db 49,17,51,9,49,17,46,9,47,9,48,8,49,18,51,8
+	db 49,17,46,9,42,9,37,8,39,9,41,9,42,8,44,9
+	db 46,9,44,8,42,9,44,9,37,8,46,9,47,9,49,8
+	db 51,9,49,9,46,8,47,9,49,17,51,9,49,17,46,9
+	db 47,8,48,9,49,17,51,9,49,17,49,9,51,9,40,8
+	db 41,9,41,17,41,18,51,8,48,9,44,9,49,43,46,9
+	db 47,8,48,9,49,17,51,9,49,17,46,9,47,8,48,9
+	db 49,17,51,9,49,17,46,9,42,9,37,8,39,9,41,9
+	db 42,8,44,9,46,9,44,8,42,9,44,9,42,43,37,8
+	db 36,9,37,9,42,17,39,9,42,17,39,9,42,8,39,9
+	db 37,9,42,8,46,9,49,17,46,9,42,9,37,8,39,18
+	db 42,17,46,8,44,18,42,17,255,26,30,17,20,9,21,9
+	db 22,8,30,18,22,8,30,18,22,8,30,52,30,9,44,8
+	db 45,9,46,9,42,8,44,9,46,17,41,9,44,17,42,52
+	db 20,9,21,9,22,8,30,18,22,8,30,18,22,8,30,61
+	db 39,8,37,9,36,9,39,8,42,9,46,17,44,9,42,9
+	db 39,8,44,52,20,9,21,9,22,8,30,18,22,8,30,17
+	db 22,9,30,52,42,9,44,8,45,9,46,9,42,8,44,9
+	db 46,17,41,9,44,17,42,52,42,9,44,8,46,9,42,9
+	db 44,8,46,18,42,8,44,9,42,9,46,8,42,9,44,9
+	db 46,17,42,9,44,8,42,9,46,9,42,8,44,9,46,17
+	db 41,9,44,17,42,35,42,17,255,17,39,9,38,9,39,34
+	db 42,18,44,69,35,9,34,8,35,35,39,17,40,61,37,8
+	db 32,18,37,8,32,18,37,8,32,18,30,34,35,35,34,8
+	db 38,9,41,9,46,17,44,9,41,8,42,9,39,35,40,34
+	db 39,9,38,9,39,34,42,17,44,70,35,8,34,9,35,35
+	db 39,17,40,61,37,8,32,17,37,9,32,17,37,9,32,17
+	db 30,35,35,26,35,9,39,8,42,18,40,26,40,17,47,17
+	db 41,9,42,8,44,9,46,9,47,8,49,9,51,9,50,8
+	db 51,35,42,17,44,70,47,8,46,9,47,34,51,18,40,60
+	db 49,9,44,17,49,9,44,17,49,9,44,17,42,35,47,34
+	db 46,9,50,9,41,8,46,18,44,8,41,9,42,9,51,34
+	db 40,35,51,9,50,8,51,35,42,17,44,69,47,9,46,9
+	db 47,34,51,18,40,60,49,9,44,17,49,9,44,17,49,9
+	db 44,17,42,35,47,26,47,8,51,9,42,17,40,26,40,18
+	db 47,17,255,17,47,17,255,18,42,17,39,9,42,17,39,9
+	db 42,8,39,9,37,9,42,8,46,9,49,17,46,9,42,9
+	db 37,8,39,18,42,17,46,9,44,17,42,43,42,17,255,18
+	db 35,17,34,9,35,17,34,9,35,17,255,9,39,8,44,9
+	db 39,9,42,8,44,9,42,9,39,8,37,17,36,9,37,17
+	db 36,9,37,17,255,9,42,9,46,8,42,9,44,9,46,8
+	db 44,9,42,9,44,17,43,9,44,17,43,9,44,17,255,9
+	db 47,8,51,9,47,8,49,9,51,9,49,8,47,9,42,9
+	db 42,8,42,35,51,17,49,18,37,8,37,9,37,17,37,18
+	db 35,17,34,9,35,17,34,8,35,18,255,8,39,9,44,9
+	db 39,8,42,9,44,9,42,8,39,9,37,17,36,9,37,17
+	db 36,9,37,17,255,9,42,9,46,8,42,9,44,9,46,8
+	db 44,9,42,8,39,9,38,9,39,8,49,18,47,17,42,9
+	db 46,8,45,9,46,9,51,17,42,9,49,8,46,9,42,17
+	db 42,18,46,8,44,18,42,25,37,9,37,9,37,17,37,17
+	db 23,18,22,8,23,18,22,8,23,18,255,8,15,9,20,9
+	db 15,8,18,9,20,9,18,8,15,9,25,17,24,9,25,17
+	db 24,9,25,17,255,9,18,8,22,9,18,9,20,8,22,9
+	db 20,9,18,8,20,18,19,8,20,18,19,8,20,18,255,8
+	db 23,9,27,9,23,8,25,9,27,8,25,9,23,9,30,8
+	db 30,9,30,35,27,17,25,17,25,9,25,9,25,17,25,17
+	db 23,18,22,8,23,18,22,8,23,17,255,9,15,9,20,8
+	db 15,9,18,9,20,8,18,9,15,9,25,17,24,9,25,17
+	db 24,9,25,17,255,9,18,8,22,9,18,9,20,8,22,9
+	db 20,8,18,9,15,9,26,8,15,9,25,17,23,18,18,8
+	db 22,9,21,9,22,8,27,18,30,8,25,9,22,9,18,17
+	db 18,17,22,9,20,17,18,43,30,18,255,240,255,240,255,240
+	db 255,197,0
 _song1_v1__9:
-	db 244,6,240,6,12,12,12,12,12,12,12,12,12,12,19,12
-	db 24,12,12,12,8,12,8,12,8,12,8,12,8,12,15,12
-	db 20,12,8,12,10,12,10,12,10,12,10,12,10,12,17,12
-	db 22,12,10,12,7,12,7,12,7,12,7,12,7,12,14,12
-	db 19,12,7,12,244,6,240,6,12,12,12,12,12,12,12,12
-	db 12,12,19,12,24,12,12,12,8,12,8,12,8,12,8,12
-	db 8,12,15,12,20,12,8,12,3,12,3,12,3,12,3,12
-	db 3,12,10,12,15,12,3,12,10,12,10,12,10,12,10,12
-	db 10,12,17,12,22,12,10,12,12,12,12,12,12,12,12,12
-	db 12,12,19,12,24,12,12,12,8,12,8,12,8,12,8,12
-	db 8,12,15,12,20,12,8,12,10,12,10,12,10,12,10,12
-	db 10,12,17,12,22,12,10,12,7,12,7,12,7,12,7,12
-	db 7,12,14,12,19,12,7,12,244,6,240,6,12,12,12,12
-	db 12,12,12,12,12,12,19,12,24,12,12,12,8,12,8,12
-	db 8,12,8,12,8,12,15,12,20,12,8,12,3,12,3,12
-	db 3,12,3,12,3,12,10,12,15,12,3,12,10,12,10,12
-	db 10,12,10,12,10,12,17,12,22,12,10,12,12,12,12,12
-	db 12,12,12,12,12,12,19,12,24,12,12,12,8,12,8,12
-	db 8,12,8,12,8,12,15,12,20,12,8,12,10,12,10,12
-	db 10,12,10,12,10,12,17,12,22,12,10,12,7,12,7,12
-	db 7,12,7,12,7,12,14,12,19,12,7,12,244,6,240,6
-	db 5,12,17,12,5,12,17,12,5,12,17,12,5,12,17,12
-	db 12,12,24,12,12,12,24,12,12,12,24,12,12,12,24,12
-	db 8,12,20,12,8,12,20,12,8,12,20,12,8,12,20,12
-	db 10,12,22,12,10,12,22,12,10,12,22,12,10,12,22,12
-	db 5,12,17,12,5,12,17,12,5,12,17,12,5,12,17,12
-	db 12,12,24,12,12,12,24,12,12,12,24,12,12,12,24,12
-	db 1,12,13,12,1,12,13,12,1,12,13,12,1,12,13,12
-	db 7,12,19,12,7,12,19,12,7,12,19,12,7,12,19,12
-	db 244,6,240,6,8,12,8,6,8,6,15,12,8,6,8,6
-	db 20,12,8,6,8,6,15,12,8,12,10,12,10,6,10,6
-	db 17,12,10,6,10,6,22,12,10,6,10,6,17,12,10,12
-	db 12,12,12,6,12,6,19,12,12,6,12,6,24,12,12,6
-	db 12,6,19,12,12,12,12,12,12,6,12,6,19,12,12,6
-	db 12,6,24,12,12,6,12,6,19,12,12,12,8,12,8,6
-	db 8,6,15,12,8,6,8,6,20,12,8,6,8,6,15,12
-	db 8,12,10,12,10,6,10,6,17,12,10,6,10,6,22,12
-	db 10,6,10,6,17,12,10,12,3,12,3,6,3,6,10,12
-	db 3,6,3,6,15,12,3,6,3,6,10,12,3,12,7,12
-	db 7,6,7,6,14,12,7,6,7,6,19,12,7,6,7,6
-	db 14,12,7,12,244,6,240,6,8,12,8,6,8,6,15,12
-	db 8,6,8,6,20,12,8,6,8,6,15,12,8,12,10,12
-	db 10,6,10,6,17,12,10,6,10,6,22,12,10,6,10,6
-	db 17,12,10,12,12,12,12,6,12,6,19,12,12,6,12,6
-	db 24,12,12,6,12,6,19,12,12,12,12,12,12,6,12,6
-	db 19,12,12,6,12,6,24,12,12,6,12,6,19,12,12,12
-	db 8,12,8,6,8,6,15,12,8,6,8,6,20,12,8,6
-	db 8,6,15,12,8,12,10,12,10,6,10,6,17,12,10,6
-	db 10,6,22,12,10,6,10,6,17,12,10,12,3,12,3,6
-	db 3,6,10,12,3,6,3,6,15,12,3,6,3,6,10,12
-	db 3,12,7,12,7,6,7,6,14,12,7,6,7,6,19,12
-	db 7,6,7,6,14,12,7,12,244,6,240,6,8,12,8,6
-	db 8,6,15,12,8,6,8,6,20,12,8,6,8,6,15,12
-	db 8,12,10,12,10,6,10,6,17,12,10,6,10,6,22,12
-	db 10,6,10,6,17,12,10,12,12,12,12,6,12,6,19,12
-	db 12,6,12,6,24,12,12,6,12,6,19,12,12,12,12,12
-	db 12,6,12,6,19,12,12,6,12,6,24,12,12,6,12,6
-	db 19,12,12,12,8,12,8,6,8,6,15,12,8,6,8,6
-	db 20,12,8,6,8,6,15,12,8,12,10,12,10,6,10,6
-	db 17,12,10,6,10,6,22,12,10,6,10,6,17,12,10,12
-	db 3,12,3,6,3,6,10,12,3,6,3,6,15,12,3,6
-	db 3,6,10,12,3,12,7,12,7,6,7,6,14,12,7,6
-	db 7,6,19,12,7,6,7,6,14,12,7,12,244,6,240,6
-	db 12,12,12,12,12,12,12,12,12,12,19,12,24,12,12,12
-	db 8,12,8,12,8,12,8,12,8,12,15,12,20,12,8,12
-	db 3,12,3,12,3,12,3,12,3,12,10,12,15,12,3,12
-	db 10,12,10,12,10,12,10,12,10,12,17,12,22,12,10,12
-	db 12,12,12,12,12,12,12,12,12,12,19,12,24,12,12,12
-	db 8,12,8,12,8,12,8,12,8,12,15,12,20,12,8,12
-	db 10,12,10,12,10,12,10,12,10,12,17,12,22,12,10,12
-	db 7,12,7,12,7,12,7,12,7,12,14,12,19,12,7,12
-	db 244,6,240,6,5,12,17,12,5,12,17,12,5,12,17,12
-	db 5,12,17,12,12,12,24,12,12,12,24,12,12,12,24,12
-	db 12,12,24,12,8,12,20,12,8,12,20,12,8,12,20,12
-	db 8,12,20,12,10,12,22,12,10,12,22,12,10,12,22,12
-	db 10,12,22,12,5,12,17,12,5,12,17,12,5,12,17,12
-	db 5,12,17,12,12,12,24,12,12,12,24,12,12,12,24,12
-	db 12,12,24,12,1,12,13,12,1,12,13,12,1,12,13,12
-	db 1,12,13,12,7,12,19,12,7,12,19,12,7,12,19,12
-	db 7,12,19,12,244,6,240,6,8,12,8,6,8,6,15,12
-	db 8,6,8,6,20,12,8,6,8,6,15,12,8,12,10,12
-	db 10,6,10,6,17,12,10,6,10,6,22,12,10,6,10,6
-	db 17,12,10,12,12,12,12,6,12,6,19,12,12,6,12,6
-	db 24,12,12,6,12,6,19,12,12,12,12,12,12,6,12,6
-	db 19,12,12,6,12,6,24,12,12,6,12,6,19,12,12,12
-	db 8,12,8,6,8,6,15,12,8,6,8,6,20,12,8,6
-	db 8,6,15,12,8,12,10,12,10,6,10,6,17,12,10,6
-	db 10,6,22,12,10,6,10,6,17,12,10,12,3,12,3,6
-	db 3,6,10,12,3,6,3,6,15,12,3,6,3,6,10,12
-	db 3,12,7,12,7,6,7,6,14,12,7,6,7,6,19,12
-	db 7,6,7,6,14,12,7,12,244,6,240,6,8,12,8,6
-	db 8,6,15,12,8,6,8,6,20,12,8,6,8,6,15,12
-	db 8,12,10,12,10,6,10,6,17,12,10,6,10,6,22,12
-	db 10,6,10,6,17,12,10,12,12,12,12,6,12,6,19,12
-	db 12,6,12,6,24,12,12,6,12,6,19,12,12,12,12,12
-	db 12,6,12,6,19,12,12,6,12,6,24,12,12,6,12,6
-	db 19,12,12,12,8,12,8,6,8,6,15,12,8,6,8,6
-	db 20,12,8,6,8,6,15,12,8,12,10,12,10,6,10,6
-	db 17,12,10,6,10,6,22,12,10,6,10,6,17,12,10,12
-	db 3,12,3,6,3,6,10,12,3,6,3,6,15,12,3,6
-	db 3,6,10,12,3,12,7,12,7,6,7,6,14,12,7,6
-	db 7,6,19,12,7,6,7,6,14,12,7,12,244,6,240,6
-	db 5,24,8,24,12,24,17,24,7,24,10,24,14,24,19,24
-	db 8,24,12,24,15,24,20,24,10,24,14,24,17,24,22,24
-	db 5,24,8,24,12,24,17,24,7,24,10,24,14,24,19,24
-	db 8,24,12,24,15,24,20,24,7,24,11,24,14,24,19,24
-	db 244,6,240,6,8,12,8,6,8,6,15,12,8,6,8,6
-	db 20,12,8,6,8,6,15,12,8,12,10,12,10,6,10,6
-	db 17,12,10,6,10,6,22,12,10,6,10,6,17,12,10,12
-	db 12,12,12,6,12,6,19,12,12,6,12,6,24,12,12,6
-	db 12,6,19,12,12,12,12,12,12,6,12,6,19,12,12,6
-	db 12,6,24,12,12,6,12,6,19,12,12,12,8,12,8,6
-	db 8,6,15,12,8,6,8,6,20,12,8,6,8,6,15,12
-	db 8,12,10,12,10,6,10,6,17,12,10,6,10,6,22,12
-	db 10,6,10,6,17,12,10,12,3,12,3,6,3,6,10,12
-	db 3,6,3,6,15,12,3,6,3,6,10,12,3,12,7,12
-	db 7,6,7,6,14,12,7,6,7,6,19,12,7,6,7,6
-	db 14,12,7,12,244,6,240,6,12,12,12,12,12,12,12,12
-	db 12,12,19,12,24,12,12,12,8,12,8,12,8,12,8,12
-	db 8,12,15,12,20,12,8,12,3,12,3,12,3,12,3,12
-	db 3,12,10,12,15,12,3,12,10,12,10,12,10,12,10,12
-	db 10,12,17,12,22,12,10,12,12,12,12,12,12,12,12,12
-	db 12,12,19,12,24,12,12,12,8,12,8,12,8,12,8,12
-	db 8,12,15,12,20,12,8,12,10,12,10,12,10,12,10,12
-	db 10,12,17,12,22,12,10,12,7,12,7,12,7,12,7,12
-	db 7,12,14,12,19,12,7,12,244,6,240,6,5,12,17,12
-	db 5,12,17,12,5,12,17,12,5,12,17,12,12,12,24,12
-	db 12,12,24,12,12,12,24,12,12,12,24,12,8,12,20,12
-	db 8,12,20,12,8,12,20,12,8,12,20,12,10,12,22,12
-	db 10,12,22,12,10,12,22,12,10,12,22,12,5,12,17,12
-	db 5,12,17,12,5,12,17,12,5,12,17,12,12,12,24,12
-	db 12,12,24,12,12,12,24,12,12,12,24,12,1,12,13,12
-	db 1,12,13,12,1,12,13,12,1,12,13,12,7,12,19,12
-	db 7,12,19,12,7,12,19,12,7,12,19,12,244,6,240,6
-	db 8,12,8,6,8,6,15,12,8,6,8,6,20,12,8,6
-	db 8,6,15,12,8,12,10,12,10,6,10,6,17,12,10,6
-	db 10,6,22,12,10,6,10,6,17,12,10,12,12,12,12,6
-	db 12,6,19,12,12,6,12,6,24,12,12,6,12,6,19,12
-	db 12,12,12,12,12,6,12,6,19,12,12,6,12,6,24,12
-	db 12,6,12,6,19,12,12,12,8,12,8,6,8,6,15,12
-	db 8,6,8,6,20,12,8,6,8,6,15,12,8,12,10,12
-	db 10,6,10,6,17,12,10,6,10,6,22,12,10,6,10,6
-	db 17,12,10,12,3,12,3,6,3,6,10,12,3,6,3,6
-	db 15,12,3,6,3,6,10,12,3,12,7,12,7,6,7,6
-	db 14,12,7,6,7,6,19,12,7,6,7,6,14,12,7,12
-	db 244,6,240,6,8,12,8,6,8,6,15,12,8,6,8,6
-	db 20,12,8,6,8,6,15,12,8,12,10,12,10,6,10,6
-	db 17,12,10,6,10,6,22,12,10,6,10,6,17,12,10,12
-	db 12,12,12,6,12,6,19,12,12,6,12,6,24,12,12,6
-	db 12,6,19,12,12,12,12,12,12,6,12,6,19,12,12,6
-	db 12,6,24,12,12,6,12,6,19,12,12,12,8,12,8,6
-	db 8,6,15,12,8,6,8,6,20,12,8,6,8,6,15,12
-	db 8,12,10,12,10,6,10,6,17,12,10,6,10,6,22,12
-	db 10,6,10,6,17,12,10,12,3,12,3,6,3,6,10,12
-	db 3,6,3,6,15,12,3,6,3,6,10,12,3,12,7,12
-	db 7,6,7,6,14,12,7,6,7,6,19,12,7,6,7,6
-	db 14,12,7,12,244,6,240,6,12,24,15,24,19,24,24,24
-	db 8,24,12,24,15,24,20,24,10,24,14,24,17,24,22,24
-	db 7,24,11,24,14,24,19,24,0
+	db 244,6,240,6,9,18,2,18,9,18,9,18,3,18,4,18
+	db 9,18,9,18,9,18,2,18,9,18,9,18,3,18,4,18
+	db 9,18,9,18,9,18,10,36,9,18,9,18,10,36,9,18
+	db 255,18,2,18,255,18,2,18,255,18,14,18,255,18,14,18
+	db 255,18,20,18,20,18,20,18,20,18,21,18,21,18,21,18
+	db 21,18,22,18,22,18,21,18,21,18,21,18,21,18,14,18
+	db 255,18,8,18,8,18,8,18,8,18,9,18,9,18,9,18
+	db 9,18,10,18,10,18,9,18,9,18,9,18,9,18,14,18
+	db 9,18,2,18,9,18,9,18,3,18,4,18,9,18,9,18
+	db 9,18,2,18,9,18,9,18,3,18,4,18,9,18,9,18
+	db 9,18,10,36,9,18,9,18,10,36,9,18,255,18,2,18
+	db 255,18,2,18,255,18,14,18,255,18,14,18,255,18,20,18
+	db 20,18,20,18,20,18,21,18,21,18,21,18,21,18,22,18
+	db 22,18,21,18,21,18,21,18,21,18,14,18,255,18,8,18
+	db 8,18,8,18,8,18,9,18,9,18,9,18,9,18,10,18
+	db 10,18,9,18,9,18,21,18,21,18,14,18,15,18,16,18
+	db 21,18,9,18,21,18,16,18,21,18,9,18,13,18,14,18
+	db 21,18,9,18,21,18,14,18,21,18,14,18,15,18,16,18
+	db 21,18,9,18,21,18,16,18,21,18,16,18,17,18,18,18
+	db 21,18,9,18,21,18,14,18,21,18,14,18,15,18,16,18
+	db 21,18,9,18,21,18,16,18,21,18,9,18,13,18,14,18
+	db 21,18,9,18,21,18,14,18,14,18,13,18,12,18,11,18
+	db 11,18,15,18,15,18,16,18,11,18,11,18,11,18,16,18
+	db 16,18,9,18,13,18,14,18,21,18,21,18,15,18,16,18
+	db 21,18,9,18,21,18,16,18,21,18,9,18,13,18,14,18
+	db 21,18,9,18,21,18,14,18,21,18,14,18,15,18,16,18
+	db 21,18,9,18,21,18,16,18,21,18,16,18,17,18,18,18
+	db 21,18,9,18,21,18,14,18,21,18,14,18,15,18,16,18
+	db 21,18,9,18,21,18,16,18,21,18,9,18,13,18,14,18
+	db 21,18,9,18,21,18,14,18,14,18,13,18,12,18,11,18
+	db 11,18,15,18,15,18,16,18,11,18,11,18,11,18,16,18
+	db 16,18,9,18,13,18,14,18,14,18,14,18,9,18,14,18
+	db 21,18,21,18,15,18,16,18,21,18,21,18,9,18,14,18
+	db 21,18,21,18,15,18,16,18,21,18,21,18,9,18,10,36
+	db 9,18,9,18,10,36,9,18,255,18,2,18,255,18,14,18
+	db 255,18,14,18,255,18,14,18,255,18,20,18,20,18,20,18
+	db 20,18,21,18,21,18,21,18,21,18,22,18,22,18,21,18
+	db 21,18,21,18,21,18,14,18,255,18,20,18,20,18,20,18
+	db 20,18,21,18,21,18,21,18,21,18,22,18,22,18,21,18
+	db 21,18,21,18,21,18,14,18,255,18,9,18,14,18,12,18
+	db 14,18,11,18,14,18,9,18,6,18,7,18,14,18,14,18
+	db 14,18,11,18,14,18,7,18,8,18,9,18,14,18,12,18
+	db 14,18,11,18,14,18,9,18,6,18,7,18,14,18,14,18
+	db 14,18,11,18,14,18,7,18,6,18,4,18,16,18,8,18
+	db 16,18,11,18,16,18,16,18,16,18,9,18,16,18,12,18
+	db 16,18,9,18,16,18,12,18,16,18,13,9,16,18,19,9
+	db 22,9,19,9,16,9,13,9,14,18,14,18,16,18,14,18
+	db 21,18,21,18,14,18,14,18,19,18,14,18,14,18,8,18
+	db 9,18,14,18,12,18,14,18,11,18,14,18,9,18,6,18
+	db 7,18,14,18,2,18,14,18,11,18,14,18,7,18,8,18
+	db 9,18,14,18,12,18,14,18,11,18,14,18,9,18,6,18
+	db 7,18,14,18,2,18,14,18,11,18,14,18,7,18,6,18
+	db 4,18,16,18,8,18,16,18,11,18,16,18,4,18,16,18
+	db 9,18,16,18,12,18,16,18,9,18,16,18,12,18,16,18
+	db 13,9,16,18,19,9,22,9,19,9,16,9,13,9,2,18
+	db 14,18,4,18,14,18,9,18,9,18,14,18,14,18,19,18
+	db 14,18,7,18,18,18,19,18,14,18,14,18,18,18,19,18
+	db 14,18,16,18,17,18,18,18,14,18,14,18,9,18,14,18
+	db 21,18,9,18,15,18,16,18,21,18,9,18,15,18,16,18
+	db 21,18,9,18,13,18,14,18,21,18,9,18,21,18,14,18
+	db 21,18,16,18,18,18,19,18,14,18,14,18,18,18,19,18
+	db 14,18,16,18,17,18,18,18,14,18,14,18,9,18,14,18
+	db 21,18,9,18,21,18,7,18,7,18,4,18,8,18,9,18
+	db 21,18,9,18,10,18,11,18,11,18,13,18,13,18,14,18
+	db 21,18,16,18,18,18,19,18,14,18,14,18,18,18,19,18
+	db 14,18,16,18,17,18,18,18,14,18,14,18,9,18,14,18
+	db 21,18,9,18,15,18,16,18,21,18,9,18,15,18,16,18
+	db 21,18,9,18,13,18,14,18,21,18,9,18,21,18,14,18
+	db 21,18,16,18,18,18,19,18,14,18,14,18,18,18,19,18
+	db 14,18,16,18,17,18,18,18,14,18,14,18,9,18,14,18
+	db 21,18,9,18,21,18,7,18,7,18,4,18,8,18,9,18
+	db 21,18,9,18,10,18,11,18,11,18,13,18,13,18,14,18
+	db 9,18,2,18,244,6,240,6,20,9,22,8,18,9,15,17
+	db 17,9,13,17,20,9,22,9,18,8,15,17,17,9,13,17
+	db 8,9,10,9,6,8,3,18,5,8,3,9,2,9,1,17
+	db 255,17,1,18,13,17,6,17,10,18,1,17,13,17,11,17
+	db 15,18,10,17,13,17,1,18,10,17,1,17,11,18,6,17
+	db 10,17,10,18,13,17,6,17,10,17,1,18,13,17,11,17
+	db 15,18,10,17,9,17,8,18,8,17,8,17,12,18,13,17
+	db 1,17,3,17,5,18,6,17,10,17,1,18,13,17,11,17
+	db 15,18,10,17,13,17,1,18,10,17,1,17,11,17,6,18
+	db 10,17,13,17,255,18,6,17,13,17,4,18,13,17,3,17
+	db 15,18,2,17,14,17,1,17,13,18,1,17,13,17,6,18
+	db 1,17,3,17,5,18,6,17,10,17,1,18,13,17,11,17
+	db 15,17,10,18,13,17,1,17,10,18,1,17,11,17,6,18
+	db 10,17,10,17,13,18,6,17,10,17,1,17,13,18,11,17
+	db 15,17,10,18,9,17,8,17,8,18,8,17,12,17,13,18
+	db 1,17,3,17,5,17,6,18,10,17,1,17,13,18,11,17
+	db 15,17,10,18,13,17,1,17,10,18,1,17,11,17,6,17
+	db 10,18,13,17,255,17,6,18,13,17,4,17,13,18,3,17
+	db 15,17,2,18,14,17,1,17,13,17,1,18,13,17,6,17
+	db 1,18,6,17,255,17,6,18,13,17,1,17,13,18,6,17
+	db 13,17,1,17,13,18,11,17,15,17,11,18,14,17,10,17
+	db 13,18,1,17,13,17,6,18,13,17,1,17,13,17,6,18
+	db 13,17,10,17,9,18,8,17,13,17,8,18,15,17,13,17
+	db 11,18,10,17,8,17,6,17,13,18,1,17,13,17,6,18
+	db 13,17,1,17,13,18,11,17,15,17,11,18,14,17,10,17
+	db 13,17,6,18,16,17,11,17,11,18,12,17,12,17,13,18
+	db 13,17,13,17,13,18,8,17,8,17,13,17,13,18,6,17
+	db 1,17,10,18,8,17,6,17,13,18,1,17,13,17,6,18
+	db 13,17,1,17,13,17,11,18,15,17,11,17,14,18,10,17
+	db 13,17,1,18,13,17,6,17,13,18,1,17,13,17,6,17
+	db 13,18,10,17,9,17,8,18,13,17,8,17,15,18,13,17
+	db 11,17,10,18,8,17,6,17,13,17,1,18,13,17,6,17
+	db 13,18,1,17,13,17,11,18,15,17,11,17,14,18,10,17
+	db 13,17,6,17,16,18,11,17,11,17,12,18,12,17,13,17
+	db 13,18,13,17,13,17,8,18,8,17,13,17,13,17,18,18
+	db 13,17,6,17,255,18,18,17,22,17,13,18,13,17,11,17
+	db 15,18,10,17,13,17,13,17,22,18,13,17,11,17,18,18
+	db 22,17,22,17,13,18,18,17,22,17,13,18,13,17,11,17
+	db 15,17,10,18,9,17,8,17,20,18,20,17,12,17,13,18
+	db 13,17,15,17,17,18,18,17,22,17,13,17,13,18,11,17
+	db 15,17,10,18,13,17,13,17,22,18,13,17,11,17,18,18
+	db 22,17,13,17,255,17,18,18,13,17,16,17,13,18,15,17
+	db 15,17,14,18,14,17,13,17,13,18,13,17,13,17,18,17
+	db 13,18,6,17,255,17,11,18,15,17,18,17,15,18,16,17
+	db 16,17,11,18,16,17,8,17,15,17,15,18,15,17,13,17
+	db 16,18,20,17,16,17,16,18,16,17,13,17,14,18,15,17
+	db 15,17,20,17,15,18,22,17,17,17,14,18,17,17,15,35
+	db 13,17,18,17,11,18,15,17,18,17,15,17,16,18,16,17
+	db 11,17,16,18,8,17,15,17,15,18,15,17,13,17,16,18
+	db 20,17,16,17,16,17,16,18,13,17,14,17,15,9,11,9
+	db 10,8,8,9,7,35,6,17,15,17,18,18,6,17,11,17
+	db 255,52,11,35,15,34,18,35,15,35,16,34,16,35,11,34
+	db 16,35,8,35,15,34,15,35,15,34,13,35,16,35,20,34
+	db 16,35,16,35,16,34,13,35,14,34,15,35,15,35,20,34
+	db 15,35,22,34,17,35,14,35,17,34,15,35,13,17,18,18
+	db 11,17,15,17,18,17,15,18,16,17,16,17,11,18,16,17
+	db 8,17,15,18,15,17,15,17,13,18,16,17,20,17,16,17
+	db 16,18,16,17,13,17,14,18,15,8,11,9,10,9,8,8
+	db 7,35,6,17,15,18,18,17,6,17,11,17,255,18,11,17
+	db 255,17,11,18,11,17,12,17,12,18,13,17,13,17,13,18
+	db 13,17,20,17,20,17,13,18,13,17,18,35,6,17,255,17
+	db 11,18,11,17,15,17,11,18,11,17,11,17,15,17,11,18
+	db 18,17,22,17,13,18,22,17,18,17,22,18,13,17,22,17
+	db 13,18,11,17,17,17,11,17,13,18,11,17,20,17,11,18
+	db 21,17,21,35,21,17,22,17,255,52,11,17,11,18,15,17
+	db 11,17,11,18,11,17,15,17,11,18,18,17,22,17,13,18
+	db 22,17,18,17,22,17,13,18,22,17,11,17,8,18,10,17
+	db 11,17,13,18,13,17,12,17,13,18,15,17,8,17,13,17
+	db 17,18,18,17,255,52,11,35,11,34,15,35,11,34,11,35
+	db 11,35,15,34,11,35,18,35,22,34,13,35,22,34,18,35
+	db 22,35,13,34,22,35,13,34,11,35,17,35,11,34,13,35
+	db 11,35,20,34,11,35,21,34,21,35,21,17,22,18,255,52
+	db 11,17,11,17,15,17,11,18,11,17,11,17,15,18,11,17
+	db 18,17,22,18,13,17,22,17,18,18,22,17,13,17,22,17
+	db 11,18,20,17,22,17,11,18,13,17,13,17,12,18,13,17
+	db 15,17,20,18,13,17,17,17,18,17,13,18,18,17,0
 _song1_v2__9:
-	db 244,6,240,8,27,6,30,6,34,6,27,6,34,6,30,6
-	db 27,6,30,6,34,6,27,6,34,6,30,6,27,6,34,6
-	db 30,6,27,6,23,6,27,6,30,6,23,6,30,6,27,6
-	db 23,6,27,6,30,6,23,6,30,6,27,6,23,6,30,6
-	db 27,6,23,6,25,6,29,6,32,6,25,6,32,6,29,6
-	db 25,6,29,6,32,6,25,6,32,6,29,6,25,6,32,6
-	db 29,6,25,6,22,6,26,6,29,6,22,6,29,6,26,6
-	db 22,6,26,6,29,6,22,6,29,6,26,6,22,6,29,6
-	db 26,6,22,6,244,6,240,8,255,12,30,12,255,12,34,12
-	db 255,12,30,6,27,6,255,12,34,12,255,12,27,12,255,12
-	db 30,12,255,12,27,6,23,6,255,12,30,12,255,12,22,12
-	db 255,12,25,12,255,12,22,6,18,6,255,12,25,12,255,12
-	db 29,12,255,12,32,12,255,12,29,6,25,6,255,12,32,12
-	db 255,12,30,12,255,12,34,12,255,12,30,6,27,6,255,12
-	db 34,12,255,12,27,12,255,12,30,12,255,12,27,6,23,6
-	db 255,12,30,12,255,12,29,12,255,12,32,12,255,12,29,6
-	db 25,6,255,12,32,12,255,12,26,12,255,12,29,12,255,12
-	db 26,6,22,6,255,12,29,12,244,6,240,8,255,12,30,12
-	db 255,12,34,12,255,12,30,6,27,6,255,12,34,12,255,12
-	db 27,12,255,12,30,12,255,12,27,6,23,6,255,12,30,12
-	db 255,12,22,12,255,12,25,12,255,12,22,6,18,6,255,12
-	db 25,12,255,12,29,12,255,12,32,12,255,12,29,6,25,6
-	db 255,12,32,12,255,12,30,12,255,12,34,12,255,12,30,6
-	db 27,6,255,12,34,12,255,12,27,12,255,12,30,12,255,12
-	db 27,6,23,6,255,12,30,12,255,12,29,12,255,12,32,12
-	db 255,12,29,6,25,6,255,12,32,12,255,12,26,12,255,12
-	db 29,12,255,12,26,6,22,6,255,12,29,12,244,6,240,8
-	db 20,6,23,6,27,6,20,6,27,6,23,6,20,6,23,6
-	db 27,6,20,6,27,6,23,6,20,6,27,6,23,6,20,6
-	db 27,6,30,6,34,6,27,6,34,6,30,6,27,6,30,6
-	db 34,6,27,6,34,6,30,6,27,6,34,6,30,6,27,6
-	db 23,6,27,6,30,6,23,6,30,6,27,6,23,6,27,6
-	db 30,6,23,6,30,6,27,6,23,6,30,6,27,6,23,6
-	db 25,6,29,6,32,6,25,6,32,6,29,6,25,6,29,6
-	db 32,6,25,6,32,6,29,6,25,6,32,6,29,6,25,6
-	db 20,6,23,6,27,6,20,6,27,6,23,6,20,6,23,6
-	db 27,6,20,6,27,6,23,6,20,6,27,6,23,6,20,6
-	db 27,6,30,6,34,6,27,6,34,6,30,6,27,6,30,6
-	db 34,6,27,6,34,6,30,6,27,6,34,6,30,6,27,6
-	db 28,6,32,6,35,6,39,6,35,6,32,6,28,6,32,6
-	db 35,6,39,6,35,6,32,6,28,6,35,6,32,6,39,6
-	db 22,6,26,6,29,6,22,6,29,6,26,6,22,6,26,6
-	db 29,6,22,6,29,6,26,6,22,6,29,6,26,6,22,6
-	db 244,6,240,8,23,6,27,6,30,6,23,6,30,6,27,6
-	db 23,6,27,6,30,6,23,6,30,6,27,6,23,6,30,6
-	db 27,6,23,6,25,6,29,6,32,6,25,6,32,6,29,6
-	db 25,6,29,6,32,6,25,6,32,6,29,6,25,6,32,6
-	db 29,6,25,6,27,6,30,6,34,6,27,6,34,6,30,6
-	db 27,6,30,6,34,6,27,6,34,6,30,6,27,6,34,6
-	db 30,6,27,6,27,6,30,6,34,6,27,6,34,6,30,6
-	db 27,6,30,6,34,6,27,6,34,6,30,6,27,6,34,6
-	db 30,6,27,6,23,6,27,6,30,6,23,6,30,6,27,6
-	db 23,6,27,6,30,6,23,6,30,6,27,6,23,6,30,6
-	db 27,6,23,6,25,6,29,6,32,6,25,6,32,6,29,6
-	db 25,6,29,6,32,6,25,6,32,6,29,6,25,6,32,6
-	db 29,6,25,6,18,6,22,6,25,6,18,6,25,6,22,6
-	db 18,6,22,6,25,6,18,6,25,6,22,6,18,6,25,6
-	db 22,6,18,6,22,6,26,6,29,6,22,6,29,6,26,6
-	db 22,6,26,6,29,6,22,6,29,6,26,6,22,6,29,6
-	db 26,6,22,6,244,6,240,8,23,6,27,6,30,6,23,6
-	db 30,6,27,6,23,6,27,6,30,6,23,6,30,6,27,6
-	db 23,6,30,6,27,6,23,6,25,6,29,6,32,6,25,6
-	db 32,6,29,6,25,6,29,6,32,6,25,6,32,6,29,6
-	db 25,6,32,6,29,6,25,6,27,6,30,6,34,6,27,6
-	db 34,6,30,6,27,6,30,6,34,6,27,6,34,6,30,6
-	db 27,6,34,6,30,6,27,6,27,6,30,6,34,6,27,6
-	db 34,6,30,6,27,6,30,6,34,6,27,6,34,6,30,6
-	db 27,6,34,6,30,6,27,6,23,6,27,6,30,6,23,6
-	db 30,6,27,6,23,6,27,6,30,6,23,6,30,6,27,6
-	db 23,6,30,6,27,6,23,6,25,6,29,6,32,6,25,6
-	db 32,6,29,6,25,6,29,6,32,6,25,6,32,6,29,6
-	db 25,6,32,6,29,6,25,6,18,6,22,6,25,6,18,6
-	db 25,6,22,6,18,6,22,6,25,6,18,6,25,6,22,6
-	db 18,6,25,6,22,6,18,6,22,6,26,6,29,6,22,6
-	db 29,6,26,6,22,6,26,6,29,6,22,6,29,6,26,6
-	db 22,6,29,6,26,6,22,6,244,6,240,8,255,12,27,12
-	db 255,12,30,12,255,12,27,6,23,6,255,12,30,12,255,12
-	db 29,12,255,12,32,12,255,12,29,6,25,6,255,12,32,12
-	db 255,12,30,12,255,12,34,12,255,12,30,6,27,6,255,12
-	db 34,12,255,12,30,12,255,12,34,12,255,12,30,6,27,6
-	db 255,12,34,12,255,12,27,12,255,12,30,12,255,12,27,6
-	db 23,6,255,12,30,12,255,12,29,12,255,12,32,12,255,12
-	db 29,6,25,6,255,12,32,12,255,12,22,12,255,12,25,12
-	db 255,12,22,6,18,6,255,12,25,12,255,12,26,12,255,12
-	db 29,12,255,12,26,6,22,6,255,12,29,12,244,6,240,8
-	db 255,12,30,12,255,12,34,12,255,12,30,6,27,6,255,12
-	db 34,12,255,12,27,12,255,12,30,12,255,12,27,6,23,6
-	db 255,12,30,12,255,12,22,12,255,12,25,12,255,12,22,6
-	db 18,6,255,12,25,12,255,12,29,12,255,12,32,12,255,12
-	db 29,6,25,6,255,12,32,12,255,12,30,12,255,12,34,12
-	db 255,12,30,6,27,6,255,12,34,12,255,12,27,12,255,12
-	db 30,12,255,12,27,6,23,6,255,12,30,12,255,12,29,12
-	db 255,12,32,12,255,12,29,6,25,6,255,12,32,12,255,12
-	db 26,12,255,12,29,12,255,12,26,6,22,6,255,12,29,12
-	db 244,6,240,8,20,6,23,6,27,6,20,6,27,6,23,6
-	db 20,6,23,6,27,6,20,6,27,6,23,6,20,6,27,6
-	db 23,6,20,6,27,6,30,6,34,6,27,6,34,6,30,6
-	db 27,6,30,6,34,6,27,6,34,6,30,6,27,6,34,6
-	db 30,6,27,6,23,6,27,6,30,6,23,6,30,6,27,6
-	db 23,6,27,6,30,6,23,6,30,6,27,6,23,6,30,6
-	db 27,6,23,6,25,6,29,6,32,6,25,6,32,6,29,6
-	db 25,6,29,6,32,6,25,6,32,6,29,6,25,6,32,6
-	db 29,6,25,6,20,6,23,6,27,6,20,6,27,6,23,6
-	db 20,6,23,6,27,6,20,6,27,6,23,6,20,6,27,6
-	db 23,6,20,6,27,6,30,6,34,6,27,6,34,6,30,6
-	db 27,6,30,6,34,6,27,6,34,6,30,6,27,6,34,6
-	db 30,6,27,6,28,6,32,6,35,6,39,6,35,6,32,6
-	db 28,6,32,6,35,6,39,6,35,6,32,6,28,6,35,6
-	db 32,6,39,6,22,6,26,6,29,6,22,6,29,6,26,6
-	db 22,6,26,6,29,6,22,6,29,6,26,6,22,6,29,6
-	db 26,6,22,6,244,6,240,8,23,6,27,6,30,6,23,6
-	db 30,6,27,6,23,6,27,6,30,6,23,6,30,6,27,6
-	db 23,6,30,6,27,6,23,6,25,6,29,6,32,6,25,6
-	db 32,6,29,6,25,6,29,6,32,6,25,6,32,6,29,6
-	db 25,6,32,6,29,6,25,6,27,6,30,6,34,6,27,6
-	db 34,6,30,6,27,6,30,6,34,6,27,6,34,6,30,6
-	db 27,6,34,6,30,6,27,6,27,6,30,6,34,6,27,6
-	db 34,6,30,6,27,6,30,6,34,6,27,6,34,6,30,6
-	db 27,6,34,6,30,6,27,6,23,6,27,6,30,6,23,6
-	db 30,6,27,6,23,6,27,6,30,6,23,6,30,6,27,6
-	db 23,6,30,6,27,6,23,6,25,6,29,6,32,6,25,6
-	db 32,6,29,6,25,6,29,6,32,6,25,6,32,6,29,6
-	db 25,6,32,6,29,6,25,6,18,6,22,6,25,6,18,6
-	db 25,6,22,6,18,6,22,6,25,6,18,6,25,6,22,6
-	db 18,6,25,6,22,6,18,6,22,6,26,6,29,6,22,6
-	db 29,6,26,6,22,6,26,6,29,6,22,6,29,6,26,6
-	db 22,6,29,6,26,6,22,6,244,6,240,8,23,6,27,6
-	db 30,6,23,6,30,6,27,6,23,6,27,6,30,6,23,6
-	db 30,6,27,6,23,6,30,6,27,6,23,6,25,6,29,6
-	db 32,6,25,6,32,6,29,6,25,6,29,6,32,6,25,6
-	db 32,6,29,6,25,6,32,6,29,6,25,6,27,6,30,6
-	db 34,6,27,6,34,6,30,6,27,6,30,6,34,6,27,6
-	db 34,6,30,6,27,6,34,6,30,6,27,6,27,6,30,6
-	db 34,6,27,6,34,6,30,6,27,6,30,6,34,6,27,6
-	db 34,6,30,6,27,6,34,6,30,6,27,6,23,6,27,6
-	db 30,6,23,6,30,6,27,6,23,6,27,6,30,6,23,6
-	db 30,6,27,6,23,6,30,6,27,6,23,6,25,6,29,6
-	db 32,6,25,6,32,6,29,6,25,6,29,6,32,6,25,6
-	db 32,6,29,6,25,6,32,6,29,6,25,6,18,6,22,6
-	db 25,6,18,6,25,6,22,6,18,6,22,6,25,6,18,6
-	db 25,6,22,6,18,6,25,6,22,6,18,6,22,6,26,6
-	db 29,6,22,6,29,6,26,6,22,6,26,6,29,6,22,6
-	db 29,6,26,6,22,6,29,6,26,6,22,6,244,6,240,8
-	db 23,48,27,48,25,48,29,48,27,48,30,48,29,48,32,48
-	db 23,48,27,48,25,48,29,48,27,48,30,48,26,48,29,48
-	db 244,6,240,8,255,12,27,12,255,12,30,12,255,12,27,6
-	db 23,6,255,12,30,12,255,12,29,12,255,12,32,12,255,12
-	db 29,6,25,6,255,12,32,12,255,12,30,12,255,12,34,12
-	db 255,12,30,6,27,6,255,12,34,12,255,12,30,12,255,12
-	db 34,12,255,12,30,6,27,6,255,12,34,12,255,12,27,12
-	db 255,12,30,12,255,12,27,6,23,6,255,12,30,12,255,12
-	db 29,12,255,12,32,12,255,12,29,6,25,6,255,12,32,12
-	db 255,12,22,12,255,12,25,12,255,12,22,6,18,6,255,12
-	db 25,12,255,12,26,12,255,12,29,12,255,12,26,6,22,6
-	db 255,12,29,12,244,6,240,8,255,12,30,12,255,12,34,12
-	db 255,12,30,6,27,6,255,12,34,12,255,12,27,12,255,12
-	db 30,12,255,12,27,6,23,6,255,12,30,12,255,12,22,12
-	db 255,12,25,12,255,12,22,6,18,6,255,12,25,12,255,12
-	db 29,12,255,12,32,12,255,12,29,6,25,6,255,12,32,12
-	db 255,12,30,12,255,12,34,12,255,12,30,6,27,6,255,12
-	db 34,12,255,12,27,12,255,12,30,12,255,12,27,6,23,6
-	db 255,12,30,12,255,12,29,12,255,12,32,12,255,12,29,6
-	db 25,6,255,12,32,12,255,12,26,12,255,12,29,12,255,12
-	db 26,6,22,6,255,12,29,12,244,6,240,8,20,6,23,6
-	db 27,6,20,6,27,6,23,6,20,6,23,6,27,6,20,6
-	db 27,6,23,6,20,6,27,6,23,6,20,6,27,6,30,6
-	db 34,6,27,6,34,6,30,6,27,6,30,6,34,6,27,6
-	db 34,6,30,6,27,6,34,6,30,6,27,6,23,6,27,6
-	db 30,6,23,6,30,6,27,6,23,6,27,6,30,6,23,6
-	db 30,6,27,6,23,6,30,6,27,6,23,6,25,6,29,6
-	db 32,6,25,6,32,6,29,6,25,6,29,6,32,6,25,6
-	db 32,6,29,6,25,6,32,6,29,6,25,6,20,6,23,6
-	db 27,6,20,6,27,6,23,6,20,6,23,6,27,6,20,6
-	db 27,6,23,6,20,6,27,6,23,6,20,6,27,6,30,6
-	db 34,6,27,6,34,6,30,6,27,6,30,6,34,6,27,6
-	db 34,6,30,6,27,6,34,6,30,6,27,6,28,6,32,6
-	db 35,6,39,6,35,6,32,6,28,6,32,6,35,6,39,6
-	db 35,6,32,6,28,6,35,6,32,6,39,6,22,6,26,6
-	db 29,6,22,6,29,6,26,6,22,6,26,6,29,6,22,6
-	db 29,6,26,6,22,6,29,6,26,6,22,6,244,6,240,8
-	db 23,6,27,6,30,6,23,6,30,6,27,6,23,6,27,6
-	db 30,6,23,6,30,6,27,6,23,6,30,6,27,6,23,6
-	db 25,6,29,6,32,6,25,6,32,6,29,6,25,6,29,6
-	db 32,6,25,6,32,6,29,6,25,6,32,6,29,6,25,6
-	db 27,6,30,6,34,6,27,6,34,6,30,6,27,6,30,6
-	db 34,6,27,6,34,6,30,6,27,6,34,6,30,6,27,6
-	db 27,6,30,6,34,6,27,6,34,6,30,6,27,6,30,6
-	db 34,6,27,6,34,6,30,6,27,6,34,6,30,6,27,6
-	db 23,6,27,6,30,6,23,6,30,6,27,6,23,6,27,6
-	db 30,6,23,6,30,6,27,6,23,6,30,6,27,6,23,6
-	db 25,6,29,6,32,6,25,6,32,6,29,6,25,6,29,6
-	db 32,6,25,6,32,6,29,6,25,6,32,6,29,6,25,6
-	db 18,6,22,6,25,6,18,6,25,6,22,6,18,6,22,6
-	db 25,6,18,6,25,6,22,6,18,6,25,6,22,6,18,6
-	db 22,6,26,6,29,6,22,6,29,6,26,6,22,6,26,6
-	db 29,6,22,6,29,6,26,6,22,6,29,6,26,6,22,6
-	db 244,6,240,8,23,6,27,6,30,6,23,6,30,6,27,6
-	db 23,6,27,6,30,6,23,6,30,6,27,6,23,6,30,6
-	db 27,6,23,6,25,6,29,6,32,6,25,6,32,6,29,6
-	db 25,6,29,6,32,6,25,6,32,6,29,6,25,6,32,6
-	db 29,6,25,6,27,6,30,6,34,6,27,6,34,6,30,6
-	db 27,6,30,6,34,6,27,6,34,6,30,6,27,6,34,6
-	db 30,6,27,6,27,6,30,6,34,6,27,6,34,6,30,6
-	db 27,6,30,6,34,6,27,6,34,6,30,6,27,6,34,6
-	db 30,6,27,6,23,6,27,6,30,6,23,6,30,6,27,6
-	db 23,6,27,6,30,6,23,6,30,6,27,6,23,6,30,6
-	db 27,6,23,6,25,6,29,6,32,6,25,6,32,6,29,6
-	db 25,6,29,6,32,6,25,6,32,6,29,6,25,6,32,6
-	db 29,6,25,6,18,6,22,6,25,6,18,6,25,6,22,6
-	db 18,6,22,6,25,6,18,6,25,6,22,6,18,6,25,6
-	db 22,6,18,6,22,6,26,6,29,6,22,6,29,6,26,6
-	db 22,6,26,6,29,6,22,6,29,6,26,6,22,6,29,6
-	db 26,6,22,6,244,6,240,8,30,48,34,48,27,48,30,48
-	db 29,48,32,48,26,48,29,48,0
+	db 244,6,240,8,21,18,14,18,18,18,18,18,15,18,16,18
+	db 19,18,19,18,21,18,14,18,18,18,18,18,15,18,16,18
+	db 19,18,19,18,21,18,22,36,21,18,21,18,22,36,21,18
+	db 255,162,29,18,29,18,29,18,29,18,30,18,30,18,30,18
+	db 30,18,29,18,29,18,30,18,30,18,30,18,31,18,30,18
+	db 255,18,17,18,17,18,17,18,17,18,18,18,18,18,18,18
+	db 18,18,17,18,17,18,18,18,18,18,18,18,19,18,18,18
+	db 21,18,14,18,18,18,18,18,15,18,16,18,19,18,19,18
+	db 21,18,14,18,18,18,18,18,15,18,16,18,19,18,19,18
+	db 21,18,22,36,21,18,21,18,22,36,21,18,255,162,29,18
+	db 29,18,29,18,29,18,30,18,30,18,30,18,30,18,29,18
+	db 29,18,30,18,30,18,30,18,31,18,30,18,255,18,17,18
+	db 17,18,17,18,17,18,18,18,18,18,18,18,18,18,17,18
+	db 17,18,18,18,18,18,30,18,31,18,30,18,27,18,28,18
+	db 31,18,21,18,31,18,28,18,31,18,21,18,25,18,26,18
+	db 30,18,21,18,30,18,26,18,30,18,26,18,27,18,28,18
+	db 31,18,21,18,31,18,28,18,31,18,28,18,29,18,30,18
+	db 30,18,21,18,30,18,26,18,30,18,26,18,27,18,28,18
+	db 31,18,21,18,31,18,28,18,31,18,21,18,25,18,26,18
+	db 30,18,21,18,30,18,26,18,26,18,25,18,24,18,23,18
+	db 23,18,27,18,27,18,28,18,31,18,31,18,31,18,28,18
+	db 28,18,21,18,25,18,26,18,30,18,30,18,27,18,28,18
+	db 31,18,21,18,31,18,28,18,31,18,21,18,25,18,26,18
+	db 30,18,21,18,30,18,26,18,30,18,26,18,27,18,28,18
+	db 31,18,21,18,31,18,28,18,31,18,28,18,29,18,30,18
+	db 30,18,21,18,30,18,26,18,30,18,26,18,27,18,28,18
+	db 31,18,21,18,31,18,28,18,31,18,21,18,25,18,26,18
+	db 30,18,21,18,30,18,26,18,26,18,25,18,24,18,23,18
+	db 23,18,27,18,27,18,28,18,31,18,31,18,31,18,28,18
+	db 28,18,21,18,25,18,26,18,33,18,33,18,21,18,26,18
+	db 30,18,30,18,27,18,28,18,31,18,31,18,21,18,26,18
+	db 30,18,30,18,27,18,28,18,31,18,31,18,21,18,22,36
+	db 21,18,21,18,22,36,21,18,255,162,29,18,29,18,29,18
+	db 29,18,30,18,30,18,30,18,30,18,29,18,29,18,30,18
+	db 30,18,30,18,31,18,30,18,255,18,29,18,29,18,29,18
+	db 29,18,30,18,30,18,30,18,30,18,29,18,29,18,30,18
+	db 30,18,30,18,31,18,30,18,255,18,21,18,36,18,24,18
+	db 36,18,23,18,36,18,21,18,18,18,19,18,35,18,26,18
+	db 35,18,23,18,35,18,19,18,20,18,21,18,36,18,24,18
+	db 36,18,23,18,36,18,21,18,18,18,19,18,35,18,26,18
+	db 35,18,23,18,35,18,19,18,18,18,16,18,38,18,20,18
+	db 38,18,23,18,38,18,28,18,38,18,21,18,36,18,24,18
+	db 36,18,21,18,36,18,24,18,36,18,255,72,26,18,35,18
+	db 255,18,32,18,31,18,31,18,30,18,30,18,31,18,35,18
+	db 35,18,20,18,21,18,24,18,24,18,24,18,23,18,24,18
+	db 21,18,18,18,19,18,23,18,14,18,23,18,23,18,23,18
+	db 19,18,20,18,21,18,24,18,24,18,24,18,23,18,24,18
+	db 21,18,18,18,19,18,23,18,14,18,23,18,23,18,23,18
+	db 19,18,18,18,16,18,26,18,20,18,26,18,23,18,26,18
+	db 16,18,26,18,21,18,24,18,24,18,24,18,21,18,24,18
+	db 24,18,24,18,255,72,14,18,23,18,255,18,20,18,19,18
+	db 19,18,18,18,18,18,31,18,26,18,19,18,30,18,31,18
+	db 35,18,35,18,30,18,31,18,35,18,28,18,29,18,30,18
+	db 33,18,33,18,21,18,26,18,30,18,21,18,27,18,28,18
+	db 31,18,21,18,27,18,28,18,31,18,21,18,25,18,26,18
+	db 30,18,21,18,30,18,26,18,30,18,28,18,30,18,31,18
+	db 35,18,35,18,30,18,31,18,35,18,28,18,29,18,30,18
+	db 33,18,33,18,21,18,26,18,30,18,21,18,30,18,19,18
+	db 19,18,16,18,20,18,21,18,30,18,21,18,22,18,23,18
+	db 23,18,25,18,25,18,26,18,30,18,28,18,30,18,31,18
+	db 35,18,35,18,30,18,31,18,35,18,28,18,29,18,30,18
+	db 33,18,33,18,21,18,26,18,30,18,21,18,27,18,28,18
+	db 31,18,21,18,27,18,28,18,31,18,21,18,25,18,26,18
+	db 30,18,21,18,30,18,26,18,30,18,28,18,30,18,31,18
+	db 35,18,35,18,30,18,31,18,35,18,28,18,29,18,30,18
+	db 33,18,33,18,21,18,26,18,30,18,21,18,30,18,19,18
+	db 19,18,16,18,20,18,21,18,30,18,21,18,22,18,23,18
+	db 23,18,25,18,25,18,26,18,21,18,14,18,244,6,240,8
+	db 255,240,255,2,13,18,17,17,255,17,18,18,13,17,18,17
+	db 23,17,18,18,22,17,18,17,255,18,18,17,255,17,17,18
+	db 255,17,18,17,18,18,17,17,255,17,18,17,13,18,18,17
+	db 23,17,18,18,22,17,21,17,20,18,18,17,255,17,18,18
+	db 17,17,13,17,15,17,17,18,255,17,18,17,13,18,18,17
+	db 23,17,18,18,22,17,18,17,255,18,18,17,255,17,17,17
+	db 255,18,18,17,22,17,255,18,18,17,22,17,16,18,22,17
+	db 15,17,23,18,14,17,23,17,13,17,22,18,255,17,17,17
+	db 18,18,13,17,15,17,17,18,255,17,18,17,13,18,18,17
+	db 23,17,18,17,22,18,18,17,255,17,18,18,255,17,17,17
+	db 255,18,18,17,18,17,17,18,255,17,18,17,13,17,18,18
+	db 23,17,18,17,22,18,21,17,20,17,18,18,255,17,18,17
+	db 17,18,13,17,15,17,17,17,255,18,18,17,13,17,18,18
+	db 23,17,18,17,22,18,18,17,255,17,18,18,255,17,17,17
+	db 255,17,18,18,22,17,255,17,18,18,22,17,16,17,22,18
+	db 15,17,23,17,14,18,23,17,13,17,22,17,255,18,17,17
+	db 18,17,13,18,18,17,255,17,18,18,22,17,255,17,22,18
+	db 255,17,22,17,255,17,22,18,255,17,23,17,255,18,23,17
+	db 255,17,22,18,255,17,22,17,255,18,22,17,255,17,22,17
+	db 255,18,22,17,255,52,20,17,255,18,20,17,20,17,23,18
+	db 22,17,20,17,18,17,22,18,255,17,22,17,255,18,22,17
+	db 255,17,22,18,255,17,23,17,255,18,23,17,255,17,22,17
+	db 255,18,22,17,23,17,23,18,21,17,21,17,22,18,22,17
+	db 22,17,22,18,18,17,15,17,17,17,17,18,18,17,13,17
+	db 22,18,20,17,18,17,22,18,255,17,22,17,255,18,22,17
+	db 255,17,22,17,255,18,23,17,255,17,23,18,255,17,22,17
+	db 255,18,22,17,255,17,22,18,255,17,22,17,255,17,22,18
+	db 255,52,20,17,255,17,20,18,20,17,23,17,22,18,20,17
+	db 18,17,22,17,255,18,22,17,255,17,22,18,255,17,22,17
+	db 255,18,23,17,255,17,23,18,255,17,22,17,255,17,22,18
+	db 23,17,23,17,21,18,21,17,22,17,22,18,22,17,22,17
+	db 18,18,15,17,17,17,17,17,30,18,25,17,18,17,255,35
+	db 30,17,25,18,30,17,23,17,30,18,22,17,30,17,255,17
+	db 30,18,255,17,29,17,255,18,30,17,30,17,29,18,255,17
+	db 30,17,25,18,30,17,23,17,30,17,22,18,21,17,20,17
+	db 30,18,255,17,30,17,29,18,25,17,27,17,29,18,255,17
+	db 30,17,25,17,30,18,23,17,30,17,22,18,30,17,255,17
+	db 30,18,255,17,29,17,255,18,30,17,34,17,255,17,30,18
+	db 34,17,28,17,34,18,27,17,35,17,26,18,35,17,25,17
+	db 34,18,255,17,29,17,30,17,25,18,18,17,255,35,35,17
+	db 255,17,35,18,255,17,35,17,255,18,35,17,255,17,35,17
+	db 255,18,35,17,255,17,32,18,255,17,32,17,28,18,32,17
+	db 25,17,26,18,27,17,35,17,255,17,35,18,255,17,34,17
+	db 255,18,34,17,34,35,34,34,255,18,35,17,255,17,35,17
+	db 255,18,35,17,255,17,35,18,255,17,35,17,255,18,35,17
+	db 255,17,32,18,255,17,32,17,28,17,32,18,25,17,26,17
+	db 27,9,23,9,22,8,20,9,19,35,18,17,35,17,30,18
+	db 18,17,23,17,255,87,35,34,255,35,35,35,255,34,35,35
+	db 255,34,35,35,255,35,35,34,255,35,35,34,255,35,32,35
+	db 255,34,32,35,28,35,32,34,25,35,26,34,27,35,35,35
+	db 255,34,35,35,255,34,34,35,255,35,34,34,34,35,34,35
+	db 255,17,35,17,255,17,35,18,255,17,35,17,255,18,35,17
+	db 255,17,35,18,255,17,35,17,255,18,32,17,255,17,32,17
+	db 28,18,32,17,25,17,26,18,27,8,23,9,22,9,20,8
+	db 19,35,18,17,35,18,30,17,18,17,23,17,255,18,23,17
+	db 255,17,35,18,35,17,33,17,33,18,34,17,34,17,34,18
+	db 34,17,30,17,27,17,29,18,29,17,30,35,18,17,255,35
+	db 27,17,255,17,27,18,255,17,27,17,255,17,27,18,255,17
+	db 30,17,255,18,30,17,255,17,30,18,255,17,30,17,255,18
+	db 29,17,255,17,29,17,255,18,29,17,255,17,29,18,30,17
+	db 30,35,30,17,30,17,255,69,27,18,255,17,27,17,255,18
+	db 27,17,255,17,27,18,255,17,30,17,255,18,30,17,255,17
+	db 30,17,255,18,30,17,23,17,20,18,22,17,23,17,25,18
+	db 34,17,33,17,34,18,27,17,20,17,25,17,29,18,30,17
+	db 255,87,39,34,255,35,39,34,255,35,39,35,255,34,39,35
+	db 255,35,30,34,255,35,30,34,255,35,30,35,255,34,30,35
+	db 255,34,29,35,255,35,29,34,255,35,29,35,255,34,29,35
+	db 30,34,30,35,30,17,30,18,255,69,39,17,255,17,39,18
+	db 255,17,39,17,255,18,39,17,255,17,30,18,255,17,30,17
+	db 255,18,30,17,255,17,30,17,35,18,32,17,34,17,35,18
+	db 37,17,34,17,33,18,34,17,39,17,32,18,37,17,29,17
+	db 30,17,37,18,30,17,0
 _song1_v3__9:
-	db 244,1,240,5,3,24,244,2,240,12,5,24,244,3,240,7
-	db 6,24,244,2,240,12,5,24,244,1,240,5,3,24,244,2
-	db 240,12,5,24,244,3,240,7,6,24,244,2,240,12,5,24
-	db 244,1,240,5,3,24,244,2,240,12,5,24,244,3,240,7
-	db 6,24,244,2,240,12,5,24,244,3,240,7,6,6,6,6
-	db 6,12,6,6,6,6,6,12,244,1,240,5,3,12,244,3
-	db 240,7,6,12,6,6,6,6,6,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,3
-	db 240,7,6,6,6,6,6,12,6,6,6,6,6,12,244,1
-	db 240,5,3,12,244,3,240,7,6,12,6,6,6,6,6,12
-	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,3,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
-	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,3,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,3,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,3,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
-	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,3,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,3,240,7,6,6,6,6,6,12,6,6
-	db 6,6,6,12,244,1,240,5,3,12,244,3,240,7,6,12
-	db 6,6,6,6,6,12,244,1,240,5,3,12,244,2,240,11
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,6,5,6
-	db 244,1,240,5,3,12,244,2,240,11,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
-	db 240,11,5,12,244,3,240,7,6,12,244,2,240,12,5,6
-	db 5,6,244,1,240,5,3,12,244,2,240,11,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,11,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,6,5,6,244,1,240,5,3,12,244,2,240,11,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,244,2,240,11,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,6,5,6,244,1,240,5,3,12,244,2,240,11
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,11,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,6,5,6,244,1,240,5,3,12,244,2
-	db 240,11,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,244,2,240,11,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,6,5,6,244,1,240,5,3,12
-	db 244,2,240,11,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,11,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,6,5,6,244,1,240,5
-	db 3,12,244,2,240,11,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,3,240,7,6,6,6,6,6,12,6,6
-	db 6,6,6,12,244,1,240,5,3,12,244,3,240,7,6,12
-	db 6,6,6,6,6,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,3,240,7,6,6
-	db 6,6,6,12,6,6,6,6,6,12,244,1,240,5,3,12
-	db 244,3,240,7,6,12,6,6,6,6,6,12,244,1,240,5
-	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,3,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
-	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,3,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,3,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,3,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
-	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,3,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,3,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,3,240,7,6,6,6,6,6,12,6,6,6,6,6,12
-	db 244,1,240,5,3,12,244,3,240,7,6,12,6,6,6,6
-	db 6,12,244,1,240,5,3,12,244,2,240,11,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,6,5,6,244,1,240,5
-	db 3,12,244,2,240,11,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,244,2,240,11,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,6,5,6,244,1
-	db 240,5,3,12,244,2,240,11,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,11
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,6,5,6
-	db 244,1,240,5,3,12,244,2,240,11,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
-	db 240,11,5,12,244,3,240,7,6,12,244,2,240,12,5,6
-	db 5,6,244,1,240,5,3,12,244,2,240,11,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,11,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,6,5,6,244,1,240,5,3,12,244,2,240,11,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,244,2,240,11,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,6,5,6,244,1,240,5,3,12,244,2,240,11
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,11,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,6,5,6,244,1,240,5,3,12,244,2
-	db 240,11,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,3,240,7,6,6,6,6,6,12,6,6,6,6,6,12
-	db 244,1,240,5,3,12,244,3,240,7,6,12,6,6,6,6
-	db 6,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,3,240,7,6,6,6,6,6,12
-	db 6,6,6,6,6,12,244,1,240,5,3,12,244,3,240,7
-	db 6,12,6,6,6,6,6,12,244,1,240,5,3,12,244,2
-	db 240,11,5,12,244,3,240,7,6,12,244,2,240,12,5,6
-	db 5,6,244,1,240,5,3,12,244,2,240,11,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,11,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,6,5,6,244,1,240,5,3,12,244,2,240,11,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,244,2,240,11,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,6,5,6,244,1,240,5,3,12,244,2,240,11
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,11,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,6,5,6,244,1,240,5,3,12,244,2
-	db 240,11,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,244,2,240,11,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,6,5,6,244,1,240,5,3,12
-	db 244,2,240,11,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,11,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,6,5,6,244,1,240,5
-	db 3,12,244,2,240,11,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,244,2,240,11,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,6,5,6,244,1
-	db 240,5,3,12,244,2,240,11,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,3,240,7,6,6,6,6,6,12
-	db 6,6,6,6,6,12,244,1,240,5,3,12,244,3,240,7
-	db 6,12,6,6,6,6,6,12,244,1,240,5,3,12,244,2
-	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,3,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,3,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,3,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
-	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,3,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,3,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,3,240,7
-	db 6,6,6,6,6,12,6,6,6,6,6,12,244,1,240,5
-	db 3,12,244,3,240,7,6,12,6,6,6,6,6,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,3,240,7,6,6,6,6,6,12,6,6,6,6
-	db 6,12,244,1,240,5,3,12,244,3,240,7,6,12,6,6
-	db 6,6,6,12,244,1,240,5,3,24,244,2,240,12,5,24
-	db 244,3,240,7,6,24,244,2,240,12,5,24,244,1,240,5
-	db 3,24,244,2,240,12,5,24,244,3,240,7,6,24,244,2
-	db 240,12,5,24,244,1,240,5,3,24,244,2,240,12,5,24
-	db 244,3,240,7,6,24,244,2,240,12,5,24,244,1,240,5
-	db 3,24,244,2,240,12,5,24,244,3,240,7,6,24,244,2
-	db 240,12,5,24,244,1,240,5,3,24,244,2,240,12,5,24
-	db 244,3,240,7,6,24,244,2,240,12,5,24,244,1,240,5
-	db 3,24,244,2,240,12,5,24,244,3,240,7,6,24,244,2
-	db 240,12,5,24,244,1,240,5,3,24,244,2,240,12,5,24
-	db 244,3,240,7,6,24,244,2,240,12,5,24,244,3,240,7
-	db 6,6,6,6,6,12,6,6,6,6,6,12,244,1,240,5
-	db 3,12,244,3,240,7,6,12,6,6,6,6,6,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,3,240,7,6,6,6,6,6,12,6,6,6,6
-	db 6,12,244,1,240,5,3,12,244,3,240,7,6,12,6,6
-	db 6,6,6,12,244,1,240,5,3,12,244,2,240,12,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,3,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,3,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
-	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,3,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,3,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,3,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,3,240,7,6,6,6,6
-	db 6,12,6,6,6,6,6,12,244,1,240,5,3,12,244,3
-	db 240,7,6,12,6,6,6,6,6,12,244,1,240,5,3,12
-	db 244,2,240,11,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,6,5,6,244,1,240,5,3,12,244,2,240,11,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,244,2,240,11,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,6,5,6,244,1,240,5,3,12,244,2,240,11
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,11,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,6,5,6,244,1,240,5,3,12,244,2
-	db 240,11,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,244,2,240,11,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,6,5,6,244,1,240,5,3,12
-	db 244,2,240,11,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,11,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,6,5,6,244,1,240,5
-	db 3,12,244,2,240,11,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,244,2,240,11,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,6,5,6,244,1
-	db 240,5,3,12,244,2,240,11,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,11
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,6,5,6
-	db 244,1,240,5,3,12,244,2,240,11,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,3,240,7,6,6,6,6
-	db 6,12,6,6,6,6,6,12,244,1,240,5,3,12,244,3
-	db 240,7,6,12,6,6,6,6,6,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,244,2,240,12,5,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,3,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 244,2,240,12,5,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,3,12,244,3,240,7,6,12
-	db 244,2,240,12,5,12,244,1,240,5,3,12,244,2,240,12
-	db 5,12,244,3,240,7,6,12,244,2,240,12,5,12,244,1
-	db 240,5,3,12,3,12,244,3,240,7,6,12,244,2,240,12
-	db 5,12,244,1,240,5,3,12,244,2,240,12,5,12,244,3
-	db 240,7,6,12,244,2,240,12,5,12,244,1,240,5,3,12
-	db 3,12,244,3,240,7,6,12,244,2,240,12,5,12,244,3
-	db 240,7,6,6,6,6,6,12,6,6,6,6,6,12,244,1
-	db 240,5,3,12,244,3,240,7,6,12,6,6,6,6,6,12
-	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,3,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
-	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,3,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,244,2,240,12,5,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,3,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
-	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
-	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,1,240,5,3,12,3,12,244,3,240,7
-	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
-	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
-	db 244,1,240,5,3,12,3,12,244,3,240,7,6,12,244,2
-	db 240,12,5,12,244,3,240,7,6,6,6,6,6,12,6,6
-	db 6,6,6,12,244,1,240,5,3,12,244,3,240,7,6,12
-	db 6,6,6,6,6,12,244,1,240,5,3,24,244,2,240,12
-	db 5,24,244,3,240,7,6,24,244,2,240,12,5,24,244,1
-	db 240,5,3,24,244,2,240,12,5,24,244,3,240,7,6,24
-	db 244,2,240,12,5,24,244,1,240,5,3,24,244,2,240,12
-	db 5,24,244,3,240,7,6,24,244,2,240,12,5,24,244,3
-	db 240,7,6,6,6,6,6,12,6,6,6,6,6,12,244,1
-	db 240,5,3,12,244,3,240,7,6,12,6,6,6,6,6,12
-	db 0
+	db 244,1,240,5,3,18,244,2,240,12,5,18,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,18,244,1,240,5,3,18
+	db 244,2,240,12,5,18,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,18,244,1,240,5,3,18,244,2,240,12,5,18
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,18,244,1
+	db 240,5,3,18,244,2,240,12,5,18,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,18,244,1,240,5,3,18,244,2
+	db 240,12,5,18,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,18,244,1,240,5,3,18,244,2,240,12,5,18,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,18,244,1,240,5
+	db 3,18,244,2,240,12,5,18,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,18,244,1,240,5,3,18,244,3,240,7
+	db 6,18,6,9,6,9,6,9,6,9,244,1,240,5,3,18
+	db 244,2,240,12,5,18,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,18,244,1,240,5,3,18,244,2,240,12,5,18
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,18,244,1
+	db 240,5,3,18,244,2,240,12,5,18,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,18,244,1,240,5,3,18,244,2
+	db 240,12,5,18,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,18,244,1,240,5,3,18,244,2,240,12,5,18,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,18,244,1,240,5
+	db 3,18,244,2,240,12,5,18,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,18,244,1,240,5,3,18,244,2,240,12
+	db 5,18,244,3,240,7,6,9,244,2,240,12,5,9,5,18
+	db 244,1,240,5,3,18,244,3,240,7,6,18,6,9,6,9
+	db 6,9,6,9,244,1,240,5,3,18,244,2,240,12,5,18
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,18,244,1
+	db 240,5,3,18,244,2,240,12,5,18,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,18,244,1,240,5,3,18,244,2
+	db 240,12,5,18,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,18,244,1,240,5,3,18,244,2,240,12,5,18,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,18,244,1,240,5
+	db 3,18,244,2,240,12,5,18,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,18,244,1,240,5,3,18,244,2,240,12
+	db 5,18,244,3,240,7,6,9,244,2,240,12,5,9,5,18
+	db 244,1,240,5,3,18,244,2,240,12,5,18,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,18,244,1,240,5,3,18
+	db 244,3,240,7,6,18,6,9,6,9,6,9,6,9,244,1
+	db 240,5,3,18,244,2,240,12,5,18,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,18,244,1,240,5,3,18,244,2
+	db 240,12,5,18,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,18,244,1,240,5,3,18,244,2,240,12,5,18,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,18,244,1,240,5
+	db 3,18,244,2,240,12,5,18,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,18,244,1,240,5,3,18,244,2,240,12
+	db 5,18,244,3,240,7,6,9,244,2,240,12,5,9,5,18
+	db 244,1,240,5,3,18,244,2,240,12,5,18,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,18,244,1,240,5,3,18
+	db 244,2,240,12,5,18,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,18,244,1,240,5,3,18,244,3,240,7,6,18
+	db 6,9,6,9,6,9,6,9,244,1,240,5,3,18,244,2
+	db 240,12,5,18,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,18,244,1,240,5,3,18,244,2,240,12,5,18,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,18,244,1,240,5
+	db 3,18,244,2,240,12,5,18,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,18,244,1,240,5,3,18,244,2,240,12
+	db 5,18,244,3,240,7,6,9,244,2,240,12,5,9,5,18
+	db 244,1,240,5,3,18,244,2,240,12,5,18,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,18,244,1,240,5,3,18
+	db 244,2,240,12,5,18,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,18,244,1,240,5,3,18,244,2,240,12,5,18
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,18,244,1
+	db 240,5,3,18,244,3,240,7,6,18,6,9,6,9,6,9
+	db 6,9,244,1,240,5,3,18,244,2,240,12,5,18,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,18,244,1,240,5
+	db 3,18,244,2,240,12,5,18,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,18,244,1,240,5,3,18,244,2,240,12
+	db 5,18,244,3,240,7,6,9,244,2,240,12,5,9,5,18
+	db 244,1,240,5,3,18,244,2,240,12,5,18,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,18,244,1,240,5,3,18
+	db 244,2,240,12,5,18,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,18,244,1,240,5,3,18,244,2,240,12,5,18
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,18,244,1
+	db 240,5,3,18,244,2,240,12,5,18,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,18,244,1,240,5,3,18,244,3
+	db 240,7,6,18,6,9,6,9,6,9,6,9,244,1,240,5
+	db 3,18,244,2,240,12,5,18,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,18,244,1,240,5,3,18,244,2,240,12
+	db 5,18,244,3,240,7,6,9,244,2,240,12,5,9,5,18
+	db 244,1,240,5,3,18,244,2,240,12,5,18,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,18,244,1,240,5,3,18
+	db 244,2,240,12,5,18,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,18,244,1,240,5,3,18,244,2,240,12,5,18
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,18,244,1
+	db 240,5,3,18,244,2,240,12,5,18,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,18,244,1,240,5,3,18,244,2
+	db 240,12,5,18,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,18,244,1,240,5,3,18,244,3,240,7,6,18,6,9
+	db 6,9,6,9,6,9,244,1,240,5,3,18,244,2,240,12
+	db 5,18,244,3,240,7,6,9,244,2,240,12,5,9,5,18
+	db 244,1,240,5,3,18,244,2,240,12,5,18,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,18,244,1,240,5,3,18
+	db 244,2,240,12,5,18,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,18,244,1,240,5,3,18,244,2,240,12,5,18
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,18,244,1
+	db 240,5,3,18,244,2,240,12,5,18,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,18,244,1,240,5,3,18,244,2
+	db 240,12,5,18,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,18,244,1,240,5,3,18,244,2,240,12,5,18,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,18,244,1,240,5
+	db 3,18,244,3,240,7,6,18,6,9,6,9,6,9,6,9
+	db 244,1,240,5,3,18,244,2,240,12,5,18,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,18,244,1,240,5,3,18
+	db 244,2,240,12,5,18,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,18,244,1,240,5,3,18,244,2,240,12,5,18
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,18,244,1
+	db 240,5,3,18,244,2,240,12,5,18,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,18,244,1,240,5,3,18,244,2
+	db 240,12,5,18,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,18,244,1,240,5,3,18,244,2,240,12,5,18,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,18,244,1,240,5
+	db 3,18,244,2,240,12,5,18,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,18,244,1,240,5,3,18,244,3,240,7
+	db 6,18,6,9,6,9,6,9,6,9,244,1,240,5,3,18
+	db 244,2,240,12,5,18,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,18,244,1,240,5,3,18,244,2,240,12,5,18
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,18,244,1
+	db 240,5,3,18,244,2,240,12,5,18,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,18,244,1,240,5,3,18,244,2
+	db 240,12,5,18,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,18,244,1,240,5,3,18,244,2,240,12,5,18,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,18,244,1,240,5
+	db 3,18,244,2,240,12,5,18,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,18,244,1,240,5,3,18,244,2,240,12
+	db 5,18,244,3,240,7,6,9,244,2,240,12,5,9,5,18
+	db 244,1,240,5,3,18,244,3,240,7,6,18,6,9,6,9
+	db 6,9,6,9,244,1,240,5,3,18,244,2,240,12,5,18
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,18,244,1
+	db 240,5,3,18,244,2,240,12,5,18,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,18,244,1,240,5,3,18,244,2
+	db 240,12,5,18,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,18,244,1,240,5,3,18,244,2,240,12,5,18,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,18,244,1,240,5
+	db 3,18,244,2,240,12,5,18,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,18,244,1,240,5,3,18,244,2,240,12
+	db 5,18,244,3,240,7,6,9,244,2,240,12,5,9,5,18
+	db 244,1,240,5,3,18,244,2,240,12,5,18,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,18,244,1,240,5,3,18
+	db 244,3,240,7,6,18,6,9,6,9,6,9,6,9,244,1
+	db 240,5,3,18,244,2,240,12,5,18,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,18,244,1,240,5,3,18,244,2
+	db 240,12,5,18,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,18,244,1,240,5,3,18,244,2,240,12,5,18,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,18,244,1,240,5
+	db 3,18,244,2,240,12,5,18,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,18,244,1,240,5,3,18,244,2,240,12
+	db 5,18,244,3,240,7,6,9,244,2,240,12,5,9,5,18
+	db 244,1,240,5,3,18,244,2,240,12,5,18,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,18,244,1,240,5,3,18
+	db 244,2,240,12,5,18,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,18,244,1,240,5,3,18,244,3,240,7,6,18
+	db 6,9,6,9,6,9,6,9,244,1,240,5,3,18,244,2
+	db 240,12,5,18,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,18,244,1,240,5,3,18,244,2,240,12,5,18,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,18,244,1,240,5
+	db 3,18,244,2,240,12,5,18,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,18,244,1,240,5,3,18,244,2,240,12
+	db 5,18,244,3,240,7,6,9,244,2,240,12,5,9,5,18
+	db 244,1,240,5,3,18,244,2,240,12,5,18,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,18,244,1,240,5,3,18
+	db 244,2,240,12,5,18,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,18,244,1,240,5,3,18,244,2,240,12,5,18
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,18,244,1
+	db 240,5,3,18,244,3,240,7,6,18,6,9,6,9,6,9
+	db 6,9,244,1,240,5,3,18,244,2,240,12,5,18,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,18,244,1,240,5
+	db 3,18,244,2,240,12,5,18,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,18,244,1,240,5,3,18,244,2,240,12
+	db 5,18,244,3,240,7,6,9,244,2,240,12,5,9,5,18
+	db 244,1,240,5,3,18,244,2,240,12,5,18,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,18,244,1,240,5,3,18
+	db 244,2,240,12,5,18,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,18,244,1,240,5,3,18,244,2,240,12,5,18
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,18,244,1
+	db 240,5,3,18,244,2,240,12,5,18,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,18,244,1,240,5,3,18,244,3
+	db 240,7,6,18,6,9,6,9,6,9,6,9,244,1,240,5
+	db 3,18,244,2,240,12,5,18,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,18,244,1,240,5,3,18,244,2,240,12
+	db 5,18,244,3,240,7,6,9,244,2,240,12,5,9,5,18
+	db 244,1,240,5,3,18,244,2,240,12,5,18,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,18,244,1,240,5,3,18
+	db 244,2,240,12,5,18,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,18,244,1,240,5,3,18,244,2,240,12,5,18
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,18,244,1
+	db 240,5,3,18,244,2,240,12,5,18,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,18,244,1,240,5,3,18,244,2
+	db 240,12,5,18,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,18,244,1,240,5,3,18,244,3,240,7,6,18,6,9
+	db 6,9,6,9,6,9,244,1,240,5,3,18,244,2,240,12
+	db 5,18,244,3,240,7,6,9,244,2,240,12,5,9,5,18
+	db 244,1,240,5,3,18,244,2,240,12,5,18,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,18,244,1,240,5,3,18
+	db 244,2,240,12,5,18,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,18,244,1,240,5,3,18,244,2,240,12,5,18
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,18,244,1
+	db 240,5,3,18,244,2,240,12,5,18,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,18,244,1,240,5,3,18,244,2
+	db 240,12,5,18,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,18,244,1,240,5,3,18,244,2,240,12,5,18,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,18,244,1,240,5
+	db 3,18,244,3,240,7,6,18,6,9,6,9,6,9,6,9
+	db 244,1,240,5,3,18,244,2,240,12,5,18,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,18,244,1,240,5,3,18
+	db 244,2,240,12,5,18,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,18,244,1,240,5,3,18,244,2,240,12,5,18
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,18,244,1
+	db 240,5,3,18,244,2,240,12,5,18,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,18,244,1,240,5,3,18,244,2
+	db 240,12,5,18,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,18,244,1,240,5,3,18,244,2,240,12,5,18,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,18,244,1,240,5
+	db 3,18,244,2,240,12,5,18,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,18,244,1,240,5,3,18,244,3,240,7
+	db 6,18,6,9,6,9,6,9,6,9,244,1,240,5,3,18
+	db 244,2,240,12,5,18,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,18,244,1,240,5,3,18,244,2,240,12,5,18
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,18,244,1
+	db 240,5,3,18,244,2,240,12,5,18,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,18,244,1,240,5,3,18,244,2
+	db 240,12,5,18,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,18,244,1,240,5,3,18,244,2,240,12,5,18,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,18,244,1,240,5
+	db 3,18,244,2,240,12,5,18,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,18,244,1,240,5,3,18,244,2,240,12
+	db 5,18,244,3,240,7,6,9,244,2,240,12,5,9,5,18
+	db 244,1,240,5,3,18,244,3,240,7,6,18,6,9,6,9
+	db 6,9,6,9,244,1,240,5,3,17,244,2,240,12,5,18
+	db 244,3,240,7,6,8,244,2,240,12,5,9,5,17,244,1
+	db 240,5,3,18,244,2,240,12,5,17,244,3,240,7,6,8
+	db 244,2,240,12,5,9,5,17,244,1,240,5,3,18,244,2
+	db 240,12,5,17,244,3,240,7,6,9,244,2,240,12,5,8
+	db 5,18,244,1,240,5,3,17,244,2,240,12,5,17,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,17,244,1,240,5
+	db 3,17,244,2,240,12,5,18,244,3,240,7,6,8,244,2
+	db 240,12,5,9,5,17,244,1,240,5,3,17,244,2,240,12
+	db 5,18,244,3,240,7,6,8,244,2,240,12,5,9,5,17
+	db 244,1,240,5,3,18,244,2,240,12,5,17,244,3,240,7
+	db 6,9,244,2,240,12,5,8,5,18,244,1,240,5,3,17
+	db 244,3,240,7,6,17,6,9,6,9,6,8,6,9,244,1
+	db 240,5,3,17,244,2,240,12,5,17,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,17,244,1,240,5,3,17,244,2
+	db 240,12,5,18,244,3,240,7,6,8,244,2,240,12,5,9
+	db 5,17,244,1,240,5,3,18,244,2,240,12,5,17,244,3
+	db 240,7,6,9,244,2,240,12,5,8,5,18,244,1,240,5
+	db 3,17,244,2,240,12,5,17,244,3,240,7,6,9,244,2
+	db 240,12,5,8,5,18,244,1,240,5,3,17,244,2,240,12
+	db 5,17,244,3,240,7,6,9,244,2,240,12,5,9,5,17
+	db 244,1,240,5,3,17,244,2,240,12,5,18,244,3,240,7
+	db 6,8,244,2,240,12,5,9,5,17,244,1,240,5,3,18
+	db 244,2,240,12,5,17,244,3,240,7,6,9,244,2,240,12
+	db 5,8,5,17,244,1,240,5,3,18,244,3,240,7,6,17
+	db 6,9,6,8,6,9,6,9,244,1,240,5,3,17,244,2
+	db 240,12,5,17,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,17,244,1,240,5,3,17,244,2,240,12,5,18,244,3
+	db 240,7,6,8,244,2,240,12,5,9,5,17,244,1,240,5
+	db 3,17,244,2,240,12,5,18,244,3,240,7,6,8,244,2
+	db 240,12,5,9,5,17,244,1,240,5,3,18,244,2,240,12
+	db 5,17,244,3,240,7,6,9,244,2,240,12,5,8,5,18
+	db 244,1,240,5,3,17,244,2,240,12,5,17,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,17,244,1,240,5,3,17
+	db 244,2,240,12,5,17,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,17,244,1,240,5,3,17,244,2,240,12,5,18
+	db 244,3,240,7,6,8,244,2,240,12,5,9,5,17,244,1
+	db 240,5,3,18,244,3,240,7,6,17,6,9,6,8,6,9
+	db 6,9,244,1,240,5,3,17,244,2,240,12,5,17,244,3
+	db 240,7,6,9,244,2,240,12,5,8,5,18,244,1,240,5
+	db 3,17,244,2,240,12,5,17,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,17,244,1,240,5,3,17,244,2,240,12
+	db 5,18,244,3,240,7,6,8,244,2,240,12,5,9,5,17
+	db 244,1,240,5,3,18,244,2,240,12,5,17,244,3,240,7
+	db 6,8,244,2,240,12,5,9,5,17,244,1,240,5,3,18
+	db 244,2,240,12,5,17,244,3,240,7,6,9,244,2,240,12
+	db 5,8,5,18,244,1,240,5,3,17,244,2,240,12,5,17
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,17,244,1
+	db 240,5,3,17,244,2,240,12,5,18,244,3,240,7,6,8
+	db 244,2,240,12,5,9,5,17,244,1,240,5,3,17,244,3
+	db 240,7,6,18,6,8,6,9,6,9,6,8,244,1,240,5
+	db 3,18,244,2,240,12,5,17,244,3,240,7,6,9,244,2
+	db 240,12,5,8,5,18,244,1,240,5,3,17,244,2,240,12
+	db 5,17,244,3,240,7,6,9,244,2,240,12,5,9,5,17
+	db 244,1,240,5,3,17,244,2,240,12,5,17,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,17,244,1,240,5,3,17
+	db 244,2,240,12,5,18,244,3,240,7,6,8,244,2,240,12
+	db 5,9,5,17,244,1,240,5,3,18,244,2,240,12,5,17
+	db 244,3,240,7,6,9,244,2,240,12,5,8,5,18,244,1
+	db 240,5,3,17,244,2,240,12,5,17,244,3,240,7,6,9
+	db 244,2,240,12,5,8,5,18,244,1,240,5,3,17,244,2
+	db 240,12,5,17,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,17,244,1,240,5,3,17,244,3,240,7,6,18,6,8
+	db 6,9,6,9,6,8,244,1,240,5,3,18,244,2,240,12
+	db 5,17,244,3,240,7,6,8,244,2,240,12,5,9,5,17
+	db 244,1,240,5,3,18,244,2,240,12,5,17,244,3,240,7
+	db 6,9,244,2,240,12,5,8,5,18,244,1,240,5,3,17
+	db 244,2,240,12,5,17,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,17,244,1,240,5,3,17,244,2,240,12,5,18
+	db 244,3,240,7,6,8,244,2,240,12,5,9,5,17,244,1
+	db 240,5,3,17,244,2,240,12,5,18,244,3,240,7,6,8
+	db 244,2,240,12,5,9,5,17,244,1,240,5,3,18,244,2
+	db 240,12,5,17,244,3,240,7,6,9,244,2,240,12,5,8
+	db 5,18,244,1,240,5,3,17,244,2,240,12,5,17,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,17,244,1,240,5
+	db 3,17,244,3,240,7,6,17,6,9,6,9,6,8,6,9
+	db 244,1,240,5,3,17,244,2,240,12,5,18,244,3,240,7
+	db 6,8,244,2,240,12,5,9,5,17,244,1,240,5,3,18
+	db 244,2,240,12,5,17,244,3,240,7,6,9,244,2,240,12
+	db 5,8,5,18,244,1,240,5,3,17,244,2,240,12,5,17
+	db 244,3,240,7,6,9,244,2,240,12,5,8,5,18,244,1
+	db 240,5,3,17,244,2,240,12,5,17,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,17,244,1,240,5,3,17,244,2
+	db 240,12,5,18,244,3,240,7,6,8,244,2,240,12,5,9
+	db 5,17,244,1,240,5,3,18,244,2,240,12,5,17,244,3
+	db 240,7,6,8,244,2,240,12,5,9,5,17,244,1,240,5
+	db 3,18,244,2,240,12,5,17,244,3,240,7,6,9,244,2
+	db 240,12,5,8,5,18,244,1,240,5,3,17,244,3,240,7
+	db 6,17,6,9,6,9,6,8,6,9,244,1,240,5,3,17
+	db 244,2,240,12,5,18,244,3,240,7,6,8,244,2,240,12
+	db 5,9,5,17,244,1,240,5,3,17,244,2,240,12,5,18
+	db 244,3,240,7,6,8,244,2,240,12,5,9,5,17,244,1
+	db 240,5,3,18,244,2,240,12,5,17,244,3,240,7,6,9
+	db 244,2,240,12,5,8,5,18,244,1,240,5,3,17,244,2
+	db 240,12,5,17,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,17,244,1,240,5,3,17,244,2,240,12,5,17,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,17,244,1,240,5
+	db 3,17,244,2,240,12,5,18,244,3,240,7,6,8,244,2
+	db 240,12,5,9,5,17,244,1,240,5,3,18,244,2,240,12
+	db 5,17,244,3,240,7,6,9,244,2,240,12,5,8,5,18
+	db 244,1,240,5,3,17,244,3,240,7,6,17,6,9,6,8
+	db 6,9,6,9,244,1,240,5,3,17,244,2,240,12,5,17
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,17,244,1
+	db 240,5,3,17,244,2,240,12,5,18,244,3,240,7,6,8
+	db 244,2,240,12,5,9,5,17,244,1,240,5,3,18,244,2
+	db 240,12,5,17,244,3,240,7,6,8,244,2,240,12,5,9
+	db 5,17,244,1,240,5,3,18,244,2,240,12,5,17,244,3
+	db 240,7,6,9,244,2,240,12,5,8,5,18,244,1,240,5
+	db 3,17,244,2,240,12,5,17,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,17,244,1,240,5,3,17,244,2,240,12
+	db 5,18,244,3,240,7,6,8,244,2,240,12,5,9,5,17
+	db 244,1,240,5,3,17,244,2,240,12,5,18,244,3,240,7
+	db 6,8,244,2,240,12,5,9,5,17,244,1,240,5,3,18
+	db 244,3,240,7,6,17,6,9,6,8,6,9,6,9,244,1
+	db 240,5,3,17,244,2,240,12,5,17,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,17,244,1,240,5,3,17,244,2
+	db 240,12,5,17,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,17,244,1,240,5,3,17,244,2,240,12,5,18,244,3
+	db 240,7,6,8,244,2,240,12,5,9,5,17,244,1,240,5
+	db 3,18,244,2,240,12,5,17,244,3,240,7,6,9,244,2
+	db 240,12,5,8,5,18,244,1,240,5,3,17,244,2,240,12
+	db 5,17,244,3,240,7,6,9,244,2,240,12,5,8,5,18
+	db 244,1,240,5,3,17,244,2,240,12,5,17,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,17,244,1,240,5,3,17
+	db 244,2,240,12,5,18,244,3,240,7,6,8,244,2,240,12
+	db 5,9,5,17,244,1,240,5,3,18,244,3,240,7,6,17
+	db 6,9,6,8,6,9,6,8,244,1,240,5,3,18,244,2
+	db 240,12,5,17,244,3,240,7,6,9,244,2,240,12,5,8
+	db 5,18,244,1,240,5,3,17,244,2,240,12,5,17,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,17,244,1,240,5
+	db 3,17,244,2,240,12,5,18,244,3,240,7,6,8,244,2
+	db 240,12,5,9,5,17,244,1,240,5,3,17,244,2,240,12
+	db 5,18,244,3,240,7,6,8,244,2,240,12,5,9,5,17
+	db 244,1,240,5,3,18,244,2,240,12,5,17,244,3,240,7
+	db 6,9,244,2,240,12,5,8,5,18,244,1,240,5,3,17
+	db 244,2,240,12,5,17,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,17,244,1,240,5,3,17,244,2,240,12,5,17
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,17,244,1
+	db 240,5,3,17,244,3,240,7,6,18,6,8,6,9,6,9
+	db 6,8,244,1,240,5,3,18,244,2,240,12,5,17,244,3
+	db 240,7,6,9,244,2,240,12,5,8,5,18,244,1,240,5
+	db 3,17,244,2,240,12,5,17,244,3,240,7,6,9,244,2
+	db 240,12,5,8,5,18,244,1,240,5,3,17,244,2,240,12
+	db 5,17,244,3,240,7,6,9,244,2,240,12,5,9,5,17
+	db 244,1,240,5,3,17,244,2,240,12,5,18,244,3,240,7
+	db 6,8,244,2,240,12,5,9,5,17,244,1,240,5,3,18
+	db 244,2,240,12,5,17,244,3,240,7,6,9,244,2,240,12
+	db 5,8,5,17,244,1,240,5,3,18,244,2,240,12,5,17
+	db 244,3,240,7,6,9,244,2,240,12,5,8,5,18,244,1
+	db 240,5,3,17,244,2,240,12,5,17,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,17,244,1,240,5,3,17,244,3
+	db 240,7,6,18,6,8,6,9,6,9,6,8,244,1,240,5
+	db 3,17,244,2,240,12,5,18,244,3,240,7,6,8,244,2
+	db 240,12,5,9,5,17,244,1,240,5,3,18,244,2,240,12
+	db 5,17,244,3,240,7,6,9,244,2,240,12,5,8,5,18
+	db 244,1,240,5,3,17,244,2,240,12,5,17,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,17,244,1,240,5,3,17
+	db 244,2,240,12,5,17,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,17,244,1,240,5,3,17,244,2,240,12,5,18
+	db 244,3,240,7,6,8,244,2,240,12,5,9,5,17,244,1
+	db 240,5,3,18,244,2,240,12,5,17,244,3,240,7,6,9
+	db 244,2,240,12,5,8,5,18,244,1,240,5,3,17,244,2
+	db 240,12,5,17,244,3,240,7,6,9,244,2,240,12,5,8
+	db 5,18,244,1,240,5,3,17,244,3,240,7,6,17,6,9
+	db 6,9,6,8,6,9,244,1,240,5,3,17,244,2,240,12
+	db 5,18,244,3,240,7,6,8,244,2,240,12,5,9,5,17
+	db 244,1,240,5,3,18,244,2,240,12,5,17,244,3,240,7
+	db 6,9,244,2,240,12,5,8,5,17,244,1,240,5,3,18
+	db 244,2,240,12,5,17,244,3,240,7,6,9,244,2,240,12
+	db 5,8,5,18,244,1,240,5,3,17,244,2,240,12,5,17
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,17,244,1
+	db 240,5,3,17,244,2,240,12,5,18,244,3,240,7,6,8
+	db 244,2,240,12,5,9,5,17,244,1,240,5,3,17,244,2
+	db 240,12,5,18,244,3,240,7,6,8,244,2,240,12,5,9
+	db 5,17,244,1,240,5,3,18,244,2,240,12,5,17,244,3
+	db 240,7,6,9,244,2,240,12,5,8,5,18,244,1,240,5
+	db 3,17,244,3,240,7,6,17,6,9,6,9,6,8,6,9
+	db 244,1,240,5,3,17,244,2,240,12,5,17,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,17,244,1,240,5,3,17
+	db 244,2,240,12,5,18,244,3,240,7,6,8,244,2,240,12
+	db 5,9,5,17,244,1,240,5,3,18,244,2,240,12,5,17
+	db 244,3,240,7,6,9,244,2,240,12,5,8,5,18,244,1
+	db 240,5,3,17,244,2,240,12,5,17,244,3,240,7,6,9
+	db 244,2,240,12,5,8,5,18,244,1,240,5,3,17,244,2
+	db 240,12,5,17,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,17,244,1,240,5,3,17,244,2,240,12,5,18,244,3
+	db 240,7,6,8,244,2,240,12,5,9,5,17,244,1,240,5
+	db 3,18,244,2,240,12,5,17,244,3,240,7,6,9,244,2
+	db 240,12,5,8,5,17,244,1,240,5,3,18,244,3,240,7
+	db 6,17,6,9,6,8,6,9,6,9,244,1,240,5,3,17
+	db 244,2,240,12,5,17,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,17,244,1,240,5,3,17,244,2,240,12,5,18
+	db 244,3,240,7,6,8,244,2,240,12,5,9,5,17,244,1
+	db 240,5,3,17,244,2,240,12,5,18,244,3,240,7,6,8
+	db 244,2,240,12,5,9,5,17,244,1,240,5,3,18,244,2
+	db 240,12,5,17,244,3,240,7,6,9,244,2,240,12,5,8
+	db 5,18,244,1,240,5,3,17,244,2,240,12,5,17,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,17,244,1,240,5
+	db 3,17,244,2,240,12,5,17,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,17,244,1,240,5,3,17,244,2,240,12
+	db 5,18,244,3,240,7,6,8,244,2,240,12,5,9,5,17
+	db 244,1,240,5,3,18,244,3,240,7,6,17,6,9,6,8
+	db 6,9,6,9,244,1,240,5,3,17,244,2,240,12,5,17
+	db 244,3,240,7,6,9,244,2,240,12,5,8,5,18,244,1
+	db 240,5,3,17,244,2,240,12,5,17,244,3,240,7,6,9
+	db 244,2,240,12,5,9,5,17,244,1,240,5,3,17,244,2
+	db 240,12,5,18,244,3,240,7,6,8,244,2,240,12,5,9
+	db 5,17,244,1,240,5,3,18,244,2,240,12,5,17,244,3
+	db 240,7,6,9,244,2,240,12,5,8,5,17,244,1,240,5
+	db 3,18,244,2,240,12,5,17,244,3,240,7,6,9,244,2
+	db 240,12,5,8,5,18,244,1,240,5,3,17,244,2,240,12
+	db 5,17,244,3,240,7,6,9,244,2,240,12,5,9,5,17
+	db 244,1,240,5,3,17,244,2,240,12,5,18,244,3,240,7
+	db 6,8,244,2,240,12,5,9,5,17,244,1,240,5,3,17
+	db 244,3,240,7,6,18,6,8,6,9,6,9,6,8,244,1
+	db 240,5,3,18,244,2,240,12,5,17,244,3,240,7,6,9
+	db 244,2,240,12,5,8,5,18,244,1,240,5,3,17,244,2
+	db 240,12,5,17,244,3,240,7,6,9,244,2,240,12,5,9
+	db 5,17,244,1,240,5,3,17,244,2,240,12,5,17,244,3
+	db 240,7,6,9,244,2,240,12,5,9,5,17,244,1,240,5
+	db 3,17,244,2,240,12,5,18,244,3,240,7,6,8,244,2
+	db 240,12,5,9,5,17,244,1,240,5,3,18,244,2,240,12
+	db 5,17,244,3,240,7,6,9,244,2,240,12,5,8,5,18
+	db 244,1,240,5,3,17,244,2,240,12,5,17,244,3,240,7
+	db 6,9,244,2,240,12,5,8,5,18,244,1,240,5,3,17
+	db 244,2,240,12,5,17,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,17,244,1,240,5,3,17,244,3,240,7,6,18
+	db 6,8,6,9,6,9,6,8,244,1,240,5,3,18,244,2
+	db 240,12,5,17,244,3,240,7,6,9,244,2,240,12,5,8
+	db 5,17,244,1,240,5,3,18,244,2,240,12,5,17,244,3
+	db 240,7,6,9,244,2,240,12,5,8,5,18,244,1,240,5
+	db 3,17,244,2,240,12,5,17,244,3,240,7,6,9,244,2
+	db 240,12,5,9,5,17,244,1,240,5,3,17,244,2,240,12
+	db 5,18,244,3,240,7,6,8,244,2,240,12,5,9,5,17
+	db 244,1,240,5,3,17,244,2,240,12,5,18,244,3,240,7
+	db 6,8,244,2,240,12,5,9,5,17,244,1,240,5,3,18
+	db 244,2,240,12,5,17,244,3,240,7,6,9,244,2,240,12
+	db 5,8,5,18,244,1,240,5,3,17,244,2,240,12,5,17
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,17,244,1
+	db 240,5,3,17,244,3,240,7,6,17,6,9,6,9,6,8
+	db 6,9,244,1,240,5,3,17,244,2,240,12,5,18,244,3
+	db 240,7,6,8,244,2,240,12,5,9,5,17,244,1,240,5
+	db 3,18,244,2,240,12,5,17,244,3,240,7,6,9,244,2
+	db 240,12,5,8,5,18,244,1,240,5,3,17,244,2,240,12
+	db 5,17,244,3,240,7,6,9,244,2,240,12,5,8,5,18
+	db 244,1,240,5,3,17,244,2,240,12,5,17,244,3,240,7
+	db 6,9,244,2,240,12,5,9,5,17,244,1,240,5,3,17
+	db 244,2,240,12,5,18,244,3,240,7,6,8,244,2,240,12
+	db 5,9,5,17,244,1,240,5,3,18,244,2,240,12,5,17
+	db 244,3,240,7,6,8,244,2,240,12,5,9,5,17,244,1
+	db 240,5,3,18,244,2,240,12,5,17,244,3,240,7,6,9
+	db 244,2,240,12,5,8,5,18,244,1,240,5,3,17,244,3
+	db 240,7,6,17,6,9,6,9,6,8,6,9,244,1,240,5
+	db 3,17,244,2,240,12,5,18,244,3,240,7,6,8,244,2
+	db 240,12,5,9,5,17,244,1,240,5,3,17,244,2,240,12
+	db 5,18,244,3,240,7,6,8,244,2,240,12,5,9,5,17
+	db 244,1,240,5,3,18,244,2,240,12,5,17,244,3,240,7
+	db 6,9,244,2,240,12,5,8,5,18,244,1,240,5,3,17
+	db 244,2,240,12,5,17,244,3,240,7,6,9,244,2,240,12
+	db 5,9,5,17,244,1,240,5,3,17,244,2,240,12,5,17
+	db 244,3,240,7,6,9,244,2,240,12,5,9,5,17,0
 _song2_v0__9:
-	db 244,10,240,5,255,112,255,112,255,112,255,56,42,14,44,14
-	db 46,14,49,14,244,10,240,5,42,21,39,21,42,14,255,14
-	db 39,14,37,14,35,14,37,21,40,21,44,14,255,28,44,14
-	db 42,14,39,21,42,21,46,14,255,14,44,14,42,14,39,14
-	db 40,42,39,14,37,28,255,28,42,21,39,21,42,14,255,14
-	db 47,14,46,14,42,14,44,21,40,21,37,14,255,14,40,14
-	db 42,14,44,14,47,28,44,28,40,28,39,28,37,56,255,28
-	db 42,14,44,14,244,10,240,5,42,21,39,21,42,14,255,14
-	db 39,14,37,14,35,14,37,21,40,21,44,14,255,28,44,14
-	db 42,14,39,21,42,21,46,14,255,14,44,14,42,14,39,14
-	db 40,42,39,14,37,28,255,28,42,21,39,21,42,14,255,14
-	db 47,14,46,14,42,14,44,21,40,21,37,14,255,14,40,14
-	db 42,14,44,14,44,14,47,14,51,28,49,14,47,14,44,28
-	db 46,56,255,56,244,10,240,5,47,14,46,14,44,14,39,14
-	db 255,14,44,14,47,28,49,28,47,14,44,14,40,56,46,14
-	db 44,14,42,14,37,14,255,14,42,14,46,28,47,28,46,14
-	db 42,14,39,56,39,14,44,14,47,14,51,14,49,14,47,14
-	db 44,28,40,14,44,14,49,14,47,14,44,14,40,14,37,28
-	db 39,28,40,28,44,28,47,28,46,28,49,28,46,28,42,28
-	db 244,11,240,4,44,14,47,14,255,14,47,14,49,14,47,14
-	db 44,28,46,14,49,14,255,14,49,14,51,14,49,14,46,28
-	db 42,28,46,14,51,42,49,28,47,28,46,14,44,42,255,28
-	db 44,14,49,14,255,14,49,14,47,14,44,14,40,28,42,14
-	db 46,14,255,14,49,14,47,14,46,14,42,28,39,28,42,28
-	db 47,28,46,28,44,28,46,28,49,56,244,11,240,4,44,14
-	db 47,14,255,14,47,14,49,14,47,14,44,28,46,14,49,14
-	db 255,14,49,14,51,14,49,14,46,28,42,28,46,14,51,42
-	db 49,28,47,28,46,14,44,42,255,28,44,14,49,14,255,14
-	db 49,14,47,14,44,14,40,28,42,14,46,14,255,14,49,14
-	db 47,14,46,14,42,28,51,28,49,28,47,28,42,28,47,84
-	db 255,28,244,4,240,5,32,14,35,14,255,14,35,14,37,14
-	db 35,14,32,28,34,14,37,14,255,14,37,14,39,14,37,14
-	db 34,28,30,28,34,14,39,42,37,28,35,28,34,14,32,42
-	db 255,28,44,14,47,14,255,14,47,14,49,14,47,14,44,28
-	db 46,14,49,14,255,14,49,14,51,14,49,14,46,28,42,28
-	db 46,14,51,42,49,28,47,28,46,14,44,42,255,28,244,10
-	db 240,5,42,21,39,21,42,14,255,14,39,14,37,14,35,14
-	db 37,21,40,21,44,14,255,28,44,14,42,14,39,21,42,21
-	db 46,14,255,14,44,14,42,14,39,14,40,42,39,14,37,28
-	db 255,28,42,21,39,21,42,14,255,14,47,14,46,14,42,14
-	db 44,21,40,21,37,14,255,14,40,14,42,14,44,14,47,28
-	db 44,28,40,28,39,28,37,56,255,28,42,14,44,14,244,10
-	db 240,5,47,14,46,14,44,14,39,14,255,14,44,14,47,28
-	db 49,28,47,14,44,14,40,56,46,14,44,14,42,14,37,14
-	db 255,14,42,14,46,28,47,28,46,14,42,14,39,56,39,14
-	db 44,14,47,14,51,14,49,14,47,14,44,28,40,14,44,14
-	db 49,14,47,14,44,14,40,14,37,28,39,28,40,28,44,28
-	db 47,28,46,28,49,28,46,28,42,28,244,11,240,4,44,14
-	db 47,14,255,14,47,14,49,14,47,14,44,28,46,14,49,14
-	db 255,14,49,14,51,14,49,14,46,28,42,28,46,14,51,42
-	db 49,28,47,28,46,14,44,42,255,28,44,14,49,14,255,14
-	db 49,14,47,14,44,14,40,28,42,14,46,14,255,14,49,14
-	db 47,14,46,14,42,28,39,28,42,28,47,28,46,28,44,28
-	db 46,28,49,56,244,11,240,4,44,14,47,14,255,14,47,14
-	db 49,14,47,14,44,28,46,14,49,14,255,14,49,14,51,14
-	db 49,14,46,28,42,28,46,14,51,42,49,28,47,28,46,14
-	db 44,42,255,28,44,14,49,14,255,14,49,14,47,14,44,14
-	db 40,28,42,14,46,14,255,14,49,14,47,14,46,14,42,28
-	db 51,28,49,28,47,28,42,28,47,84,255,28,244,10,240,5
-	db 44,42,47,14,51,56,49,42,46,14,42,56,44,42,42,14
-	db 40,56,39,28,42,28,47,56,40,42,44,14,49,56,51,42
-	db 49,14,46,56,47,28,44,28,40,28,44,28,46,28,49,28
-	db 42,56,244,4,240,5,27,7,28,7,32,7,35,7,27,7
-	db 28,7,32,7,35,7,27,7,28,7,32,7,35,7,27,7
-	db 28,7,32,7,35,7,37,14,34,14,30,14,28,14,30,14
-	db 34,14,37,28,27,21,34,21,37,14,34,28,30,28,27,7
-	db 30,7,32,7,35,7,39,7,42,7,39,7,35,7,32,56
-	db 35,14,37,14,255,14,37,14,40,14,37,14,35,28,40,42
-	db 37,14,34,28,28,28,27,7,30,7,34,7,35,7,27,7
-	db 30,7,34,7,35,7,27,7,30,7,34,7,35,7,27,7
-	db 30,7,34,7,35,7,37,14,34,14,30,14,28,14,30,14
-	db 34,14,37,28,244,4,240,5,27,7,30,7,34,7,35,7
-	db 39,7,42,7,39,7,35,7,34,56,35,14,37,14,255,14
-	db 37,14,40,14,37,14,35,28,39,42,37,14,34,28,27,28
-	db 28,7,32,7,35,7,37,7,28,7,32,7,35,7,37,7
-	db 28,7,32,7,35,7,37,7,28,7,32,7,35,7,37,7
-	db 35,14,34,14,30,14,27,14,30,14,34,14,35,28,28,21
-	db 35,21,37,14,35,28,32,28,27,7,28,7,32,7,35,7
-	db 39,7,40,7,39,7,35,7,32,56,34,14,37,14,255,14
-	db 37,14,40,14,37,14,34,28,244,10,240,5,47,14,46,14
-	db 44,14,39,14,255,14,44,14,47,28,49,28,47,14,44,14
-	db 40,56,46,14,44,14,42,14,37,14,255,14,42,14,46,28
-	db 47,28,46,14,42,14,39,56,39,14,44,14,47,14,51,14
-	db 49,14,47,14,44,28,40,14,44,14,49,14,47,14,44,14
-	db 40,14,37,28,39,28,40,28,44,28,47,28,46,28,49,28
-	db 46,28,42,28,244,11,240,4,44,14,47,14,255,14,47,14
-	db 49,14,47,14,44,28,46,14,49,14,255,14,49,14,51,14
-	db 49,14,46,28,42,28,46,14,51,42,49,28,47,28,46,14
-	db 44,42,255,28,44,14,49,14,255,14,49,14,47,14,44,14
-	db 40,28,42,14,46,14,255,14,49,14,47,14,46,14,42,28
-	db 39,28,42,28,47,28,46,28,44,28,46,28,49,56,244,11
-	db 240,4,44,14,47,14,255,14,47,14,49,14,47,14,44,28
-	db 46,14,49,14,255,14,49,14,51,14,49,14,46,28,42,28
-	db 46,14,51,42,49,28,47,28,46,14,44,42,255,28,44,14
-	db 49,14,255,14,49,14,47,14,44,14,40,28,42,14,46,14
-	db 255,14,49,14,47,14,46,14,42,28,51,28,49,28,47,28
-	db 42,28,47,84,255,28,244,10,240,5,39,112,40,112,44,112
-	db 46,56,255,56,0
+	db 244,10,240,5,36,124,17,15,19,15,20,16,22,15,24,16
+	db 20,15,24,30,23,16,19,15,23,31,22,15,18,15,22,30
+	db 17,16,19,15,20,15,22,15,24,15,20,15,24,15,17,15
+	db 15,15,24,16,20,15,24,15,15,60,17,15,19,15,20,14
+	db 22,15,24,15,20,15,24,30,23,15,19,15,23,29,22,15
+	db 18,15,22,29,17,15,19,15,20,15,22,14,24,15,20,15
+	db 24,14,29,15,27,15,24,14,20,15,24,15,27,58,24,14
+	db 26,15,16,15,17,14,19,15,16,14,19,29,20,14,16,15
+	db 20,29,19,14,16,15,19,28,24,15,26,14,16,14,17,15
+	db 19,14,16,14,19,29,20,14,16,14,20,29,19,56,24,15
+	db 26,14,28,14,29,14,31,14,28,14,31,28,32,15,28,14
+	db 32,28,31,14,28,14,31,28,24,14,26,14,28,14,29,13
+	db 31,14,28,14,31,28,32,14,28,14,32,28,31,55,17,14
+	db 19,13,20,14,22,14,24,14,20,13,24,28,23,14,19,13
+	db 23,28,22,13,18,14,22,27,17,14,19,13,20,14,22,14
+	db 24,13,20,14,24,13,17,14,15,13,24,14,20,13,24,14
+	db 15,54,17,13,19,14,20,13,22,13,24,14,20,13,24,27
+	db 23,13,19,14,23,26,22,14,18,13,22,27,17,13,19,13
+	db 20,13,22,14,24,13,20,13,24,13,29,13,27,14,24,13
+	db 20,13,24,13,27,53,29,13,31,13,32,13,34,13,36,13
+	db 32,13,36,26,35,13,31,13,35,26,34,13,30,13,34,26
+	db 29,13,31,13,32,13,34,13,36,13,32,13,36,13,41,13
+	db 39,12,36,13,32,13,36,13,39,51,41,13,43,13,44,13
+	db 46,12,48,13,44,13,48,25,47,13,43,13,47,25,46,13
+	db 42,13,46,25,41,12,43,13,44,13,46,12,48,13,44,13
+	db 48,12,41,13,51,12,48,13,44,12,48,13,51,50,36,12
+	db 38,13,40,12,41,13,43,12,40,13,43,25,44,12,40,12
+	db 44,25,43,13,40,12,43,25,36,12,38,12,40,13,41,12
+	db 43,12,40,13,43,24,44,13,40,12,44,24,43,49,48,12
+	db 50,13,40,12,41,12,43,12,40,12,43,25,44,12,40,12
+	db 44,24,43,12,40,12,43,24,48,12,50,12,40,13,41,12
+	db 43,12,40,12,43,24,44,12,40,12,44,24,43,47,29,12
+	db 31,12,32,12,34,11,36,12,32,12,36,24,35,11,31,12
+	db 35,23,34,12,30,12,35,23,29,12,31,11,32,12,34,11
+	db 36,12,32,11,36,12,41,11,39,12,36,11,34,12,36,11
+	db 39,46,41,11,43,11,44,12,46,11,48,11,44,12,48,22
+	db 47,12,43,11,47,22,46,11,42,11,46,23,41,11,43,11
+	db 44,11,46,11,48,11,44,11,48,11,41,11,48,11,44,11
+	db 48,11,41,11,41,44,41,11,43,11,44,11,46,11,48,11
+	db 44,10,48,22,47,11,43,11,47,21,46,11,42,11,46,21
+	db 41,11,43,10,44,11,46,11,48,10,44,11,48,10,41,11
+	db 51,11,48,10,44,11,48,10,51,42,41,11,43,10,44,11
+	db 46,10,48,11,44,10,48,21,47,10,43,11,47,20,46,11
+	db 42,10,46,21,41,10,43,10,44,10,46,11,48,10,44,10
+	db 48,10,41,10,51,11,48,10,44,10,48,10,51,41,48,10
+	db 50,10,40,10,41,10,43,10,40,10,43,20,44,10,40,10
+	db 44,20,43,10,40,10,43,20,48,9,49,10,40,10,41,10
+	db 43,10,40,10,43,19,44,10,40,10,44,20,43,39,48,9
+	db 50,10,40,10,41,9,43,10,40,10,43,19,45,10,40,9
+	db 45,20,43,9,40,10,43,19,48,9,49,10,40,10,41,9
+	db 43,10,40,9,43,19,44,10,40,9,44,19,43,38,41,9
+	db 43,9,44,10,46,9,48,9,44,10,48,18,47,10,43,9
+	db 47,18,46,10,42,9,46,18,41,10,43,9,44,9,46,9
+	db 48,10,41,9,48,9,41,9,51,9,48,9,44,9,48,10
+	db 51,36,41,9,43,9,44,9,46,9,48,9,44,9,48,18
+	db 47,9,43,9,47,18,46,9,42,9,46,18,41,9,43,9
+	db 44,9,46,9,48,8,44,9,48,9,41,9,48,9,44,9
+	db 48,9,41,8,41,36,255,17,41,18,255,52,41,17,255,35
+	db 41,9,43,8,44,9,46,8,48,9,44,9,48,8,41,9
+	db 40,8,48,9,40,8,43,9,41,34,255,17,41,17,255,51
+	db 41,17,255,33,41,8,43,9,44,8,46,8,48,9,44,8
+	db 48,8,41,9,40,8,48,8,40,9,43,8,41,33,255,16
+	db 41,17,255,49,41,16,255,49,41,16,41,16,41,17,41,16
+	db 41,16,41,16,41,16,255,143,41,15,244,11,240,4,36,96
+	db 17,12,19,12,20,11,22,12,24,12,20,12,24,24,23,12
+	db 19,11,23,24,22,12,18,12,22,23,17,12,19,12,20,11
+	db 22,12,24,12,20,12,24,11,17,12,15,12,24,11,20,12
+	db 24,12,15,46,17,12,19,11,20,12,22,12,24,11,20,12
+	db 24,23,23,11,19,12,23,23,22,11,18,12,22,23,17,11
+	db 19,12,20,11,22,12,24,11,20,11,24,12,29,11,27,12
+	db 24,11,20,11,24,12,27,45,24,11,26,12,16,11,17,11
+	db 19,12,16,11,19,22,20,12,16,11,20,22,19,11,16,12
+	db 19,22,24,11,26,11,16,12,17,11,19,11,16,11,19,22
+	db 20,11,16,11,20,23,19,44,24,11,26,11,28,11,29,11
+	db 31,11,28,11,31,22,32,11,28,11,32,22,31,11,28,11
+	db 31,21,24,11,26,11,28,11,29,11,31,11,28,11,31,21
+	db 32,11,28,11,32,22,31,43,17,11,19,11,20,10,22,11
+	db 24,11,20,10,24,22,23,11,19,10,23,22,22,10,18,11
+	db 22,21,17,11,19,11,20,10,22,11,24,11,20,10,24,11
+	db 17,10,15,11,24,11,20,10,24,11,15,42,17,10,19,11
+	db 20,10,22,11,24,10,20,11,24,21,23,10,19,11,23,21
+	db 22,10,18,10,22,21,17,11,19,10,20,10,22,11,24,10
+	db 20,11,24,10,29,10,27,11,24,10,20,10,24,11,27,41
+	db 29,10,31,10,32,11,34,10,36,10,32,10,36,21,35,10
+	db 31,10,35,21,34,10,30,10,34,20,29,11,31,10,32,10
+	db 34,10,36,10,32,10,36,10,41,11,39,10,36,10,32,10
+	db 36,10,39,40,41,10,43,10,44,10,46,10,48,10,44,10
+	db 48,20,47,10,43,10,47,20,46,10,42,10,46,20,41,10
+	db 43,10,44,10,46,10,48,10,44,10,48,10,41,10,51,9
+	db 48,10,44,10,48,10,51,39,36,10,38,10,40,10,41,10
+	db 43,10,40,9,43,20,44,10,40,9,44,20,43,10,40,10
+	db 43,19,36,10,38,9,40,10,41,10,43,10,40,9,43,20
+	db 44,9,40,10,44,19,43,39,48,9,50,10,40,10,41,9
+	db 43,10,40,9,43,20,44,9,40,10,44,19,43,9,40,10
+	db 43,19,48,10,50,9,40,10,41,9,43,10,40,9,43,19
+	db 44,9,40,10,44,19,43,37,29,10,31,9,32,10,34,9
+	db 36,9,32,10,36,18,35,10,31,9,35,19,34,9,30,9
+	db 35,19,29,9,31,9,32,10,34,9,36,9,32,9,36,9
+	db 41,10,39,9,36,9,34,9,36,9,39,37,41,9,43,9
+	db 44,9,46,9,48,9,44,9,48,19,47,9,43,9,47,18
+	db 46,9,42,9,46,18,41,9,43,9,44,9,46,9,48,9
+	db 44,9,48,8,41,9,48,9,44,9,48,9,41,9,41,36
+	db 41,8,43,9,44,9,46,9,48,9,44,9,48,17,47,9
+	db 43,9,47,17,46,9,42,9,46,17,41,9,43,9,44,9
+	db 46,8,48,9,44,9,48,8,41,9,51,9,48,8,44,9
+	db 48,9,51,34,41,9,43,8,44,9,46,9,48,8,44,9
+	db 48,17,47,8,43,9,47,17,46,9,42,8,46,17,41,9
+	db 43,8,44,8,46,9,48,8,44,9,48,8,41,9,51,8
+	db 48,9,44,8,48,8,51,34,48,8,50,9,40,8,41,8
+	db 43,9,40,8,43,17,44,8,40,8,44,17,43,8,40,9
+	db 43,16,48,8,49,9,40,8,41,8,43,8,40,9,43,16
+	db 44,8,40,9,44,16,43,33,48,8,50,8,40,8,41,8
+	db 43,8,40,8,43,17,45,8,40,8,45,16,43,8,40,8
+	db 43,16,48,8,49,8,40,8,41,8,43,8,40,8,43,17
+	db 44,8,40,7,44,16,43,32,41,8,43,8,44,8,46,8
+	db 48,8,44,8,48,16,47,8,43,7,47,16,46,8,42,8
+	db 46,16,41,8,43,7,44,8,46,8,48,8,41,8,48,7
+	db 41,8,51,8,48,8,44,8,48,7,51,31,41,8,43,8
+	db 44,8,46,7,48,8,44,8,48,15,47,8,43,8,47,15
+	db 46,8,42,7,46,16,41,7,43,8,44,8,46,7,48,8
+	db 44,7,48,8,41,8,48,7,44,8,48,7,41,8,41,30
+	db 255,15,41,16,255,45,41,15,255,30,41,7,43,7,44,8
+	db 46,7,48,8,44,7,48,8,41,7,40,8,48,7,40,7
+	db 43,8,41,29,255,15,41,15,255,44,41,14,255,30,41,7
+	db 43,7,44,8,46,7,48,7,44,7,48,8,41,7,40,7
+	db 48,7,40,8,43,7,41,29,255,14,41,14,255,43,41,15
+	db 255,42,41,15,41,14,41,14,41,14,41,14,41,14,41,15
+	db 255,126,41,13,0
 _song2_v1__9:
-	db 244,6,240,6,4,14,4,14,4,14,4,14,4,14,11,14
-	db 16,14,4,14,6,14,6,14,6,14,6,14,6,14,13,14
-	db 18,14,6,14,9,14,9,14,9,14,9,14,9,14,16,14
-	db 21,14,9,14,11,14,11,14,11,14,11,14,11,14,18,14
-	db 23,14,11,14,244,6,240,6,255,21,11,21,16,14,255,21
-	db 11,21,4,14,255,21,13,21,18,14,255,21,13,21,6,14
-	db 255,21,15,21,20,14,255,21,15,21,8,14,255,21,13,21
-	db 18,14,255,21,13,21,6,14,255,21,11,21,16,14,255,21
-	db 11,21,4,14,255,21,13,21,18,14,255,21,13,21,6,14
-	db 255,21,16,21,21,14,255,21,16,21,9,14,255,21,18,21
-	db 23,14,255,21,18,21,11,14,244,6,240,6,255,21,11,21
-	db 16,14,255,21,11,21,4,14,255,21,13,21,18,14,255,21
-	db 13,21,6,14,255,21,15,21,20,14,255,21,15,21,8,14
-	db 255,21,13,21,18,14,255,21,13,21,6,14,255,21,11,21
-	db 16,14,255,21,11,21,4,14,255,21,13,21,18,14,255,21
-	db 13,21,6,14,255,21,16,21,21,14,255,21,16,21,9,14
-	db 255,21,18,21,23,14,255,21,18,21,11,14,244,6,240,6
-	db 1,21,1,7,8,21,8,7,1,21,1,7,8,21,8,7
-	db 6,21,6,7,1,21,1,7,6,21,6,7,1,21,1,7
-	db 11,21,11,7,6,21,6,7,11,21,11,7,6,21,6,7
-	db 4,21,4,7,11,21,11,7,4,21,4,7,11,21,11,7
-	db 1,21,1,7,8,21,8,7,1,21,1,7,8,21,8,7
-	db 6,21,6,7,1,21,1,7,6,21,6,7,1,21,1,7
-	db 9,21,9,7,4,21,4,7,9,21,9,7,4,21,4,7
-	db 11,21,11,7,6,21,6,7,11,21,11,7,6,21,6,7
-	db 244,6,240,6,9,21,9,7,255,14,21,14,9,14,255,14
-	db 16,14,19,14,11,21,11,7,255,14,23,14,11,14,255,14
-	db 18,14,21,14,8,21,8,7,255,14,20,14,8,14,255,14
-	db 15,14,18,14,1,21,1,7,255,14,13,14,1,14,255,14
-	db 8,14,11,14,6,21,6,7,255,14,18,14,6,14,255,14
-	db 13,14,16,14,11,21,11,7,255,14,23,14,11,14,255,14
-	db 18,14,21,14,4,21,4,7,255,14,16,14,4,14,255,14
-	db 11,14,14,14,11,21,11,7,255,14,23,14,11,14,255,14
-	db 18,14,21,14,244,6,240,6,9,21,9,7,255,14,21,14
-	db 9,14,255,14,16,14,19,14,11,21,11,7,255,14,23,14
-	db 11,14,255,14,18,14,21,14,8,21,8,7,255,14,20,14
-	db 8,14,255,14,15,14,18,14,1,21,1,7,255,14,13,14
-	db 1,14,255,14,8,14,11,14,6,21,6,7,255,14,18,14
-	db 6,14,255,14,13,14,16,14,11,21,11,7,255,14,23,14
-	db 11,14,255,14,18,14,21,14,4,21,4,7,255,14,16,14
-	db 4,14,255,14,11,14,14,14,11,21,11,7,255,14,23,14
-	db 11,14,255,14,18,14,21,14,244,6,240,6,9,21,9,7
-	db 255,14,21,14,9,14,255,14,16,14,19,14,11,21,11,7
-	db 255,14,23,14,11,14,255,14,18,14,21,14,8,21,8,7
-	db 255,14,20,14,8,14,255,14,15,14,18,14,1,21,1,7
-	db 255,14,13,14,1,14,255,14,8,14,11,14,6,21,6,7
-	db 255,14,18,14,6,14,255,14,13,14,16,14,11,21,11,7
-	db 255,14,23,14,11,14,255,14,18,14,21,14,4,21,4,7
-	db 255,14,16,14,4,14,255,14,11,14,14,14,11,21,11,7
-	db 255,14,23,14,11,14,255,14,18,14,21,14,244,6,240,6
-	db 255,21,11,21,16,14,255,21,11,21,4,14,255,21,13,21
-	db 18,14,255,21,13,21,6,14,255,21,15,21,20,14,255,21
-	db 15,21,8,14,255,21,13,21,18,14,255,21,13,21,6,14
-	db 255,21,11,21,16,14,255,21,11,21,4,14,255,21,13,21
-	db 18,14,255,21,13,21,6,14,255,21,16,21,21,14,255,21
-	db 16,21,9,14,255,21,18,21,23,14,255,21,18,21,11,14
-	db 244,6,240,6,1,21,1,7,8,21,8,7,1,21,1,7
-	db 8,21,8,7,6,21,6,7,1,21,1,7,6,21,6,7
-	db 1,21,1,7,11,21,11,7,6,21,6,7,11,21,11,7
-	db 6,21,6,7,4,21,4,7,11,21,11,7,4,21,4,7
-	db 11,21,11,7,1,21,1,7,8,21,8,7,1,21,1,7
-	db 8,21,8,7,6,21,6,7,1,21,1,7,6,21,6,7
-	db 1,21,1,7,9,21,9,7,4,21,4,7,9,21,9,7
-	db 4,21,4,7,11,21,11,7,6,21,6,7,11,21,11,7
-	db 6,21,6,7,244,6,240,6,9,21,9,7,255,14,21,14
-	db 9,14,255,14,16,14,19,14,11,21,11,7,255,14,23,14
-	db 11,14,255,14,18,14,21,14,8,21,8,7,255,14,20,14
-	db 8,14,255,14,15,14,18,14,1,21,1,7,255,14,13,14
-	db 1,14,255,14,8,14,11,14,6,21,6,7,255,14,18,14
-	db 6,14,255,14,13,14,16,14,11,21,11,7,255,14,23,14
-	db 11,14,255,14,18,14,21,14,4,21,4,7,255,14,16,14
-	db 4,14,255,14,11,14,14,14,11,21,11,7,255,14,23,14
-	db 11,14,255,14,18,14,21,14,244,6,240,6,9,21,9,7
-	db 255,14,21,14,9,14,255,14,16,14,19,14,11,21,11,7
-	db 255,14,23,14,11,14,255,14,18,14,21,14,8,21,8,7
-	db 255,14,20,14,8,14,255,14,15,14,18,14,1,21,1,7
-	db 255,14,13,14,1,14,255,14,8,14,11,14,6,21,6,7
-	db 255,14,18,14,6,14,255,14,13,14,16,14,11,21,11,7
-	db 255,14,23,14,11,14,255,14,18,14,21,14,4,21,4,7
-	db 255,14,16,14,4,14,255,14,11,14,14,14,11,21,11,7
-	db 255,14,23,14,11,14,255,14,18,14,21,14,244,6,240,6
-	db 1,28,4,28,8,28,13,28,8,28,11,28,15,28,20,28
-	db 9,28,13,28,16,28,21,28,4,28,8,28,11,28,16,28
-	db 6,28,9,28,13,28,18,28,8,28,11,28,15,28,20,28
-	db 9,28,13,28,16,28,21,28,11,28,15,28,18,28,23,28
-	db 244,6,240,6,9,21,9,7,255,14,21,14,9,14,255,14
-	db 16,14,19,14,11,21,11,7,255,14,23,14,11,14,255,14
-	db 18,14,21,14,8,21,8,7,255,14,20,14,8,14,255,14
-	db 15,14,18,14,1,21,1,7,255,14,13,14,1,14,255,14
-	db 8,14,11,14,6,21,6,7,255,14,18,14,6,14,255,14
-	db 13,14,16,14,11,21,11,7,255,14,23,14,11,14,255,14
-	db 18,14,21,14,4,21,4,7,255,14,16,14,4,14,255,14
-	db 11,14,14,14,11,21,11,7,255,14,23,14,11,14,255,14
-	db 18,14,21,14,244,6,240,6,255,21,11,21,16,14,255,21
-	db 11,21,4,14,255,21,13,21,18,14,255,21,13,21,6,14
-	db 255,21,15,21,20,14,255,21,15,21,8,14,255,21,13,21
-	db 18,14,255,21,13,21,6,14,255,21,11,21,16,14,255,21
-	db 11,21,4,14,255,21,13,21,18,14,255,21,13,21,6,14
-	db 255,21,16,21,21,14,255,21,16,21,9,14,255,21,18,21
-	db 23,14,255,21,18,21,11,14,244,6,240,6,1,21,1,7
-	db 8,21,8,7,1,21,1,7,8,21,8,7,6,21,6,7
-	db 1,21,1,7,6,21,6,7,1,21,1,7,11,21,11,7
-	db 6,21,6,7,11,21,11,7,6,21,6,7,4,21,4,7
-	db 11,21,11,7,4,21,4,7,11,21,11,7,1,21,1,7
-	db 8,21,8,7,1,21,1,7,8,21,8,7,6,21,6,7
-	db 1,21,1,7,6,21,6,7,1,21,1,7,9,21,9,7
-	db 4,21,4,7,9,21,9,7,4,21,4,7,11,21,11,7
-	db 6,21,6,7,11,21,11,7,6,21,6,7,244,6,240,6
-	db 9,21,9,7,255,14,21,14,9,14,255,14,16,14,19,14
-	db 11,21,11,7,255,14,23,14,11,14,255,14,18,14,21,14
-	db 8,21,8,7,255,14,20,14,8,14,255,14,15,14,18,14
-	db 1,21,1,7,255,14,13,14,1,14,255,14,8,14,11,14
-	db 6,21,6,7,255,14,18,14,6,14,255,14,13,14,16,14
-	db 11,21,11,7,255,14,23,14,11,14,255,14,18,14,21,14
-	db 4,21,4,7,255,14,16,14,4,14,255,14,11,14,14,14
-	db 11,21,11,7,255,14,23,14,11,14,255,14,18,14,21,14
-	db 244,6,240,6,9,21,9,7,255,14,21,14,9,14,255,14
-	db 16,14,19,14,11,21,11,7,255,14,23,14,11,14,255,14
-	db 18,14,21,14,8,21,8,7,255,14,20,14,8,14,255,14
-	db 15,14,18,14,1,21,1,7,255,14,13,14,1,14,255,14
-	db 8,14,11,14,6,21,6,7,255,14,18,14,6,14,255,14
-	db 13,14,16,14,11,21,11,7,255,14,23,14,11,14,255,14
-	db 18,14,21,14,4,21,4,7,255,14,16,14,4,14,255,14
-	db 11,14,14,14,11,21,11,7,255,14,23,14,11,14,255,14
-	db 18,14,21,14,244,6,240,6,4,28,8,28,11,28,16,28
-	db 6,28,9,28,13,28,18,28,9,28,13,28,16,28,21,28
-	db 11,28,15,28,18,28,23,28,0
+	db 244,6,240,6,255,124,5,30,12,31,5,31,12,30,5,31
+	db 12,31,5,30,12,30,5,31,12,30,5,30,12,30,8,31
+	db 3,30,8,30,3,30,5,30,12,29,5,30,12,30,5,30
+	db 12,29,5,30,12,29,5,30,12,29,5,30,12,29,8,29
+	db 3,30,8,29,3,29,12,29,7,29,12,29,7,29,8,29
+	db 4,29,12,29,7,28,12,29,7,29,12,28,7,29,8,28
+	db 4,29,12,28,7,28,12,29,7,28,12,28,7,28,8,29
+	db 4,28,12,28,7,28,12,28,7,27,12,28,7,28,8,28
+	db 4,28,12,27,7,28,5,27,12,28,5,27,12,28,5,27
+	db 12,28,5,27,12,27,5,27,12,28,5,27,12,27,8,27
+	db 3,27,8,27,3,27,5,27,12,26,5,27,12,27,5,27
+	db 12,26,5,27,12,27,5,26,5,27,3,26,1,26,12,27
+	db 10,26,7,26,5,27,5,26,12,6,11,7,12,13,5,26
+	db 12,7,11,6,12,13,5,26,12,7,11,6,12,13,5,26
+	db 12,7,11,6,12,13,5,26,12,7,11,6,12,13,5,26
+	db 12,6,11,7,12,13,8,25,15,7,14,6,15,13,8,26
+	db 15,6,14,6,15,13,5,26,12,6,11,7,12,12,5,26
+	db 12,6,11,7,12,12,5,26,12,6,11,6,12,13,5,26
+	db 12,6,11,6,12,13,5,25,12,6,11,7,12,12,5,26
+	db 12,6,11,6,12,13,8,25,15,6,14,6,15,13,8,25
+	db 15,6,14,6,15,13,12,25,19,6,18,6,19,13,12,25
+	db 19,6,18,6,19,13,8,24,20,7,19,6,20,12,12,25
+	db 19,6,18,6,19,13,12,24,19,7,18,6,19,12,12,25
+	db 19,6,18,6,19,12,8,25,20,6,19,6,20,12,12,25
+	db 19,6,18,6,19,12,12,25,19,6,18,6,19,12,12,24
+	db 19,6,18,6,19,13,8,24,20,6,19,6,20,12,12,24
+	db 19,6,18,6,19,12,12,24,19,7,18,6,19,12,12,24
+	db 19,6,18,6,19,12,8,24,20,6,19,6,20,12,12,23
+	db 19,6,18,6,19,12,5,8,11,8,12,8,20,8,11,8
+	db 12,7,5,8,11,8,12,8,20,8,11,8,12,8,5,7
+	db 11,8,12,8,19,8,11,8,12,7,5,8,11,8,12,8
+	db 18,7,11,8,12,8,5,8,11,7,12,8,20,8,11,8
+	db 12,7,5,8,11,8,12,7,20,8,11,8,12,7,8,8
+	db 14,8,15,7,12,8,14,8,15,7,8,8,14,7,15,8
+	db 12,8,14,7,15,8,5,7,11,8,12,7,20,8,11,8
+	db 12,7,5,8,11,7,12,8,20,7,11,8,12,7,5,8
+	db 11,7,12,8,20,7,11,8,12,7,5,8,11,7,12,7
+	db 20,8,11,7,12,8,5,7,11,8,12,7,17,22,15,22
+	db 13,22,12,22,10,22,8,22,7,22,5,11,15,11,13,11
+	db 12,11,5,11,15,10,13,11,12,11,5,11,15,11,13,10
+	db 12,11,5,11,15,11,13,10,12,11,5,11,15,10,13,11
+	db 12,11,5,10,15,11,13,10,12,11,8,11,19,10,17,11
+	db 15,10,8,11,19,10,17,11,15,10,5,11,15,10,13,11
+	db 12,10,5,11,15,10,13,10,12,11,5,10,15,11,13,10
+	db 12,10,5,11,15,10,13,10,12,11,5,10,15,10,13,10
+	db 12,11,5,10,15,10,13,10,12,10,5,11,15,10,13,10
+	db 12,10,5,10,15,10,13,10,12,11,12,10,22,10,20,10
+	db 19,10,12,10,22,10,20,10,19,10,8,10,19,10,20,10
+	db 22,10,12,10,22,10,20,10,19,10,12,9,22,10,20,10
+	db 19,10,12,10,22,10,20,10,19,9,8,10,19,10,20,10
+	db 22,10,12,9,22,10,20,10,19,10,12,9,11,10,21,10
+	db 19,9,12,10,11,10,21,9,19,10,9,10,19,9,21,10
+	db 11,10,12,9,11,10,21,9,19,10,12,9,11,10,21,10
+	db 19,9,12,10,11,9,21,10,19,9,9,10,19,9,21,9
+	db 11,10,12,9,11,10,21,9,19,10,5,9,15,9,13,10
+	db 12,9,5,9,15,10,13,9,12,9,5,10,15,9,13,9
+	db 12,9,5,10,15,9,13,9,12,9,5,10,15,9,13,9
+	db 12,9,5,10,15,9,13,9,12,9,8,9,19,9,15,9
+	db 13,10,8,9,19,9,15,9,13,9,5,9,15,9,13,9
+	db 12,9,5,9,15,9,13,9,12,9,5,9,15,9,13,9
+	db 12,9,5,9,15,9,13,9,12,9,5,9,15,9,13,9
+	db 12,9,5,8,15,9,13,9,12,9,5,9,15,9,13,9
+	db 12,8,5,9,15,9,13,9,12,9,5,17,20,18,255,35
+	db 5,17,20,17,255,35,13,17,20,17,12,18,20,17,12,17
+	db 19,17,5,17,20,17,5,17,20,17,255,34,5,17,20,17
+	db 255,33,13,17,20,16,12,17,20,17,12,16,19,17,5,16
+	db 20,17,5,16,20,17,255,33,5,16,20,16,255,33,5,16
+	db 20,16,20,16,20,17,20,16,20,16,20,16,20,16,255,32
+	db 5,4,17,4,5,4,17,4,5,4,17,4,5,4,17,4
+	db 5,4,17,4,5,4,17,3,5,4,17,4,5,4,17,4
+	db 5,4,17,4,5,4,17,4,5,4,17,4,5,4,17,4
+	db 5,16,17,15,244,6,240,6,255,96,5,24,12,23,5,24
+	db 12,24,5,23,12,24,5,24,12,23,5,24,12,23,5,24
+	db 12,23,8,23,3,24,8,23,3,23,5,23,12,24,5,23
+	db 12,23,5,23,12,23,5,23,12,23,5,23,12,23,5,22
+	db 12,23,8,23,3,23,8,22,3,23,12,23,7,22,12,23
+	db 7,22,8,23,4,22,12,23,7,22,12,22,7,23,12,22
+	db 7,22,8,22,4,23,12,22,7,22,12,22,7,22,12,22
+	db 7,22,8,22,4,22,12,22,7,21,12,22,7,22,12,22
+	db 7,21,8,22,4,22,12,21,7,22,5,22,12,21,5,21
+	db 12,22,5,21,12,22,5,21,12,21,5,22,12,21,5,21
+	db 12,21,8,22,3,21,8,21,3,21,5,21,12,21,5,21
+	db 12,21,5,21,12,21,5,20,12,21,5,21,5,21,3,21
+	db 1,20,12,21,10,21,7,20,5,21,5,20,12,5,11,6
+	db 12,10,5,20,12,5,11,6,12,10,5,20,12,5,11,5
+	db 12,11,5,20,12,5,11,5,12,10,5,21,12,5,11,5
+	db 12,10,5,20,12,5,11,5,12,11,8,20,15,5,14,5
+	db 15,10,8,20,15,5,14,5,15,10,5,20,12,5,11,5
+	db 12,10,5,20,12,5,11,5,12,10,5,20,12,5,11,5
+	db 12,10,5,20,12,5,11,5,12,10,5,20,12,5,11,5
+	db 12,10,5,20,12,5,11,5,12,10,8,19,15,5,14,5
+	db 15,10,8,20,15,5,14,5,15,9,12,20,19,5,18,5
+	db 19,10,12,19,19,5,18,5,19,10,8,19,20,5,19,5
+	db 20,10,12,20,19,4,18,5,19,10,12,19,19,5,18,5
+	db 19,10,12,19,19,5,18,5,19,10,8,19,20,5,19,5
+	db 20,9,12,20,19,4,18,5,19,10,12,19,19,5,18,5
+	db 19,9,12,19,19,5,18,5,19,10,8,19,20,5,19,4
+	db 20,10,12,19,19,5,18,4,19,10,12,19,19,5,18,5
+	db 19,9,12,19,19,5,18,5,19,9,8,19,20,5,19,4
+	db 20,10,12,19,19,4,18,5,19,9,5,7,11,6,12,6
+	db 20,7,11,6,12,6,5,6,11,7,12,6,20,6,11,6
+	db 12,6,5,7,11,6,12,6,19,6,11,6,12,7,5,6
+	db 11,6,12,6,18,6,11,7,12,6,5,6,11,6,12,6
+	db 20,6,11,7,12,6,5,6,11,6,12,6,20,6,11,6
+	db 12,7,8,6,14,6,15,6,12,6,14,6,15,6,8,6
+	db 14,6,15,7,12,6,14,6,15,6,5,6,11,6,12,6
+	db 20,6,11,6,12,6,5,6,11,6,12,6,20,6,11,7
+	db 12,6,5,6,11,6,12,6,20,6,11,6,12,6,5,6
+	db 11,6,12,6,20,6,11,6,12,6,5,6,11,6,12,6
+	db 17,18,15,18,13,17,12,18,10,18,8,18,7,18,5,8
+	db 15,9,13,9,12,9,5,9,15,9,13,8,12,9,5,9
+	db 15,9,13,9,12,8,5,9,15,9,13,9,12,8,5,9
+	db 15,9,13,9,12,8,5,9,15,9,13,8,12,9,8,9
+	db 19,8,17,9,15,9,8,8,19,9,17,9,15,8,5,9
+	db 15,8,13,9,12,9,5,8,15,9,13,8,12,9,5,8
+	db 15,9,13,8,12,9,5,9,15,8,13,9,12,8,5,9
+	db 15,8,13,8,12,9,5,8,15,9,13,8,12,9,5,8
+	db 15,9,13,8,12,8,5,9,15,8,13,9,12,8,12,8
+	db 22,9,20,8,19,8,12,9,22,8,20,9,19,8,8,8
+	db 19,8,20,9,22,8,12,8,22,9,20,8,19,8,12,8
+	db 22,9,20,8,19,8,12,8,22,9,20,8,19,8,8,8
+	db 19,9,20,8,22,8,12,8,22,8,20,8,19,9,12,8
+	db 11,8,21,8,19,8,12,8,11,8,21,9,19,8,9,8
+	db 19,8,21,8,11,8,12,8,11,8,21,8,19,8,12,8
+	db 11,8,21,8,19,8,12,8,11,8,21,9,19,8,9,8
+	db 19,7,21,8,11,8,12,8,11,8,21,8,19,8,5,8
+	db 15,8,13,8,12,8,5,8,15,8,13,8,12,8,5,8
+	db 15,7,13,8,12,8,5,8,15,8,13,8,12,8,5,8
+	db 15,7,13,8,12,8,5,8,15,8,13,7,12,8,8,8
+	db 19,8,15,8,13,7,8,8,19,8,15,8,13,7,5,8
+	db 15,8,13,8,12,7,5,8,15,8,13,8,12,7,5,8
+	db 15,8,13,7,12,8,5,8,15,7,13,8,12,8,5,7
+	db 15,8,13,8,12,7,5,8,15,7,13,8,12,8,5,7
+	db 15,8,13,7,12,8,5,8,15,7,13,8,12,7,5,15
+	db 20,16,255,30,5,15,20,15,255,30,13,14,20,15,12,15
+	db 20,15,12,15,19,15,5,15,20,14,5,15,20,15,255,29
+	db 5,15,20,14,255,30,13,14,20,15,12,14,20,15,12,14
+	db 19,15,5,14,20,15,5,14,20,14,255,29,5,14,20,15
+	db 255,28,5,14,20,15,20,14,20,14,20,14,20,14,20,14
+	db 20,15,255,28,5,3,17,4,5,3,17,4,5,3,17,4
+	db 5,3,17,4,5,3,17,4,5,3,17,4,5,3,17,4
+	db 5,3,17,4,5,3,17,4,5,3,17,4,5,3,17,4
+	db 5,3,17,4,5,14,17,13,0
 _song2_v2__9:
-	db 244,6,240,8,23,7,27,7,30,7,34,7,30,7,27,7
-	db 23,7,27,7,30,7,34,7,30,7,27,7,23,7,30,7
-	db 27,7,34,7,25,7,28,7,32,7,35,7,32,7,28,7
-	db 25,7,28,7,32,7,35,7,32,7,28,7,25,7,32,7
-	db 28,7,35,7,28,7,32,7,35,7,39,7,35,7,32,7
-	db 28,7,32,7,35,7,39,7,35,7,32,7,28,7,35,7
-	db 32,7,39,7,18,7,22,7,25,7,28,7,25,7,22,7
-	db 18,7,22,7,25,7,28,7,25,7,22,7,18,7,25,7
-	db 22,7,28,7,244,6,240,8,255,14,27,14,255,14,30,14
-	db 255,14,27,7,23,7,255,14,30,14,255,14,28,14,255,14
-	db 32,14,255,14,28,7,25,7,255,14,32,14,255,14,30,14
-	db 255,14,34,14,255,14,30,7,27,7,255,14,34,14,255,14
-	db 28,14,255,14,32,14,255,14,28,7,25,7,255,14,32,14
-	db 255,14,27,14,255,14,30,14,255,14,27,7,23,7,255,14
-	db 30,14,255,14,28,14,255,14,32,14,255,14,28,7,25,7
-	db 255,14,32,14,255,14,32,14,255,14,35,14,255,14,32,7
-	db 28,7,255,14,35,14,255,14,22,14,255,14,25,14,255,14
-	db 22,7,18,7,255,14,25,14,244,6,240,8,255,14,27,14
-	db 255,14,30,14,255,14,27,7,23,7,255,14,30,14,255,14
-	db 28,14,255,14,32,14,255,14,28,7,25,7,255,14,32,14
-	db 255,14,30,14,255,14,34,14,255,14,30,7,27,7,255,14
-	db 34,14,255,14,28,14,255,14,32,14,255,14,28,7,25,7
-	db 255,14,32,14,255,14,27,14,255,14,30,14,255,14,27,7
-	db 23,7,255,14,30,14,255,14,28,14,255,14,32,14,255,14
-	db 28,7,25,7,255,14,32,14,255,14,32,14,255,14,35,14
-	db 255,14,32,7,28,7,255,14,35,14,255,14,22,14,255,14
-	db 25,14,255,14,22,7,18,7,255,14,25,14,244,6,240,8
-	db 20,7,23,7,27,7,30,7,27,7,23,7,20,7,23,7
-	db 27,7,30,7,27,7,23,7,20,7,27,7,23,7,30,7
-	db 25,7,28,7,32,7,35,7,32,7,28,7,25,7,28,7
-	db 32,7,35,7,32,7,28,7,25,7,32,7,28,7,35,7
-	db 18,7,22,7,25,7,28,7,25,7,22,7,18,7,22,7
-	db 25,7,28,7,25,7,22,7,18,7,25,7,22,7,28,7
-	db 23,7,27,7,30,7,34,7,30,7,27,7,23,7,27,7
-	db 30,7,34,7,30,7,27,7,23,7,30,7,27,7,34,7
-	db 20,7,23,7,27,7,30,7,27,7,23,7,20,7,23,7
-	db 27,7,30,7,27,7,23,7,20,7,27,7,23,7,30,7
-	db 25,7,28,7,32,7,35,7,32,7,28,7,25,7,28,7
-	db 32,7,35,7,32,7,28,7,25,7,32,7,28,7,35,7
-	db 28,7,32,7,35,7,39,7,35,7,32,7,28,7,32,7
-	db 35,7,39,7,35,7,32,7,28,7,35,7,32,7,39,7
-	db 18,7,22,7,25,7,28,7,25,7,22,7,18,7,22,7
-	db 25,7,28,7,25,7,22,7,18,7,25,7,22,7,28,7
-	db 244,6,240,8,28,7,32,7,35,7,39,7,35,7,32,7
-	db 28,7,32,7,35,7,39,7,35,7,32,7,28,7,35,7
-	db 32,7,39,7,18,7,22,7,25,7,28,7,25,7,22,7
-	db 18,7,22,7,25,7,28,7,25,7,22,7,18,7,25,7
-	db 22,7,28,7,27,7,30,7,34,7,37,7,34,7,30,7
-	db 27,7,30,7,34,7,37,7,34,7,30,7,27,7,34,7
-	db 30,7,37,7,20,7,23,7,27,7,30,7,27,7,23,7
-	db 20,7,23,7,27,7,30,7,27,7,23,7,20,7,27,7
-	db 23,7,30,7,25,7,28,7,32,7,35,7,32,7,28,7
-	db 25,7,28,7,32,7,35,7,32,7,28,7,25,7,32,7
-	db 28,7,35,7,18,7,22,7,25,7,28,7,25,7,22,7
-	db 18,7,22,7,25,7,28,7,25,7,22,7,18,7,25,7
-	db 22,7,28,7,23,7,27,7,30,7,34,7,30,7,27,7
-	db 23,7,27,7,30,7,34,7,30,7,27,7,23,7,30,7
-	db 27,7,34,7,18,7,22,7,25,7,28,7,25,7,22,7
-	db 18,7,22,7,25,7,28,7,25,7,22,7,18,7,25,7
-	db 22,7,28,7,244,6,240,8,28,7,32,7,35,7,39,7
-	db 35,7,32,7,28,7,32,7,35,7,39,7,35,7,32,7
-	db 28,7,35,7,32,7,39,7,18,7,22,7,25,7,28,7
-	db 25,7,22,7,18,7,22,7,25,7,28,7,25,7,22,7
-	db 18,7,25,7,22,7,28,7,27,7,30,7,34,7,37,7
-	db 34,7,30,7,27,7,30,7,34,7,37,7,34,7,30,7
-	db 27,7,34,7,30,7,37,7,20,7,23,7,27,7,30,7
-	db 27,7,23,7,20,7,23,7,27,7,30,7,27,7,23,7
-	db 20,7,27,7,23,7,30,7,25,7,28,7,32,7,35,7
-	db 32,7,28,7,25,7,28,7,32,7,35,7,32,7,28,7
-	db 25,7,32,7,28,7,35,7,18,7,22,7,25,7,28,7
-	db 25,7,22,7,18,7,22,7,25,7,28,7,25,7,22,7
-	db 18,7,25,7,22,7,28,7,23,7,27,7,30,7,34,7
-	db 30,7,27,7,23,7,27,7,30,7,34,7,30,7,27,7
-	db 23,7,30,7,27,7,34,7,18,7,22,7,25,7,28,7
-	db 25,7,22,7,18,7,22,7,25,7,28,7,25,7,22,7
-	db 18,7,25,7,22,7,28,7,244,6,240,8,255,14,32,14
-	db 255,14,35,14,255,14,32,7,28,7,255,14,35,14,255,14
-	db 22,14,255,14,25,14,255,14,22,7,18,7,255,14,25,14
-	db 255,14,30,14,255,14,34,14,255,14,30,7,27,7,255,14
-	db 34,14,255,14,23,14,255,14,27,14,255,14,23,7,20,7
-	db 255,14,27,14,255,14,28,14,255,14,32,14,255,14,28,7
-	db 25,7,255,14,32,14,255,14,22,14,255,14,25,14,255,14
-	db 22,7,18,7,255,14,25,14,255,14,27,14,255,14,30,14
-	db 255,14,27,7,23,7,255,14,30,14,255,14,22,14,255,14
-	db 25,14,255,14,22,7,18,7,255,14,25,14,244,6,240,8
-	db 255,14,27,14,255,14,30,14,255,14,27,7,23,7,255,14
-	db 30,14,255,14,28,14,255,14,32,14,255,14,28,7,25,7
-	db 255,14,32,14,255,14,30,14,255,14,34,14,255,14,30,7
-	db 27,7,255,14,34,14,255,14,28,14,255,14,32,14,255,14
-	db 28,7,25,7,255,14,32,14,255,14,27,14,255,14,30,14
-	db 255,14,27,7,23,7,255,14,30,14,255,14,28,14,255,14
-	db 32,14,255,14,28,7,25,7,255,14,32,14,255,14,32,14
-	db 255,14,35,14,255,14,32,7,28,7,255,14,35,14,255,14
-	db 22,14,255,14,25,14,255,14,22,7,18,7,255,14,25,14
-	db 244,6,240,8,20,7,23,7,27,7,30,7,27,7,23,7
-	db 20,7,23,7,27,7,30,7,27,7,23,7,20,7,27,7
-	db 23,7,30,7,25,7,28,7,32,7,35,7,32,7,28,7
-	db 25,7,28,7,32,7,35,7,32,7,28,7,25,7,32,7
-	db 28,7,35,7,18,7,22,7,25,7,28,7,25,7,22,7
-	db 18,7,22,7,25,7,28,7,25,7,22,7,18,7,25,7
-	db 22,7,28,7,23,7,27,7,30,7,34,7,30,7,27,7
-	db 23,7,27,7,30,7,34,7,30,7,27,7,23,7,30,7
-	db 27,7,34,7,20,7,23,7,27,7,30,7,27,7,23,7
-	db 20,7,23,7,27,7,30,7,27,7,23,7,20,7,27,7
-	db 23,7,30,7,25,7,28,7,32,7,35,7,32,7,28,7
-	db 25,7,28,7,32,7,35,7,32,7,28,7,25,7,32,7
-	db 28,7,35,7,28,7,32,7,35,7,39,7,35,7,32,7
-	db 28,7,32,7,35,7,39,7,35,7,32,7,28,7,35,7
-	db 32,7,39,7,18,7,22,7,25,7,28,7,25,7,22,7
-	db 18,7,22,7,25,7,28,7,25,7,22,7,18,7,25,7
-	db 22,7,28,7,244,6,240,8,28,7,32,7,35,7,39,7
-	db 35,7,32,7,28,7,32,7,35,7,39,7,35,7,32,7
-	db 28,7,35,7,32,7,39,7,18,7,22,7,25,7,28,7
-	db 25,7,22,7,18,7,22,7,25,7,28,7,25,7,22,7
-	db 18,7,25,7,22,7,28,7,27,7,30,7,34,7,37,7
-	db 34,7,30,7,27,7,30,7,34,7,37,7,34,7,30,7
-	db 27,7,34,7,30,7,37,7,20,7,23,7,27,7,30,7
-	db 27,7,23,7,20,7,23,7,27,7,30,7,27,7,23,7
-	db 20,7,27,7,23,7,30,7,25,7,28,7,32,7,35,7
-	db 32,7,28,7,25,7,28,7,32,7,35,7,32,7,28,7
-	db 25,7,32,7,28,7,35,7,18,7,22,7,25,7,28,7
-	db 25,7,22,7,18,7,22,7,25,7,28,7,25,7,22,7
-	db 18,7,25,7,22,7,28,7,23,7,27,7,30,7,34,7
-	db 30,7,27,7,23,7,27,7,30,7,34,7,30,7,27,7
-	db 23,7,30,7,27,7,34,7,18,7,22,7,25,7,28,7
-	db 25,7,22,7,18,7,22,7,25,7,28,7,25,7,22,7
-	db 18,7,25,7,22,7,28,7,244,6,240,8,28,7,32,7
-	db 35,7,39,7,35,7,32,7,28,7,32,7,35,7,39,7
-	db 35,7,32,7,28,7,35,7,32,7,39,7,18,7,22,7
-	db 25,7,28,7,25,7,22,7,18,7,22,7,25,7,28,7
-	db 25,7,22,7,18,7,25,7,22,7,28,7,27,7,30,7
-	db 34,7,37,7,34,7,30,7,27,7,30,7,34,7,37,7
-	db 34,7,30,7,27,7,34,7,30,7,37,7,20,7,23,7
-	db 27,7,30,7,27,7,23,7,20,7,23,7,27,7,30,7
-	db 27,7,23,7,20,7,27,7,23,7,30,7,25,7,28,7
-	db 32,7,35,7,32,7,28,7,25,7,28,7,32,7,35,7
-	db 32,7,28,7,25,7,32,7,28,7,35,7,18,7,22,7
-	db 25,7,28,7,25,7,22,7,18,7,22,7,25,7,28,7
-	db 25,7,22,7,18,7,25,7,22,7,28,7,23,7,27,7
-	db 30,7,34,7,30,7,27,7,23,7,27,7,30,7,34,7
-	db 30,7,27,7,23,7,30,7,27,7,34,7,18,7,22,7
-	db 25,7,28,7,25,7,22,7,18,7,22,7,25,7,28,7
-	db 25,7,22,7,18,7,25,7,22,7,28,7,244,6,240,8
-	db 23,56,27,56,30,56,34,56,32,56,35,56,27,56,30,56
-	db 28,56,32,56,30,56,34,56,32,56,35,56,22,56,25,56
-	db 244,6,240,8,255,14,32,14,255,14,35,14,255,14,32,7
-	db 28,7,255,14,35,14,255,14,22,14,255,14,25,14,255,14
-	db 22,7,18,7,255,14,25,14,255,14,30,14,255,14,34,14
-	db 255,14,30,7,27,7,255,14,34,14,255,14,23,14,255,14
-	db 27,14,255,14,23,7,20,7,255,14,27,14,255,14,28,14
-	db 255,14,32,14,255,14,28,7,25,7,255,14,32,14,255,14
-	db 22,14,255,14,25,14,255,14,22,7,18,7,255,14,25,14
-	db 255,14,27,14,255,14,30,14,255,14,27,7,23,7,255,14
-	db 30,14,255,14,22,14,255,14,25,14,255,14,22,7,18,7
-	db 255,14,25,14,244,6,240,8,255,14,27,14,255,14,30,14
-	db 255,14,27,7,23,7,255,14,30,14,255,14,28,14,255,14
-	db 32,14,255,14,28,7,25,7,255,14,32,14,255,14,30,14
-	db 255,14,34,14,255,14,30,7,27,7,255,14,34,14,255,14
-	db 28,14,255,14,32,14,255,14,28,7,25,7,255,14,32,14
-	db 255,14,27,14,255,14,30,14,255,14,27,7,23,7,255,14
-	db 30,14,255,14,28,14,255,14,32,14,255,14,28,7,25,7
-	db 255,14,32,14,255,14,32,14,255,14,35,14,255,14,32,7
-	db 28,7,255,14,35,14,255,14,22,14,255,14,25,14,255,14
-	db 22,7,18,7,255,14,25,14,244,6,240,8,20,7,23,7
-	db 27,7,30,7,27,7,23,7,20,7,23,7,27,7,30,7
-	db 27,7,23,7,20,7,27,7,23,7,30,7,25,7,28,7
-	db 32,7,35,7,32,7,28,7,25,7,28,7,32,7,35,7
-	db 32,7,28,7,25,7,32,7,28,7,35,7,18,7,22,7
-	db 25,7,28,7,25,7,22,7,18,7,22,7,25,7,28,7
-	db 25,7,22,7,18,7,25,7,22,7,28,7,23,7,27,7
-	db 30,7,34,7,30,7,27,7,23,7,27,7,30,7,34,7
-	db 30,7,27,7,23,7,30,7,27,7,34,7,20,7,23,7
-	db 27,7,30,7,27,7,23,7,20,7,23,7,27,7,30,7
-	db 27,7,23,7,20,7,27,7,23,7,30,7,25,7,28,7
-	db 32,7,35,7,32,7,28,7,25,7,28,7,32,7,35,7
-	db 32,7,28,7,25,7,32,7,28,7,35,7,28,7,32,7
-	db 35,7,39,7,35,7,32,7,28,7,32,7,35,7,39,7
-	db 35,7,32,7,28,7,35,7,32,7,39,7,18,7,22,7
-	db 25,7,28,7,25,7,22,7,18,7,22,7,25,7,28,7
-	db 25,7,22,7,18,7,25,7,22,7,28,7,244,6,240,8
-	db 28,7,32,7,35,7,39,7,35,7,32,7,28,7,32,7
-	db 35,7,39,7,35,7,32,7,28,7,35,7,32,7,39,7
-	db 18,7,22,7,25,7,28,7,25,7,22,7,18,7,22,7
-	db 25,7,28,7,25,7,22,7,18,7,25,7,22,7,28,7
-	db 27,7,30,7,34,7,37,7,34,7,30,7,27,7,30,7
-	db 34,7,37,7,34,7,30,7,27,7,34,7,30,7,37,7
-	db 20,7,23,7,27,7,30,7,27,7,23,7,20,7,23,7
-	db 27,7,30,7,27,7,23,7,20,7,27,7,23,7,30,7
-	db 25,7,28,7,32,7,35,7,32,7,28,7,25,7,28,7
-	db 32,7,35,7,32,7,28,7,25,7,32,7,28,7,35,7
-	db 18,7,22,7,25,7,28,7,25,7,22,7,18,7,22,7
-	db 25,7,28,7,25,7,22,7,18,7,25,7,22,7,28,7
-	db 23,7,27,7,30,7,34,7,30,7,27,7,23,7,27,7
-	db 30,7,34,7,30,7,27,7,23,7,30,7,27,7,34,7
-	db 18,7,22,7,25,7,28,7,25,7,22,7,18,7,22,7
-	db 25,7,28,7,25,7,22,7,18,7,25,7,22,7,28,7
-	db 244,6,240,8,28,7,32,7,35,7,39,7,35,7,32,7
-	db 28,7,32,7,35,7,39,7,35,7,32,7,28,7,35,7
-	db 32,7,39,7,18,7,22,7,25,7,28,7,25,7,22,7
-	db 18,7,22,7,25,7,28,7,25,7,22,7,18,7,25,7
-	db 22,7,28,7,27,7,30,7,34,7,37,7,34,7,30,7
-	db 27,7,30,7,34,7,37,7,34,7,30,7,27,7,34,7
-	db 30,7,37,7,20,7,23,7,27,7,30,7,27,7,23,7
-	db 20,7,23,7,27,7,30,7,27,7,23,7,20,7,27,7
-	db 23,7,30,7,25,7,28,7,32,7,35,7,32,7,28,7
-	db 25,7,28,7,32,7,35,7,32,7,28,7,25,7,32,7
-	db 28,7,35,7,18,7,22,7,25,7,28,7,25,7,22,7
-	db 18,7,22,7,25,7,28,7,25,7,22,7,18,7,25,7
-	db 22,7,28,7,23,7,27,7,30,7,34,7,30,7,27,7
-	db 23,7,27,7,30,7,34,7,30,7,27,7,23,7,30,7
-	db 27,7,34,7,18,7,22,7,25,7,28,7,25,7,22,7
-	db 18,7,22,7,25,7,28,7,25,7,22,7,18,7,25,7
-	db 22,7,28,7,244,6,240,8,27,56,30,56,28,56,32,56
-	db 32,56,35,56,22,56,25,56,0
+	db 244,6,240,8,255,240,255,240,255,240,255,240,255,240,255,240
+	db 255,240,255,240,255,240,255,240,255,240,255,236,32,6,255,46
+	db 32,7,255,45,31,7,255,45,30,7,255,45,32,7,255,45
+	db 32,6,255,45,36,7,255,45,36,6,255,45,32,6,255,45
+	db 32,6,255,45,31,6,255,45,32,6,255,44,32,6,255,45
+	db 32,6,255,44,36,6,255,44,36,6,255,44,28,6,255,44
+	db 28,6,255,43,28,7,255,43,28,6,255,43,28,7,255,43
+	db 28,6,255,43,28,6,255,43,28,6,255,43,28,6,255,42
+	db 28,6,255,43,28,6,255,42,28,6,255,42,28,7,255,42
+	db 28,6,255,42,28,6,255,41,28,6,255,240,255,240,255,112
+	db 29,22,39,22,37,22,36,22,34,22,32,22,31,22,29,11
+	db 255,33,29,11,255,32,29,11,255,32,29,11,255,32,29,11
+	db 255,32,29,10,255,32,32,11,255,31,32,11,255,31,29,11
+	db 255,31,29,11,255,31,29,10,255,31,29,11,255,31,29,10
+	db 255,31,29,10,255,30,29,11,255,30,29,10,255,31,36,10
+	db 255,30,36,10,255,30,32,10,255,30,36,10,255,30,36,9
+	db 255,30,36,10,255,29,32,10,255,30,36,9,255,30,36,9
+	db 255,29,36,10,255,29,33,10,255,29,36,9,255,29,36,9
+	db 255,29,36,10,255,28,33,10,255,28,36,9,255,29,29,9
+	db 255,28,29,9,255,28,29,10,255,27,29,10,255,27,29,10
+	db 255,27,29,10,255,27,32,9,255,28,32,9,255,27,29,9
+	db 255,27,29,9,255,27,29,9,255,27,29,9,255,27,29,9
+	db 255,27,29,8,255,27,29,9,255,26,29,9,255,27,29,17
+	db 29,18,255,35,29,17,29,17,255,35,37,17,29,17,36,18
+	db 29,17,24,17,28,17,29,17,29,17,29,17,29,17,255,34
+	db 29,17,29,17,255,33,37,17,29,16,36,17,29,17,24,16
+	db 28,17,29,16,29,17,29,16,29,17,255,33,29,16,29,16
+	db 255,33,29,16,29,16,29,16,29,17,29,16,29,16,29,16
+	db 29,16,255,127,17,16,29,15,244,6,240,8,255,240,255,240
+	db 255,240,255,240,255,240,255,240,255,240,255,240,255,240,255,80
+	db 32,5,255,36,32,5,255,36,31,5,255,36,30,5,255,36
+	db 32,5,255,35,32,5,255,36,36,5,255,35,36,5,255,35
+	db 32,5,255,35,32,5,255,35,31,5,255,35,32,5,255,35
+	db 32,5,255,35,32,5,255,34,36,5,255,35,36,5,255,34
+	db 28,5,255,34,28,5,255,34,28,5,255,35,28,4,255,34
+	db 28,5,255,34,28,5,255,34,28,5,255,34,28,4,255,34
+	db 28,5,255,33,28,5,255,34,28,5,255,33,28,5,255,33
+	db 28,5,255,33,28,5,255,33,28,5,255,33,28,4,255,240
+	db 255,234,29,18,39,18,37,17,36,18,34,18,32,18,31,18
+	db 29,8,255,27,29,9,255,26,29,9,255,26,29,9,255,26
+	db 29,9,255,26,29,9,255,26,32,9,255,26,32,8,255,26
+	db 29,9,255,26,29,8,255,26,29,8,255,26,29,9,255,25
+	db 29,9,255,25,29,8,255,26,29,8,255,25,29,9,255,25
+	db 36,8,255,25,36,9,255,25,32,8,255,25,36,8,255,25
+	db 36,8,255,25,36,8,255,25,32,8,255,25,36,8,255,25
+	db 36,8,255,24,36,8,255,25,33,8,255,24,36,8,255,24
+	db 36,8,255,24,36,8,255,25,33,8,255,23,36,8,255,24
+	db 29,8,255,24,29,8,255,24,29,8,255,23,29,8,255,24
+	db 29,8,255,23,29,8,255,23,32,8,255,23,32,8,255,23
+	db 29,8,255,23,29,8,255,23,29,8,255,23,29,8,255,23
+	db 29,7,255,23,29,8,255,23,29,7,255,23,29,8,255,22
+	db 29,15,29,16,255,30,29,15,29,15,255,30,37,14,29,15
+	db 36,15,29,15,24,15,28,15,29,15,29,14,29,15,29,15
+	db 255,29,29,15,29,14,255,30,37,14,29,15,36,14,29,15
+	db 24,14,28,15,29,14,29,15,29,14,29,14,255,29,29,14
+	db 29,15,255,28,29,14,29,15,29,14,29,14,29,14,29,14
+	db 29,14,29,15,255,112,17,14,29,13,0
 _song2_v3__9:
-	db 244,1,240,5,3,28,244,2,240,12,5,28,244,3,240,7
-	db 6,28,244,2,240,12,5,28,244,1,240,5,3,28,244,2
-	db 240,12,5,28,244,3,240,7,6,28,244,2,240,12,5,28
-	db 244,1,240,5,3,28,244,2,240,12,5,28,244,3,240,7
-	db 6,28,244,2,240,12,5,28,244,3,240,7,6,7,6,7
-	db 6,14,6,7,6,7,6,14,244,1,240,5,3,14,244,3
-	db 240,7,6,14,6,7,6,7,6,14,244,1,240,5,3,14
-	db 244,2,240,12,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,14,244,1,240,5,3,14,244,2,240,12,5,7,244,1
-	db 240,5,3,7,244,3,240,7,6,14,244,2,240,11,5,14
-	db 244,1,240,5,3,14,244,2,240,12,5,14,244,3,240,7
-	db 6,14,244,2,240,12,5,14,244,1,240,5,3,14,244,2
-	db 240,12,5,7,244,1,240,5,3,7,244,3,240,7,6,14
-	db 244,2,240,11,5,14,244,1,240,5,3,14,244,2,240,12
-	db 5,14,244,3,240,7,6,14,244,2,240,12,5,14,244,1
-	db 240,5,3,14,244,2,240,12,5,7,244,1,240,5,3,7
-	db 244,3,240,7,6,14,244,2,240,11,5,14,244,1,240,5
+	db 244,1,240,5,3,16,244,2,240,12,5,15,244,3,240,7
+	db 6,15,244,2,240,12,5,16,244,1,240,5,3,15,244,2
+	db 240,12,5,16,244,3,240,7,6,15,244,2,240,12,5,16
+	db 244,1,240,5,3,15,244,2,240,12,5,15,244,3,240,7
+	db 6,16,244,2,240,12,5,15,244,1,240,5,3,16,244,2
+	db 240,12,5,15,244,3,240,7,6,15,244,2,240,12,5,15
+	db 244,1,240,5,3,16,244,2,240,12,5,15,244,3,240,7
+	db 6,15,244,2,240,12,5,16,244,1,240,5,3,15,244,2
+	db 240,12,5,15,244,3,240,7,6,15,244,2,240,12,5,15
+	db 244,1,240,5,3,16,244,2,240,12,5,15,244,3,240,7
+	db 6,15,244,2,240,12,5,15,244,1,240,5,3,15,244,2
+	db 240,12,5,15,244,3,240,7,6,15,244,2,240,12,5,15
+	db 244,1,240,5,3,15,244,2,240,12,5,16,244,3,240,7
+	db 6,15,244,2,240,12,5,15,244,1,240,5,3,15,244,2
+	db 240,12,5,15,244,3,240,7,6,15,244,2,240,12,5,15
+	db 244,1,240,5,3,15,244,2,240,12,5,15,244,3,240,7
+	db 6,14,244,2,240,12,5,15,244,1,240,5,3,15,244,2
+	db 240,12,5,15,244,3,240,7,6,15,244,2,240,12,5,15
+	db 244,1,240,5,3,15,244,2,240,12,5,15,244,3,240,7
+	db 6,14,244,2,240,12,5,15,244,1,240,5,3,15,244,2
+	db 240,12,5,15,244,3,240,7,6,15,244,2,240,12,5,14
+	db 244,1,240,5,3,15,244,2,240,12,5,15,244,3,240,7
+	db 6,15,244,2,240,12,5,14,244,1,240,5,3,15,244,3
+	db 240,7,6,15,6,7,6,7,6,8,6,7,244,1,240,5
+	db 3,15,244,2,240,12,5,14,244,3,240,7,6,15,244,2
+	db 240,12,5,15,244,1,240,5,3,14,244,2,240,12,5,15
+	db 244,3,240,7,6,14,244,2,240,12,5,15,244,1,240,5
+	db 3,14,244,2,240,12,5,15,244,3,240,7,6,15,244,2
+	db 240,12,5,14,244,1,240,5,3,15,244,2,240,12,5,14
+	db 244,3,240,7,6,15,244,2,240,12,5,14,244,1,240,5
+	db 3,14,244,2,240,12,5,15,244,3,240,7,6,14,244,2
+	db 240,12,5,15,244,1,240,5,3,14,244,2,240,12,5,15
+	db 244,3,240,7,6,14,244,2,240,12,5,14,244,1,240,5
+	db 3,15,244,2,240,12,5,14,244,3,240,7,6,14,244,2
+	db 240,12,5,15,244,1,240,5,3,14,244,2,240,12,5,14
+	db 244,3,240,7,6,14,244,2,240,12,5,15,244,1,240,5
 	db 3,14,244,2,240,12,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,14,244,1,240,5,3,14,244,2,240,12,5,7
-	db 244,1,240,5,3,7,244,3,240,7,6,14,244,2,240,11
-	db 5,14,244,1,240,5,3,14,244,2,240,12,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,14,244,1,240,5,3,14
-	db 244,2,240,12,5,7,244,1,240,5,3,7,244,3,240,7
-	db 6,14,244,2,240,11,5,14,244,1,240,5,3,14,244,2
-	db 240,12,5,14,244,3,240,7,6,14,244,2,240,12,5,14
-	db 244,1,240,5,3,14,244,2,240,12,5,7,244,1,240,5
-	db 3,7,244,3,240,7,6,14,244,2,240,11,5,14,244,1
-	db 240,5,3,14,244,2,240,12,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,14,244,1,240,5,3,14,244,2,240,12
-	db 5,7,244,1,240,5,3,7,244,3,240,7,6,14,244,2
-	db 240,11,5,14,244,3,240,7,6,7,6,7,6,14,6,7
-	db 6,7,6,14,244,1,240,5,3,14,244,3,240,7,6,14
-	db 6,7,6,7,6,14,244,1,240,5,3,14,244,2,240,12
-	db 5,14,244,3,240,7,6,14,244,2,240,12,5,14,244,1
-	db 240,5,3,14,244,2,240,12,5,7,244,1,240,5,3,7
-	db 244,3,240,7,6,14,244,2,240,11,5,14,244,1,240,5
+	db 240,12,5,15,244,1,240,5,3,14,244,2,240,12,5,14
+	db 244,3,240,7,6,14,244,2,240,12,5,14,244,1,240,5
+	db 3,15,244,2,240,12,5,14,244,3,240,7,6,14,244,2
+	db 240,12,5,14,244,1,240,5,3,14,244,2,240,12,5,14
+	db 244,3,240,7,6,14,244,2,240,12,5,14,244,1,240,5
+	db 3,15,244,2,240,12,5,14,244,3,240,7,6,14,244,2
+	db 240,12,5,14,244,1,240,5,3,14,244,2,240,12,5,14
+	db 244,3,240,7,6,14,244,2,240,12,5,14,244,1,240,5
 	db 3,14,244,2,240,12,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,14,244,1,240,5,3,14,244,2,240,12,5,7
-	db 244,1,240,5,3,7,244,3,240,7,6,14,244,2,240,11
-	db 5,14,244,1,240,5,3,14,244,2,240,12,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,14,244,1,240,5,3,14
-	db 244,2,240,12,5,7,244,1,240,5,3,7,244,3,240,7
-	db 6,14,244,2,240,11,5,14,244,1,240,5,3,14,244,2
+	db 240,12,5,13,244,1,240,5,3,14,244,3,240,7,6,14
+	db 6,7,6,7,6,7,6,7,244,1,240,5,3,14,244,2
 	db 240,12,5,14,244,3,240,7,6,14,244,2,240,12,5,14
-	db 244,1,240,5,3,14,244,2,240,12,5,7,244,1,240,5
-	db 3,7,244,3,240,7,6,14,244,2,240,11,5,14,244,1
-	db 240,5,3,14,244,2,240,12,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,14,244,1,240,5,3,14,244,2,240,12
-	db 5,7,244,1,240,5,3,7,244,3,240,7,6,14,244,2
-	db 240,11,5,14,244,1,240,5,3,14,244,2,240,12,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,14,244,1,240,5
-	db 3,14,244,2,240,12,5,7,244,1,240,5,3,7,244,3
-	db 240,7,6,14,244,2,240,11,5,14,244,1,240,5,3,14
-	db 244,2,240,12,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,14,244,1,240,5,3,14,244,2,240,12,5,7,244,1
-	db 240,5,3,7,244,3,240,7,6,14,244,2,240,11,5,14
-	db 244,3,240,7,6,7,6,7,6,14,6,7,6,7,6,14
-	db 244,1,240,5,3,14,244,3,240,7,6,14,6,7,6,7
-	db 6,14,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,7,5,7,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,14,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,7,5,7,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,14,244,1,240,5,3,14,244,2,240,11
-	db 5,14,244,3,240,7,6,14,244,2,240,12,5,7,5,7
-	db 244,1,240,5,3,14,244,2,240,11,5,14,244,3,240,7
+	db 244,1,240,5,3,13,244,2,240,12,5,14,244,3,240,7
 	db 6,14,244,2,240,12,5,14,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,7
-	db 5,7,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,14,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,7,5,7,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,14,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,7,5,7,244,1,240,5,3,14,244,2,240,11
-	db 5,14,244,3,240,7,6,14,244,2,240,12,5,14,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,7,5,7,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,14
-	db 244,3,240,7,6,7,6,7,6,14,6,7,6,7,6,14
-	db 244,1,240,5,3,14,244,3,240,7,6,14,6,7,6,7
-	db 6,14,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,7,5,7,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,14,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,7,5,7,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,14,244,1,240,5,3,14,244,2,240,11
-	db 5,14,244,3,240,7,6,14,244,2,240,12,5,7,5,7
-	db 244,1,240,5,3,14,244,2,240,11,5,14,244,3,240,7
+	db 240,12,5,13,244,3,240,7,6,14,244,2,240,12,5,14
+	db 244,1,240,5,3,14,244,2,240,12,5,13,244,3,240,7
 	db 6,14,244,2,240,12,5,14,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,7
-	db 5,7,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,14,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,7,5,7,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,14,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,7,5,7,244,1,240,5,3,14,244,2,240,11
-	db 5,14,244,3,240,7,6,14,244,2,240,12,5,14,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,7,5,7,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,14
-	db 244,3,240,7,6,7,6,7,6,14,6,7,6,7,6,14
-	db 244,1,240,5,3,14,244,3,240,7,6,14,6,7,6,7
-	db 6,14,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,7,5,7,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,14,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,7,5,7,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,14,244,1,240,5,3,14,244,2,240,11
-	db 5,14,244,3,240,7,6,14,244,2,240,12,5,7,5,7
-	db 244,1,240,5,3,14,244,2,240,11,5,14,244,3,240,7
-	db 6,14,244,2,240,12,5,14,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,7
-	db 5,7,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,14,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,7,5,7,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,14,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,7,5,7,244,1,240,5,3,14,244,2,240,11
-	db 5,14,244,3,240,7,6,14,244,2,240,12,5,14,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,7,5,7,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,14
-	db 244,3,240,7,6,7,6,7,6,14,6,7,6,7,6,14
-	db 244,1,240,5,3,14,244,3,240,7,6,14,6,7,6,7
-	db 6,14,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,7,5,7,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,14,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,7,5,7,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,14,244,1,240,5,3,14,244,2,240,11
-	db 5,14,244,3,240,7,6,14,244,2,240,12,5,7,5,7
-	db 244,1,240,5,3,14,244,2,240,11,5,14,244,3,240,7
-	db 6,14,244,2,240,12,5,14,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,7
-	db 5,7,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,14,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,7,5,7,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,14,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,7,5,7,244,1,240,5,3,14,244,2,240,11
-	db 5,14,244,3,240,7,6,14,244,2,240,12,5,14,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,7,5,7,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,14
-	db 244,3,240,7,6,7,6,7,6,14,6,7,6,7,6,14
-	db 244,1,240,5,3,14,244,3,240,7,6,14,6,7,6,7
-	db 6,14,244,1,240,5,3,14,244,2,240,12,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,14,244,1,240,5,3,14
-	db 244,2,240,12,5,7,244,1,240,5,3,7,244,3,240,7
-	db 6,14,244,2,240,11,5,14,244,1,240,5,3,14,244,2
-	db 240,12,5,14,244,3,240,7,6,14,244,2,240,12,5,14
-	db 244,1,240,5,3,14,244,2,240,12,5,7,244,1,240,5
-	db 3,7,244,3,240,7,6,14,244,2,240,11,5,14,244,1
-	db 240,5,3,14,244,2,240,12,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,14,244,1,240,5,3,14,244,2,240,12
-	db 5,7,244,1,240,5,3,7,244,3,240,7,6,14,244,2
-	db 240,11,5,14,244,1,240,5,3,14,244,2,240,12,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,14,244,1,240,5
-	db 3,14,244,2,240,12,5,7,244,1,240,5,3,7,244,3
-	db 240,7,6,14,244,2,240,11,5,14,244,1,240,5,3,14
-	db 244,2,240,12,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,14,244,1,240,5,3,14,244,2,240,12,5,7,244,1
-	db 240,5,3,7,244,3,240,7,6,14,244,2,240,11,5,14
-	db 244,1,240,5,3,14,244,2,240,12,5,14,244,3,240,7
-	db 6,14,244,2,240,12,5,14,244,1,240,5,3,14,244,2
-	db 240,12,5,7,244,1,240,5,3,7,244,3,240,7,6,14
-	db 244,2,240,11,5,14,244,1,240,5,3,14,244,2,240,12
-	db 5,14,244,3,240,7,6,14,244,2,240,12,5,14,244,1
-	db 240,5,3,14,244,2,240,12,5,7,244,1,240,5,3,7
-	db 244,3,240,7,6,14,244,2,240,11,5,14,244,3,240,7
-	db 6,7,6,7,6,14,6,7,6,7,6,14,244,1,240,5
-	db 3,14,244,3,240,7,6,14,6,7,6,7,6,14,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,7,5,7,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,14
-	db 244,1,240,5,3,14,244,2,240,11,5,14,244,3,240,7
-	db 6,14,244,2,240,12,5,7,5,7,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,14,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,7,5,7,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,14,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,7,5,7,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,14,244,1,240,5,3,14,244,2,240,11
-	db 5,14,244,3,240,7,6,14,244,2,240,12,5,7,5,7
-	db 244,1,240,5,3,14,244,2,240,11,5,14,244,3,240,7
-	db 6,14,244,2,240,12,5,14,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,7
-	db 5,7,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,14,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,7,5,7,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,14,244,3,240,7
-	db 6,7,6,7,6,14,6,7,6,7,6,14,244,1,240,5
-	db 3,14,244,3,240,7,6,14,6,7,6,7,6,14,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,7,5,7,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,14
-	db 244,1,240,5,3,14,244,2,240,11,5,14,244,3,240,7
-	db 6,14,244,2,240,12,5,7,5,7,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,14,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,7,5,7,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,14,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,7,5,7,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,14,244,1,240,5,3,14,244,2,240,11
-	db 5,14,244,3,240,7,6,14,244,2,240,12,5,7,5,7
-	db 244,1,240,5,3,14,244,2,240,11,5,14,244,3,240,7
-	db 6,14,244,2,240,12,5,14,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,7
-	db 5,7,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,14,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,7,5,7,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,14,244,3,240,7
-	db 6,7,6,7,6,14,6,7,6,7,6,14,244,1,240,5
-	db 3,14,244,3,240,7,6,14,6,7,6,7,6,14,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,7,5,7,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,14
-	db 244,1,240,5,3,14,244,2,240,11,5,14,244,3,240,7
-	db 6,14,244,2,240,12,5,7,5,7,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,14,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,7,5,7,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,14,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,7,5,7,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,14,244,1,240,5,3,14,244,2,240,11
-	db 5,14,244,3,240,7,6,14,244,2,240,12,5,7,5,7
-	db 244,1,240,5,3,14,244,2,240,11,5,14,244,3,240,7
-	db 6,14,244,2,240,12,5,14,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,7
-	db 5,7,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,14,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,7,5,7,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,14,244,3,240,7
-	db 6,7,6,7,6,14,6,7,6,7,6,14,244,1,240,5
-	db 3,14,244,3,240,7,6,14,6,7,6,7,6,14,244,1
-	db 240,5,3,28,244,2,240,12,5,28,244,3,240,7,6,28
-	db 244,2,240,12,5,28,244,1,240,5,3,28,244,2,240,12
-	db 5,28,244,3,240,7,6,28,244,2,240,12,5,28,244,1
-	db 240,5,3,28,244,2,240,12,5,28,244,3,240,7,6,28
-	db 244,2,240,12,5,28,244,1,240,5,3,28,244,2,240,12
-	db 5,28,244,3,240,7,6,28,244,2,240,12,5,28,244,1
-	db 240,5,3,28,244,2,240,12,5,28,244,3,240,7,6,28
-	db 244,2,240,12,5,28,244,1,240,5,3,28,244,2,240,12
-	db 5,28,244,3,240,7,6,28,244,2,240,12,5,28,244,1
-	db 240,5,3,28,244,2,240,12,5,28,244,3,240,7,6,28
-	db 244,2,240,12,5,28,244,3,240,7,6,7,6,7,6,14
-	db 6,7,6,7,6,14,244,1,240,5,3,14,244,3,240,7
-	db 6,14,6,7,6,7,6,14,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,7
-	db 5,7,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,14,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,7,5,7,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,14,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,7,5,7,244,1,240,5,3,14,244,2,240,11
-	db 5,14,244,3,240,7,6,14,244,2,240,12,5,14,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,7,5,7,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,14
-	db 244,1,240,5,3,14,244,2,240,11,5,14,244,3,240,7
-	db 6,14,244,2,240,12,5,7,5,7,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,14,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,7,5,7,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,14,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,7,5,7,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,14,244,3,240,7,6,7,6,7,6,14
-	db 6,7,6,7,6,14,244,1,240,5,3,14,244,3,240,7
-	db 6,14,6,7,6,7,6,14,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,7
-	db 5,7,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,14,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,7,5,7,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,14,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,7,5,7,244,1,240,5,3,14,244,2,240,11
-	db 5,14,244,3,240,7,6,14,244,2,240,12,5,14,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,7,5,7,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,14
-	db 244,1,240,5,3,14,244,2,240,11,5,14,244,3,240,7
-	db 6,14,244,2,240,12,5,7,5,7,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,14,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,7,5,7,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,14,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,7,5,7,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,14,244,3,240,7,6,7,6,7,6,14
-	db 6,7,6,7,6,14,244,1,240,5,3,14,244,3,240,7
-	db 6,14,6,7,6,7,6,14,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,7
-	db 5,7,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,14,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,7,5,7,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,14,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,7,5,7,244,1,240,5,3,14,244,2,240,11
-	db 5,14,244,3,240,7,6,14,244,2,240,12,5,14,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,7,5,7,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,14
-	db 244,1,240,5,3,14,244,2,240,11,5,14,244,3,240,7
-	db 6,14,244,2,240,12,5,7,5,7,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,14,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,7,5,7,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,14,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,7,5,7,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,14,244,3,240,7,6,7,6,7,6,14
-	db 6,7,6,7,6,14,244,1,240,5,3,14,244,3,240,7
-	db 6,14,6,7,6,7,6,14,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,7
-	db 5,7,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,14,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,7,5,7,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,14,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,7,5,7,244,1,240,5,3,14,244,2,240,11
-	db 5,14,244,3,240,7,6,14,244,2,240,12,5,14,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,7,5,7,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,14
-	db 244,1,240,5,3,14,244,2,240,11,5,14,244,3,240,7
-	db 6,14,244,2,240,12,5,7,5,7,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,14,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,7,5,7,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,14,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,7,5,7,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,14,244,3,240,7,6,7,6,7,6,14
-	db 6,7,6,7,6,14,244,1,240,5,3,14,244,3,240,7
-	db 6,14,6,7,6,7,6,14,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,7
-	db 5,7,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,14,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,7,5,7,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,14,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,7,5,7,244,1,240,5,3,14,244,2,240,11
-	db 5,14,244,3,240,7,6,14,244,2,240,12,5,14,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,7,5,7,244,1,240,5,3,14,244,2
-	db 240,11,5,14,244,3,240,7,6,14,244,2,240,12,5,14
-	db 244,1,240,5,3,14,244,2,240,11,5,14,244,3,240,7
-	db 6,14,244,2,240,12,5,7,5,7,244,1,240,5,3,14
-	db 244,2,240,11,5,14,244,3,240,7,6,14,244,2,240,12
-	db 5,14,244,1,240,5,3,14,244,2,240,11,5,14,244,3
-	db 240,7,6,14,244,2,240,12,5,7,5,7,244,1,240,5
-	db 3,14,244,2,240,11,5,14,244,3,240,7,6,14,244,2
-	db 240,12,5,14,244,1,240,5,3,14,244,2,240,11,5,14
-	db 244,3,240,7,6,14,244,2,240,12,5,7,5,7,244,1
-	db 240,5,3,14,244,2,240,11,5,14,244,3,240,7,6,14
-	db 244,2,240,12,5,14,244,3,240,7,6,7,6,7,6,14
-	db 6,7,6,7,6,14,244,1,240,5,3,14,244,3,240,7
-	db 6,14,6,7,6,7,6,14,244,1,240,5,3,28,244,2
-	db 240,12,5,28,244,3,240,7,6,28,244,2,240,12,5,28
-	db 244,1,240,5,3,28,244,2,240,12,5,28,244,3,240,7
-	db 6,28,244,2,240,12,5,28,244,1,240,5,3,28,244,2
-	db 240,12,5,28,244,3,240,7,6,28,244,2,240,12,5,28
-	db 244,3,240,7,6,7,6,7,6,14,6,7,6,7,6,14
-	db 244,1,240,5,3,14,244,3,240,7,6,14,6,7,6,7
-	db 6,14,0
+	db 240,12,5,13,244,3,240,7,6,14,244,2,240,12,5,14
+	db 244,1,240,5,3,13,244,2,240,12,5,14,244,3,240,7
+	db 6,14,244,2,240,12,5,13,244,1,240,5,3,14,244,2
+	db 240,12,5,13,244,3,240,7,6,14,244,2,240,12,5,14
+	db 244,1,240,5,3,13,244,2,240,12,5,14,244,3,240,7
+	db 6,13,244,2,240,12,5,14,244,1,240,5,3,13,244,2
+	db 240,12,5,14,244,3,240,7,6,13,244,2,240,12,5,14
+	db 244,1,240,5,3,13,244,2,240,12,5,14,244,3,240,7
+	db 6,13,244,2,240,12,5,14,244,1,240,5,3,13,244,2
+	db 240,12,5,14,244,3,240,7,6,13,244,2,240,12,5,13
+	db 244,1,240,5,3,14,244,2,240,12,5,13,244,3,240,7
+	db 6,14,244,2,240,12,5,13,244,1,240,5,3,13,244,2
+	db 240,12,5,14,244,3,240,7,6,13,244,2,240,12,5,13
+	db 244,1,240,5,3,14,244,2,240,12,5,13,244,3,240,7
+	db 6,13,244,2,240,12,5,14,244,1,240,5,3,13,244,2
+	db 240,12,5,13,244,3,240,7,6,13,244,2,240,12,5,14
+	db 244,1,240,5,3,13,244,3,240,7,6,13,6,7,6,6
+	db 6,7,6,6,244,1,240,5,3,14,244,2,240,12,5,13
+	db 244,3,240,7,6,13,244,2,240,12,5,13,244,1,240,5
+	db 3,13,244,2,240,12,5,13,244,3,240,7,6,14,244,2
+	db 240,12,5,13,244,1,240,5,3,13,244,2,240,12,5,13
+	db 244,3,240,7,6,13,244,2,240,12,5,13,244,1,240,5
+	db 3,13,244,2,240,12,5,13,244,3,240,7,6,13,244,2
+	db 240,12,5,13,244,1,240,5,3,13,244,2,240,12,5,13
+	db 244,3,240,7,6,13,244,2,240,12,5,13,244,1,240,5
+	db 3,13,244,2,240,12,5,13,244,3,240,7,6,13,244,2
+	db 240,12,5,13,244,1,240,5,3,13,244,2,240,12,5,13
+	db 244,3,240,7,6,13,244,2,240,12,5,13,244,1,240,5
+	db 3,13,244,2,240,12,5,13,244,3,240,7,6,13,244,2
+	db 240,12,5,13,244,1,240,5,3,12,244,2,240,12,5,13
+	db 244,3,240,7,6,13,244,2,240,12,5,13,244,1,240,5
+	db 3,13,244,2,240,12,5,13,244,3,240,7,6,12,244,2
+	db 240,12,5,13,244,1,240,5,3,13,244,2,240,12,5,13
+	db 244,3,240,7,6,13,244,2,240,12,5,12,244,1,240,5
+	db 3,13,244,2,240,12,5,13,244,3,240,7,6,13,244,2
+	db 240,12,5,12,244,1,240,5,3,13,244,2,240,12,5,13
+	db 244,3,240,7,6,12,244,2,240,12,5,13,244,1,240,5
+	db 3,13,244,2,240,12,5,13,244,3,240,7,6,12,244,2
+	db 240,12,5,13,244,1,240,5,3,12,244,2,240,12,5,13
+	db 244,3,240,7,6,13,244,2,240,12,5,12,244,1,240,5
+	db 3,13,244,3,240,7,6,13,6,6,6,6,6,6,6,7
+	db 244,1,240,5,3,12,244,2,240,12,5,13,244,3,240,7
+	db 6,12,244,2,240,12,5,13,244,1,240,5,3,12,244,2
+	db 240,12,5,13,244,3,240,7,6,12,244,2,240,12,5,13
+	db 244,1,240,5,3,12,244,2,240,12,5,13,244,3,240,7
+	db 6,12,244,2,240,12,5,13,244,1,240,5,3,12,244,2
+	db 240,12,5,13,244,3,240,7,6,12,244,2,240,12,5,13
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,13,244,2,240,12,5,12,244,1,240,5,3,13,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,13
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,13,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,13,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,13,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,13,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,13,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,13
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,13,244,2,240,12,5,12,244,1,240,5,3,12,244,3
+	db 240,7,6,12,6,6,6,6,6,6,6,6,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,12,244,1,240,5,3,11,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,11,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
+	db 3,11,244,2,240,12,5,12,244,3,240,7,6,12,244,2
+	db 240,12,5,11,244,1,240,5,3,12,244,2,240,12,5,12
+	db 244,3,240,7,6,11,244,2,240,12,5,12,244,1,240,5
+	db 3,12,244,2,240,12,5,11,244,3,240,7,6,12,244,2
+	db 240,12,5,11,244,1,240,5,3,12,244,2,240,12,5,11
+	db 244,3,240,7,6,12,244,2,240,12,5,11,244,1,240,5
+	db 3,12,244,2,240,12,5,11,244,3,240,7,6,12,244,2
+	db 240,12,5,11,244,1,240,5,3,12,244,2,240,12,5,11
+	db 244,3,240,7,6,11,244,2,240,12,5,12,244,1,240,5
+	db 3,11,244,2,240,12,5,11,244,3,240,7,6,12,244,2
+	db 240,12,5,11,244,1,240,5,3,11,244,2,240,12,5,12
+	db 244,3,240,7,6,11,244,2,240,12,5,11,244,1,240,5
+	db 3,12,244,2,240,12,5,11,244,3,240,7,6,11,244,2
+	db 240,12,5,11,244,1,240,5,3,11,244,2,240,12,5,11
+	db 244,3,240,7,6,12,244,2,240,12,5,11,244,1,240,5
+	db 3,11,244,2,240,12,5,11,244,3,240,7,6,11,244,2
+	db 240,12,5,11,244,1,240,5,3,11,244,3,240,7,6,11
+	db 6,6,6,5,6,6,6,5,244,1,240,5,3,11,244,2
+	db 240,12,5,11,244,3,240,7,6,11,244,2,240,12,5,11
+	db 244,1,240,5,3,11,244,2,240,12,5,11,244,3,240,7
+	db 6,11,244,2,240,12,5,11,244,1,240,5,3,11,244,2
+	db 240,12,5,11,244,3,240,7,6,11,244,2,240,12,5,11
+	db 244,1,240,5,3,11,244,2,240,12,5,10,244,3,240,7
+	db 6,11,244,2,240,12,5,11,244,1,240,5,3,11,244,2
+	db 240,12,5,11,244,3,240,7,6,10,244,2,240,12,5,11
+	db 244,1,240,5,3,11,244,2,240,12,5,11,244,3,240,7
+	db 6,10,244,2,240,12,5,11,244,1,240,5,3,11,244,2
+	db 240,12,5,10,244,3,240,7,6,11,244,2,240,12,5,11
+	db 244,1,240,5,3,10,244,2,240,12,5,11,244,3,240,7
+	db 6,10,244,2,240,12,5,11,244,1,240,5,3,11,244,2
+	db 240,12,5,10,244,3,240,7,6,11,244,2,240,12,5,10
+	db 244,1,240,5,3,11,244,2,240,12,5,10,244,3,240,7
+	db 6,11,244,2,240,12,5,10,244,1,240,5,3,11,244,2
+	db 240,12,5,10,244,3,240,7,6,11,244,2,240,12,5,10
+	db 244,1,240,5,3,11,244,2,240,12,5,10,244,3,240,7
+	db 6,10,244,2,240,12,5,11,244,1,240,5,3,10,244,2
+	db 240,12,5,11,244,3,240,7,6,10,244,2,240,12,5,10
+	db 244,1,240,5,3,11,244,2,240,12,5,10,244,3,240,7
+	db 6,10,244,2,240,12,5,11,244,1,240,5,3,10,244,2
+	db 240,12,5,10,244,3,240,7,6,10,244,2,240,12,5,11
+	db 244,1,240,5,3,10,244,3,240,7,6,10,6,5,6,5
+	db 6,5,6,5,244,1,240,5,3,11,244,2,240,12,5,10
+	db 244,3,240,7,6,10,244,2,240,12,5,10,244,1,240,5
+	db 3,10,244,2,240,12,5,10,244,3,240,7,6,10,244,2
+	db 240,12,5,11,244,1,240,5,3,10,244,2,240,12,5,10
+	db 244,3,240,7,6,10,244,2,240,12,5,10,244,1,240,5
+	db 3,10,244,2,240,12,5,10,244,3,240,7,6,10,244,2
+	db 240,12,5,10,244,1,240,5,3,10,244,2,240,12,5,10
+	db 244,3,240,7,6,10,244,2,240,12,5,10,244,1,240,5
+	db 3,10,244,2,240,12,5,10,244,3,240,7,6,10,244,2
+	db 240,12,5,10,244,1,240,5,3,9,244,2,240,12,5,10
+	db 244,3,240,7,6,10,244,2,240,12,5,10,244,1,240,5
+	db 3,10,244,2,240,12,5,10,244,3,240,7,6,10,244,2
+	db 240,12,5,9,244,1,240,5,3,10,244,2,240,12,5,10
+	db 244,3,240,7,6,10,244,2,240,12,5,10,244,1,240,5
+	db 3,9,244,2,240,12,5,10,244,3,240,7,6,10,244,2
+	db 240,12,5,10,244,1,240,5,3,9,244,2,240,12,5,10
+	db 244,3,240,7,6,10,244,2,240,12,5,9,244,1,240,5
+	db 3,10,244,2,240,12,5,10,244,3,240,7,6,9,244,2
+	db 240,12,5,10,244,1,240,5,3,10,244,2,240,12,5,9
+	db 244,3,240,7,6,10,244,2,240,12,5,10,244,1,240,5
+	db 3,9,244,2,240,12,5,10,244,3,240,7,6,9,244,2
+	db 240,12,5,10,244,1,240,5,3,9,244,2,240,12,5,10
+	db 244,3,240,7,6,10,244,2,240,12,5,9,244,1,240,5
+	db 3,10,244,3,240,7,6,9,6,5,6,5,6,4,6,5
+	db 244,1,240,5,3,10,244,2,240,12,5,9,244,3,240,7
+	db 6,9,244,2,240,12,5,10,244,1,240,5,3,9,244,2
+	db 240,12,5,10,244,3,240,7,6,9,244,2,240,12,5,10
+	db 244,1,240,5,3,9,244,2,240,12,5,9,244,3,240,7
+	db 6,10,244,2,240,12,5,9,244,1,240,5,3,9,244,2
+	db 240,12,5,10,244,3,240,7,6,9,244,2,240,12,5,9
+	db 244,1,240,5,3,10,244,2,240,12,5,9,244,3,240,7
+	db 6,9,244,2,240,12,5,9,244,1,240,5,3,10,244,2
+	db 240,12,5,9,244,3,240,7,6,9,244,2,240,12,5,9
+	db 244,1,240,5,3,10,244,2,240,12,5,9,244,3,240,7
+	db 6,9,244,2,240,12,5,9,244,1,240,5,3,10,244,2
+	db 240,12,5,9,244,3,240,7,6,9,244,2,240,12,5,9
+	db 244,1,240,5,3,9,244,2,240,12,5,9,244,3,240,7
+	db 6,9,244,2,240,12,5,10,244,1,240,5,3,9,244,2
+	db 240,12,5,9,244,3,240,7,6,9,244,2,240,12,5,9
+	db 244,1,240,5,3,9,244,2,240,12,5,9,244,3,240,7
+	db 6,9,244,2,240,12,5,9,244,1,240,5,3,9,244,2
+	db 240,12,5,9,244,3,240,7,6,9,244,2,240,12,5,9
+	db 244,1,240,5,3,9,244,2,240,12,5,9,244,3,240,7
+	db 6,9,244,2,240,12,5,9,244,1,240,5,3,9,244,2
+	db 240,12,5,9,244,3,240,7,6,9,244,2,240,12,5,9
+	db 244,1,240,5,3,9,244,2,240,12,5,9,244,3,240,7
+	db 6,9,244,2,240,12,5,9,244,1,240,5,3,8,244,3
+	db 240,7,6,9,6,5,6,4,6,5,6,4,244,1,240,5
+	db 3,9,244,2,240,12,5,9,244,3,240,7,6,9,244,2
+	db 240,12,5,8,244,1,240,5,3,9,244,2,240,12,5,9
+	db 244,3,240,7,6,9,244,2,240,12,5,9,244,1,240,5
+	db 3,8,244,2,240,12,5,9,244,3,240,7,6,9,244,2
+	db 240,12,5,9,244,1,240,5,3,8,244,2,240,12,5,9
+	db 244,3,240,7,6,9,244,2,240,12,5,9,244,1,240,5
+	db 3,8,244,2,240,12,5,9,244,3,240,7,6,9,244,2
+	db 240,12,5,8,244,1,240,5,3,9,244,2,240,12,5,9
+	db 244,3,240,7,6,8,244,2,240,12,5,9,244,1,240,5
+	db 3,9,244,2,240,12,5,8,244,3,240,7,6,9,244,2
+	db 240,12,5,8,244,1,240,5,3,9,244,2,240,12,5,9
+	db 244,3,240,7,6,8,244,2,240,12,5,9,244,1,240,5
+	db 3,8,244,2,240,12,5,9,244,3,240,7,6,8,244,2
+	db 240,12,5,9,244,1,240,5,3,9,244,2,240,12,5,8
+	db 244,3,240,7,6,9,244,2,240,12,5,8,244,1,240,5
+	db 3,9,244,2,240,12,5,8,244,3,240,7,6,9,244,2
+	db 240,12,5,8,244,1,240,5,3,8,244,2,240,12,5,9
+	db 244,3,240,7,6,8,244,2,240,12,5,9,244,1,240,5
+	db 3,8,244,2,240,12,5,9,244,3,240,7,6,8,244,2
+	db 240,12,5,9,244,1,240,5,3,8,244,2,240,12,5,8
+	db 244,3,240,7,6,9,244,2,240,12,5,8,244,1,240,5
+	db 3,8,244,2,240,12,5,9,244,3,240,7,6,8,244,2
+	db 240,12,5,8,244,1,240,5,3,9,244,3,240,7,6,8
+	db 6,4,6,4,6,5,6,4,244,1,240,5,3,8,244,2
+	db 240,12,5,8,244,3,240,7,6,9,244,2,240,12,5,8
+	db 244,1,240,5,3,8,244,2,240,12,5,8,244,3,240,7
+	db 6,9,244,2,240,12,5,8,244,1,240,5,3,8,244,2
+	db 240,12,5,8,244,3,240,7,6,9,244,2,240,12,5,8
+	db 244,1,240,5,3,8,244,2,240,12,5,8,244,3,240,7
+	db 6,9,244,2,240,12,5,8,244,1,240,5,3,8,244,2
+	db 240,12,5,8,244,3,240,7,6,8,244,2,240,12,5,8
+	db 244,1,240,5,3,9,244,2,240,12,5,8,244,3,240,7
+	db 6,8,244,2,240,12,5,8,244,1,240,5,3,8,244,2
+	db 240,12,5,8,244,3,240,7,6,8,244,2,240,12,5,8
+	db 244,1,240,5,3,8,244,2,240,12,5,8,244,3,240,7
+	db 6,9,244,2,240,12,5,8,244,1,240,5,3,8,244,2
+	db 240,12,5,8,244,3,240,7,6,8,244,2,240,12,5,8
+	db 244,1,240,5,3,8,244,2,240,12,5,8,244,3,240,7
+	db 6,8,244,2,240,12,5,8,244,1,240,5,3,8,244,2
+	db 240,12,5,8,244,3,240,7,6,8,244,2,240,12,5,8
+	db 244,1,240,5,3,8,244,2,240,12,5,8,244,3,240,7
+	db 6,8,244,2,240,12,5,8,244,1,240,5,3,8,244,2
+	db 240,12,5,7,244,3,240,7,6,8,244,2,240,12,5,8
+	db 244,1,240,5,3,8,244,2,240,12,5,8,244,3,240,7
+	db 6,8,244,2,240,12,5,8,244,1,240,5,3,8,244,2
+	db 240,12,5,8,244,3,240,7,6,8,244,2,240,12,5,7
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,11,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,11,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,11,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
+	db 6,11,244,2,240,12,5,12,244,1,240,5,3,12,244,2
+	db 240,12,5,12,244,3,240,7,6,11,244,2,240,12,5,12
+	db 244,1,240,5,3,12,244,2,240,12,5,11,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,11,244,2
+	db 240,12,5,12,244,3,240,7,6,12,244,2,240,12,5,11
+	db 244,1,240,5,3,12,244,2,240,12,5,11,244,3,240,7
+	db 6,12,244,2,240,12,5,12,244,1,240,5,3,11,244,2
+	db 240,12,5,12,244,3,240,7,6,11,244,2,240,12,5,12
+	db 244,1,240,5,3,11,244,2,240,12,5,12,244,3,240,7
+	db 6,11,244,2,240,12,5,12,244,1,240,5,3,11,244,2
+	db 240,12,5,12,244,3,240,7,6,11,244,2,240,12,5,12
+	db 244,1,240,5,3,11,244,2,240,12,5,12,244,3,240,7
+	db 6,11,244,2,240,12,5,12,244,1,240,5,3,11,244,3
+	db 240,7,6,11,6,6,6,6,6,6,6,5,244,1,240,5
+	db 3,12,244,2,240,12,5,11,244,3,240,7,6,11,244,2
+	db 240,12,5,12,244,1,240,5,3,11,244,2,240,12,5,11
+	db 244,3,240,7,6,12,244,2,240,12,5,11,244,1,240,5
+	db 3,11,244,2,240,12,5,12,244,3,240,7,6,11,244,2
+	db 240,12,5,11,244,1,240,5,3,12,244,2,240,12,5,11
+	db 244,3,240,7,6,11,244,2,240,12,5,11,244,1,240,5
+	db 3,12,244,2,240,12,5,11,244,3,240,7,6,11,244,2
+	db 240,12,5,11,244,1,240,5,3,11,244,2,240,12,5,12
+	db 244,3,240,7,6,11,244,2,240,12,5,11,244,1,240,5
+	db 3,11,244,2,240,12,5,11,244,3,240,7,6,12,244,2
+	db 240,12,5,11,244,1,240,5,3,11,244,2,240,12,5,11
+	db 244,3,240,7,6,11,244,2,240,12,5,11,244,1,240,5
+	db 3,11,244,2,240,12,5,11,244,3,240,7,6,12,244,2
+	db 240,12,5,11,244,1,240,5,3,11,244,2,240,12,5,11
+	db 244,3,240,7,6,11,244,2,240,12,5,11,244,1,240,5
+	db 3,11,244,2,240,12,5,11,244,3,240,7,6,11,244,2
+	db 240,12,5,11,244,1,240,5,3,11,244,2,240,12,5,11
+	db 244,3,240,7,6,11,244,2,240,12,5,11,244,1,240,5
+	db 3,11,244,2,240,12,5,11,244,3,240,7,6,11,244,2
+	db 240,12,5,11,244,1,240,5,3,11,244,2,240,12,5,11
+	db 244,3,240,7,6,11,244,2,240,12,5,10,244,1,240,5
+	db 3,11,244,2,240,12,5,11,244,3,240,7,6,11,244,2
+	db 240,12,5,11,244,1,240,5,3,11,244,3,240,7,6,11
+	db 6,5,6,6,6,5,6,5,244,1,240,5,3,11,244,2
+	db 240,12,5,11,244,3,240,7,6,11,244,2,240,12,5,11
+	db 244,1,240,5,3,11,244,2,240,12,5,10,244,3,240,7
+	db 6,11,244,2,240,12,5,11,244,1,240,5,3,11,244,2
+	db 240,12,5,11,244,3,240,7,6,10,244,2,240,12,5,11
+	db 244,1,240,5,3,11,244,2,240,12,5,10,244,3,240,7
+	db 6,11,244,2,240,12,5,11,244,1,240,5,3,11,244,2
+	db 240,12,5,10,244,3,240,7,6,11,244,2,240,12,5,11
+	db 244,1,240,5,3,10,244,2,240,12,5,11,244,3,240,7
+	db 6,11,244,2,240,12,5,10,244,1,240,5,3,11,244,2
+	db 240,12,5,11,244,3,240,7,6,10,244,2,240,12,5,11
+	db 244,1,240,5,3,11,244,2,240,12,5,10,244,3,240,7
+	db 6,11,244,2,240,12,5,10,244,1,240,5,3,11,244,2
+	db 240,12,5,11,244,3,240,7,6,10,244,2,240,12,5,11
+	db 244,1,240,5,3,10,244,2,240,12,5,11,244,3,240,7
+	db 6,10,244,2,240,12,5,11,244,1,240,5,3,10,244,2
+	db 240,12,5,11,244,3,240,7,6,10,244,2,240,12,5,11
+	db 244,1,240,5,3,10,244,2,240,12,5,11,244,3,240,7
+	db 6,10,244,2,240,12,5,11,244,1,240,5,3,10,244,2
+	db 240,12,5,11,244,3,240,7,6,10,244,2,240,12,5,11
+	db 244,1,240,5,3,10,244,2,240,12,5,10,244,3,240,7
+	db 6,11,244,2,240,12,5,10,244,1,240,5,3,11,244,2
+	db 240,12,5,10,244,3,240,7,6,10,244,2,240,12,5,11
+	db 244,1,240,5,3,10,244,3,240,7,6,11,6,5,6,5
+	db 6,5,6,5,244,1,240,5,3,11,244,2,240,12,5,10
+	db 244,3,240,7,6,10,244,2,240,12,5,11,244,1,240,5
+	db 3,10,244,2,240,12,5,10,244,3,240,7,6,10,244,2
+	db 240,12,5,11,244,1,240,5,3,10,244,2,240,12,5,10
+	db 244,3,240,7,6,11,244,2,240,12,5,10,244,1,240,5
+	db 3,10,244,2,240,12,5,10,244,3,240,7,6,11,244,2
+	db 240,12,5,10,244,1,240,5,3,10,244,2,240,12,5,10
+	db 244,3,240,7,6,10,244,2,240,12,5,11,244,1,240,5
+	db 3,10,244,2,240,12,5,10,244,3,240,7,6,10,244,2
+	db 240,12,5,10,244,1,240,5,3,11,244,2,240,12,5,10
+	db 244,3,240,7,6,10,244,2,240,12,5,10,244,1,240,5
+	db 3,10,244,2,240,12,5,10,244,3,240,7,6,10,244,2
+	db 240,12,5,11,244,1,240,5,3,10,244,2,240,12,5,10
+	db 244,3,240,7,6,10,244,2,240,12,5,10,244,1,240,5
+	db 3,10,244,2,240,12,5,10,244,3,240,7,6,10,244,2
+	db 240,12,5,10,244,1,240,5,3,10,244,2,240,12,5,10
+	db 244,3,240,7,6,10,244,2,240,12,5,10,244,1,240,5
+	db 3,10,244,2,240,12,5,10,244,3,240,7,6,10,244,2
+	db 240,12,5,10,244,1,240,5,3,10,244,2,240,12,5,10
+	db 244,3,240,7,6,10,244,2,240,12,5,10,244,1,240,5
+	db 3,10,244,2,240,12,5,10,244,3,240,7,6,10,244,2
+	db 240,12,5,10,244,1,240,5,3,10,244,2,240,12,5,10
+	db 244,3,240,7,6,10,244,2,240,12,5,10,244,1,240,5
+	db 3,10,244,3,240,7,6,10,6,5,6,5,6,5,6,5
+	db 244,1,240,5,3,9,244,2,240,12,5,10,244,3,240,7
+	db 6,10,244,2,240,12,5,10,244,1,240,5,3,10,244,2
+	db 240,12,5,10,244,3,240,7,6,10,244,2,240,12,5,9
+	db 244,1,240,5,3,10,244,2,240,12,5,10,244,3,240,7
+	db 6,10,244,2,240,12,5,10,244,1,240,5,3,10,244,2
+	db 240,12,5,9,244,3,240,7,6,10,244,2,240,12,5,10
+	db 244,1,240,5,3,10,244,2,240,12,5,9,244,3,240,7
+	db 6,10,244,2,240,12,5,10,244,1,240,5,3,10,244,2
+	db 240,12,5,10,244,3,240,7,6,9,244,2,240,12,5,10
+	db 244,1,240,5,3,10,244,2,240,12,5,9,244,3,240,7
+	db 6,10,244,2,240,12,5,10,244,1,240,5,3,10,244,2
+	db 240,12,5,9,244,3,240,7,6,10,244,2,240,12,5,10
+	db 244,1,240,5,3,9,244,2,240,12,5,10,244,3,240,7
+	db 6,10,244,2,240,12,5,9,244,1,240,5,3,10,244,2
+	db 240,12,5,10,244,3,240,7,6,9,244,2,240,12,5,10
+	db 244,1,240,5,3,9,244,2,240,12,5,10,244,3,240,7
+	db 6,10,244,2,240,12,5,9,244,1,240,5,3,10,244,2
+	db 240,12,5,9,244,3,240,7,6,10,244,2,240,12,5,10
+	db 244,1,240,5,3,9,244,2,240,12,5,10,244,3,240,7
+	db 6,9,244,2,240,12,5,10,244,1,240,5,3,9,244,2
+	db 240,12,5,10,244,3,240,7,6,9,244,2,240,12,5,10
+	db 244,1,240,5,3,10,244,2,240,12,5,9,244,3,240,7
+	db 6,10,244,2,240,12,5,9,244,1,240,5,3,10,244,3
+	db 240,7,6,9,6,5,6,5,6,4,6,5,244,1,240,5
+	db 3,9,244,2,240,12,5,10,244,3,240,7,6,9,244,2
+	db 240,12,5,10,244,1,240,5,3,9,244,2,240,12,5,10
+	db 244,3,240,7,6,9,244,2,240,12,5,9,244,1,240,5
+	db 3,10,244,2,240,12,5,9,244,3,240,7,6,10,244,2
+	db 240,12,5,9,244,1,240,5,3,9,244,2,240,12,5,10
+	db 244,3,240,7,6,9,244,2,240,12,5,9,244,1,240,5
+	db 3,10,244,2,240,12,5,9,244,3,240,7,6,9,244,2
+	db 240,12,5,10,244,1,240,5,3,9,244,2,240,12,5,9
+	db 244,3,240,7,6,10,244,2,240,12,5,9,244,1,240,5
+	db 3,9,244,2,240,12,5,9,244,3,240,7,6,10,244,2
+	db 240,12,5,9,244,1,240,5,3,9,244,2,240,12,5,9
+	db 244,3,240,7,6,9,244,2,240,12,5,10,244,1,240,5
+	db 3,9,244,2,240,12,5,9,244,3,240,7,6,9,244,2
+	db 240,12,5,9,244,1,240,5,3,9,244,2,240,12,5,10
+	db 244,3,240,7,6,9,244,2,240,12,5,9,244,1,240,5
+	db 3,9,244,2,240,12,5,9,244,3,240,7,6,9,244,2
+	db 240,12,5,9,244,1,240,5,3,9,244,2,240,12,5,9
+	db 244,3,240,7,6,10,244,2,240,12,5,9,244,1,240,5
+	db 3,9,244,2,240,12,5,9,244,3,240,7,6,9,244,2
+	db 240,12,5,9,244,1,240,5,3,9,244,2,240,12,5,9
+	db 244,3,240,7,6,9,244,2,240,12,5,9,244,1,240,5
+	db 3,9,244,2,240,12,5,9,244,3,240,7,6,9,244,2
+	db 240,12,5,9,244,1,240,5,3,9,244,3,240,7,6,9
+	db 6,4,6,4,6,5,6,4,244,1,240,5,3,9,244,2
+	db 240,12,5,9,244,3,240,7,6,9,244,2,240,12,5,9
+	db 244,1,240,5,3,9,244,2,240,12,5,9,244,3,240,7
+	db 6,9,244,2,240,12,5,9,244,1,240,5,3,8,244,2
+	db 240,12,5,9,244,3,240,7,6,9,244,2,240,12,5,9
+	db 244,1,240,5,3,9,244,2,240,12,5,9,244,3,240,7
+	db 6,8,244,2,240,12,5,9,244,1,240,5,3,9,244,2
+	db 240,12,5,9,244,3,240,7,6,9,244,2,240,12,5,8
+	db 244,1,240,5,3,9,244,2,240,12,5,9,244,3,240,7
+	db 6,9,244,2,240,12,5,8,244,1,240,5,3,9,244,2
+	db 240,12,5,9,244,3,240,7,6,9,244,2,240,12,5,8
+	db 244,1,240,5,3,9,244,2,240,12,5,9,244,3,240,7
+	db 6,8,244,2,240,12,5,9,244,1,240,5,3,9,244,2
+	db 240,12,5,8,244,3,240,7,6,9,244,2,240,12,5,9
+	db 244,1,240,5,3,8,244,2,240,12,5,9,244,3,240,7
+	db 6,9,244,2,240,12,5,8,244,1,240,5,3,9,244,2
+	db 240,12,5,8,244,3,240,7,6,9,244,2,240,12,5,9
+	db 244,1,240,5,3,8,244,2,240,12,5,9,244,3,240,7
+	db 6,8,244,2,240,12,5,9,244,1,240,5,3,8,244,2
+	db 240,12,5,9,244,3,240,7,6,8,244,2,240,12,5,9
+	db 244,1,240,5,3,9,244,2,240,12,5,8,244,3,240,7
+	db 6,9,244,2,240,12,5,8,244,1,240,5,3,9,244,2
+	db 240,12,5,8,244,3,240,7,6,8,244,2,240,12,5,9
+	db 244,1,240,5,3,8,244,3,240,7,6,9,6,4,6,4
+	db 6,5,6,4,244,1,240,5,3,8,244,2,240,12,5,9
+	db 244,3,240,7,6,8,244,2,240,12,5,8,244,1,240,5
+	db 3,9,244,2,240,12,5,8,244,3,240,7,6,9,244,2
+	db 240,12,5,8,244,1,240,5,3,8,244,2,240,12,5,9
+	db 244,3,240,7,6,8,244,2,240,12,5,8,244,1,240,5
+	db 3,9,244,2,240,12,5,8,244,3,240,7,6,9,244,2
+	db 240,12,5,8,244,1,240,5,3,8,244,2,240,12,5,8
+	db 244,3,240,7,6,9,244,2,240,12,5,8,244,1,240,5
+	db 3,8,244,2,240,12,5,9,244,3,240,7,6,8,244,2
+	db 240,12,5,8,244,1,240,5,3,8,244,2,240,12,5,9
+	db 244,3,240,7,6,8,244,2,240,12,5,8,244,1,240,5
+	db 3,8,244,2,240,12,5,9,244,3,240,7,6,8,244,2
+	db 240,12,5,8,244,1,240,5,3,8,244,2,240,12,5,9
+	db 244,3,240,7,6,8,244,2,240,12,5,8,244,1,240,5
+	db 3,8,244,2,240,12,5,8,244,3,240,7,6,8,244,2
+	db 240,12,5,9,244,1,240,5,3,8,244,2,240,12,5,8
+	db 244,3,240,7,6,8,244,2,240,12,5,8,244,1,240,5
+	db 3,8,244,2,240,12,5,8,244,3,240,7,6,9,244,2
+	db 240,12,5,8,244,1,240,5,3,8,244,2,240,12,5,8
+	db 244,3,240,7,6,8,244,2,240,12,5,8,244,1,240,5
+	db 3,8,244,2,240,12,5,8,244,3,240,7,6,8,244,2
+	db 240,12,5,8,244,1,240,5,3,8,244,2,240,12,5,8
+	db 244,3,240,7,6,8,244,2,240,12,5,8,244,1,240,5
+	db 3,8,244,3,240,7,6,8,6,4,6,5,6,4,6,4
+	db 244,1,240,5,3,8,244,2,240,12,5,7,244,3,240,7
+	db 6,8,244,2,240,12,5,8,244,1,240,5,3,8,244,2
+	db 240,12,5,8,244,3,240,7,6,8,244,2,240,12,5,8
+	db 244,1,240,5,3,8,244,2,240,12,5,8,244,3,240,7
+	db 6,8,244,2,240,12,5,8,244,1,240,5,3,8,244,2
+	db 240,12,5,8,244,3,240,7,6,8,244,2,240,12,5,8
+	db 244,1,240,5,3,8,244,2,240,12,5,7,244,3,240,7
+	db 6,8,244,2,240,12,5,8,244,1,240,5,3,8,244,2
+	db 240,12,5,8,244,3,240,7,6,8,244,2,240,12,5,8
+	db 244,1,240,5,3,8,244,2,240,12,5,7,244,3,240,7
+	db 6,8,244,2,240,12,5,8,244,1,240,5,3,8,244,2
+	db 240,12,5,8,244,3,240,7,6,7,244,2,240,12,5,8
+	db 244,1,240,5,3,8,244,2,240,12,5,8,244,3,240,7
+	db 6,8,244,2,240,12,5,7,244,1,240,5,3,8,244,2
+	db 240,12,5,8,244,3,240,7,6,8,244,2,240,12,5,7
+	db 244,1,240,5,3,8,244,2,240,12,5,8,244,3,240,7
+	db 6,8,244,2,240,12,5,7,244,1,240,5,3,8,244,2
+	db 240,12,5,8,244,3,240,7,6,8,244,2,240,12,5,7
+	db 244,1,240,5,3,8,244,2,240,12,5,8,244,3,240,7
+	db 6,7,244,2,240,12,5,8,244,1,240,5,3,8,244,2
+	db 240,12,5,7,244,3,240,7,6,8,244,2,240,12,5,8
+	db 244,1,240,5,3,7,244,2,240,12,5,8,244,3,240,7
+	db 6,8,244,2,240,12,5,7,244,1,240,5,3,8,244,3
+	db 240,7,6,7,6,4,6,4,6,4,6,4,244,1,240,5
+	db 3,7,244,2,240,12,5,8,244,3,240,7,6,7,244,2
+	db 240,12,5,8,244,1,240,5,3,8,244,2,240,12,5,7
+	db 244,3,240,7,6,8,244,2,240,12,5,7,244,1,240,5
+	db 3,8,244,2,240,12,5,7,244,3,240,7,6,8,244,2
+	db 240,12,5,8,244,1,240,5,3,7,244,2,240,12,5,8
+	db 244,3,240,7,6,7,244,2,240,12,5,8,244,1,240,5
+	db 3,7,244,2,240,12,5,8,244,3,240,7,6,7,244,2
+	db 240,12,5,8,244,1,240,5,3,7,244,2,240,12,5,8
+	db 244,3,240,7,6,7,244,2,240,12,5,8,244,1,240,5
+	db 3,7,244,2,240,12,5,7,244,3,240,7,6,8,244,2
+	db 240,12,5,7,244,1,240,5,3,8,244,2,240,12,5,7
+	db 244,3,240,7,6,8,244,2,240,12,5,7,244,1,240,5
+	db 3,8,244,2,240,12,5,7,244,3,240,7,6,7,244,2
+	db 240,12,5,8,244,1,240,5,3,7,244,2,240,12,5,8
+	db 244,3,240,7,6,7,244,2,240,12,5,7,244,1,240,5
+	db 3,8,244,2,240,12,5,7,244,3,240,7,6,7,244,2
+	db 240,12,5,8,244,1,240,5,3,7,244,2,240,12,5,7
+	db 244,3,240,7,6,8,244,2,240,12,5,7,244,1,240,5
+	db 3,7,244,2,240,12,5,8,244,3,240,7,6,7,244,2
+	db 240,12,5,7,244,1,240,5,3,8,244,2,240,12,5,7
+	db 244,3,240,7,6,7,244,2,240,12,5,8,244,1,240,5
+	db 3,7,244,2,240,12,5,7,244,3,240,7,6,8,244,2
+	db 240,12,5,7,244,1,240,5,3,7,244,3,240,7,6,7
+	db 6,4,6,4,6,3,6,4,244,1,240,5,3,7,244,2
+	db 240,12,5,7,244,3,240,7,6,8,244,2,240,12,5,7
+	db 244,1,240,5,3,7,244,2,240,12,5,7,244,3,240,7
+	db 6,7,244,2,240,12,5,8,244,1,240,5,3,7,244,2
+	db 240,12,5,7,244,3,240,7,6,7,244,2,240,12,5,7
+	db 244,1,240,5,3,8,244,2,240,12,5,7,244,3,240,7
+	db 6,7,244,2,240,12,5,7,244,1,240,5,3,7,244,2
+	db 240,12,5,7,244,3,240,7,6,8,244,2,240,12,5,7
+	db 244,1,240,5,3,7,244,2,240,12,5,7,244,3,240,7
+	db 6,7,244,2,240,12,5,7,244,1,240,5,3,7,244,2
+	db 240,12,5,7,244,3,240,7,6,8,244,2,240,12,5,7
+	db 244,1,240,5,3,7,244,2,240,12,5,7,244,3,240,7
+	db 6,7,244,2,240,12,5,7,244,1,240,5,3,7,244,2
+	db 240,12,5,7,244,3,240,7,6,7,244,2,240,12,5,7
+	db 244,1,240,5,3,7,244,2,240,12,5,7,244,3,240,7
+	db 6,8,244,2,240,12,5,7,244,1,240,5,3,7,244,2
+	db 240,12,5,7,244,3,240,7,6,7,244,2,240,12,5,7
+	db 244,1,240,5,3,7,244,2,240,12,5,7,244,3,240,7
+	db 6,7,244,2,240,12,5,7,244,1,240,5,3,7,244,2
+	db 240,12,5,7,244,3,240,7,6,7,244,2,240,12,5,7
+	db 244,1,240,5,3,7,244,2,240,12,5,7,244,3,240,7
+	db 6,7,244,2,240,12,5,7,244,1,240,5,3,7,244,2
+	db 240,12,5,7,244,3,240,7,6,6,244,2,240,12,5,7
+	db 0
 _song3_v0__9:
 	db 255,240,0
 _song3_v1__9:
@@ -35502,6 +36005,10 @@ _sp_bend__18:
 	db 144,1,244,1,88,2,188,2,32,3
 _slopes__18:
 	db 0,255,1,0,254,2
+	align 2
+_bridge_run__18:
+	db 242,3,0,0,0,0,98,2,0,0,253,0,108,2,0,0
+	db 3,0,218,2,26,0,0,0
 _S19_0:
 	db 65,85,84,79,66,65,72,78,32,65,67,69,0
 _S19_1:
@@ -35559,7 +36066,7 @@ _dir_x__19:
 	db 16,11,0,245,240,245,0,11
 _dir_y__19:
 	db 0,245,240,245,0,11,16,11
-_pals__19_L2586:
+_pals__19_L2654:
 	db 1,2,9,10
 	align 2
 _gfx_font_tiles__26:
@@ -35701,6 +36208,8 @@ _band_lut__30:
 	db 3,0,1,2,3,3,3,3,2,1,0,0,0,0,1,2
 	db 3,3,3,3,3,3,3,2,1,0,0,0,0,0,0,0
 	db 1,2,3,3,3,3,3,3,3,3,3,3,3,3,2,1
+_crowd_pal__31_L5022:
+	db 6,8,10
 _pano_slot__32:
 	db 8,9,10,11,12,13,14,15,2,3,4,5,6
 	align 2
@@ -35759,11 +36268,12 @@ __DataROM_START:
 	db 255,255,255,255
 	db 43,29
 	db 6
+	db 50
 __DataROM_END:
 __Bss_START equ 04000h
-__Bss_END equ 05724h
-__DataRAM_START equ 05724h
-__RAM_END equ 0578Bh
+__Bss_END equ 05766h
+__DataRAM_START equ 05766h
+__RAM_END equ 057CEh
 _road_edge__0 equ 04000h
 _lat_limit__0 equ 04002h
 _speed__0 equ 04004h
@@ -35838,217 +36348,223 @@ _map_seg__0 equ 04212h
 _map_t__0 equ 04214h
 _map_along__0 equ 04216h
 _map_done__0 equ 04218h
-_smoke_t__0 equ 0421Ah
-_eng_phase__0 equ 0421Bh
-_voice__10 equ 0421Ch
-_playing__10 equ 04264h
-_last_vbl__10 equ 04265h
-_want_div__10 equ 04266h
-_want_attn__10 equ 0426Eh
-_sent_div__10 equ 04272h
-_sent_attn__10 equ 0427Ah
-_noise_trig__10 equ 0427Eh
-_sfx_frames__10 equ 0427Fh
-_sfx_div__10 equ 04284h
-_sfx_step__10 equ 0428Ch
-_sfx_attn__10 equ 04290h
-_sfx_decay__10 equ 04294h
-_sfx_age__10 equ 04298h
-_eng_div__10 equ 0429Ch
-_eng_on__10 equ 0429Eh
-_b_on__11 equ 0429Fh
-_b_r0__11 equ 042A0h
-_b_r1__11 equ 042A1h
-_b_c0__11 equ 042A2h
-_b_c1__11 equ 042A3h
-_b_foot__11 equ 042A4h
-_b_spr__11 equ 042A5h
-_car_d__11 equ 042A6h
-_br_at__12 equ 042A8h
-_br_n__12 equ 042B0h
-_car_d__12 equ 042B2h
-_bridge_line equ 042B4h
-_bb_r1__12 equ 042B5h
-_bb_c0__12 equ 042B6h
-_bb_c1__12 equ 042B7h
-_s_offset__13 equ 042B8h
-_s_sequence__13 equ 042BCh
-_s_repeat_timer__14 equ 042C0h
-_g_vb_hook__15 equ 042C8h
-_s_cmd_type__17 equ 042CCh
-_s_cmd_dst__17 equ 042DCh
-_s_cmd_len__17 equ 042FCh
-_s_cmd_src__17 equ 0431Ch
-_s_cmd_fill__17 equ 0435Ch
-_s_cmd_count__17 equ 0437Ch
-_s_drop_count__17 equ 0437Dh
-_s_lock__17 equ 0437Eh
-_buf__18 equ 04380h
-_track_len equ 04530h
-_cur_stage equ 04531h
-_cur_branch equ 04532h
-_cur_leg equ 04533h
-_leg_len equ 04534h
-_fork_choice equ 04536h
-_route_hist equ 04537h
-_difficulty equ 0453Ch
-_leg_theme equ 0453Dh
-_next_leg_cost equ 0454Ch
-_n_cur__18 equ 0454Eh
-_n_next__18 equ 0454Fh
-_rs__18 equ 04550h
-_gp__18 equ 04552h
-_gn__18 equ 04556h
-_px__19 equ 04558h
-_py__19 equ 04574h
-_vx__19 equ 04590h
-_vy__19 equ 045ACh
-_life__19 equ 045C8h
-_ptile__19 equ 045D6h
-_ppal__19 equ 045E4h
-_fx__19 equ 045F2h
-_timer__19 equ 045F3h
-_s_done_cb__20 equ 045F4h
-_s_done_flag__20 equ 04604h
-_s_was_active__20 equ 04608h
-_s_rearm_enabled__20 equ 0460Ch
-_s_rearm_elem__20 equ 04610h
-_s_rearm_vector__20 equ 04614h
-_s_rearm_count__20 equ 04618h
-_s_rearm_dst__20 equ 04620h
-_s_rearm_src__20 equ 04630h
-_h_score__26 equ 04640h
-_h_score_ok__26 equ 04647h
-_s_dig__26 equ 04648h
-_body__29 equ 04650h
-_car_variant__29 equ 04670h
-_car_wheel_dx__29 equ 04671h
-_car_tile_base__29 equ 04672h
-_lean_hold__29 equ 04674h
-_lean_side__29 equ 04675h
-_lean_wait__29 equ 04676h
-_bump_phase__29 equ 04677h
-_car_last_x__29 equ 04678h
-_car_last_top__29 equ 0467Ah
-_art__30 equ 0467Ch
-_road_course__30 equ 04694h
-_road_grade__30 equ 04695h
-_band_pitch__30 equ 04696h
-_climb_room__30 equ 04698h
-_descent_room__30 equ 04699h
-_band_shift__30 equ 0469Ah
-_id_xy_a__30 equ 0469Ch
-_id_xy_b__30 equ 047CEh
-_id_xy_done__30 equ 04900h
-_id_xy_last__30 equ 04904h
-_id_raster__30 equ 04908h
-_id_shear__30 equ 0491Ch
-_id_sl__30 equ 0499Ch
-_id_bandcol_a__30 equ 04A5Ch
-_id_bandcol_b__30 equ 04B8Eh
-_bc_top__30 equ 04CC0h
-_id_bandcol_done__30 equ 04CC2h
-_id_bandstream__30 equ 04CC6h
-_band_phase__30 equ 04CD4h
-_id_dxc__30 equ 04CD6h
-_id_w_lat__30 equ 04DD6h
-_id_w_curve__30 equ 04E16h
-_id_half__30 equ 04E56h
-_id_src__30 equ 04E96h
-_band_top__30 equ 04ED6h
-_band_mid__30 equ 04EDAh
-_band_tree__30 equ 04EDEh
-_band_bg_first__30 equ 04EE2h
-_id_buf__30 equ 04EE4h
-_pan_head__30 equ 04EE6h
-_pan_lat__30 equ 04EE8h
-_pan_fine__30 equ 04EEAh
-_band_held__30 equ 04EEBh
-_band_wait__30 equ 04EECh
-_id_ahead__30 equ 04EEEh
-_id_curve_cm__30 equ 04F6Eh
-_wide_k0__30 equ 04F70h
-_rally_of__30 equ 04F71h
-_rally_src__30 equ 05172h
-_rally_used__30 equ 05370h
-_rally_scanned__30 equ 05371h
-_band_col__30 equ 05372h
-_road_dma_live__30 equ 0537Ah
-_road_dma_depth__30 equ 0537Bh
-_id_curve_dx__30 equ 0537Ch
-_scn_phase__31 equ 053FCh
-_scn_frac__31 equ 053FEh
-_scn_passed__31 equ 05400h
-_scn_mode__31 equ 05401h
-_pano_base__32 equ 05402h
-_obj_base__32 equ 05404h
-_obj_end__32 equ 05406h
-_pano_end__32 equ 05408h
-_objmap__32 equ 0540Ah
-_kind_l__32 equ 0560Ah
-_kind_r__32 equ 0560Bh
-_cur_pals__32 equ 0560Ch
-_cur_backdrop__32 equ 05674h
-_cur_road__32 equ 05676h
-_cur_band__32 equ 0567Eh
-_cur_spr__32 equ 05686h
-_next_slot__32 equ 056B6h
-_cars__33 equ 056B8h
-_trf_tiles__33 equ 0571Ah
-_car_d__33 equ 0571Ch
-_half_wheel__33 equ 0571Eh
-_dens_min__33 equ 0571Fh
-_dens_max__33 equ 05720h
-_target__33 equ 05721h
-_cooldown__33 equ 05722h
-_hard__33 equ 05723h
-_car_tuned__0 equ 05724h
-_roll_loaded__0 equ 05732h
-_hiscore__0 equ 05734h
-_eng_attn__10 equ 05744h
-_bb_r0__12 equ 05745h
-_sig_prev__12 equ 05746h
-_s_current__13 equ 05748h
-_s_last_slot__13 equ 05749h
-_ngpc_pad_held equ 0574Ah
-_ngpc_pad_pressed equ 0574Bh
-_ngpc_pad_released equ 0574Ch
-_ngpc_pad_repeat equ 0574Dh
-_s_pad_prev__14 equ 0574Eh
-_s_repeat_delay__14 equ 0574Fh
-_s_repeat_rate__14 equ 05750h
-_s_vbl_down__14 equ 05751h
-_s_vbl_prev__14 equ 05752h
-_g_vb_counter equ 05753h
-_s_is_color__15 equ 05754h
-_s_language__15 equ 05755h
-_s_power_hold__16_L2250 equ 05756h
-_track_seg equ 05758h
-_free_seed equ 0575Ch
-_seed__19 equ 0575Eh
-_cur_song__22 equ 05760h
-_h_time__26 equ 05761h
-_h_kmh__26 equ 05762h
-_h_gear__26 equ 05763h
-_h_prog__26 equ 05764h
-_h_stage__26 equ 05765h
-_id_spr_priority equ 05766h
-_car_at_x__29 equ 05768h
-_car_stand__30 equ 0576Ah
-_grade_hi__30 equ 0576Bh
-_grade_lo__30 equ 0576Ch
-_band_first__30 equ 0576Dh
-_band_count__30 equ 0576Eh
-_band_bg_end__30 equ 0576Fh
-_road_top__30 equ 05771h
-_road_plane0__30 equ 05772h
-_road_bottom__30 equ 05773h
-_road_lines__30 equ 05774h
-_road_base_x__30 equ 05775h
-_id_xy__30 equ 05776h
-_id_xy_live__30 equ 0577Ah
-_id_bandcol__30 equ 0577Eh
-_road_band_pal__30 equ 05782h
-_bc_rest__30 equ 05784h
-_rng__33 equ 05788h
-_trf_cap__33 equ 0578Ah
+_bal_x__0 equ 0421Ah
+_bal_y__0 equ 0422Ah
+_bal_v__0 equ 0423Ah
+_bal_wait__0 equ 04242h
+_bal_live__0 equ 0424Ah
+_smoke_t__0 equ 0424Bh
+_eng_phase__0 equ 0424Ch
+_voice__10 equ 0424Eh
+_playing__10 equ 04296h
+_last_vbl__10 equ 04297h
+_want_div__10 equ 04298h
+_want_attn__10 equ 042A0h
+_sent_div__10 equ 042A4h
+_sent_attn__10 equ 042ACh
+_noise_trig__10 equ 042B0h
+_sfx_frames__10 equ 042B1h
+_sfx_div__10 equ 042B6h
+_sfx_step__10 equ 042BEh
+_sfx_attn__10 equ 042C2h
+_sfx_decay__10 equ 042C6h
+_sfx_age__10 equ 042CAh
+_eng_div__10 equ 042CEh
+_eng_on__10 equ 042D0h
+_b_on__11 equ 042D1h
+_b_r0__11 equ 042D2h
+_b_r1__11 equ 042D3h
+_b_c0__11 equ 042D4h
+_b_c1__11 equ 042D5h
+_b_foot__11 equ 042D6h
+_b_spr__11 equ 042D7h
+_car_d__11 equ 042D8h
+_br_at__12 equ 042DAh
+_br_n__12 equ 042F2h
+_car_d__12 equ 042F4h
+_bridge_line equ 042F6h
+_bb_r1__12 equ 042F7h
+_bb_c0__12 equ 042F8h
+_bb_c1__12 equ 042F9h
+_s_offset__13 equ 042FAh
+_s_sequence__13 equ 042FEh
+_s_repeat_timer__14 equ 04302h
+_g_vb_hook__15 equ 0430Ah
+_s_cmd_type__17 equ 0430Eh
+_s_cmd_dst__17 equ 0431Eh
+_s_cmd_len__17 equ 0433Eh
+_s_cmd_src__17 equ 0435Eh
+_s_cmd_fill__17 equ 0439Eh
+_s_cmd_count__17 equ 043BEh
+_s_drop_count__17 equ 043BFh
+_s_lock__17 equ 043C0h
+_buf__18 equ 043C2h
+_track_len equ 04572h
+_cur_stage equ 04573h
+_cur_branch equ 04574h
+_cur_leg equ 04575h
+_leg_len equ 04576h
+_fork_choice equ 04578h
+_route_hist equ 04579h
+_difficulty equ 0457Eh
+_leg_theme equ 0457Fh
+_next_leg_cost equ 0458Eh
+_n_cur__18 equ 04590h
+_n_next__18 equ 04591h
+_rs__18 equ 04592h
+_gp__18 equ 04594h
+_gn__18 equ 04598h
+_px__19 equ 0459Ah
+_py__19 equ 045B6h
+_vx__19 equ 045D2h
+_vy__19 equ 045EEh
+_life__19 equ 0460Ah
+_ptile__19 equ 04618h
+_ppal__19 equ 04626h
+_fx__19 equ 04634h
+_timer__19 equ 04635h
+_s_done_cb__20 equ 04636h
+_s_done_flag__20 equ 04646h
+_s_was_active__20 equ 0464Ah
+_s_rearm_enabled__20 equ 0464Eh
+_s_rearm_elem__20 equ 04652h
+_s_rearm_vector__20 equ 04656h
+_s_rearm_count__20 equ 0465Ah
+_s_rearm_dst__20 equ 04662h
+_s_rearm_src__20 equ 04672h
+_h_score__26 equ 04682h
+_h_score_ok__26 equ 04689h
+_s_dig__26 equ 0468Ah
+_body__29 equ 04692h
+_car_variant__29 equ 046B2h
+_car_wheel_dx__29 equ 046B3h
+_car_tile_base__29 equ 046B4h
+_lean_hold__29 equ 046B6h
+_lean_side__29 equ 046B7h
+_lean_wait__29 equ 046B8h
+_bump_phase__29 equ 046B9h
+_car_last_x__29 equ 046BAh
+_car_last_top__29 equ 046BCh
+_art__30 equ 046BEh
+_road_course__30 equ 046D6h
+_road_grade__30 equ 046D7h
+_band_pitch__30 equ 046D8h
+_climb_room__30 equ 046DAh
+_descent_room__30 equ 046DBh
+_band_shift__30 equ 046DCh
+_id_xy_a__30 equ 046DEh
+_id_xy_b__30 equ 04810h
+_id_xy_done__30 equ 04942h
+_id_xy_last__30 equ 04946h
+_id_raster__30 equ 0494Ah
+_id_shear__30 equ 0495Eh
+_id_sl__30 equ 049DEh
+_id_bandcol_a__30 equ 04A9Eh
+_id_bandcol_b__30 equ 04BD0h
+_bc_top__30 equ 04D02h
+_id_bandcol_done__30 equ 04D04h
+_id_bandstream__30 equ 04D08h
+_band_phase__30 equ 04D16h
+_id_dxc__30 equ 04D18h
+_id_w_lat__30 equ 04E18h
+_id_w_curve__30 equ 04E58h
+_id_half__30 equ 04E98h
+_id_src__30 equ 04ED8h
+_band_top__30 equ 04F18h
+_band_mid__30 equ 04F1Ch
+_band_tree__30 equ 04F20h
+_band_bg_first__30 equ 04F24h
+_id_buf__30 equ 04F26h
+_pan_head__30 equ 04F28h
+_pan_lat__30 equ 04F2Ah
+_pan_fine__30 equ 04F2Ch
+_band_held__30 equ 04F2Dh
+_band_wait__30 equ 04F2Eh
+_id_ahead__30 equ 04F30h
+_id_curve_cm__30 equ 04FB0h
+_wide_k0__30 equ 04FB2h
+_rally_of__30 equ 04FB3h
+_rally_src__30 equ 051B4h
+_rally_used__30 equ 053B2h
+_rally_scanned__30 equ 053B3h
+_band_col__30 equ 053B4h
+_road_dma_live__30 equ 053BCh
+_road_dma_depth__30 equ 053BDh
+_id_curve_dx__30 equ 053BEh
+_scn_phase__31 equ 0543Eh
+_scn_frac__31 equ 05440h
+_scn_passed__31 equ 05442h
+_scn_mode__31 equ 05443h
+_pano_base__32 equ 05444h
+_obj_base__32 equ 05446h
+_obj_end__32 equ 05448h
+_pano_end__32 equ 0544Ah
+_objmap__32 equ 0544Ch
+_kind_l__32 equ 0564Ch
+_kind_r__32 equ 0564Dh
+_cur_pals__32 equ 0564Eh
+_cur_backdrop__32 equ 056B6h
+_cur_road__32 equ 056B8h
+_cur_band__32 equ 056C0h
+_cur_spr__32 equ 056C8h
+_next_slot__32 equ 056F8h
+_cars__33 equ 056FAh
+_trf_tiles__33 equ 0575Ch
+_car_d__33 equ 0575Eh
+_half_wheel__33 equ 05760h
+_dens_min__33 equ 05761h
+_dens_max__33 equ 05762h
+_target__33 equ 05763h
+_cooldown__33 equ 05764h
+_hard__33 equ 05765h
+_car_tuned__0 equ 05766h
+_roll_loaded__0 equ 05774h
+_hiscore__0 equ 05776h
+_eng_attn__10 equ 05786h
+_bb_r0__12 equ 05787h
+_sig_prev__12 equ 05788h
+_s_current__13 equ 0578Ah
+_s_last_slot__13 equ 0578Bh
+_ngpc_pad_held equ 0578Ch
+_ngpc_pad_pressed equ 0578Dh
+_ngpc_pad_released equ 0578Eh
+_ngpc_pad_repeat equ 0578Fh
+_s_pad_prev__14 equ 05790h
+_s_repeat_delay__14 equ 05791h
+_s_repeat_rate__14 equ 05792h
+_s_vbl_down__14 equ 05793h
+_s_vbl_prev__14 equ 05794h
+_g_vb_counter equ 05795h
+_s_is_color__15 equ 05796h
+_s_language__15 equ 05797h
+_s_power_hold__16_L2304 equ 05798h
+_track_seg equ 0579Ah
+_free_seed equ 0579Eh
+_seed__19 equ 057A0h
+_cur_song__22 equ 057A2h
+_h_time__26 equ 057A3h
+_h_kmh__26 equ 057A4h
+_h_gear__26 equ 057A5h
+_h_prog__26 equ 057A6h
+_h_stage__26 equ 057A7h
+_id_spr_priority equ 057A8h
+_car_at_x__29 equ 057AAh
+_car_stand__30 equ 057ACh
+_grade_hi__30 equ 057ADh
+_grade_lo__30 equ 057AEh
+_band_first__30 equ 057AFh
+_band_count__30 equ 057B0h
+_band_bg_end__30 equ 057B1h
+_road_top__30 equ 057B3h
+_road_plane0__30 equ 057B4h
+_road_bottom__30 equ 057B5h
+_road_lines__30 equ 057B6h
+_road_base_x__30 equ 057B7h
+_id_xy__30 equ 057B8h
+_id_xy_live__30 equ 057BCh
+_id_bandcol__30 equ 057C0h
+_road_band_pal__30 equ 057C4h
+_bc_rest__30 equ 057C6h
+_rng__33 equ 057CAh
+_trf_cap__33 equ 057CCh
+_trf_spr_end equ 057CDh

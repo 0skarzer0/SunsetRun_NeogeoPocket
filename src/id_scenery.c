@@ -40,6 +40,9 @@ void id_scenery_init(u16 tile_base, u8 course)
 
 void scenery_mode(u8 mode)
 {
+    if ((mode == SCN_MODE_CROWD) != (scn_mode == SCN_MODE_CROWD)) {
+        theme_crowd_colours((u8)(mode == SCN_MODE_CROWD));
+    }
     scn_mode = mode;
 }
 
@@ -158,8 +161,9 @@ void id_scenery_draw(void)
         }
         right = (u8)((j & 1u) != 0u);
         if (scn_mode == SCN_MODE_CROWD) {
+            static const u8 crowd_pal[3] = { PAL_CROWD, 8u, PAL_OBJ_FLAG };
             kind = OBJ_CROWD;
-            pal = PAL_CROWD;
+            pal = crowd_pal[j % 3u];
         } else if (scn_mode == SCN_MODE_FORK) {
             kind = OBJ_FORK;
             pal = PAL_OBJ_FORK;

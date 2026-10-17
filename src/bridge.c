@@ -22,8 +22,8 @@
 #define T_PILL  94u          /* '^' */
 #define T_PILR  95u          /* '_' */
 #define PAL_BRIDGE 11u       /* SCR1 */
-#define BR_MAX   4u
-#define BR_GAP   280u        /* course units between bridges of a row */
+#define BR_MAX  12u          /* a whole run of bridges; ~5 are on screen at once */
+#define BR_GAP   260u        /* course units between bridges of a row */
 #define BR_FAR   1450
 #define FIRST_ROW 2u
 
@@ -66,39 +66,35 @@ void bridge_hide(void)
     bridge_line = 0u;
 }
 
-/* the longest gentle, flat stretch of the current leg gets the bridges */
+/* the bridge run of the leg (gen_course.py BRIDGE_RUN: straight, down, up,
+ * curve) gets a row of bridges along its whole length */
 void bridge_setup(void)
 {
-    u16 pos = 0u, run0 = 0u, run = 0u, best0 = 0u, best = 0u;
-    u16 lo = (u16)(LEG_START_LEN + 300u);
-    u16 hi = (u16)(leg_len - LEG_FORK_LEN - 300u);
-    u8 i;
+    u16 pos = 0u, run0 = 0u, len = 0u;
+    u8 i, found = 0u;
     bridge_hide();
     ngpc_gfx_set_palette(GFX_SCR1, PAL_BRIDGE, 0u, 0x0322u, 0x0778u, 0x0BCCu);
     br_n = 0u;
     if (!gfx_themes[leg_theme[cur_leg]].bridges) {
         return;
     }
-    for (i = 0u; i < track_len && pos < hi; i++) {
+    for (i = 0u; i < track_len && pos < leg_len; i++) {
         const Segment *s = &track_seg[i];
-        s16 b = (s->bend < 0) ? (s16)-s->bend : s->bend;
-        if (b <= 32 && s->slope == 0 && pos >= lo) {
-            if (run == 0u) run0 = pos;
-            run = (u16)(run + s->span);
-            if ((u16)(run0 + run) > hi) run = (u16)(hi - run0);
-            if (run > best) { best = run; best0 = run0; }
-        } else {
-            run = 0u;
+        if (!found && s->span == (u16)LEG_BRIDGE_MARK) {
+            u8 k;
+            found = 1u;
+            run0 = pos;
+            for (k = 0u; k < LEG_BRIDGE_N && (u8)(i + k) < track_len; k++) {
+                len = (u16)(len + track_seg[(u8)(i + k)].span);
+            }
         }
         pos = (u16)(pos + s->span);
     }
-    if (best < 700u) {
+    if (!found) {
         return;
     }
-    br_n = (u8)((best - 300u) / BR_GAP + 1u);
-    if (br_n > BR_MAX) br_n = BR_MAX;
-    for (i = 0u; i < br_n; i++) {
-        br_at[i] = (u16)(best0 + 200u + (u16)i * BR_GAP);
+    for (pos = (u16)(run0 + 150u); pos + 100u < run0 + len && br_n < BR_MAX; pos = (u16)(pos + BR_GAP)) {
+        br_at[br_n++] = pos;
     }
 }
 

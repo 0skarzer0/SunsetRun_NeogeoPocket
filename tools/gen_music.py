@@ -163,13 +163,11 @@ def bars_of(text):
 # Chiptune racing tunes: square-wave lead with a short hook repeated and
 # answered, octave / pumping bass, fast arpeggios (heard on the menus; in a
 # race the third channel plays the engine), noise drums.  Original music.
-# The three radio songs are full-length tracks (about 3:40 to 4:15 before
-# they loop): see tools/songs.py.
-import songs as _songs
-SONGS = []
-for _s in _songs.SONGS:
-    _lead, _bass, _harm, _dr = _songs.arrange(_s, (bass_line, montuno, drums, CHORDS))
-    SONGS.append((_s.name, _s.f16, _lead, _bass, _harm, _dr))
+# The radio plays chiptune arrangements of famous public-domain classics
+# (Strauss, Joplin, Grieg), read from the Mutopia scores in music/classical/:
+# see tools/classical.py.  Durations there are in frames (f16 = 1).
+import classical as _classical
+SONGS = _classical.songs()
 
 # 4. goal fanfare (results, looped) and game over jingle
 prog4 = ['C', 'F', 'G', 'C', 'Am', 'F', 'G', 'C']

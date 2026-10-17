@@ -197,6 +197,8 @@ static void stage_traffic(void)
     traffic_reset((u8)(2u + cur_stage + extra), (u8)(3u + cur_stage + extra));
 }
 
+static void balloons_reset(void);
+
 static void new_game(void)
 {
     reset_car();
@@ -215,6 +217,8 @@ static void new_game(void)
     banner_style(difficulty);
     id_scenery_init(0u, 0u);
     scenery_mode(SCN_MODE_CROWD);         /* fans at the start line */
+    theme_crowd_colours(1u);
+    balloons_reset();
     bridge_setup();
     time_left = leg_time();
     score = 0ul;
@@ -848,6 +852,73 @@ static void result_screen(void)
     }
 }
 
+/* ------------------------------------------------------------- balloons */
+/* At GO the fans by the start line let go of their balloons: they rise and
+ * sway, in the traffic colours, using the last traffic sprites meanwhile. */
+#define BAL_N      8u
+#define BAL_SPR0   ((u8)(SPR_TRF_END - BAL_N))
+#define BAL_TILE   60u              /* font slot '<' (no text uses it) */
+static s16 bal_x[BAL_N], bal_y[BAL_N];     /* y in 1/4 px */
+static u8 bal_v[BAL_N], bal_wait[BAL_N], bal_live;
+
+static void balloons_init(void)
+{
+    u8 i;
+    volatile u16 *d = (volatile u16 *)(0xA000u + (u32)BAL_TILE * 16u);
+    for (i = 0u; i < 8u; i++) d[i] = gfx_particle_tiles[16u + i];   /* the balloon */
+}
+
+static void balloons_reset(void)
+{
+    bal_live = 0u;
+    trf_spr_end = SPR_TRF_END;
+    id_spr_hide_range(BAL_SPR0, (u8)SPR_TRF_END);
+}
+
+static void balloons_launch(void)
+{
+    u8 k;
+    for (k = 0u; k < BAL_N; k++) {
+        u8 r = (u8)(g_vb_counter * 37u + k * 71u);
+        bal_x[k] = (k & 1u) ? (s16)(118 + (r & 31u)) : (s16)(6 + (r & 31u));
+        bal_y[k] = (s16)((112 + (r & 15u)) * 4);
+        bal_v[k] = (u8)(4u + (r % 4u));          /* 1 .. 1.75 px per frame */
+        bal_wait[k] = (u8)(k * 7u);
+    }
+    bal_live = 1u;
+    trf_spr_end = BAL_SPR0;
+}
+
+static void balloons_draw(void)
+{
+    u8 k, any = 0u;
+    if (!bal_live) {
+        return;
+    }
+    for (k = 0u; k < BAL_N; k++) {
+        u8 spr = (u8)(BAL_SPR0 + k);
+        s16 x;
+        if (bal_wait[k]) {
+            bal_wait[k]--;
+            id_spr_hide_range(spr, (u8)(spr + 1u));
+            any = 1u;
+            continue;
+        }
+        bal_y[k] = (s16)(bal_y[k] - (s16)bal_v[k]);
+        if (bal_y[k] < -40) {
+            id_spr_hide_range(spr, (u8)(spr + 1u));
+            continue;
+        }
+        any = 1u;
+        x = (s16)(bal_x[k] + ((((g_vb_counter >> 3) + k) & 2u) ? 1 : 0));
+        ID_SPR_PUT(spr, (u8)x, (u8)(bal_y[k] >> 2), BAL_TILE, (u8)(PAL_TRF_0 + k % 5u), 0u);
+    }
+    if (!any) {
+        bal_live = 0u;
+        trf_spr_end = SPR_TRF_END;
+    }
+}
+
 /* ------------------------------------------------------------- tyre smoke */
 static const u16 smoke_tiles[32] = {   /* two 16x8 puffs, left + right halves */
     0x005A, 0x06AF, 0x1AFF, 0x6BFF, 0x6BFF, 0x1AFF, 0x05AA, 0x0055,
@@ -1088,6 +1159,7 @@ static void game_tick(u8 delta)
         state_timer++;
         if (state_timer >= 90u) {
             state = ST_RACE;
+            if (cur_stage == 0u) balloons_launch();      /* the fans let go of their balloons */
             count_message(cd[3], 30u);
             sfx(SFX_GO);
         }
@@ -1188,13 +1260,13 @@ static void game_tick(u8 delta)
             if (thit) {
                 /* the faster you go, the further it throws you aside */
                 {
-                    /* total slide ~ 8 x push / 16 px: ~20 px slow, ~70 px flat out */
-                    s16 push = (s16)(((u16)speed * 5u) >> 3) + 4;
+                    /* total slide ~ 8 x push / 16 px: ~30 px slow, ~110 px flat out */
+                    s16 push = (s16)(((u16)speed * 15u) >> 4) + 6;
                     knock_v = (s16)((thit == 1u) ? push : -push);
                 }
                 knock_t = 1u;
                 if (!dbg_knock_at && speed > 100u) dbg_knock_at = dbg_updates;
-                speed = (u8)((speed * 5u) >> 3);
+                speed = (u8)(((u16)speed * 7u) >> 4);   /* keeps 7/16 of the speed */
                 dbg_bumps++;
                 sfx(SFX_BUMP);
             } else if (id_scenery_hit((s16)(car_lat >> 4), ID_CAR_WHEEL)
@@ -1306,6 +1378,7 @@ void main(void)
     smoke_init();
     banner_init();
     bridge_init();
+    balloons_init();
     /* the rumble strip still counts as road */
     road_edge = (s16)(((s16)id_road_half_at(ID_CAR_WHEEL) + (s16)(id_road_half_at(ID_CAR_WHEEL) / 9u)) * 16);
     lat_limit = (s16)((s16)id_road_half_at(ID_CAR_WHEEL) * 16 + LAT_MARGIN * 16);
@@ -1383,6 +1456,7 @@ void main(void)
             bridge_draw(course_pos);
             id_scenery_draw();
             traffic_draw();
+            balloons_draw();
         }
         if (state == ST_COUNT || (state == ST_RACE && cur_stage == 0u && course_pos < (u16)(START_LINE + 100))) {
             banner_show((s16)((s16)START_LINE - (s16)course_pos), 0u, "START");

@@ -161,6 +161,20 @@ void theme_apply(u8 leg)
     theme_flash(0u);
 }
 
+/* fans in different clothes: alternate groups use the trophy (8) and flag (10)
+ * palettes while the crowd is on screen (neither is needed meanwhile) */
+void theme_crowd_colours(u8 on)
+{
+    const u16 *p = &gfx_obj_pals[(u16)OBJ_CROWD * 4u];
+    if (on) {
+        ngpc_gfx_set_palette((u8)GFX_SPR, 8u, 0u, 0x04ADu, 0x0E63u, p[3]);    /* blonde, blue shirts  */
+        ngpc_gfx_set_palette((u8)GFX_SPR, (u8)PAL_OBJ_FLAG, 0u, 0x0112u, 0x04B2u, p[3]);   /* green */
+    } else {
+        ngpc_gfx_set_palette((u8)GFX_SPR, (u8)PAL_OBJ_FLAG,
+                             cur_spr[3][0], cur_spr[3][1], cur_spr[3][2], cur_spr[3][3]);
+    }
+}
+
 static u16 to_white(u16 c, u8 level)
 {
     u16 r = (u16)(c & 15u), g = (u16)((c >> 4) & 15u), b = (u16)((c >> 8) & 15u);

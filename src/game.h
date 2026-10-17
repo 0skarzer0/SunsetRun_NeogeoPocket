@@ -91,6 +91,8 @@ void traffic_set_car_line(u8 wheel_line);
 #define SCN_MODE_CURVE_R 4u    /* ... pointing right */
 #define SCN_MODE_CROWD  5u      /* cheering fans at the start and the finish */
 void scenery_mode(u8 mode);
+void theme_crowd_colours(u8 on);
+extern u8 trf_spr_end;            /* traffic sprites end here (balloons borrow the last ones) */
 
 /* ---- start / finish gantry (banner.c) ------------------------------ */
 void banner_init(void);

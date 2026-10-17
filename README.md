@@ -35,16 +35,18 @@ flashcart.
 * Al final de cada tramo la carretera se bifurca: las señales y el aviso en
   pantalla marcan la elección. Mantente a la **izquierda o a la derecha** del carril central
   antes de llegar al final; la elección se fija unos metros antes del cruce.
-* **Tráfico**: si tocas otro coche no chocas: te empuja hacia un lado (más cuanto más
-  rápido vas), derrapas con humo, chirrían las ruedas un instante después del golpe,
-  el coche culea y pierdes bastante velocidad (y puedes acabar en el arcén).
+* **Tráfico**: si tocas otro coche no chocas: te empuja hacia un lado (de unos 30 px
+  despacio a unos 110 px a tope), derrapas con humo, chirrían las ruedas un instante
+  después del golpe, el coche culea y te quedas con menos de la mitad de la velocidad
+  (y puedes acabar en el arcén).
 * **Arcén** (palmeras, rocas, señales, pilares de los puentes): a poca velocidad te frena;
   por encima de unos 145 km/h el coche trompea; desde 220 km/h **vuelca de lado**
   (vuelta de campana viendo los bajos) y desde 280 km/h da una **vuelta hacia
   delante**, de morro, enseñando los bajos y las ruedas. Cuenta la velocidad con la que
   saliste del asfalto. La arena / hierba te frena.
 * En el campo, el otoño, la granja, el lago y las ruinas la carretera pasa bajo una
-  serie de **puentes de piedra**. Sus pilares están fuera del asfalto, pero si vas
+  larga serie de **puentes de piedra** (unos 10 s a tope): primero en recta, luego en
+  bajada, en subida y por último en curva. Sus pilares están fuera del asfalto, pero si vas
   por el arcén te los comes.
 * Al terminar (en la meta o sin tiempo) aparece el **mapa del recorrido**: la pirámide
   de tramos con una miniatura de cada paisaje y un cochecito rojo que recorre las
@@ -155,7 +157,7 @@ sigue disponible si tienes ese SDK.
 | `tools/gen_music.py` | Partituras originales → streams del driver de sonido |
 | `tools/objart.py` | Objetos del arcén dibujados por código (palmeras, molinos, árboles, columnas, señales) |
 | `media/` | GIF de juego, grabaciones de las tres canciones y una carrera con el motor |
-| `tools/songs.py` | Las tres canciones: secciones y arreglo |
+| `tools/classical.py`, `tools/lyparse.py`, `music/classical/` | Radio: partituras de dominio público y su arreglo |
 
 ### Personalizar
 
@@ -202,12 +204,16 @@ sonidos de ningún juego comercial: todo se genera con los scripts de `tools/`.
 * Carretera de 4 carriles en gris claro; el horizonte coincide con su punto de fuga.
 * Coche con la zaga de lamas y pilotos, el chico castaño a la izquierda y la chica
   rubia a la derecha; tráfico en colores vivos (morado, amarillo, rosa, verde, celeste).
-* Música: tres temas chiptune completos (SUMMER OVERDRIVE en re mayor, MIDNIGHT COAST en
-  la menor y PALM BOULEVARD, funk latino en fa mayor) de 3:38 a 4:14 antes de repetirse:
-  intro, estrofa, preestribillo, estribillo pegadizo, riff instrumental, puente y dos
-  solos de arpegios (`tools/songs.py`). Además, una fanfarria en la meta y la emisora
-  SILENCIO. La música va más baja que el motor. Hay grabaciones en `media/`.
-* Salida con pancarta START y público animando; meta con pancarta FINISH, público y
+* Música (radio): arreglos chiptune de clásicos famosos de dominio público, sacados de
+  las partituras para piano del Mutopia Project (`music/classical/`, ver su LEEME):
+  **THUNDER POLKA** (Johann Strauss II, *Unter Donner und Blitz*, 3:20),
+  **RAGTIME** (Scott Joplin, *Maple Leaf Rag* + *The Entertainer*, 6:03) y
+  **MOUNTAIN KING** (Grieg, *En la gruta del rey de la montaña*, acelerando hasta el
+  final, dos veces, 4:01). Melodía, bajo, armonía y batería salen de la partitura
+  (`tools/lyparse.py` lee LilyPond, `tools/classical.py` hace el arreglo). Además, una
+  fanfarria en la meta y la emisora SILENCIO. Hay grabaciones en `media/`.
+* Salida con pancarta START y público animando con ropa de colores (rojo, azul, verde),
+  que suelta globos al dar la salida; meta con pancarta FINISH, público y
   trofeo en la pantalla final.
 * Pantalla de título azul con un emblema ovalado: puesta de sol sobre el mar, una
   carretera hacia el sol, palmera, el rótulo SUNSET RUN inclinado y el descapotable
@@ -236,6 +242,9 @@ sonidos de ningún juego comercial: todo se genera con los scripts de `tools/`.
 * Reproductor de música propio (`src/audio/player.c`); el pequeño programa Z80 que vuelca
   los comandos al PSG procede de NGPC_sound_driver_custom (NgpCraft, MIT).
 * Fuente de texto: fuente "dash" de OVER REV (MIT), con sombra añadida.
-* Juego, gráficos, música, toolchain abierta: este proyecto, MIT.
+* Juego, gráficos, arreglos, toolchain abierta: este proyecto, MIT.
+* Radio: obras de dominio público de J. Strauss II, S. Joplin y E. Grieg, a partir de
+  ediciones del Mutopia Project puestas en el dominio público por sus transcriptores
+  (Coyau, Stan Sanderson y otros; ver `music/classical/LEEME.txt`).
 * Mecánicas inspiradas en OutRun (SEGA, 1986). Referencias de jugabilidad
   consultadas en Cannonball (djyt); no se ha copiado su código ni datos.

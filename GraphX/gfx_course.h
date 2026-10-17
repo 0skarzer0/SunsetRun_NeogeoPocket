@@ -16,6 +16,10 @@ typedef struct { u16 span; s16 bend; s8 slope; } Segment;
 #define LEG_SHARP_MIN 52
 #define LEG_LEN 11700
 #define LEG_MAX_PRE_FORK 30
+#define LEG_BRIDGE_AT 4680
+#define LEG_BRIDGE_RUN { { 1010, 0, 0 }, { 610, 0, -3 }, { 620, 0, 3 }, { 730, 26, 0 } }
+#define LEG_BRIDGE_N 4
+#define LEG_BRIDGE_MARK 1010      /* span of the first segment of a bridge run */
 typedef struct { const Segment *seg; u8 count; u8 theme; } LegInfo;
 typedef struct {
     u8 pano; u8 obj_left; u8 obj_right;

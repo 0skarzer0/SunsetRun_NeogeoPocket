@@ -1,0 +1,18 @@
+Partituras de dominio público usadas para la radio de SUNSET RUN
+================================================================
+
+Ediciones para piano del Mutopia Project (https://www.mutopiaproject.org),
+copiadas sin cambios. Las obras son de dominio público y estas ediciones
+fueron puestas en el dominio público por quienes las transcribieron:
+
+  grieg_mountain_king.ly       Edvard Grieg, "In the Hall of the Mountain King",
+                               Peer Gynt Suite I op. 46 n.º 4 (1875).
+                               Transcripción: Coyau (Mutopia-2013/12/07-1888).
+  strauss_thunder_lightning.ly Johann Strauss II, "Unter Donner und Blitz",
+                               polka op. 324 (1868).
+                               Transcripción: Stan Sanderson (Mutopia-2005/10/17-610).
+  joplin_maple_leaf.ly         Scott Joplin, "Maple Leaf Rag" (1899). Mutopia.
+  joplin_entertainer.ly        Scott Joplin, "The Entertainer" (1902). Mutopia.
+
+tools/classical.py las lee (con tools/lyparse.py) y hace los arreglos chiptune
+de cuatro voces: melodía, bajo, armonía y batería.

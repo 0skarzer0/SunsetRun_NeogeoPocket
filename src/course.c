@@ -57,6 +57,7 @@ static const u16 sp_gap[3] = { 0u, 100u, 150u };
 static const u16 sp_straight[4] = { 400u, 500u, 600u, 800u };
 static const u16 sp_bend[5] = { 400u, 500u, 600u, 700u, 800u };
 static const s8 slopes[6] = { 0, -1, 1, 0, -2, 2 };   /* 0 = -hills, 3 = +hills */
+static const Segment bridge_run[LEG_BRIDGE_N] = LEG_BRIDGE_RUN;
 
 static Segment *gp;
 static u8 gn;
@@ -108,8 +109,21 @@ static u8 gen_leg(u8 lid, Segment *out)
     if (rs == 0u) rs = 0xACE1u;
     rnd16();
     put(LEG_START_LEN, 0, 0);
+    {
+    u8 bridged = (u8)!T->bridges;
     while (total < (u16)LEG_LEN && gn <= (u8)LEG_MAX_PRE_FORK) {
-        u16 r = rndn(1000u);
+        u16 r;
+        if (!bridged && total >= (u16)LEG_BRIDGE_AT) {
+            /* the bridge run: straight, down, up, a curve (as gen_course.py) */
+            u8 k;
+            bridged = 1u;
+            for (k = 0u; k < LEG_BRIDGE_N; k++) {
+                put(bridge_run[k].span, (s16)(bridge_run[k].bend * last), bridge_run[k].slope);
+                total = (u16)(total + bridge_run[k].span);
+            }
+            continue;
+        }
+        r = rndn(1000u);
         s16 sgn = (rndn(1000u) < 600u) ? (s16)-last : last;
         if (r < p_s) {
             /* S bend: two sharp corners in opposite directions */
@@ -148,6 +162,7 @@ static u8 gen_leg(u8 lid, Segment *out)
             total = (u16)(total + sp);
             last = sgn;
         }
+    }
     }
     put(LEG_FORK_LEN, 0, 0);
     return gn;

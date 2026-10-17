@@ -52,6 +52,9 @@ SHARP_BENDS = [56, 62, 70]       # lift off or brake (see driving.inc)
 SHARP_MIN = 52                   # main.c shows curve warning signs from here
 MAX_PRE_FORK = 30                # an element adds <= 4 segments: <= 35 per leg (course.c BUF_MAX)
 BRIDGES = {'fields', 'autumn', 'farm', 'lake', 'ruins'}   # scenes with old stone bridges
+# the bridge run: straight, down, up, a gentle curve (the spans mark it for bridge.c)
+BRIDGE_RUN = [(1010, 0, 0), (610, 0, -3), (620, 0, 3), (730, 26, 0)]
+BRIDGE_AT = LEG_LEN * 2 // 5      # starts once the leg has run this far
 THEME_ORDER = ['beach', 'coast', 'alps', 'city', 'desert', 'fields', 'autumn', 'caves', 'snow', 'farm',
                'autobahn', 'canyon', 'lake', 'seaside', 'ruins']
 
@@ -86,7 +89,14 @@ def make_leg(theme, seed, stage):
     def sharp():
         return min(72, max(SHARP_MIN, int(rnd.choice(SHARP_BENDS) * (0.85 + 0.15 * bscale) + 0.5)))
 
+    bridged = theme not in BRIDGES
     while total < LEG_LEN and len(segs) <= MAX_PRE_FORK:
+        if not bridged and total >= BRIDGE_AT:
+            bridged = True
+            for sp, bd, sl in BRIDGE_RUN:
+                segs.append((sp, bd * last, sl))
+                total += sp
+            continue
         r = rnd.random()
         sgn = -last if rnd.random() < 0.6 else last
         if r < p_s:
@@ -170,6 +180,10 @@ def main():
          '#define LEG_FORK_LEN %d' % FORK_LEN, '#define LEG_START_LEN %d' % START_LEN,
          '#define LEG_SHARP_MIN %d' % SHARP_MIN, '#define LEG_LEN %d' % LEG_LEN,
          '#define LEG_MAX_PRE_FORK %d' % MAX_PRE_FORK,
+         '#define LEG_BRIDGE_AT %d' % BRIDGE_AT,
+         '#define LEG_BRIDGE_RUN { %s }' % ', '.join('{ %d, %d, %d }' % s for s in BRIDGE_RUN),
+         '#define LEG_BRIDGE_N %d' % len(BRIDGE_RUN),
+         '#define LEG_BRIDGE_MARK %d      /* span of the first segment of a bridge run */' % BRIDGE_RUN[0][0],
          'typedef struct { const Segment *seg; u8 count; u8 theme; } LegInfo;',
          'typedef struct {',
          '    u8 pano; u8 obj_left; u8 obj_right;',

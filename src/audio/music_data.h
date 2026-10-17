@@ -7,7 +7,7 @@ typedef struct { const u8 *v0; const u8 *v1; const u8 *v2; const u8 *vn; u8 loop
 #define MUSIC_RADIO 4
 #define MUSIC_GOAL 4
 #define MUSIC_OVER 5
-#define MUSIC_NAMES "SUMMER OVERDRIVE", "MIDNIGHT COAST", "PALM BOULEVARD", "SILENCIO"
+#define MUSIC_NAMES "THUNDER POLKA", "RAGTIME", "MOUNTAIN KING", "SILENCIO"
 extern const unsigned char NOTE_TABLE[102];
 extern const MusicSong music_songs[MUSIC_COUNT];
 #endif

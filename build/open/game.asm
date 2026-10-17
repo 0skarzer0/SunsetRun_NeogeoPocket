@@ -1170,12 +1170,12 @@ _new_game__0:
 	call _traffic_clear
 	ld c,(_difficulty)
 	cp c,2
-	jr nz,L291
+	jr nz,L292
 	ld wa,1
-	jr L292
-L291:
-	ld wa,0
+	jr L293
 L292:
+	ld wa,0
+L293:
 	push xwa
 	call _traffic_set_hard
 	lda xsp,(xsp+4)
@@ -1194,6 +1194,7 @@ L292:
 	push xwa
 	call _scenery_mode
 	lda xsp,(xsp+4)
+	call _bridge_setup
 	call _leg_time__0
 	ld (_time_left__0),a
 	ld xwa,0
@@ -1201,6 +1202,13 @@ L292:
 	call _hud_score_reset
 	ldb (_sec_acc__0),0
 	ldb (_crash_timer__0),0
+	ld a,(_roll_t__0)
+	cp a,0
+	jr z,L294
+	ldb (_roll_t__0),0
+	ldb (_roll_loaded__0),255
+	call _id_car_restore
+L294:
 	ldb (_msg_timer__0),0
 	ldb (_flash_step__0),0
 	ldb (_last_fork_zone__0),0
@@ -1214,7 +1222,7 @@ L292:
 	call _clear_hud_rows__0
 	lda xsp,(xsp+8)
 	call _hud_reset
-L290:
+L291:
 	ret
 
 ; function advance
@@ -1223,15 +1231,15 @@ _advance__0:
 	lda xsp,(xsp-10)
 	ld c,(_speed__0)
 	cp c,16
-	jr uge,L306
+	jr uge,L308
 	ld a,(_speed__0)
 	extz wa
 	mul xwa,3502
 	srl 4,wa
-	jr L307
-L306:
+	jr L309
+L308:
 	ld wa,3502
-L307:
+L309:
 	ld (xsp+0),wa
 	ld a,(_speed__0)
 	extz wa
@@ -1251,10 +1259,10 @@ L307:
 	ld iy,wa
 	ld a,(_speed__0)
 	cp a,0
-	jr nz,L308
+	jr nz,L310
 	ld wa,(_track_frac__0)
 	ld iy,wa
-L308:
+L310:
 	ld wa,iy
 	srl 12,wa
 	ld ix,wa
@@ -1267,8 +1275,8 @@ L308:
 	ld wa,(_seg_pos__0)
 	add wa,ix
 	ld (_seg_pos__0),wa
-	jr L311
-L309:
+	jr L313
+L311:
 	ld wa,(_seg_pos__0)
 	ld xbc,(_track_seg)
 	ld e,(_seg_index__0)
@@ -1281,10 +1289,10 @@ L309:
 	incb 1,(_seg_index__0)
 	ld a,(_seg_index__0)
 	cp a,(_track_len)
-	jr ult,L312
+	jr ult,L314
 	ldb (_seg_index__0),0
-L312:
-L311:
+L314:
+L313:
 	ld wa,(_seg_pos__0)
 	ld xbc,(_track_seg)
 	ld e,(_seg_index__0)
@@ -1293,8 +1301,8 @@ L311:
 	add xbc,xde
 	ld bc,(xbc)
 	cp wa,bc
-	jr uge,L309
-L310:
+	jr uge,L311
+L312:
 	push xix
 	push xiy
 	ld wa,(_seg_pos__0)
@@ -1310,25 +1318,25 @@ L310:
 	ld bc,(xsp+8)
 	sub bc,6
 	cp wa,bc
-	jr ge,L313
+	jr ge,L315
 	incw 6,(_bend_now__0)
-	jr L314
-L313:
+	jr L316
+L315:
 	ld wa,(_bend_now__0)
 	ld bc,(xsp+8)
 	add bc,6
 	cp wa,bc
-	jr le,L315
+	jr le,L317
 	decw 6,(_bend_now__0)
-	jr L316
-L315:
+	jr L318
+L317:
 	ld wa,(xsp+8)
 	ld (_bend_now__0),wa
+L318:
 L316:
-L314:
 	ld wa,ix
-	jr L305
-L305:
+	jr L307
+L307:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -1360,7 +1368,7 @@ _render_road__0:
 	push xwa
 	call _id_road_frame_ahead
 	lda xsp,(xsp+12)
-L318:
+L320:
 	ret
 
 ; function message
@@ -1375,28 +1383,28 @@ _message__0:
 	lda xsp,(xsp+4)
 	ld xwa,(xsp+4)
 	cp xwa,0
-	jr z,L323
+	jr z,L325
 	ld xwa,(xsp+4)
 	push xwa
 	ld wa,5
 	push xwa
 	call _hud_message
 	lda xsp,(xsp+8)
-L323:
+L325:
 	ld xwa,(xsp+8)
 	cp xwa,0
-	jr z,L324
+	jr z,L326
 	ld xwa,(xsp+8)
 	push xwa
 	ld wa,7
 	push xwa
 	call _hud_message
 	lda xsp,(xsp+8)
-L324:
+L326:
 	ld a,(xsp+12)
 	ld (_msg_timer__0),a
 	call _banner_dirty
-L322:
+L324:
 	ret
 
 ; function count_message
@@ -1407,28 +1415,28 @@ _count_message__0:
 	lda xsp,(xsp+4)
 	ld xwa,(xsp+4)
 	cp xwa,0
-	jr z,L328
+	jr z,L330
 	ld xwa,(xsp+4)
 	push xwa
 	ld wa,12
 	push xwa
 	call _hud_message
 	lda xsp,(xsp+8)
-L328:
+L330:
 	ld a,(xsp+8)
 	ld (_cnt_timer__0),a
-L327:
+L329:
 	ret
 
 ; function tick_message
 _tick_message__0:
 	ld a,(_msg_timer__0)
 	cp a,0
-	jr z,L335
+	jr z,L337
 	decb 1,(_msg_timer__0)
 	ld a,(_msg_timer__0)
 	cp a,0
-	jr nz,L336
+	jr nz,L338
 	ld wa,5
 	push xwa
 	call _hud_clear_message
@@ -1438,22 +1446,22 @@ _tick_message__0:
 	call _hud_clear_message
 	lda xsp,(xsp+4)
 	call _banner_dirty
-L336:
-L335:
+L338:
+L337:
 	ld a,(_cnt_timer__0)
 	cp a,0
-	jr z,L337
+	jr z,L339
 	decb 1,(_cnt_timer__0)
 	ld a,(_cnt_timer__0)
 	cp a,0
-	jr nz,L338
+	jr nz,L340
 	ld wa,12
 	push xwa
 	call _hud_clear_message
 	lda xsp,(xsp+4)
-L338:
-L337:
-L334:
+L340:
+L339:
+L336:
 	ret
 
 ; function leg_end
@@ -1461,7 +1469,7 @@ _leg_end__0:
 	lda xsp,(xsp-4)
 	call _course_is_last_stage
 	cp a,0
-	jr z,L344
+	jr z,L346
 	ld a,(_time_left__0)
 	ld xbc,_dbg_cp
 	ld e,(_cur_stage)
@@ -1488,8 +1496,8 @@ _leg_end__0:
 	push xwa
 	call _hud_clear_message
 	lda xsp,(xsp+4)
-	jp L343
-L344:
+	jp L345
+L346:
 	ld a,(_time_left__0)
 	ld xbc,_dbg_cp
 	ld e,(_cur_stage)
@@ -1505,6 +1513,7 @@ L344:
 	ld a,(_seg_index__0)
 	sub a,(xsp+0)
 	ld (_seg_index__0),a
+	call _bridge_setup
 	ld a,(_time_left__0)
 	extz wa
 	push xwa
@@ -1516,12 +1525,12 @@ L344:
 	ld (xsp+2),wa
 	ld bc,(xsp+2)
 	cp bc,99
-	jr ule,L345
+	jr ule,L347
 	ld wa,99
-	jr L346
-L345:
+	jr L348
+L347:
 	ld wa,(xsp+2)
-L346:
+L348:
 	ld (_time_left__0),a
 	ldb (_flash_step__0),1
 	ld wa,75
@@ -1540,7 +1549,7 @@ L346:
 	push xwa
 	call _hud_clear_message
 	lda xsp,(xsp+4)
-L343:
+L345:
 	lda xsp,(xsp+4)
 	ret
 
@@ -1548,19 +1557,19 @@ L343:
 _tick_flash__0:
 	ld a,(_flash_step__0)
 	cp a,0
-	jr nz,L354
-	jr L352
-L354:
+	jr nz,L356
+	jr L354
+L356:
 	ld a,(_flash_step__0)
 	cp a,5
-	jr nz,L355
+	jr nz,L357
 	ld a,(_cur_leg)
 	push xwa
 	call _theme_apply
 	lda xsp,(xsp+4)
 	call _stage_traffic__0
-L355:
-	ld xwa,_lv__0_L353
+L357:
+	ld xwa,_lv__0_L355
 	ld c,(_flash_step__0)
 	extz bc
 	sub bc,1
@@ -1573,10 +1582,10 @@ L355:
 	incb 1,(_flash_step__0)
 	ld a,(_flash_step__0)
 	cp a,12
-	jr ule,L356
+	jr ule,L358
 	ldb (_flash_step__0),0
-L356:
-L352:
+L358:
+L354:
 	ret
 
 ; function print_score7
@@ -1623,7 +1632,7 @@ _print_score7__0:
 	push xwa
 	call _ngpc_text_print_dec
 	lda xsp,(xsp+24)
-L358:
+L360:
 	lda xsp,(xsp+4)
 	ret
 
@@ -1635,18 +1644,18 @@ _put32__0:
 	ld iyl,a
 	ld xix,(xsp+14)
 	ld izl,0
-	jr L370
-L367:
+	jr L372
+L369:
 	ld xwa,xix
 	ld c,izl
 	extz bc
 	sll 3,bc
 	cp c,0
-	jr z,L372
-L371:
+	jr z,L374
+L373:
 	srl 1,xwa
-	djnz c,L371
-L372:
+	djnz c,L373
+L374:
 	ld xbc,_save_buf__0
 	ld e,iyl
 	add e,izl
@@ -1654,14 +1663,14 @@ L372:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L369:
+L371:
 	inc 1,izl
-L370:
+L372:
 	ld a,izl
 	cp a,4
-	jr ult,L367
+	jr ult,L369
+L370:
 L368:
-L366:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -1714,8 +1723,8 @@ _get32__0:
 	sll 15,xbc
 	sll 9,xbc
 	or xwa,xbc
-	jr L374
-L374:
+	jr L376
+L376:
 	pop xiz
 	ret
 
@@ -1730,9 +1739,9 @@ _save_load__0:
 	call _ngpc_flash_exists
 	pop xix
 	cp a,0
-	jr nz,L386
-	jp L385
-L386:
+	jr nz,L388
+	jp L387
+L388:
 	push xix
 	ld xwa,_save_buf__0
 	push xwa
@@ -1741,24 +1750,24 @@ L386:
 	pop xix
 	ld a,(_save_buf__0+4)
 	cp a,1
-	jr z,L387
-	jp L385
-L387:
+	jr z,L389
+	jp L387
+L389:
 	ld a,(_save_buf__0+5)
 	cp a,4
-	jr uge,L388
+	jr uge,L390
 	ld a,(_save_buf__0+5)
 	ld (_station__0),a
-L388:
+L390:
 	ld a,(_save_buf__0+6)
 	cp a,4
-	jr uge,L389
+	jr uge,L391
 	ld a,(_save_buf__0+6)
 	ld (_difficulty),a
-L389:
+L391:
 	ld izl,0
-	jr L393
-L390:
+	jr L395
+L392:
 	push xix
 	ld wa,8
 	ld c,izl
@@ -1772,10 +1781,10 @@ L390:
 	ld xix,xwa
 	ld xwa,xix
 	cp xwa,0
-	jr z,L394
+	jr z,L396
 	ld xwa,xix
 	cp xwa,10000000
-	jr uge,L394
+	jr uge,L396
 	ld xwa,xix
 	ld xbc,_hiscore__0
 	ld e,izl
@@ -1784,14 +1793,14 @@ L390:
 	sll 2,xde
 	add xbc,xde
 	ld (xbc),xwa
+L396:
 L394:
-L392:
 	inc 1,izl
-L393:
+L395:
 	ld a,izl
 	cp a,4
-	jr ult,L390
-L391:
+	jr ult,L392
+L393:
 	ld a,(_save_buf__0+24)
 	extz wa
 	ld c,(_save_buf__0+25)
@@ -1799,7 +1808,7 @@ L391:
 	sll 8,bc
 	or wa,bc
 	ld (_free_seed),wa
-L385:
+L387:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -1810,25 +1819,25 @@ _save_commit__0:
 	lda xsp,(xsp-4)
 	ld a,(_save_dirty__0)
 	cp a,0
-	jr nz,L407
-	jp L406
-L407:
+	jr nz,L409
+	jp L408
+L409:
 	ld ix,0
-	jr L411
-L408:
+	jr L413
+L410:
 	ld a,0
 	ld xbc,_save_buf__0
 	ld de,ix
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L410:
+L412:
 	inc 1,ix
-L411:
+L413:
 	ld wa,ix
 	cp wa,256
-	jr ult,L408
-L409:
+	jr ult,L410
+L411:
 	ldb (_save_buf__0),202
 	ldb (_save_buf__0+1),254
 	ldb (_save_buf__0+2),32
@@ -1839,8 +1848,8 @@ L409:
 	ld a,(_difficulty)
 	ld (_save_buf__0+6),a
 	ld izl,0
-	jr L415
-L412:
+	jr L417
+L414:
 	push xix
 	ld xwa,_hiscore__0
 	ld c,izl
@@ -1859,13 +1868,13 @@ L412:
 	call _put32__0
 	lda xsp,(xsp+8)
 	pop xix
-L414:
+L416:
 	inc 1,izl
-L415:
+L417:
 	ld a,izl
 	cp a,4
-	jr ult,L412
-L413:
+	jr ult,L414
+L415:
 	ld a,(_free_seed)
 	ld (_save_buf__0+24),a
 	ld wa,(_free_seed)
@@ -1878,10 +1887,10 @@ L413:
 	lda xsp,(xsp+4)
 	pop xix
 	cp a,0
-	jr z,L416
+	jr z,L418
 	ldb (_save_dirty__0),0
-L416:
-L406:
+L418:
+L408:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -1891,39 +1900,39 @@ _title_slot__0:
 	push xiz
 	ld iz,(xsp+8)
 	ld wa,iz
-	cp wa,114
-	jr uge,L422
+	cp wa,99
+	jr uge,L424
 	ld wa,(_pano_tiles_at__0)
 	add wa,iz
-	jr L421
-L422:
+	jr L423
+L424:
 	ld wa,iz
-	sub wa,114
+	sub wa,99
 	ld iz,wa
 	ld wa,iz
 	cp wa,(_gfx_traffic_tiles_count)
-	jr uge,L423
+	jr uge,L425
 	ld wa,(_trf_tiles_at__0)
 	add wa,iz
-	jr L421
-L423:
+	jr L423
+L425:
 	ld wa,iz
 	sub wa,(_gfx_traffic_tiles_count)
 	ld iz,wa
 	ld wa,iz
 	cp wa,30
-	jr uge,L424
+	jr uge,L426
 	ld wa,2
 	add wa,iz
-	jr L421
-L424:
+	jr L423
+L426:
 	ld wa,iz
 	sub wa,30
 	ld iz,wa
 	ld wa,101
 	add wa,iz
-	jr L421
-L421:
+	jr L423
+L423:
 	pop xiz
 	ret
 
@@ -1933,10 +1942,10 @@ _title_option__0:
 	lda xsp,(xsp-2)
 	ld wa,0
 	ld izl,a
-	jr L433
-L431:
-	inc 1,izl
+	jr L435
 L433:
+	inc 1,izl
+L435:
 	ld xwa,(xsp+14)
 	ld c,izl
 	extz bc
@@ -1944,12 +1953,12 @@ L433:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L434
+	jr z,L436
 	ld a,izl
 	cp a,16
-	jr ult,L431
+	jr ult,L433
+L436:
 L434:
-L432:
 	ld wa,20
 	ld c,izl
 	extz bc
@@ -1999,7 +2008,7 @@ L432:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-L430:
+L432:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -2010,8 +2019,8 @@ _hex4__0:
 	lda xsp,(xsp-2)
 	ld xiy,(xsp+10)
 	ld izl,0
-	jr L448
-L445:
+	jr L450
+L447:
 	ld wa,(xsp+14)
 	ld bc,12
 	ld e,izl
@@ -2019,43 +2028,43 @@ L445:
 	sll 2,de
 	sub bc,de
 	cp c,0
-	jr z,L450
-L449:
+	jr z,L452
+L451:
 	srl 1,wa
-	djnz c,L449
-L450:
+	djnz c,L451
+L452:
 	and wa,15
 	ld ixl,a
 	ld c,ixl
 	cp c,10
-	jr uge,L451
+	jr uge,L453
 	ld wa,48
 	ld c,ixl
 	extz bc
 	add wa,bc
-	jr L452
-L451:
+	jr L454
+L453:
 	ld wa,65
 	ld c,ixl
 	extz bc
 	add wa,bc
 	sub wa,10
-L452:
+L454:
 	ld xbc,xiy
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L447:
+L449:
 	inc 1,izl
-L448:
+L450:
 	ld a,izl
 	cp a,4
-	jr ult,L445
-L446:
+	jr ult,L447
+L448:
 	ldb (xiy+4),0
-L444:
+L446:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -2152,7 +2161,7 @@ _title_texts__0:
 	lda xsp,(xsp+16)
 	ld a,(_difficulty)
 	cp a,3
-	jr nz,L456
+	jr nz,L458
 	ldb (xsp+0),83
 	ldb (xsp+1),69
 	ldb (xsp+2),69
@@ -2188,8 +2197,8 @@ _title_texts__0:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-L456:
-L455:
+L458:
+L457:
 	lda xsp,(xsp+16)
 	ret
 
@@ -2206,14 +2215,14 @@ _new_seed__0:
 	ld (xsp+0),wa
 	ld bc,(xsp+0)
 	cp bc,0
-	jr z,L461
+	jr z,L463
 	ld wa,(xsp+0)
-	jr L462
-L461:
+	jr L464
+L463:
 	ld wa,24301
-L462:
+L464:
 	ld (_free_seed),wa
-L460:
+L462:
 	lda xsp,(xsp+2)
 	ret
 
@@ -2223,6 +2232,9 @@ _title_screen__0:
 	lda xsp,(xsp-16)
 	push xix
 	call _id_road_dma_pause
+	pop xix
+	push xix
+	call _bridge_hide
 	pop xix
 	push xix
 	call _save_commit__0
@@ -2255,8 +2267,8 @@ _title_screen__0:
 	ldb (08034h),0
 	ldb (08035h),0
 	ldw (xsp+2),0
-	jr L508
-L505:
+	jr L510
+L507:
 	ld wa,0
 	ld xbc,38912
 	ld de,(xsp+2)
@@ -2264,13 +2276,13 @@ L505:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L507:
+L509:
 	incw 1,(xsp+2)
-L508:
+L510:
 	ld wa,(xsp+2)
 	cp wa,1024
-	jr ult,L505
-L506:
+	jr ult,L507
+L508:
 	push xix
 	ld wa,2642
 	push xwa
@@ -2278,8 +2290,8 @@ L506:
 	lda xsp,(xsp+4)
 	pop xix
 	ldw (xsp+0),0
-	jr L512
-L509:
+	jr L514
+L511:
 	ld wa,40960
 	extz xwa
 	push xwa
@@ -2303,8 +2315,8 @@ L509:
 	lda xwa,(xwa)
 	ld (xsp+10),xwa
 	ldb (xsp+14),0
-	jr L516
-L513:
+	jr L518
+L515:
 	ld xwa,(xsp+10)
 	ld c,(xsp+14)
 	extz bc
@@ -2319,23 +2331,23 @@ L513:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L515:
+L517:
 	incb 1,(xsp+14)
-L516:
+L518:
 	ld a,(xsp+14)
 	cp a,8
-	jr ult,L513
-L514:
-L511:
+	jr ult,L515
+L516:
+L513:
 	incw 1,(xsp+0)
-L512:
+L514:
 	ld wa,(xsp+0)
 	cp wa,210
-	jr ult,L509
-L510:
+	jr ult,L511
+L512:
 	ldw (xsp+0),0
-	jr L520
-L517:
+	jr L522
+L519:
 	ld xwa,_gfx_emblem_pals
 	ld bc,(xsp+0)
 	sll 2,bc
@@ -2367,16 +2379,16 @@ L517:
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
 	pop xix
-L519:
+L521:
 	incw 1,(xsp+0)
-L520:
+L522:
 	ld wa,(xsp+0)
 	cp wa,13
-	jr ult,L517
-L518:
+	jr ult,L519
+L520:
 	ldw (xsp+0),0
-	jr L524
-L521:
+	jr L526
+L523:
 	ld xwa,_gfx_over_pals
 	ld bc,(xsp+0)
 	sll 2,bc
@@ -2408,13 +2420,13 @@ L521:
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
 	pop xix
-L523:
+L525:
 	incw 1,(xsp+0)
-L524:
+L526:
 	ld wa,(xsp+0)
 	cp wa,8
-	jr ult,L521
-L522:
+	jr ult,L523
+L524:
 	push xix
 	ld wa,4039
 	push xwa
@@ -2432,11 +2444,11 @@ L522:
 	lda xsp,(xsp+24)
 	pop xix
 	ld ixl,0
-	jp L528
-L525:
+	jp L530
+L527:
 	ld izl,0
-	jp L532
-L529:
+	jp L534
+L531:
 	ld xwa,_gfx_emblem_map
 	ld c,ixl
 	extz bc
@@ -2451,10 +2463,10 @@ L529:
 	ld (xsp+6),wa
 	ld bc,(xsp+6)
 	cp bc,65535
-	jr nz,L533
+	jr nz,L535
 	ld wa,0
-	jr L534
-L533:
+	jr L536
+L535:
 	push xix
 	ld wa,(xsp+10)
 	push xwa
@@ -2481,7 +2493,7 @@ L533:
 	extz bc
 	sll 9,bc
 	or wa,bc
-L534:
+L536:
 	ld xbc,38912
 	ld e,ixl
 	extz de
@@ -2494,26 +2506,26 @@ L534:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L531:
+L533:
 	inc 1,izl
-L532:
+L534:
 	ld a,izl
 	cp a,18
-	jp ult,L529
-L530:
-L527:
+	jp ult,L531
+L532:
+L529:
 	inc 1,ixl
-L528:
+L530:
 	ld a,ixl
 	cp a,11
-	jp ult,L525
-L526:
+	jp ult,L527
+L528:
 	ld ixl,0
-	jp L538
-L535:
+	jp L540
+L537:
 	ld izl,0
-	jp L542
-L539:
+	jp L544
+L541:
 	ld xwa,_gfx_over_map
 	ld c,ixl
 	extz bc
@@ -2528,10 +2540,10 @@ L539:
 	ld (xsp+6),wa
 	ld bc,(xsp+6)
 	cp bc,65535
-	jr nz,L543
+	jr nz,L545
 	ld wa,0
-	jr L544
-L543:
+	jr L546
+L545:
 	push xix
 	ld wa,(xsp+10)
 	push xwa
@@ -2558,7 +2570,7 @@ L543:
 	extz bc
 	sll 9,bc
 	or wa,bc
-L544:
+L546:
 	ld xbc,36864
 	ld e,ixl
 	extz de
@@ -2570,24 +2582,24 @@ L544:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L541:
+L543:
 	inc 1,izl
-L542:
+L544:
 	ld a,izl
 	cp a,20
-	jp ult,L539
-L540:
-L537:
+	jp ult,L541
+L542:
+L539:
 	inc 1,ixl
-L538:
+L540:
 	ld a,ixl
 	cp a,11
-	jp ult,L535
-L536:
+	jp ult,L537
+L538:
 	push xix
 	call _title_texts__0
 	pop xix
-L504:
+L506:
 	lda xsp,(xsp+16)
 	pop xiz
 	ret
@@ -2612,8 +2624,8 @@ _title_leave__0:
 	lda xsp,(xsp+8)
 	call _id_road_reload_maps
 	ld iz,0
-	jr L554
-L551:
+	jr L556
+L553:
 	ld xwa,_gfx_traffic_tiles
 	ld bc,iz
 	extz xbc
@@ -2630,17 +2642,17 @@ L551:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L553:
+L555:
 	inc 1,iz
-L554:
+L556:
 	ld wa,iz
 	ld bc,(_gfx_traffic_tiles_count)
 	sll 3,bc
 	cp wa,bc
-	jr ult,L551
-L552:
+	jr ult,L553
+L554:
 	call _id_road_dma_resume
-L550:
+L552:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -2679,8 +2691,8 @@ _title_car__0:
 	pop xiy
 	pop xix
 	ld ixl,0
-	jp L578
-L575:
+	jp L580
+L577:
 	ld wa,24
 	ld c,ixl
 	extz bc
@@ -2689,37 +2701,37 @@ L575:
 	ld (xsp+6),a
 	ld c,ixl
 	cp c,0
-	jr nz,L579
+	jr nz,L581
 	ld wa,(xsp+2)
 	sub wa,13
 	ld c,(xsp+5)
 	extz bc
 	sub wa,bc
-	jr L580
-L579:
+	jr L582
+L581:
 	ld wa,(xsp+2)
 	add wa,29
 	ld c,(xsp+5)
 	extz bc
 	add wa,bc
-L580:
+L582:
 	ld (xsp+8),wa
 	ld izl,0
-	jp L584
-L581:
+	jp L586
+L583:
 	ld c,ixl
 	cp c,0
-	jr z,L586
+	jr z,L588
 	ld a,1
 	sub a,izl
 	extz wa
-	jr L587
-L586:
+	jr L589
+L588:
 	ld a,izl
 	extz wa
-L587:
+L589:
 	ld (xsp+11),a
-L588:
+L590:
 	ld a,(xsp+6)
 	add a,izl
 	ld (xsp+12),a
@@ -2733,7 +2745,7 @@ L588:
 	add a,15
 	sub a,(xsp+5)
 	ld (xsp+14),a
-	ld xwa,_tsm__0_L585
+	ld xwa,_tsm__0_L587
 	ld c,(xsp+5)
 	extz bc
 	ld e,ixl
@@ -2754,12 +2766,12 @@ L588:
 	ld (xsp+18),a
 	ld c,ixl
 	cp c,0
-	jr z,L591
+	jr z,L593
 	ld wa,128
-	jr L592
-L591:
+	jr L594
+L593:
 	ld wa,0
-L592:
+L594:
 	ld (xsp+19),a
 	ld wa,34816
 	ld c,(xsp+12)
@@ -2794,23 +2806,23 @@ L592:
 	add bc,de
 	extz xbc
 	ld (xbc),a
-L590:
-L589:
-L583:
+L592:
+L591:
+L585:
 	inc 1,izl
-L584:
+L586:
 	ld a,izl
 	cp a,2
-	jp ult,L581
-L582:
-L577:
+	jp ult,L583
+L584:
+L579:
 	inc 1,ixl
-L578:
+L580:
 	ld a,ixl
 	cp a,2
-	jp ult,L575
+	jp ult,L577
+L578:
 L576:
-L574:
 	lda xsp,(xsp+24)
 	pop xiz
 	ret
@@ -2821,7 +2833,7 @@ _title_blink__0:
 	extz wa
 	and wa,31
 	cp wa,0
-	jr nz,L598
+	jr nz,L600
 	ld xwa,_S0_14
 	push xwa
 	ld a,(xsp+12)
@@ -2834,20 +2846,865 @@ _title_blink__0:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-	jr L599
-L598:
+	jr L601
+L600:
 	ld a,(xsp+4)
 	extz wa
 	and wa,31
 	cp wa,20
-	jr nz,L600
+	jr nz,L602
 	ld a,(xsp+8)
 	push xwa
 	call _hud_clear_message
 	lda xsp,(xsp+4)
-L600:
+L602:
+L601:
 L599:
-L597:
+	ret
+
+; function map_leg_xy
+_map_leg_xy__0:
+	ld wa,6
+	ld c,(xsp+4)
+	extz bc
+	mul xbc,30
+	add wa,bc
+	ld xbc,(xsp+12)
+	ld (xbc),a
+	ld wa,86
+	ld c,(xsp+8)
+	extz bc
+	sll 1,bc
+	ld e,(xsp+4)
+	extz de
+	sub bc,de
+	mul xbc,24
+	exts xbc
+	divs xbc,2
+	add wa,bc
+	ld xbc,(xsp+16)
+	ld (xbc),a
+L604:
+	ret
+
+; function map_screen
+_map_screen__0:
+	push xiz
+	lda xsp,(xsp-26)
+	call _id_road_dma_pause
+	call _bridge_hide
+	call _banner_hide
+	ld wa,64
+	push xwa
+	ld wa,0
+	push xwa
+	call _id_spr_hide_range
+	lda xsp,(xsp+8)
+	call _hud_clear_top
+	ld wa,18
+	push xwa
+	ld wa,15
+	push xwa
+	call _clear_hud_rows__0
+	lda xsp,(xsp+8)
+	call _player_engine_off
+	ldb (08034h),0
+	ldb (08035h),0
+	ld iz,0
+	jr L662
+L659:
+	ld wa,0
+	ld xbc,38912
+	ld de,iz
+	extz xde
+	sll 1,xde
+	add xbc,xde
+	ld (xbc),wa
+L661:
+	inc 1,iz
+L662:
+	ld wa,iz
+	cp wa,1024
+	jr ult,L659
+L660:
+	ld wa,1710
+	push xwa
+	call _ngpc_gfx_set_bg_color
+	lda xsp,(xsp+4)
+	ldw (xsp+0),0
+	jr L666
+L663:
+	ld wa,40960
+	extz xwa
+	push xwa
+	ld wa,(xsp+4)
+	push xwa
+	call _title_slot__0
+	lda xsp,(xsp+4)
+	ld xbc,xwa
+	pop xwa
+	mul xbc,16
+	add xwa,xbc
+	ld (xsp+8),xwa
+	ld xwa,_gfx_map_tiles
+	ld bc,(xsp+0)
+	sll 3,bc
+	extz xbc
+	sll 1,xbc
+	add xwa,xbc
+	lda xwa,(xwa)
+	ld (xsp+12),xwa
+	ldb (xsp+16),0
+	jr L670
+L667:
+	ld xwa,(xsp+12)
+	ld c,(xsp+16)
+	extz bc
+	exts xbc
+	sll 1,xbc
+	add xwa,xbc
+	ld wa,(xwa)
+	ld xbc,(xsp+8)
+	ld e,(xsp+16)
+	extz de
+	exts xde
+	sll 1,xde
+	add xbc,xde
+	ld (xbc),wa
+L669:
+	incb 1,(xsp+16)
+L670:
+	ld a,(xsp+16)
+	cp a,8
+	jr ult,L667
+L668:
+L665:
+	incw 1,(xsp+0)
+L666:
+	ld wa,(xsp+0)
+	cp wa,171
+	jr ult,L663
+L664:
+	ldw (xsp+0),0
+	jr L674
+L671:
+	ld xwa,_gfx_map_pals
+	ld bc,(xsp+0)
+	sll 2,bc
+	extz xbc
+	sll 1,xbc
+	add xwa,xbc
+	lda xwa,(xwa)
+	ld (xsp+8),xwa
+	ld xwa,(xsp+8)
+	ld wa,(xwa+6)
+	push xwa
+	ld xwa,(xsp+12)
+	ld wa,(xwa+4)
+	push xwa
+	ld xwa,(xsp+16)
+	ld wa,(xwa+2)
+	push xwa
+	ld wa,0
+	push xwa
+	ld a,8
+	add a,(xsp+16)
+	push xwa
+	ld wa,1
+	push xwa
+	call _ngpc_gfx_set_palette
+	lda xsp,(xsp+24)
+L673:
+	incw 1,(xsp+0)
+L674:
+	ld wa,(xsp+0)
+	cp wa,8
+	jr ult,L671
+L672:
+	ldb (xsp+5),0
+	jp L678
+L675:
+	ldb (xsp+4),0
+	jp L682
+L679:
+	ld xwa,_gfx_map_map
+	ld c,(xsp+5)
+	extz bc
+	mul xbc,20
+	ld e,(xsp+4)
+	extz de
+	add bc,de
+	extz xbc
+	sll 1,xbc
+	add xwa,xbc
+	ld wa,(xwa)
+	ld (xsp+8),wa
+	ld bc,(xsp+8)
+	cp bc,65535
+	jr nz,L683
+	ld wa,0
+	jr L684
+L683:
+	ld wa,(xsp+8)
+	push xwa
+	call _title_slot__0
+	lda xsp,(xsp+4)
+	ld bc,8
+	ld xde,_gfx_map_pal
+	ld l,(xsp+5)
+	extz hl
+	mul xhl,20
+	push xde
+	ld e,(xsp+8)
+	extz de
+	add hl,de
+	pop xde
+	extz xhl
+	add xde,xhl
+	ld e,(xde)
+	extz de
+	add bc,de
+	sll 9,bc
+	or wa,bc
+L684:
+	ld xbc,38912
+	ld e,(xsp+5)
+	extz de
+	sll 5,de
+	ld l,(xsp+4)
+	extz hl
+	add de,hl
+	extz xde
+	sll 1,xde
+	add xbc,xde
+	ld (xbc),wa
+L681:
+	incb 1,(xsp+4)
+L682:
+	ld a,(xsp+4)
+	cp a,20
+	jp ult,L679
+L680:
+L677:
+	incb 1,(xsp+5)
+L678:
+	ld a,(xsp+5)
+	cp a,19
+	jp ult,L675
+L676:
+	ld xwa,_S0_15
+	push xwa
+	ld wa,1
+	push xwa
+	ld wa,8
+	push xwa
+	ld wa,0
+	push xwa
+	ld wa,0
+	push xwa
+	call _ngpc_text_print
+	lda xsp,(xsp+20)
+	ld iz,0
+	ldb (xsp+6),0
+	jp L688
+L685:
+	ldb (xsp+7),0
+	jp L692
+L689:
+	ld xwa,_leg_theme
+	ld bc,iz
+	extz xbc
+	add xwa,xbc
+	ld a,(xwa)
+	ld (xsp+8),a
+	ld xwa,_gfx_map_thumb_pals
+	ld c,(xsp+8)
+	extz bc
+	sll 2,bc
+	extz xbc
+	sll 1,xbc
+	add xwa,xbc
+	lda xwa,(xwa)
+	ld (xsp+10),xwa
+	ld xwa,(xsp+10)
+	ld wa,(xwa+6)
+	push xwa
+	ld xwa,(xsp+14)
+	ld wa,(xwa+4)
+	push xwa
+	ld xwa,(xsp+18)
+	ld wa,(xwa+2)
+	push xwa
+	ld wa,0
+	push xwa
+	ld a,izl
+	add a,1
+	push xwa
+	ld a,2
+	push xwa
+	call _ngpc_gfx_set_palette
+	lda xsp,(xsp+24)
+	lda xwa,(xsp+5)
+	push xwa
+	lda xwa,(xsp+8)
+	push xwa
+	ld a,(xsp+15)
+	push xwa
+	ld a,(xsp+18)
+	push xwa
+	call _map_leg_xy__0
+	lda xsp,(xsp+16)
+	ldb (xsp+14),0
+	jp L696
+L693:
+L697:
+	ld wa,2
+	ld bc,iz
+	sll 2,bc
+	add wa,bc
+	ld c,(xsp+14)
+	extz bc
+	add wa,bc
+	ld (xsp+15),a
+	ld a,(xsp+4)
+	extz wa
+	ld c,(xsp+14)
+	extz bc
+	and bc,1
+	sll 3,bc
+	add wa,bc
+	ld (xsp+16),a
+	ld a,(xsp+5)
+	extz wa
+	sub wa,8
+	ld c,(xsp+14)
+	extz bc
+	sra 1,bc
+	sll 3,bc
+	add wa,bc
+	ld (xsp+17),a
+	ld wa,109
+	ld c,(xsp+8)
+	extz bc
+	sll 2,bc
+	add wa,bc
+	ld c,(xsp+14)
+	extz bc
+	add wa,bc
+	push xwa
+	call _title_slot__0
+	lda xsp,(xsp+4)
+	ld (xsp+18),wa
+	ld a,izl
+	add a,1
+	ld (xsp+20),a
+	ld a,0
+	ld (xsp+21),a
+	ld wa,34816
+	ld c,(xsp+15)
+	extz bc
+	sll 2,bc
+	add wa,bc
+	extz xwa
+	ld (xsp+22),xwa
+	ld a,(xsp+18)
+	and a,255
+	ld xbc,(xsp+22)
+	ld (xbc),a
+	ld a,(xsp+21)
+	extz wa
+	or wa,24
+	ld bc,(xsp+18)
+	srl 8,bc
+	and bc,1
+	extz bc
+	or wa,bc
+	ld xbc,(xsp+22)
+	ld (xbc+1),a
+	ld a,(xsp+16)
+	ld xbc,(xsp+22)
+	ld (xbc+2),a
+	ld a,(xsp+17)
+	ld xbc,(xsp+22)
+	ld (xbc+3),a
+	ld a,(xsp+20)
+	and a,15
+	ld bc,35840
+	ld e,(xsp+15)
+	extz de
+	add bc,de
+	extz xbc
+	ld (xbc),a
+L699:
+L698:
+L695:
+	incb 1,(xsp+14)
+L696:
+	ld a,(xsp+14)
+	cp a,4
+	jp ult,L693
+L694:
+	inc 1,iz
+L691:
+	incb 1,(xsp+7)
+L692:
+	ld a,(xsp+7)
+	cp a,(xsp+6)
+	jp ule,L689
+L690:
+L687:
+	incb 1,(xsp+6)
+L688:
+	ld a,(xsp+6)
+	cp a,5
+	jp ult,L685
+L686:
+	ld wa,(_gfx_map_car_pal+6)
+	push xwa
+	ld wa,(_gfx_map_car_pal+4)
+	push xwa
+	ld wa,(_gfx_map_car_pal+2)
+	push xwa
+	ld wa,0
+	push xwa
+	ld wa,0
+	push xwa
+	ld a,2
+	push xwa
+	call _ngpc_gfx_set_palette
+	lda xsp,(xsp+24)
+	ldb (_map_n__0),0
+	lda xwa,(xsp+5)
+	push xwa
+	lda xwa,(xsp+8)
+	push xwa
+	ld wa,0
+	push xwa
+	ld wa,0
+	push xwa
+	call _map_leg_xy__0
+	lda xsp,(xsp+16)
+	ld a,0
+	ld xbc,_map_px__0
+	ld e,(_map_n__0)
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	ld a,(xsp+5)
+	ld xbc,_map_py__0
+	ld e,(_map_n__0)
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	incb 1,(_map_n__0)
+	ldb (xsp+6),0
+	jp L703
+L700:
+	lda xwa,(xsp+5)
+	push xwa
+	lda xwa,(xsp+8)
+	push xwa
+	ld xwa,_route_hist
+	ld c,(xsp+14)
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	push xwa
+	ld a,(xsp+18)
+	push xwa
+	call _map_leg_xy__0
+	lda xsp,(xsp+16)
+	ld a,(xsp+4)
+	ld xbc,_map_px__0
+	ld e,(_map_n__0)
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	ld a,(xsp+5)
+	ld xbc,_map_py__0
+	ld e,(_map_n__0)
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	incb 1,(_map_n__0)
+	ld a,(xsp+6)
+	cp a,(_cur_stage)
+	jr ult,L705
+	ld a,(_goal_reached__0)
+	cp a,0
+	jr z,L704
+L705:
+	ld a,(xsp+4)
+	add a,16
+	ld xbc,_map_px__0
+	ld e,(_map_n__0)
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	ld a,(xsp+5)
+	ld xbc,_map_py__0
+	ld e,(_map_n__0)
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	incb 1,(_map_n__0)
+	jr L706
+L704:
+	ld wa,(_course_pos__0)
+	mul xwa,16
+	push xwa
+	ld bc,(_leg_len)
+	cp bc,0
+	jr z,L707
+	ld wa,(_leg_len)
+	jr L708
+L707:
+	ld wa,1
+L708:
+	extz xwa
+	ld xbc,xwa
+	pop xwa
+	call __div32u
+	ld (xsp+8),wa
+	ld wa,(xsp+8)
+	cp wa,16
+	jr ule,L709
+	ldw (xsp+8),16
+L709:
+	ld a,(xsp+4)
+	add a,(xsp+8)
+	ld xbc,_map_px__0
+	ld e,(_map_n__0)
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	ld a,(xsp+5)
+	ld xbc,_map_py__0
+	ld e,(_map_n__0)
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	incb 1,(_map_n__0)
+L706:
+L702:
+	incb 1,(xsp+6)
+L703:
+	ld a,(xsp+6)
+	cp a,(_cur_stage)
+	jp ule,L700
+L701:
+	ld a,(_goal_reached__0)
+	cp a,0
+	jr z,L710
+	ld xwa,_map_px__0
+	ld c,(_map_n__0)
+	extz bc
+	sub bc,1
+	extz xbc
+	add xwa,xbc
+	ld a,(xwa)
+	add a,6
+	ld xbc,_map_px__0
+	ld e,(_map_n__0)
+	extz de
+	sub de,1
+	extz xde
+	add xbc,xde
+	ld (xbc),a
+L710:
+	ldb (_map_seg__0),0
+	ldw (_map_along__0),0
+	ldw (_map_t__0),0
+	ldw (_map_done__0),0
+L658:
+	lda xsp,(xsp+26)
+	pop xiz
+	ret
+
+; function map_car
+_map_car__0:
+	push xiz
+	lda xsp,(xsp-14)
+	ld xwa,_map_px__0
+	ld c,(_map_seg__0)
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	ld (xsp+0),a
+	ld xwa,_map_py__0
+	ld c,(_map_seg__0)
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	ld (xsp+1),a
+	ld a,(_map_seg__0)
+	extz wa
+	add wa,1
+	ld c,(_map_n__0)
+	extz bc
+	cp wa,bc
+	jp uge,L732
+	ld xwa,_map_px__0
+	ld c,(_map_seg__0)
+	extz bc
+	add bc,1
+	extz xbc
+	add xwa,xbc
+	ld a,(xwa)
+	extz wa
+	ld c,(xsp+0)
+	extz bc
+	sub wa,bc
+	ld (xsp+2),wa
+	ld xwa,_map_py__0
+	ld c,(_map_seg__0)
+	extz bc
+	add bc,1
+	extz xbc
+	add xwa,xbc
+	ld a,(xwa)
+	extz wa
+	ld c,(xsp+1)
+	extz bc
+	sub wa,bc
+	ld (xsp+4),wa
+	ld bc,(xsp+2)
+	cp bc,0
+	jr le,L733
+	ld wa,(xsp+2)
+	jr L734
+L733:
+	ld wa,(xsp+2)
+	neg wa
+L734:
+	ld (xsp+6),wa
+	ld bc,(xsp+4)
+	cp bc,0
+	jr le,L736
+	ld wa,(xsp+4)
+	jr L737
+L736:
+	ld wa,(xsp+4)
+	neg wa
+L737:
+	cp wa,(xsp+6)
+	jr le,L735
+	ld bc,(xsp+4)
+	cp bc,0
+	jr le,L738
+	ld wa,(xsp+4)
+	jr L739
+L738:
+	ld wa,(xsp+4)
+	neg wa
+L739:
+	ld (xsp+6),wa
+L735:
+	ld wa,(xsp+6)
+	cp wa,0
+	jr nz,L740
+	ldw (xsp+6),1
+L740:
+	ld wa,(_map_along__0)
+	cp wa,(xsp+6)
+	jr lt,L741
+	ldw (_map_along__0),0
+	incb 1,(_map_seg__0)
+	ld xwa,_map_px__0
+	ld c,(_map_seg__0)
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	ld (xsp+0),a
+	ld xwa,_map_py__0
+	ld c,(_map_seg__0)
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	ld (xsp+1),a
+	jr L742
+L741:
+	ld a,(xsp+0)
+	extz wa
+	ld bc,(xsp+2)
+	ld de,(_map_along__0)
+	mul xbc,de
+	exts xbc
+	divs xbc,(xsp+6)
+	add wa,bc
+	ld (xsp+0),a
+	ld a,(xsp+1)
+	extz wa
+	ld bc,(xsp+4)
+	ld de,(_map_along__0)
+	mul xbc,de
+	exts xbc
+	divs xbc,(xsp+6)
+	add wa,bc
+	ld (xsp+1),a
+L742:
+	jr L743
+L732:
+	ld wa,(_map_done__0)
+	cp wa,0
+	jr nz,L744
+	ld wa,(_map_t__0)
+	ld (_map_done__0),wa
+	ld wa,2
+	push xwa
+	call _sfx
+	lda xsp,(xsp+4)
+L744:
+L743:
+L745:
+	ld a,0
+	ld (xsp+2),a
+	ld a,(xsp+0)
+	sub a,8
+	ld (xsp+3),a
+	ld a,(xsp+1)
+	sub a,4
+	ld (xsp+4),a
+	ld wa,169
+	push xwa
+	call _title_slot__0
+	lda xsp,(xsp+4)
+	ld (xsp+6),wa
+	ld a,0
+	ld (xsp+8),a
+	ld a,0
+	ld (xsp+9),a
+	ld wa,34816
+	ld c,(xsp+2)
+	extz bc
+	sll 2,bc
+	add wa,bc
+	extz xwa
+	ld (xsp+10),xwa
+	ld a,(xsp+6)
+	and a,255
+	ld xbc,(xsp+10)
+	ld (xbc),a
+	ld a,(xsp+9)
+	extz wa
+	or wa,24
+	ld bc,(xsp+6)
+	srl 8,bc
+	and bc,1
+	extz bc
+	or wa,bc
+	ld xbc,(xsp+10)
+	ld (xbc+1),a
+	ld a,(xsp+3)
+	ld xbc,(xsp+10)
+	ld (xbc+2),a
+	ld a,(xsp+4)
+	ld xbc,(xsp+10)
+	ld (xbc+3),a
+	ld a,(xsp+8)
+	and a,15
+	ld bc,35840
+	ld e,(xsp+2)
+	extz de
+	add bc,de
+	extz xbc
+	ld (xbc),a
+L747:
+L746:
+L748:
+	ld a,1
+	ld (xsp+2),a
+	ld a,(xsp+0)
+	ld (xsp+3),a
+	ld a,(xsp+1)
+	sub a,4
+	ld (xsp+4),a
+	ld wa,170
+	push xwa
+	call _title_slot__0
+	lda xsp,(xsp+4)
+	ld (xsp+6),wa
+	ld a,0
+	ld (xsp+8),a
+	ld a,0
+	ld (xsp+9),a
+	ld wa,34816
+	ld c,(xsp+2)
+	extz bc
+	sll 2,bc
+	add wa,bc
+	extz xwa
+	ld xiz,xwa
+	ld a,(xsp+6)
+	and a,255
+	ld (xiz),a
+	ld a,(xsp+9)
+	extz wa
+	or wa,24
+	ld bc,(xsp+6)
+	srl 8,bc
+	and bc,1
+	extz bc
+	or wa,bc
+	ld (xiz+1),a
+	ld a,(xsp+3)
+	ld (xiz+2),a
+	ld a,(xsp+4)
+	ld (xiz+3),a
+	ld a,(xsp+8)
+	and a,15
+	ld bc,35840
+	ld e,(xsp+2)
+	extz de
+	add bc,de
+	extz xbc
+	ld (xbc),a
+L750:
+L749:
+L731:
+	lda xsp,(xsp+14)
+	pop xiz
+	ret
+
+; function map_leave
+_map_leave__0:
+	ld wa,64
+	push xwa
+	ld wa,0
+	push xwa
+	call _id_spr_hide_range
+	lda xsp,(xsp+8)
+	call _hud_clear_top
+	call _id_road_reload_maps
+	ld a,(_cur_leg)
+	push xwa
+	call _theme_apply
+	lda xsp,(xsp+4)
+	ld wa,(_trf_tiles_at__0)
+	push xwa
+	call _traffic_init
+	lda xsp,(xsp+4)
+	call _id_car_restore
+	call _smoke_init__0
+	ld a,(_difficulty)
+	push xwa
+	call _banner_style
+	lda xsp,(xsp+4)
+	call _id_road_dma_resume
+L752:
 	ret
 
 ; function trophy_load
@@ -2855,8 +3712,8 @@ _trophy_load__0:
 	push xiz
 	lda xsp,(xsp-2)
 	ld iz,0
-	jr L610
-L607:
+	jr L762
+L759:
 	ld xwa,_gfx_trophy_tiles
 	ld bc,iz
 	extz xbc
@@ -2869,13 +3726,13 @@ L607:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L609:
+L761:
 	inc 1,iz
-L610:
+L762:
 	ld wa,iz
 	cp wa,48
-	jr ult,L607
-L608:
+	jr ult,L759
+L760:
 	ld wa,(_gfx_trophy_pal+6)
 	push xwa
 	ld wa,(_gfx_trophy_pal+4)
@@ -2890,7 +3747,7 @@ L608:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-L606:
+L758:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -2904,16 +3761,16 @@ _trophy_draw__0:
 	sra 3,bc
 	and bc,3
 	cp bc,1
-	jr nz,L622
+	jr nz,L774
 	ld wa,1
-	jr L623
-L622:
+	jr L775
+L774:
 	ld wa,0
-L623:
+L775:
 	ld (xsp+1),a
 	ld ixl,0
-	jp L627
-L624:
+	jp L779
+L776:
 	ld xwa,_gfx_trophy_cells
 	ld c,ixl
 	extz bc
@@ -2922,7 +3779,7 @@ L624:
 	add xwa,xbc
 	lda xwa,(xwa)
 	ld (xsp+2),xwa
-L628:
+L780:
 	ld a,50
 	add a,ixl
 	ld (xsp+6),a
@@ -2986,16 +3843,16 @@ L628:
 	add bc,de
 	extz xbc
 	ld (xbc),a
-L630:
-L629:
-L626:
+L782:
+L781:
+L778:
 	inc 1,ixl
-L627:
+L779:
 	ld a,ixl
 	cp a,6
-	jp ult,L624
-L625:
-L621:
+	jp ult,L776
+L777:
+L773:
 	lda xsp,(xsp+18)
 	pop xiz
 	ret
@@ -3004,6 +3861,7 @@ L621:
 _result_screen__0:
 	push xiz
 	lda xsp,(xsp-20)
+	call _bridge_hide
 	call _hud_clear_top
 	ld wa,18
 	push xwa
@@ -3013,12 +3871,12 @@ _result_screen__0:
 	lda xsp,(xsp+8)
 	ld c,(_goal_reached__0)
 	cp c,0
-	jr z,L651
-	ld xwa,_S0_15
-	jr L652
-L651:
+	jr z,L803
 	ld xwa,_S0_16
-L652:
+	jr L804
+L803:
+	ld xwa,_S0_17
+L804:
 	push xwa
 	ld wa,2
 	push xwa
@@ -3034,8 +3892,8 @@ L652:
 	ld (xsp+14),xwa
 	ld wa,0
 	ld (xsp+18),a
-	jr L655
-L653:
+	jr L807
+L805:
 	ld xwa,(xsp+14)
 	ld c,(xsp+18)
 	extz bc
@@ -3049,7 +3907,7 @@ L653:
 	add xbc,xde
 	ld (xbc),a
 	incb 1,(xsp+18)
-L655:
+L807:
 	ld xwa,(xsp+14)
 	ld c,(xsp+18)
 	extz bc
@@ -3057,11 +3915,11 @@ L655:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr nz,L653
-L654:
+	jr nz,L805
+L806:
 	ld a,(_difficulty)
 	cp a,3
-	jr nz,L656
+	jr nz,L808
 	ld a,32
 	lda xbc,(xsp+1)
 	ld e,(xsp+18)
@@ -3081,8 +3939,8 @@ L654:
 	push xwa
 	call _hex4__0
 	lda xsp,(xsp+8)
-	jr L657
-L656:
+	jr L809
+L808:
 	ld a,0
 	lda xbc,(xsp+1)
 	ld e,(xsp+18)
@@ -3090,7 +3948,7 @@ L656:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L657:
+L809:
 	lda xwa,(xsp+1)
 	push xwa
 	ld wa,4
@@ -3100,12 +3958,12 @@ L657:
 	extz bc
 	ld l,(_difficulty)
 	cp l,3
-	jr nz,L658
+	jr nz,L810
 	ld de,4
-	jr L659
-L658:
+	jr L811
+L810:
 	ld de,0
-L659:
+L811:
 	add bc,de
 	sub wa,bc
 	srl 1,wa
@@ -3121,7 +3979,7 @@ L659:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-	ld xwa,_S0_17
+	ld xwa,_S0_18
 	push xwa
 	ld wa,5
 	push xwa
@@ -3143,7 +4001,7 @@ L659:
 	push xwa
 	call _print_score7__0
 	lda xsp,(xsp+16)
-	ld xwa,_S0_18
+	ld xwa,_S0_19
 	push xwa
 	ld wa,7
 	push xwa
@@ -3156,8 +4014,8 @@ L659:
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
 	ld izl,0
-	jr L663
-L660:
+	jr L815
+L812:
 	ld wa,1
 	push xwa
 	ld wa,65
@@ -3184,7 +4042,7 @@ L660:
 	lda xsp,(xsp+20)
 	ld a,izl
 	cp a,(_cur_stage)
-	jr uge,L664
+	jr uge,L816
 	ld wa,0
 	push xwa
 	ld wa,45
@@ -3201,14 +4059,14 @@ L660:
 	push xwa
 	call _ngpc_gfx_put_tile
 	lda xsp,(xsp+20)
-L664:
-L662:
+L816:
+L814:
 	inc 1,izl
-L663:
+L815:
 	ld a,izl
 	cp a,(_cur_stage)
-	jr ule,L660
-L661:
+	jr ule,L812
+L813:
 	ld xwa,(_score__0)
 	ld xbc,_hiscore__0
 	ld e,(_difficulty)
@@ -3218,7 +4076,7 @@ L661:
 	add xbc,xde
 	ld xbc,(xbc)
 	cp xwa,xbc
-	jr ule,L665
+	jr ule,L817
 	ld xwa,(_score__0)
 	ld xbc,_hiscore__0
 	ld e,(_difficulty)
@@ -3228,13 +4086,13 @@ L661:
 	add xbc,xde
 	ld (xbc),xwa
 	ldb (_save_dirty__0),1
-	ld xwa,_S0_19
+	ld xwa,_S0_20
 	push xwa
 	ld wa,9
 	push xwa
 	call _hud_message
 	lda xsp,(xsp+8)
-L665:
+L817:
 	call _banner_hide
 	ld a,64
 	push xwa
@@ -3244,14 +4102,14 @@ L665:
 	lda xsp,(xsp+8)
 	ld a,(_goal_reached__0)
 	cp a,0
-	jr z,L666
+	jr z,L818
 	call _trophy_load__0
 	ld c,(_difficulty)
 	cp c,3
-	jr nz,L667
+	jr nz,L819
 	ld wa,5
-	jr L668
-L667:
+	jr L820
+L819:
 	ld xwa,_route_hist
 	ld c,(_cur_stage)
 	extz bc
@@ -3259,12 +4117,12 @@ L667:
 	add xwa,xbc
 	ld a,(xwa)
 	extz wa
-L668:
+L820:
 	push xwa
 	call _ending_start
 	lda xsp,(xsp+4)
-L666:
-L650:
+L818:
+L802:
 	lda xsp,(xsp+20)
 	pop xiz
 	ret
@@ -3274,11 +4132,11 @@ _smoke_init__0:
 	push xiz
 	lda xsp,(xsp-2)
 	ld ixl,0
-	jr L682
-L679:
+	jr L834
+L831:
 	ld izl,0
-	jr L686
-L683:
+	jr L838
+L835:
 	ld xwa,_smoke_tiles__0
 	ld c,ixl
 	extz bc
@@ -3308,20 +4166,20 @@ L683:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L685:
+L837:
 	inc 1,izl
-L686:
+L838:
 	ld a,izl
 	cp a,8
-	jr ult,L683
-L684:
-L681:
+	jr ult,L835
+L836:
+L833:
 	inc 1,ixl
-L682:
+L834:
 	ld a,ixl
 	cp a,4
-	jr ult,L679
-L680:
+	jr ult,L831
+L832:
 	push xix
 	ld wa,4095
 	push xwa
@@ -3338,7 +4196,7 @@ L680:
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
 	pop xix
-L678:
+L830:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -3349,7 +4207,7 @@ _smoke_draw__0:
 	lda xsp,(xsp-24)
 	ld a,(xsp+32)
 	cp a,0
-	jr nz,L710
+	jr nz,L862
 	push xix
 	push xiy
 	ld a,28
@@ -3361,13 +4219,13 @@ _smoke_draw__0:
 	pop xiy
 	pop xix
 	ldb (_smoke_t__0),0
-	jp L709
-L710:
+	jp L861
+L862:
 	ld a,(_smoke_t__0)
 	extz wa
 	and wa,7
 	cp wa,0
-	jr nz,L711
+	jr nz,L863
 	push xix
 	push xiy
 	ld wa,7
@@ -3376,7 +4234,7 @@ L710:
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-L711:
+L863:
 	incb 1,(_smoke_t__0)
 	push xix
 	push xiy
@@ -3398,11 +4256,11 @@ L711:
 	add wa,bc
 	ld (xsp+2),a
 	ld ixl,0
-	jp L715
-L712:
+	jp L867
+L864:
 	ld c,ixl
 	cp c,0
-	jr nz,L716
+	jr nz,L868
 	ld wa,(xsp+0)
 	sub wa,11
 	ld c,(_smoke_t__0)
@@ -3410,8 +4268,8 @@ L712:
 	sra 2,bc
 	and bc,1
 	sub wa,bc
-	jr L717
-L716:
+	jr L869
+L868:
 	ld wa,(xsp+0)
 	add wa,27
 	ld c,(_smoke_t__0)
@@ -3419,7 +4277,7 @@ L716:
 	sra 2,bc
 	and bc,1
 	add wa,bc
-L717:
+L869:
 	ld (xsp+6),wa
 	ld a,(_smoke_t__0)
 	extz wa
@@ -3430,8 +4288,8 @@ L717:
 	and wa,1
 	ld (xsp+3),a
 	ld izl,0
-	jp L721
-L718:
+	jp L873
+L870:
 	ld wa,24
 	ld c,ixl
 	extz bc
@@ -3443,15 +4301,15 @@ L718:
 	ld (xsp+8),a
 	ld c,ixl
 	cp c,0
-	jr z,L722
+	jr z,L874
 	ld a,1
 	sub a,izl
 	extz wa
-	jr L723
-L722:
+	jr L875
+L874:
 	ld a,izl
 	extz wa
-L723:
+L875:
 	ld (xsp+9),a
 	ld wa,(xsp+6)
 	ld c,izl
@@ -3461,11 +4319,11 @@ L723:
 	ld (xsp+10),wa
 	ld wa,(xsp+10)
 	cp wa,65529
-	jr lt,L725
+	jr lt,L877
 	ld wa,(xsp+10)
 	cp wa,159
-	jr le,L724
-L725:
+	jr le,L876
+L877:
 	push xix
 	push xiy
 	ld a,(xsp+16)
@@ -3477,9 +4335,9 @@ L725:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-	jp L720
-L724:
-L726:
+	jp L872
+L876:
+L878:
 	ld a,(xsp+8)
 	ld (xsp+12),a
 	ld a,(xsp+10)
@@ -3503,12 +4361,12 @@ L726:
 	ld (xsp+18),a
 	ld c,ixl
 	cp c,0
-	jr z,L729
+	jr z,L881
 	ld wa,128
-	jr L730
-L729:
+	jr L882
+L881:
 	ld wa,0
-L730:
+L882:
 	ld (xsp+19),a
 	ld wa,34816
 	ld c,(xsp+12)
@@ -3543,23 +4401,23 @@ L730:
 	add bc,de
 	extz xbc
 	ld (xbc),a
-L728:
-L727:
-L720:
+L880:
+L879:
+L872:
 	inc 1,izl
-L721:
+L873:
 	ld a,izl
 	cp a,2
-	jp ult,L718
-L719:
-L714:
+	jp ult,L870
+L871:
+L866:
 	inc 1,ixl
-L715:
+L867:
 	ld a,ixl
 	cp a,2
-	jp ult,L712
-L713:
-L709:
+	jp ult,L864
+L865:
+L861:
 	lda xsp,(xsp+24)
 	pop xiz
 	ret
@@ -3570,12 +4428,12 @@ _engine_sound__0:
 	lda xsp,(xsp-10)
 	ld c,(_gear__0)
 	cp c,0
-	jr nz,L746
+	jr nz,L898
 	ld wa,137
-	jr L747
-L746:
+	jr L899
+L898:
 	ld wa,224
-L747:
+L899:
 	ld (xsp+0),wa
 	ld a,(_speed__0)
 	extz wa
@@ -3585,14 +4443,14 @@ L747:
 	ld ix,wa
 	ld wa,ix
 	cp wa,255
-	jr ule,L748
+	jr ule,L900
 	ld ix,255
-L748:
+L900:
 	ld a,(_crash_timer__0)
 	cp a,0
-	jr z,L749
+	jr z,L901
 	ld ix,0
-L749:
+L901:
 	ld wa,95
 	ld bc,ix
 	mul xbc,27
@@ -3609,49 +4467,49 @@ L749:
 	extz wa
 	and wa,1
 	cp wa,0
-	jr z,L750
+	jr z,L902
 	ld wa,iz
 	ld bc,iz
 	ld l,(_offroad__0)
 	cp l,0
-	jr z,L751
+	jr z,L903
 	ld l,(_speed__0)
 	cp l,20
-	jr ule,L751
+	jr ule,L903
 	ld de,3
-	jr L752
-L751:
+	jr L904
+L903:
 	ld de,5
-L752:
+L904:
 	cp e,0
-	jr z,L754
-L753:
+	jr z,L906
+L905:
 	srl 1,bc
-	djnz e,L753
-L754:
+	djnz e,L905
+L906:
 	add wa,bc
 	ld iz,wa
-L750:
+L902:
 	ld c,(_ngpc_pad_held)
 	extz bc
 	and bc,16
 	cp bc,0
-	jr z,L755
+	jr z,L907
 	ld wa,4
-	jr L756
-L755:
+	jr L908
+L907:
 	ld wa,6
-L756:
+L908:
 	ld iyl,a
 	ld a,(_state__0)
 	cp a,4
-	jr z,L758
+	jr z,L910
 	ld a,(_state__0)
 	cp a,3
-	jr nz,L757
-L758:
+	jr nz,L909
+L910:
 	ld iyl,9
-L757:
+L909:
 	push xix
 	push xiy
 	ld a,iyl
@@ -3662,8 +4520,297 @@ L757:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L745:
+L897:
 	lda xsp,(xsp+10)
+	pop xiz
+	ret
+
+; function roll_draw
+_roll_draw__0:
+	push xiz
+	lda xsp,(xsp-34)
+	ld a,(_roll_t__0)
+	extz wa
+	sub wa,1
+	mul xwa,12
+	extz xwa
+	div xwa,36
+	ld (xsp+0),a
+	push xix
+	push xiy
+	call _id_car_tile_base
+	pop xiy
+	pop xix
+	ld (xsp+6),wa
+	ld a,(xsp+0)
+	cp a,12
+	jr ult,L929
+	ldb (xsp+0),11
+L929:
+	ld a,(_roll_dir__0)
+	cp a,0
+	jr nz,L930
+	ld wa,12
+	ld c,(xsp+0)
+	extz bc
+	sub wa,bc
+	exts xwa
+	divs xwa,12
+	ld wa,qwa
+	ld (xsp+0),a
+L930:
+	ld xwa,_gfx_roll_frames
+	ld c,(xsp+0)
+	extz bc
+	muls xbc,5
+	add xwa,xbc
+	lda xwa,(xwa)
+	ld (xsp+2),xwa
+	ld a,(xsp+0)
+	cp a,(_roll_loaded__0)
+	jp z,L931
+	ld xwa,(xsp+2)
+	ld a,(xwa+3)
+	extz wa
+	sll 3,wa
+	ld (xsp+14),wa
+	ld xwa,_gfx_roll_tiles
+	ld xbc,(xsp+2)
+	ld c,(xbc+2)
+	extz bc
+	sll 3,bc
+	extz xbc
+	sll 1,xbc
+	add xwa,xbc
+	lda xwa,(xwa)
+	ld (xsp+18),xwa
+	ld wa,40960
+	extz xwa
+	ld bc,(xsp+6)
+	mul xbc,16
+	add xwa,xbc
+	ld (xsp+22),xwa
+	ldw (xsp+16),0
+	jr L935
+L932:
+	ld xwa,(xsp+18)
+	ld bc,(xsp+16)
+	extz xbc
+	sll 1,xbc
+	add xwa,xbc
+	ld wa,(xwa)
+	ld xbc,(xsp+22)
+	ld de,(xsp+16)
+	extz xde
+	sll 1,xde
+	add xbc,xde
+	ld (xbc),wa
+L934:
+	incw 1,(xsp+16)
+L935:
+	ld wa,(xsp+16)
+	cp wa,(xsp+14)
+	jr ult,L932
+L933:
+	push xix
+	push xiy
+	ld xwa,_gfx_roll_pal
+	ld xbc,(xsp+10)
+	ld c,(xbc+4)
+	extz bc
+	sll 2,bc
+	add bc,3
+	extz xbc
+	sll 1,xbc
+	add xwa,xbc
+	ld wa,(xwa)
+	push xwa
+	ld xwa,_gfx_roll_pal
+	ld xbc,(xsp+14)
+	ld c,(xbc+4)
+	extz bc
+	sll 2,bc
+	add bc,2
+	extz xbc
+	sll 1,xbc
+	add xwa,xbc
+	ld wa,(xwa)
+	push xwa
+	ld xwa,_gfx_roll_pal
+	ld xbc,(xsp+18)
+	ld c,(xbc+4)
+	extz bc
+	sll 2,bc
+	add bc,1
+	extz xbc
+	sll 1,xbc
+	add xwa,xbc
+	ld wa,(xwa)
+	push xwa
+	ld wa,0
+	push xwa
+	ld wa,0
+	push xwa
+	ld a,2
+	push xwa
+	call _ngpc_gfx_set_palette
+	lda xsp,(xsp+24)
+	pop xiy
+	pop xix
+	ld a,(xsp+0)
+	ld (_roll_loaded__0),a
+L931:
+	push xix
+	push xiy
+	ld wa,147
+	push xwa
+	call _id_road_centre_at
+	lda xsp,(xsp+4)
+	pop xiy
+	pop xix
+	ld bc,(_car_lat__0)
+	sra 4,bc
+	add wa,bc
+	ld (xsp+8),wa
+	ld wa,136
+	ld xbc,_roll_lift__0
+	ld e,(_roll_t__0)
+	extz de
+	sll 4,de
+	extz xde
+	div xde,36
+	extz xde
+	add xbc,xde
+	ld c,(xbc)
+	extz bc
+	sub wa,bc
+	ld (xsp+10),wa
+	ld izl,0
+	jp L939
+L936:
+	ld xwa,_gfx_roll_cells
+	ld xbc,(xsp+2)
+	ld c,(xbc)
+	extz bc
+	ld e,izl
+	extz de
+	add bc,de
+	mul xbc,3
+	extz xbc
+	add xwa,xbc
+	lda xwa,(xwa)
+	ld (xsp+14),xwa
+	ld wa,(xsp+8)
+	ld xbc,(xsp+14)
+	ld c,(xbc)
+	exts bc
+	add wa,bc
+	ld (xsp+18),wa
+	ld wa,(xsp+10)
+	ld xbc,(xsp+14)
+	ld c,(xbc+1)
+	exts bc
+	add wa,bc
+	ld iy,wa
+	ld wa,(xsp+18)
+	cp wa,65529
+	jr lt,L941
+	ld wa,(xsp+18)
+	cp wa,159
+	jr gt,L941
+	ld wa,iy
+	cp wa,65529
+	jr lt,L941
+	ld wa,iy
+	cp wa,151
+	jr le,L940
+L941:
+	push xix
+	push xiy
+	ld a,izl
+	add a,1
+	push xwa
+	ld a,izl
+	push xwa
+	call _id_spr_hide_range
+	lda xsp,(xsp+8)
+	pop xiy
+	pop xix
+	jp L938
+L940:
+L942:
+	ld a,izl
+	ld (xsp+22),a
+	ld a,(xsp+18)
+	ld (xsp+23),a
+	ld a,iyl
+	ld (xsp+24),a
+	ld wa,(xsp+6)
+	ld xbc,(xsp+14)
+	ld c,(xbc+2)
+	extz bc
+	add wa,bc
+	ld (xsp+26),wa
+	ld a,0
+	ld (xsp+28),a
+	ld a,0
+	ld (xsp+29),a
+	ld wa,34816
+	ld c,(xsp+22)
+	extz bc
+	sll 2,bc
+	add wa,bc
+	extz xwa
+	ld xix,xwa
+	ld a,(xsp+26)
+	and a,255
+	ld (xix),a
+	ld a,(xsp+29)
+	extz wa
+	ld c,(_id_spr_priority)
+	extz bc
+	or wa,bc
+	ld bc,(xsp+26)
+	srl 8,bc
+	and bc,1
+	extz bc
+	or wa,bc
+	ld (xix+1),a
+	ld a,(xsp+23)
+	ld (xix+2),a
+	ld a,(xsp+24)
+	ld (xix+3),a
+	ld a,(xsp+28)
+	and a,15
+	ld bc,35840
+	ld e,(xsp+22)
+	extz de
+	add bc,de
+	extz xbc
+	ld (xbc),a
+L944:
+L943:
+L938:
+	inc 1,izl
+L939:
+	ld a,izl
+	ld xbc,(xsp+2)
+	ld c,(xbc+1)
+	cp a,c
+	jp ult,L936
+L937:
+	push xix
+	push xiy
+	ld wa,24
+	push xwa
+	ld a,izl
+	push xwa
+	call _id_spr_hide_range
+	lda xsp,(xsp+8)
+	pop xiy
+	pop xix
+L928:
+	lda xsp,(xsp+34)
 	pop xiz
 	ret
 
@@ -3690,23 +4837,23 @@ _sharp_ahead__0:
 	ld ix,wa
 	ld wa,ix
 	cp wa,52
-	jr ge,L775
+	jr ge,L961
 	ld wa,ix
 	cp wa,65484
-	jr gt,L774
-L775:
+	jr gt,L960
+L961:
 	ld wa,0
-	jp L773
-L774:
+	jp L959
+L960:
 	ldb (xsp+1),0
-	jr L779
-L776:
+	jr L965
+L962:
 	inc 1,izl
 	ld a,izl
 	cp a,(_track_len)
-	jr ult,L780
+	jr ult,L966
 	ld izl,0
-L780:
+L966:
 	ld xwa,(_track_seg)
 	ld c,izl
 	extz bc
@@ -3716,27 +4863,27 @@ L780:
 	ld ix,wa
 	ld wa,ix
 	cp wa,52
-	jr ge,L782
+	jr ge,L968
 	ld wa,ix
 	cp wa,65484
-	jr gt,L781
-L782:
+	jr gt,L967
+L968:
 	ld wa,iy
 	cp wa,150
-	jr uge,L783
+	jr uge,L969
 	ld wa,0
-	jr L773
-L783:
+	jr L959
+L969:
 	ld bc,ix
 	cp bc,0
-	jr le,L784
+	jr le,L970
 	ld wa,1
-	jr L785
-L784:
+	jr L971
+L970:
 	ld wa,65535
-L785:
-	jr L773
-L781:
+L971:
+	jr L959
+L967:
 	ld wa,iy
 	ld xbc,(_track_seg)
 	ld e,izl
@@ -3746,20 +4893,20 @@ L781:
 	ld bc,(xbc)
 	add wa,bc
 	ld iy,wa
-L778:
+L964:
 	incb 1,(xsp+1)
-L779:
+L965:
 	ld a,(xsp+1)
 	cp a,6
-	jr uge,L786
+	jr uge,L972
 	ld wa,iy
 	cp wa,1300
-	jr ult,L776
-L786:
-L777:
+	jr ult,L962
+L972:
+L963:
 	ld wa,0
-	jr L773
-L773:
+	jr L959
+L959:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -3767,10 +4914,10 @@ L773:
 ; function game_tick
 _game_tick__0:
 	push xiz
-	lda xsp,(xsp-4)
+	lda xsp,(xsp-8)
 	ld a,(_state__0)
 	cp a,0
-	jp nz,L873
+	jp nz,L1072
 	ld wa,12
 	push xwa
 	ld a,(_state_timer__0)
@@ -3783,77 +4930,77 @@ _game_tick__0:
 	extz wa
 	and wa,12
 	cp wa,0
-	jr z,L874
+	jr z,L1073
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,8
 	cp wa,0
-	jr z,L875
+	jr z,L1074
 	ld a,(_station__0)
 	extz wa
 	add wa,1
 	and wa,3
 	ld (_station__0),a
-	jr L876
-L875:
+	jr L1075
+L1074:
 	ld a,(_station__0)
 	extz wa
 	add wa,4
 	sub wa,1
 	and wa,3
 	ld (_station__0),a
-L876:
+L1075:
 	ldb (_save_dirty__0),1
 	call _title_texts__0
 	ld a,(_station__0)
 	push xwa
 	call _music_play
 	lda xsp,(xsp+4)
-L874:
+L1073:
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,3
 	cp wa,0
-	jr z,L877
+	jr z,L1076
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,2
 	cp wa,0
-	jr z,L878
+	jr z,L1077
 	ld a,(_difficulty)
 	extz wa
 	add wa,1
 	and wa,3
 	ld (_difficulty),a
-	jr L879
-L878:
+	jr L1078
+L1077:
 	ld a,(_difficulty)
 	extz wa
 	add wa,4
 	sub wa,1
 	and wa,3
 	ld (_difficulty),a
-L879:
+L1078:
 	ld a,(_difficulty)
 	cp a,3
-	jr nz,L880
+	jr nz,L1079
 	call _new_seed__0
-L880:
+L1079:
 	ldb (_save_dirty__0),1
 	ld wa,0
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
 	call _title_texts__0
-L877:
+L1076:
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,32
 	cp wa,0
-	jr z,L881
+	jr z,L1080
 	ld a,(_difficulty)
 	cp a,3
-	jr nz,L881
+	jr nz,L1080
 	call _new_seed__0
 	ldb (_save_dirty__0),1
 	ld wa,0
@@ -3861,32 +5008,66 @@ L877:
 	call _sfx
 	lda xsp,(xsp+4)
 	call _title_texts__0
-L881:
+L1080:
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,16
 	cp wa,0
-	jr z,L882
+	jr z,L1081
 	call _title_leave__0
 	call _new_game__0
 	ldb (_state__0),1
 	ldb (_state_timer__0),0
-L882:
+L1081:
 	ldb (_ngpc_pad_held),0
 	ldb (_ngpc_pad_pressed),0
-	jp L883
-L873:
+	jp L1082
+L1072:
 	ld a,(_state__0)
-	cp a,5
-	jr nz,L884
+	cp a,6
+	jr nz,L1083
+	incw 1,(_map_t__0)
+	ld wa,(_map_along__0)
+	add wa,2
+	ld (_map_along__0),wa
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,16
 	cp wa,0
-	jr z,L885
+	jr z,L1086
+	ld wa,(_map_t__0)
+	cp wa,20
+	jr ugt,L1085
+L1086:
+	ld wa,(_map_done__0)
+	cp wa,0
+	jr z,L1084
+	ld wa,(_map_t__0)
+	ld bc,(_map_done__0)
+	add bc,75
+	cp wa,bc
+	jr ule,L1084
+L1085:
+	call _map_leave__0
+	ldb (_state__0),5
+	ldb (_state_timer__0),0
+	call _result_screen__0
+L1084:
+	ldb (_ngpc_pad_held),0
+	ldb (_ngpc_pad_pressed),0
+	jp L1087
+L1083:
+	ld a,(_state__0)
+	cp a,5
+	jr nz,L1088
+	ld a,(_ngpc_pad_pressed)
+	extz wa
+	and wa,16
+	cp wa,0
+	jr z,L1089
 	ld a,(_state_timer__0)
 	cp a,30
-	jr ule,L885
+	jr ule,L1089
 	ldb (_state__0),0
 	ldb (_state_timer__0),0
 	call _new_game__0
@@ -3895,54 +5076,54 @@ L873:
 	push xwa
 	call _music_play
 	lda xsp,(xsp+4)
-L885:
+L1089:
 	ld a,(_state_timer__0)
 	cp a,255
-	jr uge,L886
+	jr uge,L1090
 	incb 1,(_state_timer__0)
-L886:
+L1090:
 	ld a,(_state_timer__0)
 	cp a,30
-	jr ule,L887
+	jr ule,L1091
 	ld wa,13
 	push xwa
 	ld a,(_state_timer__0)
 	push xwa
 	call _title_blink__0
 	lda xsp,(xsp+8)
-L887:
+L1091:
 	ldb (_ngpc_pad_held),0
 	ldb (_ngpc_pad_pressed),0
-	jr L888
-L884:
+	jr L1092
+L1088:
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,64
 	cp wa,0
-	jr z,L889
+	jr z,L1093
 	ld c,(_paused__0)
 	cp c,0
-	jr nz,L890
+	jr nz,L1094
 	ld wa,1
-	jr L891
-L890:
+	jr L1095
+L1094:
 	ld wa,0
-L891:
+L1095:
 	ld (_paused__0),a
 	ld a,(_paused__0)
 	cp a,0
-	jr z,L892
+	jr z,L1096
 	ld wa,0
 	push xwa
 	ld wa,0
 	exts xwa
 	push xwa
-	ld xwa,_S0_20
+	ld xwa,_S0_21
 	push xwa
 	call _message__0
 	lda xsp,(xsp+12)
-	jr L893
-L892:
+	jr L1097
+L1096:
 	ld wa,1
 	push xwa
 	ld wa,0
@@ -3953,18 +5134,19 @@ L892:
 	push xwa
 	call _message__0
 	lda xsp,(xsp+12)
-L893:
-L889:
-L888:
-L883:
+L1097:
+L1093:
+L1092:
+L1087:
+L1082:
 	ld a,(_paused__0)
 	cp a,0
-	jr z,L894
-	jp L872
-L894:
+	jr z,L1098
+	jp L1071
+L1098:
 	ld a,(_state__0)
 	cp a,1
-	jp nz,L895
+	jp nz,L1099
 	ld a,(_state_timer__0)
 	extz wa
 	extz xwa
@@ -3976,13 +5158,13 @@ L894:
 	div xwa,30
 	ld wa,qwa
 	cp wa,0
-	jr nz,L897
+	jr nz,L1101
 	ld a,(xsp+0)
 	cp a,4
-	jr uge,L897
+	jr uge,L1101
 	ld wa,0
 	push xwa
-	ld xwa,_cd__0_L896
+	ld xwa,_cd__0_L1100
 	ld c,(xsp+4)
 	extz bc
 	exts xbc
@@ -3996,15 +5178,15 @@ L894:
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
-L897:
+L1101:
 	incb 1,(_state_timer__0)
 	ld a,(_state_timer__0)
 	cp a,90
-	jr ult,L898
+	jr ult,L1102
 	ldb (_state__0),2
 	ld wa,30
 	push xwa
-	ld xwa,(_cd__0_L896+12)
+	ld xwa,(_cd__0_L1100+12)
 	push xwa
 	call _count_message__0
 	lda xsp,(xsp+8)
@@ -4012,35 +5194,37 @@ L897:
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
-L898:
+L1102:
 	ldb (_ngpc_pad_held),0
 	ldb (_ngpc_pad_pressed),0
-L895:
+L1099:
 	ld a,(_state__0)
 	cp a,2
-	jr z,L900
+	jr z,L1104
 	ld a,(_state__0)
 	cp a,3
-	jr z,L900
+	jr z,L1104
 	ld a,(_state__0)
 	cp a,4
-	jp nz,L899
-L900:
+	jp nz,L1103
+L1104:
 	ld a,(_state__0)
 	cp a,2
-	jr nz,L902
+	jr nz,L1106
 	ld a,(_crash_timer__0)
 	cp a,0
-	jr z,L901
-L902:
+	jr z,L1105
+L1106:
 	ldb (_ngpc_pad_held),0
 	ldb (_ngpc_pad_pressed),0
-L901:
+L1105:
+	ld wa,(_course_pos__0)
+	ld (xsp+2),wa
 	call _drive__0
 	call _advance__0
 	ld a,(_state__0)
 	cp a,2
-	jp nz,L903
+	jp nz,L1107
 	ld xwa,(_score__0)
 	ld c,(_speed__0)
 	extz bc
@@ -4055,37 +5239,37 @@ L901:
 	call _hud_score_add
 	lda xsp,(xsp+4)
 	ld a,(_sec_acc__0)
-	add a,(xsp+12)
+	add a,(xsp+16)
 	ld (_sec_acc__0),a
-	jr L906
-L904:
+	jr L1110
+L1108:
 	ld a,(_sec_acc__0)
 	sub a,60
 	ld (_sec_acc__0),a
 	ld a,(_time_left__0)
 	cp a,0
-	jr z,L907
+	jr z,L1111
 	decb 1,(_time_left__0)
-L907:
+L1111:
 	ld a,(_time_left__0)
 	cp a,0
-	jr z,L908
+	jr z,L1112
 	ld a,(_time_left__0)
 	cp a,10
-	jr ugt,L908
+	jr ugt,L1112
 	ld wa,5
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
-L908:
-L906:
+L1112:
+L1110:
 	ld a,(_sec_acc__0)
 	cp a,60
-	jr uge,L904
-L905:
+	jr uge,L1108
+L1109:
 	ld a,(_time_left__0)
 	cp a,0
-	jr nz,L909
+	jr nz,L1113
 	ldb (_state__0),3
 	ldb (_state_timer__0),0
 	ld wa,0
@@ -4093,7 +5277,7 @@ L905:
 	ld wa,0
 	exts xwa
 	push xwa
-	ld xwa,_S0_21
+	ld xwa,_S0_22
 	push xwa
 	call _message__0
 	lda xsp,(xsp+12)
@@ -4105,8 +5289,8 @@ L905:
 	push xwa
 	call _hud_clear_message
 	lda xsp,(xsp+4)
-L909:
-L903:
+L1113:
+L1107:
 	ld wa,(_course_pos__0)
 	push xwa
 	call _course_fork_zone
@@ -4114,18 +5298,18 @@ L903:
 	ld (xsp+0),a
 	ld a,(xsp+0)
 	cp a,0
-	jp z,L910
+	jp z,L1114
 	call _course_is_last_stage
 	cp a,0
-	jp nz,L910
+	jp nz,L1114
 	ld a,(_last_fork_zone__0)
 	cp a,0
-	jr nz,L911
+	jr nz,L1115
 	ld wa,1
 	push xwa
 	call _scenery_mode
 	lda xsp,(xsp+4)
-	ld xwa,_S0_22
+	ld xwa,_S0_23
 	push xwa
 	ld wa,3
 	push xwa
@@ -4137,22 +5321,22 @@ L903:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-L911:
+L1115:
 	ld a,(_fork_choice)
 	cp a,0
-	jr nz,L912
+	jr nz,L1116
 	ld wa,(_course_pos__0)
 	add wa,850
 	cp wa,(_leg_len)
-	jr ult,L912
+	jr ult,L1116
 	ld bc,(_car_lat__0)
 	cp bc,0
-	jr le,L913
+	jr le,L1117
 	ld wa,1
-	jr L914
-L913:
+	jr L1118
+L1117:
 	ld wa,0
-L914:
+L1118:
 	push xwa
 	call _course_decide
 	lda xsp,(xsp+4)
@@ -4162,8 +5346,8 @@ L914:
 	lda xsp,(xsp+4)
 	ld a,(_fork_choice)
 	cp a,2
-	jr nz,L915
-	ld xwa,_S0_23
+	jr nz,L1119
+	ld xwa,_S0_24
 	push xwa
 	ld wa,3
 	push xwa
@@ -4175,37 +5359,37 @@ L914:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-	jr L916
-L915:
-	ld xwa,_S0_24
-	push xwa
-	ld wa,3
-	push xwa
-	ld wa,1
-	push xwa
-	ld wa,1
-	push xwa
-	ld wa,0
-	push xwa
-	call _ngpc_text_print
-	lda xsp,(xsp+20)
-L916:
-L912:
-	jp L917
-L910:
-	ld a,(xsp+0)
-	cp a,0
-	jr z,L918
-	call _course_is_last_stage
-	cp a,0
-	jr z,L918
-	ld a,(_last_fork_zone__0)
-	cp a,0
-	jr nz,L919
+	jr L1120
+L1119:
 	ld xwa,_S0_25
 	push xwa
 	ld wa,3
 	push xwa
+	ld wa,1
+	push xwa
+	ld wa,1
+	push xwa
+	ld wa,0
+	push xwa
+	call _ngpc_text_print
+	lda xsp,(xsp+20)
+L1120:
+L1116:
+	jp L1121
+L1114:
+	ld a,(xsp+0)
+	cp a,0
+	jr z,L1122
+	call _course_is_last_stage
+	cp a,0
+	jr z,L1122
+	ld a,(_last_fork_zone__0)
+	cp a,0
+	jr nz,L1123
+	ld xwa,_S0_26
+	push xwa
+	ld wa,3
+	push xwa
 	ld wa,5
 	push xwa
 	ld wa,1
@@ -4214,92 +5398,92 @@ L910:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-L919:
+L1123:
 	ld wa,5
 	push xwa
 	call _scenery_mode
 	lda xsp,(xsp+4)
-	jr L920
-L918:
+	jr L1124
+L1122:
 	ld a,(_cur_stage)
 	cp a,0
-	jr nz,L921
+	jr nz,L1125
 	ld wa,(_course_pos__0)
 	cp wa,900
-	jr uge,L921
+	jr uge,L1125
 	ld wa,5
 	push xwa
 	call _scenery_mode
 	lda xsp,(xsp+4)
-	jr L922
-L921:
+	jr L1126
+L1125:
 	ld wa,(_course_pos__0)
 	push xwa
 	call _course_start_zone
 	lda xsp,(xsp+4)
 	cp a,0
-	jr z,L923
+	jr z,L1127
 	ld wa,2
 	push xwa
 	call _scenery_mode
 	lda xsp,(xsp+4)
-	jr L924
-L923:
+	jr L1128
+L1127:
 	call _sharp_ahead__0
-	ld (xsp+1),a
-	ld c,(xsp+1)
+	ld (xsp+4),a
+	ld c,(xsp+4)
 	cp c,0
-	jr le,L925
+	jr le,L1129
 	ld wa,3
-	jr L926
-L925:
-	ld c,(xsp+1)
+	jr L1130
+L1129:
+	ld c,(xsp+4)
 	cp c,0
-	jr ge,L927
+	jr ge,L1131
 	ld wa,4
-	jr L928
-L927:
+	jr L1132
+L1131:
 	ld wa,0
-L928:
-L926:
+L1132:
+L1130:
 	push xwa
 	call _scenery_mode
 	lda xsp,(xsp+4)
-L924:
-L922:
-L920:
-L917:
+L1128:
+L1126:
+L1124:
+L1121:
 	ld a,(xsp+0)
 	ld (_last_fork_zone__0),a
 	ld a,(_goal_reached__0)
 	cp a,0
-	jr nz,L929
+	jr nz,L1133
 	ld wa,(_course_pos__0)
 	cp wa,(_leg_len)
-	jr ult,L929
+	jr ult,L1133
 	ldb (_last_fork_zone__0),0
 	call _leg_end__0
-L929:
+L1133:
 	ld a,(_speed__0)
 	push xwa
 	call _id_scenery_advance
 	lda xsp,(xsp+4)
 	ld a,(_state__0)
 	cp a,2
-	jp nz,L930
+	jp nz,L1134
 	ld a,(_crash_timer__0)
 	cp a,0
-	jp nz,L930
+	jp nz,L1134
 	ld a,(_speed__0)
 	push xwa
 	ld wa,(_car_lat__0)
 	push xwa
 	call _traffic_collide
 	lda xsp,(xsp+8)
-	ld (xsp+1),a
-	ld a,(xsp+1)
+	ld (xsp+4),a
+	ld a,(xsp+4)
 	cp a,0
-	jr nz,L931
+	jp nz,L1135
 	ld wa,147
 	push xwa
 	ld wa,(_car_lat__0)
@@ -4308,58 +5492,99 @@ L929:
 	call _id_scenery_hit
 	lda xsp,(xsp+8)
 	cp a,0
-	jr z,L932
+	jr nz,L1137
+	ld wa,(_car_lat__0)
+	sra 4,wa
+	push xwa
+	ld wa,(_course_pos__0)
+	push xwa
+	ld wa,(xsp+10)
+	push xwa
+	call _bridge_hit
+	lda xsp,(xsp+12)
+	cp a,0
+	jr z,L1136
+L1137:
 	ld a,(_speed__0)
 	cp a,110
-	jr ule,L933
+	jr ule,L1138
 	incb 1,(_dbg_scn)
-	ldb (xsp+1),1
-	jr L934
-L933:
+	ldb (xsp+4),1
+	jr L1139
+L1138:
 	ld wa,48
-	ld (xsp+2),a
+	ld (xsp+5),a
 	ld a,(_speed__0)
 	extz wa
 	sra 1,wa
-	ld (xsp+3),a
-	ld a,(xsp+2)
-	cp a,(xsp+3)
-	jr ule,L935
-	ld a,(xsp+3)
-	ld (xsp+2),a
-L935:
+	ld (xsp+6),a
+	ld a,(xsp+5)
+	cp a,(xsp+6)
+	jr ule,L1140
+	ld a,(xsp+6)
+	ld (xsp+5),a
+L1140:
 	ld c,(_speed__0)
-	cp c,(xsp+2)
-	jr ule,L936
+	cp c,(xsp+5)
+	jr ule,L1141
 	ld a,(_speed__0)
-	sub a,(xsp+2)
+	sub a,(xsp+5)
 	extz wa
-	jr L937
-L936:
+	jr L1142
+L1141:
 	ld wa,0
-L937:
+L1142:
 	ld (_speed__0),a
 	ld wa,4
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
-L934:
-L932:
-L931:
-	ld a,(xsp+1)
+L1139:
+L1136:
+L1135:
+	ld a,(xsp+4)
 	cp a,0
-	jr z,L938
+	jr z,L1143
 	ld a,(_speed__0)
 	cp a,110
-	jr ule,L939
+	jr ule,L1144
 	ldb (_crash_timer__0),90
+	ld a,(_speed__0)
+	cp a,150
+	jr ult,L1145
+	ldb (_roll_t__0),1
+	ld wa,(_dbg_roll_at)
+	cp wa,0
+	jr nz,L1146
+	ld wa,(_dbg_updates)
+	ld (_dbg_roll_at),wa
+L1146:
+	ld bc,(_car_lat__0)
+	cp bc,0
+	jr gt,L1149
+	ld bc,(_car_lat__0)
+	cp bc,0
+	jr nz,L1147
+	ld c,(_g_vb_counter)
+	extz bc
+	and bc,1
+	cp bc,0
+	jr z,L1147
+L1149:
+	ld wa,1
+	jr L1148
+L1147:
+	ld wa,0
+L1148:
+	ld (_roll_dir__0),a
+L1145:
 	incb 1,(_dbg_crashes)
 	ld wa,3
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
-	jr L940
-L939:
+	jr L1150
+L1144:
 	ld a,(_speed__0)
 	extz wa
 	sra 1,wa
@@ -4368,38 +5593,50 @@ L939:
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
-L940:
-L938:
-L930:
+L1150:
+L1143:
+L1134:
+	ld a,(_roll_t__0)
+	cp a,0
+	jr z,L1151
+	incb 1,(_roll_t__0)
+	ld a,(_roll_t__0)
+	cp a,36
+	jr ule,L1152
+	ldb (_roll_t__0),0
+	ldb (_roll_loaded__0),255
+	call _id_car_restore
+L1152:
+L1151:
 	ld a,(_crash_timer__0)
 	cp a,0
-	jr z,L941
+	jr z,L1153
 	decb 1,(_crash_timer__0)
 	ld c,(_speed__0)
 	cp c,12
-	jr ule,L942
+	jr ule,L1154
 	ld a,(_speed__0)
 	sub a,12
 	extz wa
-	jr L943
-L942:
+	jr L1155
+L1154:
 	ld wa,0
-L943:
+L1155:
 	ld (_speed__0),a
 	ld a,(_crash_timer__0)
 	cp a,0
-	jr nz,L944
+	jr nz,L1156
 	ld wa,(_car_lat__0)
 	exts xwa
 	divs xwa,2
 	ld (_car_lat__0),wa
 	ldb (_speed__0),0
 	ldb (_gear__0),0
-L944:
-L941:
+L1156:
+L1153:
 	ld c,(_state__0)
 	cp c,2
-	jr nz,L945
+	jr nz,L1157
 	push xwa
 	ld wa,(_course_pos__0)
 	push xwa
@@ -4408,12 +5645,12 @@ L941:
 	ld xbc,xwa
 	pop xwa
 	cp c,0
-	jr nz,L945
+	jr nz,L1157
 	ld wa,1
-	jr L946
-L945:
+	jr L1158
+L1157:
 	ld wa,0
-L946:
+L1158:
 	push xwa
 	ld a,(_speed__0)
 	push xwa
@@ -4421,27 +5658,27 @@ L946:
 	lda xsp,(xsp+8)
 	ld a,(_state__0)
 	cp a,3
-	jr nz,L947
+	jr nz,L1159
 	incb 1,(_state_timer__0)
 	ld a,(_speed__0)
 	cp a,0
-	jr nz,L948
+	jr nz,L1160
 	ld a,(_state_timer__0)
 	cp a,60
-	jr ule,L948
-	ldb (_state__0),5
+	jr ule,L1160
+	ldb (_state__0),6
 	ldb (_state_timer__0),0
-	call _result_screen__0
-L948:
-	jr L949
-L947:
+	call _map_screen__0
+L1160:
+	jr L1161
+L1159:
 	ld a,(_state__0)
 	cp a,4
-	jr nz,L950
+	jr nz,L1162
 	incb 1,(_state_timer__0)
 	ld a,(_state_timer__0)
 	cp a,1
-	jr nz,L951
+	jr nz,L1163
 	ld xwa,(_score__0)
 	ld c,(_time_left__0)
 	extz bc
@@ -4449,35 +5686,35 @@ L947:
 	add xwa,xbc
 	ld (_score__0),xwa
 	ld izl,0
-	jr L955
-L952:
+	jr L1167
+L1164:
 	ld wa,20000
 	push xwa
 	call _hud_score_add
 	lda xsp,(xsp+4)
-L954:
+L1166:
 	inc 1,izl
-L955:
+L1167:
 	ld a,izl
 	cp a,(_time_left__0)
-	jr ult,L952
-L953:
-L951:
+	jr ult,L1164
+L1165:
+L1163:
 	ld a,(_speed__0)
 	cp a,0
-	jr nz,L956
+	jr nz,L1168
 	ld a,(_state_timer__0)
 	cp a,60
-	jr ule,L956
-	ldb (_state__0),5
+	jr ule,L1168
+	ldb (_state__0),6
 	ldb (_state_timer__0),0
-	call _result_screen__0
-L956:
-L950:
-L949:
-L899:
-L872:
-	lda xsp,(xsp+4)
+	call _map_screen__0
+L1168:
+L1162:
+L1161:
+L1103:
+L1071:
+	lda xsp,(xsp+8)
 	pop xiz
 	ret
 
@@ -4521,7 +5758,7 @@ _main:
 	ld wa,(xsp+0)
 	ld (_pano_tiles_at__0),wa
 	ld wa,(xsp+0)
-	add wa,114
+	add wa,99
 	ld (xsp+0),wa
 	ld wa,0
 	push xwa
@@ -4564,6 +5801,7 @@ _main:
 	lda xsp,(xsp+12)
 	call _smoke_init__0
 	call _banner_init
+	call _bridge_init
 	ld wa,147
 	push xwa
 	call _id_road_half_at
@@ -4591,19 +5829,19 @@ _main:
 	add wa,384
 	ld (_lat_limit__0),wa
 	ldw (xsp+2),65530
-	jr L1007
-L1004:
+	jr L1222
+L1219:
 	ld bc,(xsp+2)
 	cp bc,0
-	jr le,L1008
+	jr le,L1223
 	call _id_road_grade_hi
 	exts wa
-	jr L1009
-L1008:
+	jr L1224
+L1223:
 	call _id_road_grade_lo
 	exts wa
 	neg wa
-L1009:
+L1224:
 	ld (xsp+8),wa
 	ld wa,(xsp+2)
 	mul xwa,(xsp+8)
@@ -4616,13 +5854,13 @@ L1009:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1006:
+L1221:
 	incw 1,(xsp+2)
-L1007:
+L1222:
 	ld wa,(xsp+2)
 	cp wa,6
-	jr le,L1004
-L1005:
+	jr le,L1219
+L1220:
 	ld wa,147
 	push xwa
 	call _traffic_set_car_line
@@ -4639,16 +5877,16 @@ L1005:
 	ld a,(_g_vb_counter)
 	ld (_pace_prev__0),a
 	ld (_clock_prev__0),a
-L1010:
-	jr L1016
-L1014:
+L1225:
+	jr L1231
+L1229:
 	call _ngpc_vsync
-L1016:
+L1231:
 	ld a,(_g_vb_counter)
 	sub a,(_pace_prev__0)
 	cp a,2
-	jr ult,L1014
-L1015:
+	jr ult,L1229
+L1230:
 	ld a,(_g_vb_counter)
 	ld (xsp+8),a
 	ld a,(xsp+8)
@@ -4660,15 +5898,15 @@ L1015:
 	ld (xsp+10),a
 	ld a,(xsp+10)
 	cp a,3
-	jr ule,L1017
+	jr ule,L1232
 	ldb (xsp+10),3
 	ld a,(xsp+8)
 	ld c,(xsp+9)
 	and c,1
 	sub a,c
 	ld (_pace_prev__0),a
-	jr L1018
-L1017:
+	jr L1233
+L1232:
 	ld a,(_pace_prev__0)
 	extz wa
 	ld c,(xsp+10)
@@ -4677,67 +5915,78 @@ L1017:
 	extz bc
 	add wa,bc
 	ld (_pace_prev__0),a
-L1018:
+L1233:
 	call _ngpc_input_update
 	call _audio_update
 	incw 1,(_dbg_updates)
 	ld a,(xsp+8)
 	ld (_clock_prev__0),a
 	ld izl,0
-	jr L1022
-L1019:
+	jr L1237
+L1234:
 	ld wa,2
 	push xwa
 	call _game_tick__0
 	lda xsp,(xsp+4)
 	ld a,izl
 	cp a,0
-	jr nz,L1023
+	jr nz,L1238
 	ldb (_ngpc_pad_pressed),0
-L1023:
-L1021:
+L1238:
+L1236:
 	inc 1,izl
-L1022:
+L1237:
 	ld a,izl
 	cp a,(xsp+10)
-	jr ult,L1019
-L1020:
+	jr ult,L1234
+L1235:
 	ld a,(_state__0)
 	cp a,0
-	jr nz,L1024
+	jr nz,L1239
 	ld a,(_state_timer__0)
 	push xwa
 	call _title_car__0
 	lda xsp,(xsp+4)
 	call _player_engine_off
-	jp L1012
-L1024:
+	jp L1227
+L1239:
+	ld a,(_state__0)
+	cp a,6
+	jr nz,L1240
+	call _map_car__0
+	call _player_engine_off
+	jp L1227
+L1240:
 	call _render_road__0
 	call _tick_flash__0
 	call _tick_message__0
 	ld a,(_state__0)
 	cp a,0
-	jr z,L1025
+	jr z,L1241
 	ld a,(_state__0)
 	cp a,5
-	jr z,L1025
+	jr z,L1241
+	ld wa,(_course_pos__0)
+	push xwa
+	call _bridge_draw
+	lda xsp,(xsp+4)
 	call _id_scenery_draw
 	call _traffic_draw
-L1025:
+L1241:
 	ld a,(_state__0)
 	cp a,1
-	jr z,L1027
+	jr z,L1243
 	ld a,(_state__0)
 	cp a,2
-	jr nz,L1026
+	jr nz,L1242
 	ld a,(_cur_stage)
 	cp a,0
-	jr nz,L1026
+	jr nz,L1242
 	ld wa,(_course_pos__0)
 	cp wa,220
-	jr uge,L1026
-L1027:
-	ld xwa,_S0_30
+	jr uge,L1242
+L1243:
+	ld xwa,_S0_31
 	push xwa
 	ld wa,0
 	push xwa
@@ -4747,27 +5996,27 @@ L1027:
 	push xwa
 	call _banner_show
 	lda xsp,(xsp+12)
-	jr L1028
-L1026:
+	jr L1244
+L1242:
 	ld a,(_state__0)
 	cp a,2
-	jr z,L1030
+	jr z,L1246
 	ld a,(_state__0)
 	cp a,4
-	jr z,L1030
+	jr z,L1246
 	ld a,(_state__0)
 	cp a,3
-	jr nz,L1029
-L1030:
+	jr nz,L1245
+L1246:
 	call _course_is_last_stage
 	cp a,0
-	jr z,L1029
+	jr z,L1245
 	ld wa,(_course_pos__0)
 	ld bc,(_leg_len)
 	sub bc,1400
 	cp wa,bc
-	jr le,L1029
-	ld xwa,_S0_31
+	jr le,L1245
+	ld xwa,_S0_32
 	push xwa
 	ld wa,1
 	push xwa
@@ -4777,33 +6026,33 @@ L1030:
 	push xwa
 	call _banner_show
 	lda xsp,(xsp+12)
-	jr L1031
-L1029:
+	jr L1247
+L1245:
 	call _banner_hide
-L1031:
-L1028:
+L1247:
+L1244:
 	ld a,(_state__0)
 	cp a,5
-	jr nz,L1032
+	jr nz,L1248
 	ld a,(_goal_reached__0)
 	cp a,0
-	jr z,L1032
+	jr z,L1248
 	call _trophy_draw__0
 	call _ending_tick
-L1032:
+L1248:
 	ld a,(_state__0)
 	cp a,2
-	jr z,L1034
+	jr z,L1250
 	ld a,(_state__0)
 	cp a,1
-	jr z,L1034
+	jr z,L1250
 	ld a,(_state__0)
 	cp a,3
-	jr z,L1034
+	jr z,L1250
 	ld a,(_state__0)
 	cp a,4
-	jr nz,L1033
-L1034:
+	jr nz,L1249
+L1250:
 	ld wa,(_course_pos__0)
 	extz xwa
 	ld bc,(_leg_len)
@@ -4818,21 +6067,21 @@ L1034:
 	push xwa
 	ld c,(_gear__0)
 	cp c,0
-	jr nz,L1035
+	jr nz,L1251
 	ld c,(_speed__0)
 	cp c,123
-	jr ult,L1035
+	jr ult,L1251
 	ld c,(_g_vb_counter)
 	extz bc
 	and bc,8
 	cp bc,0
-	jr z,L1035
+	jr z,L1251
 	ld wa,2
-	jr L1036
-L1035:
+	jr L1252
+L1251:
 	ld a,(_gear__0)
 	extz wa
-L1036:
+L1252:
 	push xwa
 	ld a,(_speed__0)
 	extz wa
@@ -4843,46 +6092,52 @@ L1036:
 	push xwa
 	call _hud_race
 	lda xsp,(xsp+20)
-L1033:
+L1249:
+	ld a,(_roll_t__0)
+	cp a,0
+	jr z,L1253
+	call _roll_draw__0
+	jr L1254
+L1253:
 	ld a,(_crash_timer__0)
 	cp a,0
-	jr z,L1037
+	jr z,L1255
 	ld a,(_crash_timer__0)
 	extz wa
 	and wa,2
 	cp wa,0
-	jr z,L1037
+	jr z,L1255
 	ld wa,2
 	push xwa
 	ld c,(_crash_timer__0)
 	extz bc
 	and bc,4
 	cp bc,0
-	jr z,L1038
+	jr z,L1256
 	ld wa,1
-	jr L1039
-L1038:
+	jr L1257
+L1256:
 	ld wa,65535
-L1039:
+L1257:
 	push xwa
 	ld wa,(_car_lat__0)
 	sra 4,wa
 	push xwa
 	call _id_car_draw
 	lda xsp,(xsp+12)
-	jr L1040
-L1037:
+	jr L1258
+L1255:
 	ld c,(_offroad__0)
 	cp c,0
-	jr z,L1041
+	jr z,L1259
 	ld c,(_speed__0)
 	cp c,20
-	jr ule,L1041
+	jr ule,L1259
 	ld wa,1
-	jr L1042
-L1041:
+	jr L1260
+L1259:
 	ld wa,0
-L1042:
+L1260:
 	push xwa
 	ld a,(_car_lean__0)
 	push xwa
@@ -4891,55 +6146,56 @@ L1042:
 	push xwa
 	call _id_car_draw
 	lda xsp,(xsp+12)
-L1040:
+L1258:
+L1254:
 	ld c,(_skid__0)
 	cp c,0
-	jr z,L1043
+	jr z,L1261
 	ld c,(_crash_timer__0)
 	cp c,0
-	jr nz,L1043
+	jr nz,L1261
 	ld c,(_state__0)
 	cp c,2
-	jr nz,L1043
+	jr nz,L1261
 	ld wa,1
-	jr L1044
-L1043:
+	jr L1262
+L1261:
 	ld wa,0
-L1044:
+L1262:
 	push xwa
 	call _smoke_draw__0
 	lda xsp,(xsp+4)
 	ld a,(_offroad__0)
 	cp a,0
-	jr z,L1045
+	jr z,L1263
 	ld a,(_state__0)
 	cp a,2
-	jr nz,L1045
+	jr nz,L1263
 	incb 1,(_dbg_off)
-L1045:
+L1263:
 	ld a,(_state__0)
 	cp a,2
-	jr z,L1047
+	jr z,L1265
 	ld a,(_state__0)
 	cp a,1
-	jr z,L1047
+	jr z,L1265
 	ld a,(_state__0)
 	cp a,3
-	jr z,L1047
+	jr z,L1265
 	ld a,(_state__0)
 	cp a,4
-	jr nz,L1046
-L1047:
+	jr nz,L1264
+L1265:
 	call _engine_sound__0
-	jr L1048
-L1046:
+	jr L1266
+L1264:
 	call _player_engine_off
-L1048:
-L1012:
-L1013:
-	jp L1010
-L1011:
-L1003:
+L1266:
+L1227:
+L1228:
+	jp L1225
+L1226:
+L1218:
 	lda xsp,(xsp+14)
 	pop xiz
 	ret
@@ -4947,17 +6203,17 @@ L1003:
 ; function player_engine
 _player_engine:
 	ld wa,(xsp+4)
-	ld (_eng_div__9),wa
+	ld (_eng_div__10),wa
 	ld a,(xsp+8)
-	ld (_eng_attn__9),a
-	ldb (_eng_on__9),1
-L1050:
+	ld (_eng_attn__10),a
+	ldb (_eng_on__10),1
+L1268:
 	ret
 
 ; function player_engine_off
 _player_engine_off:
-	ldb (_eng_on__9),0
-L1052:
+	ldb (_eng_on__10),0
+L1270:
 	ret
 
 ; function player_init
@@ -4968,9 +6224,9 @@ _player_init:
 	ld xix,xwa
 	ldw (0B8h),43690
 	ld izl,0
-	jr L1066
-L1063:
-	ld xwa,_z80drv__9
+	jr L1284
+L1281:
+	ld xwa,_z80drv__10
 	ld c,izl
 	extz bc
 	exts xbc
@@ -4982,19 +6238,19 @@ L1063:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1065:
+L1283:
 	inc 1,izl
-L1066:
+L1284:
 	ld a,izl
 	cp a,65
-	jr ult,L1063
-L1064:
+	jr ult,L1281
+L1282:
 	ldw (0B8h),21845
 	ld izl,0
-	jr L1070
-L1067:
+	jr L1288
+L1285:
 	ld wa,0
-	ld xbc,_want_div__9
+	ld xbc,_want_div__10
 	ld e,izl
 	extz de
 	exts xde
@@ -5002,14 +6258,14 @@ L1067:
 	add xbc,xde
 	ld (xbc),wa
 	ld a,15
-	ld xbc,_want_attn__9
+	ld xbc,_want_attn__10
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld wa,65535
-	ld xbc,_sent_div__9
+	ld xbc,_sent_div__10
 	ld e,izl
 	extz de
 	exts xde
@@ -5017,37 +6273,37 @@ L1067:
 	add xbc,xde
 	ld (xbc),wa
 	ld a,255
-	ld xbc,_sent_attn__9
+	ld xbc,_sent_attn__10
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,0
-	ld xbc,_sfx_frames__9
+	ld xbc,_sfx_frames__10
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,0
-	ld xbc,_voice__9
+	ld xbc,_voice__10
 	ld e,izl
 	extz de
 	muls xde,18
 	add xbc,xde
 	ld (xbc+15),a
-L1069:
+L1287:
 	inc 1,izl
-L1070:
+L1288:
 	ld a,izl
 	cp a,4
-	jr ult,L1067
-L1068:
-	ldb (_playing__9),0
+	jr ult,L1285
+L1286:
+	ldb (_playing__10),0
 	ld a,(_g_vb_counter)
-	ld (_last_vbl__9),a
-L1062:
+	ld (_last_vbl__10),a
+L1280:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -5065,8 +6321,8 @@ _player_start:
 	ld xwa,(xsp+38)
 	ld (xsp+12),xwa
 	ld izl,0
-	jp L1080
-L1077:
+	jp L1298
+L1295:
 	lda xwa,(xsp+0)
 	ld c,izl
 	extz bc
@@ -5074,7 +6330,7 @@ L1077:
 	sll 2,xbc
 	add xwa,xbc
 	ld xwa,(xwa)
-	ld xbc,_voice__9
+	ld xbc,_voice__10
 	ld e,izl
 	extz de
 	muls xde,18
@@ -5087,65 +6343,65 @@ L1077:
 	sll 2,xbc
 	add xwa,xbc
 	ld xwa,(xwa)
-	ld xbc,_voice__9
+	ld xbc,_voice__10
 	ld e,izl
 	extz de
 	muls xde,18
 	add xbc,xde
 	ld (xbc+4),xwa
 	ld wa,0
-	ld xbc,_voice__9
+	ld xbc,_voice__10
 	ld e,izl
 	extz de
 	muls xde,18
 	add xbc,xde
 	ld (xbc+8),wa
 	ld a,2
-	ld xbc,_voice__9
+	ld xbc,_voice__10
 	ld e,izl
 	extz de
 	muls xde,18
 	add xbc,xde
 	ld (xbc+13),a
 	ld a,0
-	ld xbc,_voice__9
+	ld xbc,_voice__10
 	ld e,izl
 	extz de
 	muls xde,18
 	add xbc,xde
 	ld (xbc+14),a
 	ld a,0
-	ld xbc,_voice__9
+	ld xbc,_voice__10
 	ld e,izl
 	extz de
 	muls xde,18
 	add xbc,xde
 	ld (xbc+15),a
 	ld a,0
-	ld xbc,_voice__9
+	ld xbc,_voice__10
 	ld e,izl
 	extz de
 	muls xde,18
 	add xbc,xde
 	ld (xbc+12),a
 	ld a,0
-	ld xbc,_voice__9
+	ld xbc,_voice__10
 	ld e,izl
 	extz de
 	muls xde,18
 	add xbc,xde
 	ld (xbc+16),a
-L1079:
+L1297:
 	inc 1,izl
-L1080:
+L1298:
 	ld a,izl
 	cp a,4
-	jp ult,L1077
-L1078:
-	ldb (_playing__9),1
+	jp ult,L1295
+L1296:
+	ldb (_playing__10),1
 	ld a,(_g_vb_counter)
-	ld (_last_vbl__9),a
-L1076:
+	ld (_last_vbl__10),a
+L1294:
 	lda xsp,(xsp+18)
 	pop xiz
 	ret
@@ -5154,38 +6410,38 @@ L1076:
 _player_stop:
 	push xiz
 	lda xsp,(xsp-2)
-	ldb (_playing__9),0
+	ldb (_playing__10),0
 	ld izl,0
-	jr L1090
-L1087:
+	jr L1308
+L1305:
 	ld a,0
-	ld xbc,_voice__9
+	ld xbc,_voice__10
 	ld e,izl
 	extz de
 	muls xde,18
 	add xbc,xde
 	ld (xbc+15),a
-L1089:
+L1307:
 	inc 1,izl
-L1090:
+L1308:
 	ld a,izl
 	cp a,4
-	jr ult,L1087
-L1088:
-L1086:
+	jr ult,L1305
+L1306:
+L1304:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
 
 ; function voice_events
-_voice_events__9:
+_voice_events__10:
 	push xiz
 	lda xsp,(xsp-2)
 	ld xiz,(xsp+10)
 	ld wa,0
 	ld (xsp+0),a
-	jp L1107
-L1105:
+	jp L1325
+L1323:
 	ld xwa,(xiz)
 	inc 1,xwa
 	ld (xiz),xwa
@@ -5195,25 +6451,25 @@ L1105:
 	incb 1,(xsp+0)
 	ld a,ixl
 	cp a,0
-	jr nz,L1108
+	jr nz,L1326
 	ld xwa,(xiz+4)
 	ld (xiz),xwa
-	jp L1107
-L1108:
+	jp L1325
+L1326:
 	ld a,ixl
 	cp a,240
-	jr nz,L1109
+	jr nz,L1327
 	ld xwa,(xiz)
 	inc 1,xwa
 	ld (xiz),xwa
 	dec 1,xwa
 	ld a,(xwa)
 	ld (xiz+13),a
-	jp L1107
-L1109:
+	jp L1325
+L1327:
 	ld a,ixl
 	cp a,244
-	jr nz,L1110
+	jr nz,L1328
 	ld xwa,(xiz)
 	inc 1,xwa
 	ld (xiz),xwa
@@ -5222,14 +6478,14 @@ L1109:
 	ld (xiz+14),a
 	ld a,(xiz+14)
 	cp a,17
-	jr ule,L1111
+	jr ule,L1329
 	ldb (xiz+14),0
-L1111:
-	jr L1107
-L1110:
+L1329:
+	jr L1325
+L1328:
 	ld a,ixl
 	cp a,255
-	jr nz,L1112
+	jr nz,L1330
 	ld xwa,(xiz)
 	inc 1,xwa
 	ld (xiz),xwa
@@ -5238,16 +6494,16 @@ L1110:
 	extz wa
 	ld (xiz+8),wa
 	ldb (xiz+15),0
-	jr L1107
-L1112:
+	jr L1325
+L1330:
 	ld a,ixl
 	cp a,240
-	jr ult,L1113
+	jr ult,L1331
 	ld xwa,(xiz)
 	inc 1,xwa
 	ld (xiz),xwa
-	jr L1107
-L1113:
+	jr L1325
+L1331:
 	ld xwa,(xiz)
 	inc 1,xwa
 	ld (xiz),xwa
@@ -5259,15 +6515,15 @@ L1113:
 	ldb (xiz+12),0
 	ld a,(xsp+14)
 	cp a,3
-	jr nz,L1114
+	jr nz,L1332
 	ld a,ixl
 	extz wa
 	sub wa,1
 	and wa,7
 	ld (xiz+10),wa
 	ldb (xiz+16),1
-	jr L1115
-L1114:
+	jr L1333
+L1332:
 	push xix
 	ld a,ixl
 	push xwa
@@ -5275,17 +6531,17 @@ L1114:
 	lda xsp,(xsp+4)
 	pop xix
 	ld (xiz+10),wa
-L1115:
-L1107:
+L1333:
+L1325:
 	ld wa,(xiz+8)
 	cp wa,0
-	jr nz,L1116
+	jr nz,L1334
 	ld a,(xsp+0)
 	cp a,32
-	jp ult,L1105
-L1116:
-L1106:
-L1104:
+	jp ult,L1323
+L1334:
+L1324:
+L1322:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -5299,9 +6555,9 @@ _note_div:
 	ld izl,a
 	ld a,izl
 	cp a,50
-	jr ule,L1120
+	jr ule,L1338
 	ld izl,50
-L1120:
+L1338:
 	ld xwa,_NOTE_TABLE
 	ld c,izl
 	extz bc
@@ -5323,14 +6579,14 @@ L1120:
 	extz bc
 	and bc,15
 	or wa,bc
-	jr L1119
-L1119:
+	jr L1337
+L1337:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
 
 ; function flush
-_flush__9:
+_flush__10:
 	push xiz
 	lda xsp,(xsp-10)
 	ld wa,0
@@ -5339,13 +6595,13 @@ _flush__9:
 	ld xiy,xwa
 	ld a,(07003h)
 	cp a,0
-	jr z,L1137
-	jp L1136
-L1137:
+	jr z,L1355
+	jp L1354
+L1355:
 	ld izl,0
-	jp L1141
-L1138:
-	ld xwa,_want_div__9
+	jp L1359
+L1356:
+	ld xwa,_want_div__10
 	ld c,izl
 	extz bc
 	exts xbc
@@ -5353,7 +6609,7 @@ L1138:
 	add xwa,xbc
 	ld wa,(xwa)
 	ld ix,wa
-	ld xwa,_want_attn__9
+	ld xwa,_want_attn__10
 	ld c,izl
 	extz bc
 	exts xbc
@@ -5362,9 +6618,9 @@ L1138:
 	ld (xsp+8),a
 	ld a,izl
 	cp a,3
-	jr uge,L1142
+	jr uge,L1360
 	ld wa,ix
-	ld xbc,_sent_div__9
+	ld xbc,_sent_div__10
 	ld e,izl
 	extz de
 	exts xde
@@ -5372,18 +6628,18 @@ L1138:
 	add xbc,xde
 	ld bc,(xbc)
 	cp wa,bc
-	jr nz,L1143
+	jr nz,L1361
 	ld a,(xsp+8)
-	ld xbc,_sent_attn__9
+	ld xbc,_sent_attn__10
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jr nz,L1143
-	jp L1140
-L1143:
+	jr nz,L1361
+	jp L1358
+L1361:
 	ld a,128
 	ld c,izl
 	sll 5,c
@@ -5404,26 +6660,26 @@ L1143:
 	and c,15
 	or a,c
 	ld (xiy+2),a
-	jr L1144
-L1142:
-	ld a,(_noise_trig__9)
+	jr L1362
+L1360:
+	ld a,(_noise_trig__10)
 	cp a,0
-	jr nz,L1145
+	jr nz,L1363
 	ld wa,ix
-	cp wa,(_sent_div__9+6)
-	jr nz,L1145
+	cp wa,(_sent_div__10+6)
+	jr nz,L1363
 	ld a,(xsp+8)
-	cp a,(_sent_attn__9+3)
-	jr nz,L1145
-	jp L1140
-L1145:
-	ld a,(_noise_trig__9)
+	cp a,(_sent_attn__10+3)
+	jr nz,L1363
+	jp L1358
+L1363:
+	ld a,(_noise_trig__10)
 	cp a,0
-	jr nz,L1147
+	jr nz,L1365
 	ld wa,ix
-	cp wa,(_sent_div__9+6)
-	jr z,L1146
-L1147:
+	cp wa,(_sent_div__10+6)
+	jr z,L1364
+L1365:
 	ld a,224
 	ld c,ixl
 	and c,7
@@ -5434,8 +6690,8 @@ L1147:
 	and c,7
 	or a,c
 	ld (xiy+1),a
-	jr L1148
-L1146:
+	jr L1366
+L1364:
 	ld a,240
 	ld c,(xsp+8)
 	and c,15
@@ -5446,16 +6702,16 @@ L1146:
 	and c,15
 	or a,c
 	ld (xiy+1),a
-L1148:
+L1366:
 	ld a,240
 	ld c,(xsp+8)
 	and c,15
 	or a,c
 	ld (xiy+2),a
-	ldb (_noise_trig__9),0
-L1144:
+	ldb (_noise_trig__10),0
+L1362:
 	ld wa,ix
-	ld xbc,_sent_div__9
+	ld xbc,_sent_div__10
 	ld e,izl
 	extz de
 	exts xde
@@ -5463,7 +6719,7 @@ L1144:
 	add xbc,xde
 	ld (xbc),wa
 	ld a,(xsp+8)
-	ld xbc,_sent_attn__9
+	ld xbc,_sent_attn__10
 	ld e,izl
 	extz de
 	exts xde
@@ -5475,24 +6731,24 @@ L1144:
 	add xwa,xbc
 	ld xiy,xwa
 	incb 1,(xsp+0)
-L1140:
+L1358:
 	inc 1,izl
-L1141:
+L1359:
 	ld a,izl
 	cp a,4
-	jr uge,L1149
+	jr uge,L1367
 	ld a,(xsp+0)
 	cp a,5
-	jp ult,L1138
-L1149:
-L1139:
+	jp ult,L1356
+L1367:
+L1357:
 	ld a,(xsp+0)
 	cp a,0
-	jr z,L1150
+	jr z,L1368
 	ld a,(xsp+0)
 	ld (07003h),a
-L1150:
-L1136:
+L1368:
+L1354:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -5504,21 +6760,21 @@ _player_update:
 	ld a,(_g_vb_counter)
 	ld (xsp+0),a
 	ld a,(xsp+0)
-	sub a,(_last_vbl__9)
+	sub a,(_last_vbl__10)
 	ld iyl,a
 	ld a,(xsp+0)
-	ld (_last_vbl__9),a
+	ld (_last_vbl__10),a
 	ld a,iyl
 	cp a,8
-	jr ule,L1173
+	jr ule,L1391
 	ld iyl,8
-L1173:
+L1391:
 	ld izl,0
-	jp L1177
-L1174:
+	jp L1395
+L1392:
 	ld wa,15
 	ld (xsp+3),a
-	ld xwa,_want_div__9
+	ld xwa,_want_div__10
 	ld c,izl
 	extz bc
 	exts xbc
@@ -5526,10 +6782,10 @@ L1174:
 	add xwa,xbc
 	ld wa,(xwa)
 	ld (xsp+4),wa
-	ld a,(_playing__9)
+	ld a,(_playing__10)
 	cp a,0
-	jp z,L1178
-	ld xwa,_voice__9
+	jp z,L1396
+	ld xwa,_voice__10
 	ld c,izl
 	extz bc
 	muls xbc,18
@@ -5540,14 +6796,14 @@ L1174:
 	ld c,iyl
 	extz bc
 	cp wa,bc
-	jr ule,L1179
+	jr ule,L1397
 	ld wa,(xix+8)
 	ld c,iyl
 	extz bc
 	sub wa,bc
 	ld (xix+8),wa
-	jr L1180
-L1179:
+	jr L1398
+L1397:
 	ldw (xix+8),0
 	push xix
 	push xiy
@@ -5555,22 +6811,22 @@ L1179:
 	push xwa
 	ld xwa,xix
 	push xwa
-	call _voice_events__9
+	call _voice_events__10
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L1180:
+L1398:
 	ld a,(xix+12)
 	cp a,250
-	jr uge,L1181
+	jr uge,L1399
 	ld a,(xix+12)
 	add a,iyl
 	ld (xix+12),a
-L1181:
+L1399:
 	ld a,(xix+15)
 	cp a,0
-	jr z,L1182
-	ld xwa,_inst_tab__9
+	jr z,L1400
+	ld xwa,_inst_tab__10
 	ld c,(xix+14)
 	extz bc
 	exts xbc
@@ -5590,67 +6846,67 @@ L1181:
 	ld xbc,(xsp+10)
 	ld c,(xbc+1)
 	cp a,c
-	jr ule,L1183
+	jr ule,L1401
 	ld xwa,(xsp+10)
 	ld a,(xwa+1)
 	ld (xsp+14),a
-L1183:
+L1401:
 	ld a,(xix+13)
 	add a,(xsp+14)
 	ld (xsp+3),a
 	ld a,(xsp+3)
 	cp a,15
-	jr ule,L1184
+	jr ule,L1402
 	ldb (xsp+3),15
-L1184:
+L1402:
 	ld wa,(xix+10)
 	ld (xsp+4),wa
 	ld a,izl
 	cp a,3
-	jr nz,L1185
+	jr nz,L1403
 	ld a,(xix+16)
 	cp a,0
-	jr z,L1185
+	jr z,L1403
 	ldb (xix+16),0
-	ldb (_noise_trig__9),1
-L1185:
-L1182:
-L1178:
+	ldb (_noise_trig__10),1
+L1403:
+L1400:
+L1396:
 	ld a,izl
 	cp a,2
-	jr nz,L1186
-	ld a,(_eng_on__9)
+	jr nz,L1404
+	ld a,(_eng_on__10)
 	cp a,0
-	jr z,L1186
-	ld wa,(_eng_div__9)
+	jr z,L1404
+	ld wa,(_eng_div__10)
 	ld (xsp+4),wa
-	ld a,(_eng_attn__9)
+	ld a,(_eng_attn__10)
 	ld (xsp+3),a
-L1186:
-	ld xwa,_sfx_frames__9
+L1404:
+	ld xwa,_sfx_frames__10
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jp z,L1187
-	ld xwa,_sfx_attn__9
+	jp z,L1405
+	ld xwa,_sfx_attn__10
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	ld (xsp+6),a
-	ld xwa,_sfx_decay__9
+	ld xwa,_sfx_decay__10
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L1188
-	ld xwa,_sfx_age__9
+	jr z,L1406
+	ld xwa,_sfx_age__10
 	ld c,izl
 	extz bc
 	exts xbc
@@ -5658,7 +6914,7 @@ L1186:
 	ld a,(xwa)
 	extz wa
 	exts xwa
-	ld xbc,_sfx_decay__9
+	ld xbc,_sfx_decay__10
 	ld e,izl
 	extz de
 	exts xde
@@ -5672,13 +6928,13 @@ L1186:
 	ld (xsp+6),a
 	ld a,(xsp+6)
 	cp a,15
-	jr ule,L1189
+	jr ule,L1407
 	ldb (xsp+6),15
-L1189:
-L1188:
+L1407:
+L1406:
 	ld a,(xsp+6)
 	ld (xsp+3),a
-	ld xwa,_sfx_div__9
+	ld xwa,_sfx_div__10
 	ld c,izl
 	extz bc
 	exts xbc
@@ -5686,14 +6942,14 @@ L1188:
 	add xwa,xbc
 	ld wa,(xwa)
 	ld (xsp+4),wa
-	ld xwa,_sfx_div__9
+	ld xwa,_sfx_div__10
 	ld c,izl
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld xbc,_sfx_step__9
+	ld xbc,_sfx_step__10
 	ld e,izl
 	extz de
 	exts xde
@@ -5704,44 +6960,44 @@ L1188:
 	extz de
 	mul xbc,de
 	add wa,bc
-	ld xbc,_sfx_div__9
+	ld xbc,_sfx_div__10
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	ld xwa,_sfx_age__9
+	ld xwa,_sfx_age__10
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,250
-	jr uge,L1190
-	ld xwa,_sfx_age__9
+	jr uge,L1408
+	ld xwa,_sfx_age__10
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	add a,iyl
-	ld xbc,_sfx_age__9
+	ld xbc,_sfx_age__10
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1190:
-	ld xbc,_sfx_frames__9
+L1408:
+	ld xbc,_sfx_frames__10
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld c,(xbc)
 	cp c,iyl
-	jr ule,L1191
-	ld xwa,_sfx_frames__9
+	jr ule,L1409
+	ld xwa,_sfx_frames__10
 	ld c,izl
 	extz bc
 	exts xbc
@@ -5749,19 +7005,19 @@ L1190:
 	ld a,(xwa)
 	sub a,iyl
 	extz wa
-	jr L1192
-L1191:
+	jr L1410
+L1409:
 	ld wa,0
-L1192:
-	ld xbc,_sfx_frames__9
+L1410:
+	ld xbc,_sfx_frames__10
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1187:
+L1405:
 	ld wa,(xsp+4)
-	ld xbc,_want_div__9
+	ld xbc,_want_div__10
 	ld e,izl
 	extz de
 	exts xde
@@ -5769,25 +7025,25 @@ L1187:
 	add xbc,xde
 	ld (xbc),wa
 	ld a,(xsp+3)
-	ld xbc,_want_attn__9
+	ld xbc,_want_attn__10
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1176:
+L1394:
 	inc 1,izl
-L1177:
+L1395:
 	ld a,izl
 	cp a,4
-	jp ult,L1174
-L1175:
+	jp ult,L1392
+L1393:
 	push xix
 	push xiy
-	call _flush__9
+	call _flush__10
 	pop xiy
 	pop xix
-L1172:
+L1390:
 	lda xsp,(xsp+16)
 	pop xiz
 	ret
@@ -5798,7 +7054,7 @@ _player_sfx_tone:
 	ld a,(xsp+8)
 	ld izl,a
 	ld wa,(xsp+12)
-	ld xbc,_sfx_div__9
+	ld xbc,_sfx_div__10
 	ld e,izl
 	extz de
 	exts xde
@@ -5806,41 +7062,41 @@ _player_sfx_tone:
 	add xbc,xde
 	ld (xbc),wa
 	ld a,(xsp+16)
-	ld xbc,_sfx_step__9
+	ld xbc,_sfx_step__10
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,(xsp+20)
-	ld xbc,_sfx_attn__9
+	ld xbc,_sfx_attn__10
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,(xsp+24)
-	ld xbc,_sfx_frames__9
+	ld xbc,_sfx_frames__10
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,(xsp+28)
-	ld xbc,_sfx_decay__9
+	ld xbc,_sfx_decay__10
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,0
-	ld xbc,_sfx_age__9
+	ld xbc,_sfx_age__10
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1194:
+L1412:
 	pop xiz
 	ret
 
@@ -5848,17 +7104,17 @@ L1194:
 _player_sfx_noise:
 	ld a,(xsp+4)
 	extz wa
-	ld (_sfx_div__9+6),wa
-	ldb (_sfx_step__9+3),0
+	ld (_sfx_div__10+6),wa
+	ldb (_sfx_step__10+3),0
 	ld a,(xsp+8)
-	ld (_sfx_attn__9+3),a
+	ld (_sfx_attn__10+3),a
 	ld a,(xsp+12)
-	ld (_sfx_frames__9+3),a
+	ld (_sfx_frames__10+3),a
 	ld a,(xsp+16)
-	ld (_sfx_decay__9+3),a
-	ldb (_sfx_age__9+3),0
-	ldb (_noise_trig__9),1
-L1196:
+	ld (_sfx_decay__10+3),a
+	ldb (_sfx_age__10+3),0
+	ldb (_noise_trig__10),1
+L1414:
 	ret
 
 ; function banner_init
@@ -5868,8 +7124,8 @@ _banner_init:
 	ld xwa,41520
 	ld xix,xwa
 	ld izl,0
-	jr L1206
-L1203:
+	jr L1424
+L1421:
 	ld xwa,_gfx_banner_tiles
 	ld c,izl
 	extz bc
@@ -5884,13 +7140,13 @@ L1203:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1205:
+L1423:
 	inc 1,izl
-L1206:
+L1424:
 	ld a,izl
 	cp a,40
-	jr ult,L1203
-L1204:
+	jr ult,L1421
+L1422:
 	push xix
 	ld wa,2
 	push xwa
@@ -5903,9 +7159,9 @@ L1204:
 	call _id_road_distance_at_line
 	lda xsp,(xsp+4)
 	pop xix
-	ld (_car_d__10),wa
-	ldb (_b_on__10),0
-L1202:
+	ld (_car_d__11),wa
+	ldb (_b_on__11),0
+L1420:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -5917,12 +7173,12 @@ _banner_style:
 	ld izl,a
 	ld a,izl
 	cp a,4
-	jr ult,L1210
+	jr ult,L1428
 	ld izl,0
-L1210:
+L1428:
 	ld wa,4095
 	push xwa
-	ld xwa,_b_band__10
+	ld xwa,_b_band__11
 	ld c,izl
 	extz bc
 	exts xbc
@@ -5930,7 +7186,7 @@ L1210:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	ld xwa,_b_edge__10
+	ld xwa,_b_edge__11
 	ld c,izl
 	extz bc
 	exts xbc
@@ -5946,7 +7202,7 @@ L1210:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-	ld xwa,_b_text__10
+	ld xwa,_b_text__11
 	ld c,izl
 	extz bc
 	exts xbc
@@ -5956,7 +7212,7 @@ L1210:
 	push xwa
 	ld wa,2730
 	push xwa
-	ld xwa,_b_shad__10
+	ld xwa,_b_shad__11
 	ld c,izl
 	extz bc
 	exts xbc
@@ -5972,27 +7228,27 @@ L1210:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-L1209:
+L1427:
 	pop xiz
 	ret
 
 ; function erase
-_erase__10:
+_erase__11:
 	push xiz
 	lda xsp,(xsp-2)
-	ld a,(_b_on__10)
+	ld a,(_b_on__11)
 	cp a,0
-	jr nz,L1222
-	jr L1221
-L1222:
-	ld a,(_b_r0__10)
+	jr nz,L1440
+	jr L1439
+L1440:
+	ld a,(_b_r0__11)
 	ld ixl,a
-	jr L1226
-L1223:
-	ld a,(_b_c0__10)
+	jr L1444
+L1441:
+	ld a,(_b_c0__11)
 	ld izl,a
-	jr L1230
-L1227:
+	jr L1448
+L1445:
 	ld wa,0
 	ld xbc,36864
 	ld e,ixl
@@ -6005,54 +7261,54 @@ L1227:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1229:
+L1447:
 	inc 1,izl
-L1230:
+L1448:
 	ld a,izl
-	cp a,(_b_c1__10)
-	jr ule,L1227
-L1228:
-L1225:
+	cp a,(_b_c1__11)
+	jr ule,L1445
+L1446:
+L1443:
 	inc 1,ixl
-L1226:
+L1444:
 	ld a,ixl
-	cp a,(_b_foot__10)
-	jr ule,L1223
-L1224:
-	ldb (_b_on__10),0
-L1221:
+	cp a,(_b_foot__11)
+	jr ule,L1441
+L1442:
+	ldb (_b_on__11),0
+L1439:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
 
 ; function banner_hide
 _banner_hide:
-	call _erase__10
-	ld a,(_b_spr__10)
+	call _erase__11
+	ld a,(_b_spr__11)
 	cp a,0
-	jr z,L1234
+	jr z,L1452
 	ld a,64
 	push xwa
 	ld a,58
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-	ldb (_b_spr__10),0
-L1234:
-L1233:
+	ldb (_b_spr__11),0
+L1452:
+L1451:
 	ret
 
 ; function banner_dirty
 _banner_dirty:
-	ldb (_b_r0__10),255
-L1236:
+	ldb (_b_r0__11),255
+L1454:
 	ret
 
 ; function banner_active
 _banner_active:
-	ld a,(_b_on__10)
-	jr L1238
-L1238:
+	ld a,(_b_on__11)
+	jr L1456
+L1456:
 	ret
 
 ; function banner_show
@@ -6061,22 +7317,22 @@ _banner_show:
 	lda xsp,(xsp-46)
 	ld wa,(xsp+54)
 	cp wa,0
-	jr lt,L1293
+	jr lt,L1511
 	ld wa,(xsp+54)
 	cp wa,1400
-	jr le,L1292
-L1293:
+	jr le,L1510
+L1511:
 	push xix
 	push xiy
 	call _banner_hide
 	pop xiy
 	pop xix
-	jp L1291
-L1292:
+	jp L1509
+L1510:
 	push xix
 	push xiy
 	ld wa,(xsp+62)
-	add wa,(_car_d__10)
+	add wa,(_car_d__11)
 	push xwa
 	call _id_road_line_at_distance
 	lda xsp,(xsp+4)
@@ -6085,14 +7341,14 @@ L1292:
 	ld (xsp+6),a
 	ld a,(xsp+6)
 	cp a,255
-	jr nz,L1294
+	jr nz,L1512
 	push xix
 	push xiy
 	call _banner_hide
 	pop xiy
 	pop xix
-	jp L1291
-L1294:
+	jp L1509
+L1512:
 	push xix
 	push xiy
 	lda xwa,(xsp+8)
@@ -6120,18 +7376,18 @@ L1294:
 	ld (xsp+16),wa
 	ld wa,(xsp+16)
 	cp wa,16
-	jr lt,L1296
+	jr lt,L1514
 	ld wa,(xsp+18)
 	cp wa,151
-	jr le,L1295
-L1296:
+	jr le,L1513
+L1514:
 	push xix
 	push xiy
 	call _banner_hide
 	pop xiy
 	pop xix
-	jp L1291
-L1295:
+	jp L1509
+L1513:
 	ld wa,(xsp+0)
 	sub wa,(xsp+24)
 	sub wa,4
@@ -6148,120 +7404,120 @@ L1295:
 	ld iyl,a
 	ld a,iyl
 	cp a,(xsp+7)
-	jr uge,L1297
+	jr uge,L1515
 	ld a,(xsp+7)
 	ld iyl,a
-L1297:
+L1515:
 	ld wa,(xsp+2)
 	sra 3,wa
 	ld (xsp+11),a
 	ld a,(xsp+11)
 	cp a,18
-	jr ule,L1298
+	jr ule,L1516
 	ldb (xsp+11),18
-L1298:
+L1516:
 	ld bc,(xsp+20)
 	cp bc,0
-	jr ge,L1299
+	jr ge,L1517
 	ld wa,0
-	jr L1300
-L1299:
+	jr L1518
+L1517:
 	ld bc,(xsp+20)
 	sra 3,bc
 	cp bc,19
-	jr le,L1301
+	jr le,L1519
 	ld wa,19
-	jr L1302
-L1301:
+	jr L1520
+L1519:
 	ld wa,(xsp+20)
 	sra 3,wa
-L1302:
-L1300:
+L1520:
+L1518:
 	ld (xsp+9),a
 	ld bc,(xsp+22)
 	cp bc,0
-	jr ge,L1303
+	jr ge,L1521
 	ld wa,0
-	jr L1304
-L1303:
+	jr L1522
+L1521:
 	ld bc,(xsp+22)
 	sra 3,bc
 	cp bc,19
-	jr le,L1305
+	jr le,L1523
 	ld wa,19
-	jr L1306
-L1305:
+	jr L1524
+L1523:
 	ld wa,(xsp+22)
 	sra 3,wa
-L1306:
-L1304:
+L1524:
+L1522:
 	ld (xsp+10),a
-	ld a,(_b_on__10)
+	ld a,(_b_on__11)
 	cp a,0
-	jr z,L1308
+	jr z,L1526
 	ld a,(xsp+7)
-	cp a,(_b_r0__10)
-	jr nz,L1308
+	cp a,(_b_r0__11)
+	jr nz,L1526
 	ld a,iyl
-	cp a,(_b_r1__10)
-	jr nz,L1308
+	cp a,(_b_r1__11)
+	jr nz,L1526
 	ld a,(xsp+9)
-	cp a,(_b_c0__10)
-	jr nz,L1308
+	cp a,(_b_c0__11)
+	jr nz,L1526
 	ld a,(xsp+10)
-	cp a,(_b_c1__10)
-	jr nz,L1308
+	cp a,(_b_c1__11)
+	jr nz,L1526
 	ld a,(xsp+11)
-	cp a,(_b_foot__10)
-	jp z,L1307
-L1308:
+	cp a,(_b_foot__11)
+	jp z,L1525
+L1526:
 	push xix
 	push xiy
-	call _erase__10
+	call _erase__11
 	pop xiy
 	pop xix
 	ld a,(xsp+7)
 	ld izl,a
-	jp L1312
-L1309:
+	jp L1530
+L1527:
 	ld a,(xsp+9)
 	ld ixl,a
-	jr L1316
-L1313:
+	jr L1534
+L1531:
 	ld wa,36
 	ld (xsp+26),wa
 	ld a,(xsp+58)
 	cp a,0
-	jr z,L1317
+	jr z,L1535
 	ld a,ixl
 	cp a,(xsp+9)
-	jr z,L1318
+	jr z,L1536
 	ld a,ixl
 	cp a,(xsp+10)
-	jr nz,L1317
-L1318:
+	jr nz,L1535
+L1536:
 	ldw (xsp+26),42
-	jr L1319
-L1317:
+	jr L1537
+L1535:
 	ld a,izl
 	cp a,(xsp+7)
-	jr nz,L1320
+	jr nz,L1538
 	ld a,iyl
 	cp a,(xsp+7)
-	jr ule,L1320
+	jr ule,L1538
 	ldw (xsp+26),35
-	jr L1321
-L1320:
+	jr L1539
+L1538:
 	ld a,izl
 	cp a,iyl
-	jr nz,L1322
+	jr nz,L1540
 	ld a,iyl
 	cp a,(xsp+7)
-	jr ule,L1322
+	jr ule,L1540
 	ldw (xsp+26),37
-L1322:
-L1321:
-L1319:
+L1540:
+L1539:
+L1537:
 	ld wa,(xsp+26)
 	or wa,5120
 	ld xbc,36864
@@ -6275,28 +7531,28 @@ L1319:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1315:
+L1533:
 	inc 1,ixl
-L1316:
+L1534:
 	ld a,ixl
 	cp a,(xsp+10)
-	jr ule,L1313
-L1314:
-L1311:
+	jr ule,L1531
+L1532:
+L1529:
 	inc 1,izl
-L1312:
+L1530:
 	ld a,izl
 	cp a,iyl
-	jp ule,L1309
-L1310:
+	jp ule,L1527
+L1528:
 	ld a,iyl
 	add a,1
 	ld izl,a
-	jr L1326
-L1323:
+	jr L1544
+L1541:
 	ld wa,(xsp+20)
 	cp wa,0
-	jr lt,L1327
+	jr lt,L1545
 	ld wa,5158
 	ld xbc,36864
 	ld e,izl
@@ -6309,10 +7565,10 @@ L1323:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1327:
+L1545:
 	ld wa,(xsp+22)
 	cp wa,160
-	jr ge,L1328
+	jr ge,L1546
 	ld wa,5158
 	ld xbc,36864
 	ld e,izl
@@ -6325,31 +7581,31 @@ L1327:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1328:
-L1325:
+L1546:
+L1543:
 	inc 1,izl
-L1326:
+L1544:
 	ld a,izl
 	cp a,(xsp+11)
-	jr ule,L1323
-L1324:
-	ldb (_b_on__10),1
+	jr ule,L1541
+L1542:
+	ldb (_b_on__11),1
 	ld a,(xsp+7)
-	ld (_b_r0__10),a
+	ld (_b_r0__11),a
 	ld a,iyl
-	ld (_b_r1__10),a
+	ld (_b_r1__11),a
 	ld a,(xsp+9)
-	ld (_b_c0__10),a
+	ld (_b_c0__11),a
 	ld a,(xsp+10)
-	ld (_b_c1__10),a
+	ld (_b_c1__11),a
 	ld a,(xsp+11)
-	ld (_b_foot__10),a
-L1307:
+	ld (_b_foot__11),a
+L1525:
 	ldb (xsp+14),0
-	jr L1331
-L1329:
+	jr L1549
+L1547:
 	incb 1,(xsp+14)
-L1331:
+L1549:
 	ld xwa,(xsp+62)
 	ld c,(xsp+14)
 	extz bc
@@ -6357,12 +7613,12 @@ L1331:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L1332
+	jr z,L1550
 	ld a,(xsp+14)
 	cp a,6
-	jr ult,L1329
-L1332:
-L1330:
+	jr ult,L1547
+L1550:
+L1548:
 	ld wa,2
 	mul xwa,(xsp+24)
 	add wa,8
@@ -6370,9 +7626,9 @@ L1330:
 	extz bc
 	sll 3,bc
 	cp wa,bc
-	jr ge,L1333
+	jr ge,L1551
 	ldb (xsp+14),0
-L1333:
+L1551:
 	ld wa,8
 	ld bc,(xsp+24)
 	sra 4,bc
@@ -6403,8 +7659,8 @@ L1333:
 	sub wa,4
 	ld (xsp+30),a
 	ldb (xsp+15),0
-	jp L1337
-L1334:
+	jp L1555
+L1552:
 	ld wa,(xsp+28)
 	ld bc,(xsp+26)
 	ld e,(xsp+15)
@@ -6417,11 +7673,11 @@ L1334:
 	ld (xsp+34),a
 	ld wa,(xsp+32)
 	cp wa,65529
-	jr lt,L1339
+	jr lt,L1557
 	ld wa,(xsp+32)
 	cp wa,159
-	jr le,L1338
-L1339:
+	jr le,L1556
+L1557:
 	push xix
 	push xiy
 	ld a,(xsp+42)
@@ -6433,9 +7689,9 @@ L1339:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-	jp L1336
-L1338:
-L1340:
+	jp L1554
+L1556:
+L1558:
 	ld a,(xsp+34)
 	ld (xsp+35),a
 	ld a,(xsp+32)
@@ -6491,15 +7747,15 @@ L1340:
 	add bc,de
 	extz xbc
 	ld (xbc),a
-L1342:
-L1341:
-L1336:
+L1560:
+L1559:
+L1554:
 	incb 1,(xsp+15)
-L1337:
+L1555:
 	ld a,(xsp+15)
 	cp a,(xsp+14)
-	jp ult,L1334
-L1335:
+	jp ult,L1552
+L1553:
 	push xix
 	push xiy
 	ld a,64
@@ -6511,59 +7767,1275 @@ L1335:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-	ldb (_b_spr__10),1
-L1291:
+	ldb (_b_spr__11),1
+L1509:
 	lda xsp,(xsp+46)
 	pop xiz
 	ret
 
+; function bridge_init
+_bridge_init:
+	push xiz
+	lda xsp,(xsp-6)
+	ld xwa,41984
+	ld xix,xwa
+	ld izl,0
+	jr L1574
+L1571:
+	ld xwa,_gfx_bridge_tiles
+	ld c,izl
+	extz bc
+	exts xbc
+	sll 1,xbc
+	add xwa,xbc
+	ld wa,(xwa)
+	ld xbc,xix
+	ld e,izl
+	extz de
+	exts xde
+	sll 1,xde
+	add xbc,xde
+	ld (xbc),wa
+L1573:
+	inc 1,izl
+L1574:
+	ld a,izl
+	cp a,8
+	jr ult,L1571
+L1572:
+	ld xwa,42416
+	ld xix,xwa
+	ld izl,0
+	jr L1578
+L1575:
+	ld xwa,_gfx_bridge_tiles
+	ld bc,8
+	ld e,izl
+	extz de
+	add bc,de
+	extz xbc
+	sll 1,xbc
+	add xwa,xbc
+	ld wa,(xwa)
+	ld xbc,xix
+	ld e,izl
+	extz de
+	exts xde
+	sll 1,xde
+	add xbc,xde
+	ld (xbc),wa
+L1577:
+	inc 1,izl
+L1578:
+	ld a,izl
+	cp a,40
+	jr ult,L1575
+L1576:
+	push xix
+	ld wa,147
+	push xwa
+	call _id_road_distance_at_line
+	lda xsp,(xsp+4)
+	pop xix
+	ld (_car_d__12),wa
+L1570:
+	lda xsp,(xsp+6)
+	pop xiz
+	ret
+
+; function clear_box
+_clear_box__12:
+	push xiz
+	lda xsp,(xsp-6)
+	ld a,(_bb_r0__12)
+	cp a,255
+	jr nz,L1590
+	jr L1589
+L1590:
+	ld a,(_bb_r0__12)
+	ld ixl,a
+	jr L1594
+L1591:
+	ld xwa,36864
+	ld c,ixl
+	extz bc
+	sll 5,bc
+	ld e,(_bb_c0__12)
+	extz de
+	add bc,de
+	extz xbc
+	sll 1,xbc
+	add xwa,xbc
+	lda xwa,(xwa)
+	ld xiy,xwa
+	ld a,(_bb_c0__12)
+	ld izl,a
+	jr L1598
+L1595:
+	ld wa,0
+	ld xbc,xiy
+	inc 2,xbc
+	ld xiy,xbc
+	dec 2,xbc
+	ld (xbc),wa
+L1597:
+	inc 1,izl
+L1598:
+	ld a,izl
+	cp a,(_bb_c1__12)
+	jr ule,L1595
+L1596:
+L1593:
+	inc 1,ixl
+L1594:
+	ld a,ixl
+	cp a,(_bb_r1__12)
+	jr ule,L1591
+L1592:
+	ldb (_bb_r0__12),255
+L1589:
+	lda xsp,(xsp+6)
+	pop xiz
+	ret
+
+; function bridge_hide
+_bridge_hide:
+	call _clear_box__12
+	ldw (_sig_prev__12),65535
+	ldb (_bridge_line),0
+L1600:
+	ret
+
+; function bridge_setup
+_bridge_setup:
+	push xiz
+	lda xsp,(xsp-22)
+	ld wa,0
+	ld (xsp+0),wa
+	ld wa,0
+	ld (xsp+2),wa
+	ld wa,0
+	ld ix,wa
+	ld wa,0
+	ld (xsp+6),wa
+	ld wa,0
+	ld (xsp+8),wa
+	ld wa,1200
+	ld (xsp+10),wa
+	ld wa,(_leg_len)
+	sub wa,2400
+	sub wa,300
+	ld (xsp+12),wa
+	push xix
+	push xiy
+	call _bridge_hide
+	pop xiy
+	pop xix
+	push xix
+	push xiy
+	ld wa,3020
+	push xwa
+	ld wa,1912
+	push xwa
+	ld wa,802
+	push xwa
+	ld wa,0
+	push xwa
+	ld wa,11
+	push xwa
+	ld wa,0
+	push xwa
+	call _ngpc_gfx_set_palette
+	lda xsp,(xsp+24)
+	pop xiy
+	pop xix
+	ldb (_br_n__12),0
+	ld xwa,_gfx_themes
+	ld xbc,_leg_theme
+	ld e,(_cur_leg)
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	extz bc
+	muls xbc,20
+	add xwa,xbc
+	ld a,(xwa+19)
+	cp a,0
+	jr nz,L1622
+	jp L1621
+L1622:
+	ld izl,0
+	jp L1626
+L1623:
+	ld xwa,(_track_seg)
+	ld c,izl
+	extz bc
+	muls xbc,6
+	add xwa,xbc
+	lda xwa,(xwa)
+	ld xiy,xwa
+	ld bc,(xiy+2)
+	cp bc,0
+	jr ge,L1627
+	ld wa,(xiy+2)
+	neg wa
+	jr L1628
+L1627:
+	ld wa,(xiy+2)
+L1628:
+	ld (xsp+20),wa
+	ld wa,(xsp+20)
+	cp wa,32
+	jr gt,L1629
+	ld a,(xiy+4)
+	cp a,0
+	jr nz,L1629
+	ld wa,(xsp+0)
+	cp wa,(xsp+10)
+	jr ult,L1629
+	ld wa,ix
+	cp wa,0
+	jr nz,L1630
+	ld wa,(xsp+0)
+	ld (xsp+2),wa
+L1630:
+	ld wa,ix
+	add wa,(xiy)
+	ld ix,wa
+	ld wa,(xsp+2)
+	add wa,ix
+	cp wa,(xsp+12)
+	jr ule,L1631
+	ld wa,(xsp+12)
+	sub wa,(xsp+2)
+	ld ix,wa
+L1631:
+	ld wa,ix
+	cp wa,(xsp+8)
+	jr ule,L1632
+	ld wa,ix
+	ld (xsp+8),wa
+	ld wa,(xsp+2)
+	ld (xsp+6),wa
+L1632:
+	jr L1633
+L1629:
+	ld ix,0
+L1633:
+	ld wa,(xsp+0)
+	add wa,(xiy)
+	ld (xsp+0),wa
+L1625:
+	inc 1,izl
+L1626:
+	ld a,izl
+	cp a,(_track_len)
+	jr uge,L1634
+	ld wa,(xsp+0)
+	cp wa,(xsp+12)
+	jp ult,L1623
+L1634:
+L1624:
+	ld wa,(xsp+8)
+	cp wa,700
+	jr uge,L1635
+	jr L1621
+L1635:
+	ld wa,(xsp+8)
+	sub wa,300
+	extz xwa
+	div xwa,280
+	add wa,1
+	ld (_br_n__12),a
+	ld a,(_br_n__12)
+	cp a,4
+	jr ule,L1636
+	ldb (_br_n__12),4
+L1636:
+	ld izl,0
+	jr L1640
+L1637:
+	ld wa,(xsp+6)
+	add wa,200
+	ld c,izl
+	extz bc
+	mul xbc,280
+	add wa,bc
+	ld xbc,_br_at__12
+	ld e,izl
+	extz de
+	exts xde
+	sll 1,xde
+	add xbc,xde
+	ld (xbc),wa
+L1639:
+	inc 1,izl
+L1640:
+	ld a,izl
+	cp a,(_br_n__12)
+	jr ult,L1637
+L1638:
+L1621:
+	lda xsp,(xsp+22)
+	pop xiz
+	ret
+
+; function clamp_col
+_clamp_col__12:
+	push xiz
+	ld iz,(xsp+8)
+	ld wa,iz
+	cp wa,0
+	jr ge,L1645
+	ld wa,0
+	jr L1644
+L1645:
+	ld wa,iz
+	cp wa,159
+	jr le,L1646
+	ld wa,19
+	jr L1644
+L1646:
+	ld wa,iz
+	sra 3,wa
+	jr L1644
+L1644:
+	pop xiz
+	ret
+
+; function bridge_draw
+_bridge_draw:
+	push xiz
+	lda xsp,(xsp-64)
+	ld wa,0
+	ld (xsp+2),wa
+	ld wa,0
+	ld iyl,a
+	ldb (_bridge_line),0
+	ld a,(_br_n__12)
+	cp a,0
+	jr nz,L1715
+	jp L1714
+L1715:
+	ldb (xsp+0),0
+	jp L1719
+L1716:
+	ld xwa,_br_at__12
+	ld c,(xsp+0)
+	extz bc
+	exts xbc
+	sll 1,xbc
+	add xwa,xbc
+	ld wa,(xwa)
+	sub wa,(xsp+72)
+	ld (xsp+42),wa
+	ld wa,(xsp+42)
+	cp wa,0
+	jr le,L1721
+	ld wa,(xsp+42)
+	cp wa,1450
+	jr le,L1720
+L1721:
+	jp L1718
+L1720:
+	push xix
+	push xiy
+	ld wa,(xsp+50)
+	add wa,(_car_d__12)
+	push xwa
+	call _id_road_line_at_distance
+	lda xsp,(xsp+4)
+	pop xiy
+	pop xix
+	ld (xsp+50),a
+	ld a,(xsp+50)
+	cp a,255
+	jr nz,L1722
+	jp L1718
+L1722:
+	push xix
+	push xiy
+	lda xwa,(xsp+52)
+	push xwa
+	ld a,(xsp+62)
+	push xwa
+	call _id_road_sprite_sample
+	lda xsp,(xsp+8)
+	pop xiy
+	pop xix
+	ld a,(xsp+48)
+	extz wa
+	ld (xsp+52),wa
+	ld a,(xsp+48)
+	extz wa
+	ld c,(xsp+48)
+	extz bc
+	extz xbc
+	div xbc,6
+	add wa,bc
+	add wa,3
+	ld (xsp+54),wa
+	ld a,(xsp+48)
+	extz wa
+	extz xwa
+	div xwa,3
+	add wa,3
+	ld (xsp+56),wa
+	ld wa,(xsp+46)
+	ld (xsp+62),wa
+	ld wa,(xsp+62)
+	cp wa,151
+	jr le,L1723
+	ldw (xsp+62),151
+L1723:
+	ld wa,(xsp+62)
+	sub wa,(xsp+52)
+	ld bc,(xsp+52)
+	sra 3,bc
+	sub wa,bc
+	ld (xsp+60),wa
+	ld wa,(xsp+60)
+	sub wa,(xsp+56)
+	ld (xsp+58),wa
+	ld wa,(xsp+60)
+	cp wa,20
+	jr ge,L1724
+	jp L1718
+L1724:
+	ld a,(_bridge_line)
+	cp a,0
+	jr nz,L1725
+	ld a,(xsp+62)
+	ld (_bridge_line),a
+L1725:
+	ld bc,(xsp+58)
+	cp bc,16
+	jr ge,L1726
+	ld wa,2
+	jr L1727
+L1726:
+	ld wa,(xsp+58)
+	sra 3,wa
+	extz wa
+L1727:
+	lda xbc,(xsp+5)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	ld wa,(xsp+60)
+	sra 3,wa
+	lda xbc,(xsp+9)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	lda xwa,(xsp+9)
+	ld c,iyl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	lda xbc,(xsp+5)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	cp a,c
+	jr uge,L1728
+	lda xwa,(xsp+5)
+	ld c,iyl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	lda xbc,(xsp+9)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+L1728:
+	ld wa,(xsp+62)
+	sra 3,wa
+	lda xbc,(xsp+13)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	lda xwa,(xsp+13)
+	ld c,iyl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	cp a,18
+	jr ule,L1729
+	ld a,18
+	lda xbc,(xsp+13)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+L1729:
+	ld bc,(xsp+44)
+	sub bc,(xsp+54)
+	sub bc,1
+	cp bc,0
+	jr lt,L1730
+	ld wa,1
+	jr L1731
+L1730:
+	ld wa,0
+L1731:
+	lda xbc,(xsp+33)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	ld bc,(xsp+44)
+	add bc,(xsp+54)
+	cp bc,159
+	jr gt,L1732
+	ld wa,1
+	jr L1733
+L1732:
+	ld wa,0
+L1733:
+	lda xbc,(xsp+37)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	push xix
+	push xiy
+	ld wa,(xsp+52)
+	sub wa,(xsp+62)
+	sub wa,(xsp+64)
+	push xwa
+	call _clamp_col__12
+	lda xsp,(xsp+4)
+	pop xiy
+	pop xix
+	lda xbc,(xsp+17)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	push xix
+	push xiy
+	ld wa,(xsp+52)
+	sub wa,(xsp+62)
+	sub wa,1
+	push xwa
+	call _clamp_col__12
+	lda xsp,(xsp+4)
+	pop xiy
+	pop xix
+	lda xbc,(xsp+21)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	push xix
+	push xiy
+	ld wa,(xsp+52)
+	add wa,(xsp+62)
+	push xwa
+	call _clamp_col__12
+	lda xsp,(xsp+4)
+	pop xiy
+	pop xix
+	lda xbc,(xsp+25)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	push xix
+	push xiy
+	ld wa,(xsp+52)
+	add wa,(xsp+62)
+	add wa,(xsp+64)
+	push xwa
+	call _clamp_col__12
+	lda xsp,(xsp+4)
+	pop xiy
+	pop xix
+	lda xbc,(xsp+29)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld (xbc),a
+	ld wa,(xsp+2)
+	mul xwa,31
+	lda xbc,(xsp+5)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	extz bc
+	add wa,bc
+	lda xbc,(xsp+9)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	extz bc
+	sll 5,bc
+	add wa,bc
+	lda xbc,(xsp+17)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	extz bc
+	sll 9,bc
+	add wa,bc
+	lda xbc,(xsp+29)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	extz bc
+	sll 3,bc
+	add wa,bc
+	lda xbc,(xsp+13)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	extz bc
+	add wa,bc
+	lda xbc,(xsp+21)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	extz bc
+	add wa,bc
+	lda xbc,(xsp+25)
+	ld e,iyl
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	extz bc
+	add wa,bc
+	ld (xsp+2),wa
+	inc 1,iyl
+L1718:
+	incb 1,(xsp+0)
+L1719:
+	ld a,(xsp+0)
+	ld c,(_br_n__12)
+	cp a,c
+	jp lt,L1716
+L1717:
+	ld a,iyl
+	cp a,0
+	jr nz,L1734
+	ld a,(_bb_r0__12)
+	cp a,255
+	jr z,L1735
+	push xix
+	push xiy
+	call _bridge_hide
+	pop xiy
+	pop xix
+L1735:
+	jp L1714
+L1734:
+	ld wa,(xsp+2)
+	ld c,iyl
+	extz bc
+	add wa,bc
+	ld (xsp+2),wa
+	ld wa,(xsp+2)
+	cp wa,(_sig_prev__12)
+	jr nz,L1736
+	jp L1714
+L1736:
+	ld wa,(xsp+2)
+	ld (_sig_prev__12),wa
+	push xix
+	push xiy
+	call _clear_box__12
+	pop xiy
+	pop xix
+	jp L1739
+L1737:
+	ld a,iyl
+	sub a,1
+	ld izl,a
+	dec 1,iyl
+	lda xwa,(xsp+5)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	ld (xsp+43),a
+	jp L1743
+L1740:
+	ld c,(xsp+43)
+	lda xde,(xsp+9)
+	ld l,izl
+	extz hl
+	exts xhl
+	add xde,xhl
+	ld e,(xde)
+	cp c,e
+	jr nz,L1744
+	lda xbc,(xsp+9)
+	ld e,izl
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	lda xde,(xsp+5)
+	ld l,izl
+	extz hl
+	exts xhl
+	add xde,xhl
+	ld e,(xde)
+	cp c,e
+	jr ule,L1744
+	ld wa,92
+	jr L1745
+L1744:
+	ld c,(xsp+43)
+	lda xde,(xsp+5)
+	ld l,izl
+	extz hl
+	exts xhl
+	add xde,xhl
+	ld e,(xde)
+	cp c,e
+	jr nz,L1746
+	ld wa,64
+	jr L1747
+L1746:
+	ld wa,91
+L1747:
+L1745:
+	ld (xsp+44),wa
+	ld xwa,36864
+	ld c,(xsp+43)
+	extz bc
+	sll 5,bc
+	lda xde,(xsp+17)
+	ld l,izl
+	extz hl
+	exts xhl
+	add xde,xhl
+	ld e,(xde)
+	extz de
+	add bc,de
+	extz xbc
+	sll 1,xbc
+	add xwa,xbc
+	lda xwa,(xwa)
+	ld (xsp+46),xwa
+	lda xwa,(xsp+9)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	lda xbc,(xsp+5)
+	ld e,izl
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	cp a,c
+	jr nz,L1748
+	ldw (xsp+44),92
+L1748:
+	lda xwa,(xsp+17)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	ld ixl,a
+	jr L1752
+L1749:
+	ld wa,(xsp+44)
+	or wa,5632
+	ld xbc,(xsp+46)
+	inc 2,xbc
+	ld (xsp+46),xbc
+	dec 2,xbc
+	ld (xbc),wa
+L1751:
+	inc 1,ixl
+L1752:
+	ld a,ixl
+	lda xbc,(xsp+29)
+	ld e,izl
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	cp a,c
+	jr ule,L1749
+L1750:
+L1742:
+	incb 1,(xsp+43)
+L1743:
+	ld a,(xsp+43)
+	lda xbc,(xsp+9)
+	ld e,izl
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	cp a,c
+	jp ule,L1740
+L1741:
+	lda xwa,(xsp+9)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	add a,1
+	ld (xsp+43),a
+	jp L1756
+L1753:
+	lda xwa,(xsp+33)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	cp a,0
+	jp z,L1757
+	lda xwa,(xsp+17)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	ld ixl,a
+	jp L1761
+L1758:
+	ld c,ixl
+	lda xde,(xsp+21)
+	ld l,izl
+	extz hl
+	exts xhl
+	add xde,xhl
+	ld e,(xde)
+	cp c,e
+	jr nz,L1762
+	ld wa,95
+	jr L1763
+L1762:
+	ld c,ixl
+	lda xde,(xsp+17)
+	ld l,izl
+	extz hl
+	exts xhl
+	add xde,xhl
+	ld e,(xde)
+	cp c,e
+	jr nz,L1764
+	lda xbc,(xsp+21)
+	ld e,izl
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	lda xde,(xsp+17)
+	ld l,izl
+	extz hl
+	exts xhl
+	add xde,xhl
+	ld e,(xde)
+	cp c,e
+	jr ule,L1764
+	ld wa,94
+	jr L1765
+L1764:
+	ld wa,93
+L1765:
+L1763:
+	ld (xsp+44),wa
+	ld wa,(xsp+44)
+	or wa,5632
+	ld xbc,36864
+	ld e,(xsp+43)
+	extz de
+	sll 5,de
+	ld l,ixl
+	extz hl
+	add de,hl
+	extz xde
+	sll 1,xde
+	add xbc,xde
+	ld (xbc),wa
+L1760:
+	inc 1,ixl
+L1761:
+	ld a,ixl
+	lda xbc,(xsp+21)
+	ld e,izl
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	cp a,c
+	jp ule,L1758
+L1759:
+L1757:
+	lda xwa,(xsp+37)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	cp a,0
+	jp z,L1766
+	lda xwa,(xsp+25)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	ld ixl,a
+	jp L1770
+L1767:
+	ld c,ixl
+	lda xde,(xsp+25)
+	ld l,izl
+	extz hl
+	exts xhl
+	add xde,xhl
+	ld e,(xde)
+	cp c,e
+	jr nz,L1771
+	ld wa,94
+	jr L1772
+L1771:
+	ld c,ixl
+	lda xde,(xsp+29)
+	ld l,izl
+	extz hl
+	exts xhl
+	add xde,xhl
+	ld e,(xde)
+	cp c,e
+	jr nz,L1773
+	lda xbc,(xsp+29)
+	ld e,izl
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	lda xde,(xsp+25)
+	ld l,izl
+	extz hl
+	exts xhl
+	add xde,xhl
+	ld e,(xde)
+	cp c,e
+	jr ule,L1773
+	ld wa,95
+	jr L1774
+L1773:
+	ld wa,93
+L1774:
+L1772:
+	ld (xsp+44),wa
+	ld wa,(xsp+44)
+	or wa,5632
+	ld xbc,36864
+	ld e,(xsp+43)
+	extz de
+	sll 5,de
+	ld l,ixl
+	extz hl
+	add de,hl
+	extz xde
+	sll 1,xde
+	add xbc,xde
+	ld (xbc),wa
+L1769:
+	inc 1,ixl
+L1770:
+	ld a,ixl
+	lda xbc,(xsp+29)
+	ld e,izl
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	cp a,c
+	jp ule,L1767
+L1768:
+L1766:
+L1755:
+	incb 1,(xsp+43)
+L1756:
+	ld a,(xsp+43)
+	lda xbc,(xsp+13)
+	ld e,izl
+	extz de
+	exts xde
+	add xbc,xde
+	ld c,(xbc)
+	cp a,c
+	jp ule,L1753
+L1754:
+	ld a,(_bb_r0__12)
+	cp a,255
+	jr nz,L1775
+	lda xwa,(xsp+5)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	ld (_bb_r0__12),a
+	lda xwa,(xsp+13)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	ld (_bb_r1__12),a
+	lda xwa,(xsp+17)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	ld (_bb_c0__12),a
+	lda xwa,(xsp+29)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	ld (_bb_c1__12),a
+	jp L1776
+L1775:
+	lda xwa,(xsp+5)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	cp a,(_bb_r0__12)
+	jr uge,L1777
+	lda xwa,(xsp+5)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	ld (_bb_r0__12),a
+L1777:
+	lda xwa,(xsp+13)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	cp a,(_bb_r1__12)
+	jr ule,L1778
+	lda xwa,(xsp+13)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	ld (_bb_r1__12),a
+L1778:
+	lda xwa,(xsp+17)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	cp a,(_bb_c0__12)
+	jr uge,L1779
+	lda xwa,(xsp+17)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	ld (_bb_c0__12),a
+L1779:
+	lda xwa,(xsp+29)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	cp a,(_bb_c1__12)
+	jr ule,L1780
+	lda xwa,(xsp+29)
+	ld c,izl
+	extz bc
+	exts xbc
+	add xwa,xbc
+	ld a,(xwa)
+	ld (_bb_c1__12),a
+L1780:
+L1776:
+L1739:
+	ld a,iyl
+	cp a,0
+	jp ugt,L1737
+L1738:
+L1714:
+	lda xsp,(xsp+64)
+	pop xiz
+	ret
+
+; function bridge_hit
+_bridge_hit:
+	push xiz
+	lda xsp,(xsp-4)
+	ld ix,(xsp+20)
+	push xix
+	push xiy
+	ld wa,147
+	push xwa
+	call _id_road_half_at
+	lda xsp,(xsp+4)
+	pop xiy
+	pop xix
+	ld (xsp+1),a
+	ld a,(xsp+1)
+	extz wa
+	ld c,(xsp+1)
+	extz bc
+	extz xbc
+	div xbc,6
+	add wa,bc
+	add wa,3
+	ld iy,wa
+	ld wa,ix
+	cp wa,0
+	jr ge,L1789
+	ld wa,ix
+	neg wa
+	ld ix,wa
+L1789:
+	ld izl,0
+	jr L1793
+L1790:
+	ld wa,(xsp+12)
+	ld xbc,_br_at__12
+	ld e,izl
+	extz de
+	exts xde
+	sll 1,xde
+	add xbc,xde
+	ld bc,(xbc)
+	cp wa,bc
+	jr uge,L1794
+	ld wa,(xsp+16)
+	ld xbc,_br_at__12
+	ld e,izl
+	extz de
+	exts xde
+	sll 1,xde
+	add xbc,xde
+	ld bc,(xbc)
+	cp wa,bc
+	jr ult,L1794
+	ld wa,ix
+	add wa,14
+	cp wa,iy
+	jr le,L1794
+	ld wa,1
+	jr L1788
+L1794:
+L1792:
+	inc 1,izl
+L1793:
+	ld a,izl
+	cp a,(_br_n__12)
+	jr ult,L1790
+L1791:
+	ld wa,0
+	jr L1788
+L1788:
+	lda xsp,(xsp+4)
+	pop xiz
+	ret
+
 ; function slot_offset
-_slot_offset__11:
+_slot_offset__13:
 	push xiz
 	lda xsp,(xsp-4)
 	ld a,(xsp+12)
 	ld izl,a
-	ld xwa,(_s_offset__11)
+	ld xwa,(_s_offset__13)
 	ld (xsp+0),xwa
 	ld a,izl
 	cp a,32
-	jr ult,L1346
+	jr ult,L1798
 	ld xwa,(xsp+0)
 	sub xwa,8192
 	ld (xsp+0),xwa
 	ld a,izl
 	sub a,32
 	ld izl,a
-L1346:
+L1798:
 	ld xwa,(xsp+0)
 	ld c,izl
 	extz bc
 	extz xbc
 	sll 8,xbc
 	add xwa,xbc
-	jr L1345
-L1345:
+	jr L1797
+L1797:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
 
 ; function slot_ptr
-_slot_ptr__11:
+_slot_ptr__13:
 	ld xwa,2097152
 	push xwa
 	ld a,(xsp+8)
 	push xwa
-	call _slot_offset__11
+	call _slot_offset__13
 	lda xsp,(xsp+4)
 	ld xbc,xwa
 	pop xwa
 	add xwa,xbc
-	jr L1348
-L1348:
+	jr L1800
+L1800:
 	ret
 
 ; function crc_byte
-_crc_byte__11:
+_crc_byte__13:
 	push xiz
 	lda xsp,(xsp-2)
 	ld iz,(xsp+10)
@@ -6574,127 +9046,127 @@ _crc_byte__11:
 	xor wa,bc
 	ld iz,wa
 	ld ixl,0
-	jr L1360
-L1357:
+	jr L1812
+L1809:
 	ld bc,iz
 	and bc,32768
 	cp bc,0
-	jr z,L1361
+	jr z,L1813
 	ld wa,iz
 	sll 1,wa
 	xor wa,4129
-	jr L1362
-L1361:
+	jr L1814
+L1813:
 	ld wa,iz
 	sll 1,wa
-L1362:
+L1814:
 	ld iz,wa
-L1359:
+L1811:
 	inc 1,ixl
-L1360:
+L1812:
 	ld a,ixl
 	cp a,8
-	jr ult,L1357
-L1358:
+	jr ult,L1809
+L1810:
 	ld wa,iz
-	jr L1356
-L1356:
+	jr L1808
+L1808:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
 
 ; function slot_erased
-_slot_erased__11:
+_slot_erased__13:
 	push xiz
 	lda xsp,(xsp-6)
 	push xix
 	ld a,(xsp+18)
 	push xwa
-	call _slot_ptr__11
+	call _slot_ptr__13
 	lda xsp,(xsp+4)
 	pop xix
 	ld xix,xwa
 	ld iz,0
-	jr L1373
-L1370:
+	jr L1825
+L1822:
 	ld xwa,xix
 	ld bc,iz
 	extz xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,255
-	jr z,L1374
+	jr z,L1826
 	ld wa,0
-	jr L1369
-L1374:
-L1372:
+	jr L1821
+L1826:
+L1824:
 	inc 1,iz
-L1373:
+L1825:
 	ld wa,iz
 	cp wa,256
-	jr ult,L1370
-L1371:
+	jr ult,L1822
+L1823:
 	ld wa,1
-	jr L1369
-L1369:
+	jr L1821
+L1821:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
 
 ; function slot_looks_valid
-_slot_looks_valid__11:
+_slot_looks_valid__13:
 	push xiz
 	lda xsp,(xsp-4)
 	ld a,(xsp+12)
 	push xwa
-	call _slot_ptr__11
+	call _slot_ptr__13
 	lda xsp,(xsp+4)
 	ld xiz,xwa
 	ld c,(xiz)
 	cp c,202
-	jr nz,L1379
+	jr nz,L1831
 	ld c,(xiz+1)
 	cp c,254
-	jr nz,L1379
+	jr nz,L1831
 	ld c,(xiz+2)
 	cp c,32
-	jr nz,L1379
+	jr nz,L1831
 	ld c,(xiz+3)
 	cp c,38
-	jr nz,L1379
+	jr nz,L1831
 	ld c,(xiz+254)
 	cp c,74
-	jr nz,L1379
+	jr nz,L1831
 	ld c,(xiz+255)
 	cp c,0
-	jr nz,L1379
+	jr nz,L1831
 	ld wa,1
-	jr L1380
-L1379:
+	jr L1832
+L1831:
 	ld wa,0
-L1380:
-	jr L1378
-L1378:
+L1832:
+	jr L1830
+L1830:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
 
 ; function slot_crc_ok
-_slot_crc_ok__11:
+_slot_crc_ok__13:
 	push xiz
 	lda xsp,(xsp-8)
 	push xix
 	ld a,(xsp+20)
 	push xwa
-	call _slot_ptr__11
+	call _slot_ptr__13
 	lda xsp,(xsp+4)
 	pop xix
 	ld (xsp+0),xwa
 	ld wa,65535
 	ld ix,wa
 	ld iz,0
-	jr L1392
-L1389:
+	jr L1844
+L1841:
 	push xix
 	ld xwa,(xsp+4)
 	ld bc,iz
@@ -6704,46 +9176,46 @@ L1389:
 	push xwa
 	ld wa,ix
 	push xwa
-	call _crc_byte__11
+	call _crc_byte__13
 	lda xsp,(xsp+8)
 	pop xix
 	ld ix,wa
-L1391:
+L1843:
 	inc 1,iz
-L1392:
+L1844:
 	ld wa,iz
 	cp wa,252
-	jr ult,L1389
-L1390:
+	jr ult,L1841
+L1842:
 	ld xbc,(xsp+0)
 	ld c,(xbc+252)
 	ld e,ixl
 	cp c,e
-	jr nz,L1393
+	jr nz,L1845
 	ld xbc,(xsp+0)
 	ld c,(xbc+253)
 	ld de,ix
 	srl 8,de
 	cp c,e
-	jr nz,L1393
+	jr nz,L1845
 	ld wa,1
-	jr L1394
-L1393:
+	jr L1846
+L1845:
 	ld wa,0
-L1394:
-	jr L1388
-L1388:
+L1846:
+	jr L1840
+L1840:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
 
 ; function slot_sequence
-_slot_sequence__11:
+_slot_sequence__13:
 	push xiz
 	lda xsp,(xsp-4)
 	ld a,(xsp+12)
 	push xwa
-	call _slot_ptr__11
+	call _slot_ptr__13
 	lda xsp,(xsp+4)
 	ld xiz,xwa
 	ld a,(xiz+248)
@@ -6766,164 +9238,164 @@ _slot_sequence__11:
 	sll 15,xbc
 	sll 9,xbc
 	or xwa,xbc
-	jr L1396
-L1396:
+	jr L1848
+L1848:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
 
 ; function bank_of
-_bank_of__11:
+_bank_of__13:
 	ld c,(xsp+4)
 	cp c,32
-	jr ult,L1401
+	jr ult,L1853
 	ld a,32
 	extz wa
-	jr L1402
-L1401:
+	jr L1854
+L1853:
 	ld wa,0
-L1402:
-	jr L1400
-L1400:
+L1854:
+	jr L1852
+L1852:
 	ret
 
 ; function ngpc_flash_init
 _ngpc_flash_init:
 	push xiz
 	lda xsp,(xsp-10)
-	ldb (_s_current__11),255
-	ldb (_s_last_slot__11),255
+	ldb (_s_current__13),255
+	ldb (_s_last_slot__13),255
 	ld xwa,0
-	ld (_s_sequence__11),xwa
+	ld (_s_sequence__13),xwa
 	ld a,(06C58h)
 	extz wa
 	cp wa,1
-	jr z,L1422
+	jr z,L1874
 	cp wa,2
-	jr z,L1423
+	jr z,L1875
 	cp wa,3
-	jr z,L1424
-	jr L1425
-L1422:
+	jr z,L1876
+	jr L1877
+L1874:
 	ld xwa,499712
-	ld (_s_offset__11),xwa
-	jr L1421
-L1423:
+	ld (_s_offset__13),xwa
+	jr L1873
+L1875:
 	ld xwa,1024000
-	ld (_s_offset__11),xwa
-	jr L1421
-L1424:
+	ld (_s_offset__13),xwa
+	jr L1873
+L1876:
 	ld xwa,2072576
-	ld (_s_offset__11),xwa
-	jr L1421
-L1425:
+	ld (_s_offset__13),xwa
+	jr L1873
+L1877:
 	ld xwa,0
-	ld (_s_offset__11),xwa
-	jr L1421
-L1421:
-	ld xwa,(_s_offset__11)
+	ld (_s_offset__13),xwa
+	jr L1873
+L1873:
+	ld xwa,(_s_offset__13)
 	cp xwa,0
-	jr nz,L1426
-	jp L1420
-L1426:
+	jr nz,L1878
+	jp L1872
+L1878:
 	ld xwa,__DataROM_END
 	ld xbc,2097152
-	add xbc,(_s_offset__11)
+	add xbc,(_s_offset__13)
 	sub xbc,8192
 	cp xwa,xbc
-	jr ule,L1427
+	jr ule,L1879
 	ld xwa,0
-	ld (_s_offset__11),xwa
-	jr L1420
-L1427:
+	ld (_s_offset__13),xwa
+	jr L1872
+L1879:
 	ld izl,0
-	jr L1431
-L1428:
+	jr L1883
+L1880:
 	ld a,izl
 	push xwa
-	call _slot_looks_valid__11
+	call _slot_looks_valid__13
 	lda xsp,(xsp+4)
 	cp a,0
-	jr nz,L1432
-	jr L1430
-L1432:
+	jr nz,L1884
+	jr L1882
+L1884:
 	ld a,izl
 	push xwa
-	call _slot_sequence__11
+	call _slot_sequence__13
 	lda xsp,(xsp+4)
 	ld (xsp+2),xwa
-	ld a,(_s_current__11)
+	ld a,(_s_current__13)
 	cp a,255
-	jr z,L1433
+	jr z,L1885
 	ld xwa,(xsp+2)
-	sub xwa,(_s_sequence__11)
+	sub xwa,(_s_sequence__13)
 	ld (xsp+6),xwa
 	ld xwa,(xsp+6)
 	cp xwa,0
-	jr z,L1435
+	jr z,L1887
 	ld xwa,(xsp+6)
 	cp xwa,2147483648
-	jr ult,L1434
-L1435:
-	jr L1430
-L1434:
-L1433:
+	jr ult,L1886
+L1887:
+	jr L1882
+L1886:
+L1885:
 	ld a,izl
 	push xwa
-	call _slot_crc_ok__11
+	call _slot_crc_ok__13
 	lda xsp,(xsp+4)
 	cp a,0
-	jr z,L1436
+	jr z,L1888
 	ld a,izl
-	ld (_s_current__11),a
+	ld (_s_current__13),a
 	ld xwa,(xsp+2)
-	ld (_s_sequence__11),xwa
-L1436:
-L1430:
+	ld (_s_sequence__13),xwa
+L1888:
+L1882:
 	inc 1,izl
-L1431:
+L1883:
 	ld a,izl
 	cp a,64
-	jr ult,L1428
-L1429:
-L1420:
+	jr ult,L1880
+L1881:
+L1872:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
 
 ; function ngpc_flash_ready
 _ngpc_flash_ready:
-	ld xbc,(_s_offset__11)
+	ld xbc,(_s_offset__13)
 	cp xbc,0
-	jr z,L1441
+	jr z,L1893
 	ld wa,1
-	jr L1442
-L1441:
+	jr L1894
+L1893:
 	ld wa,0
-L1442:
-	jr L1440
-L1440:
+L1894:
+	jr L1892
+L1892:
 	ret
 
 ; function ngpc_flash_cart_size
 _ngpc_flash_cart_size:
 	ld a,(06C58h)
-	jr L1444
-L1444:
+	jr L1896
+L1896:
 	ret
 
 ; function ngpc_flash_exists
 _ngpc_flash_exists:
-	ld c,(_s_current__11)
+	ld c,(_s_current__13)
 	cp c,255
-	jr z,L1449
+	jr z,L1901
 	ld wa,1
-	jr L1450
-L1449:
+	jr L1902
+L1901:
 	ld wa,0
-L1450:
-	jr L1448
-L1448:
+L1902:
+	jr L1900
+L1900:
 	ret
 
 ; function ngpc_flash_load
@@ -6932,23 +9404,23 @@ _ngpc_flash_load:
 	lda xsp,(xsp-10)
 	ld xwa,(xsp+18)
 	ld xiy,xwa
-	ld a,(_s_current__11)
+	ld a,(_s_current__13)
 	cp a,255
-	jr nz,L1458
-	jr L1457
-L1458:
+	jr nz,L1910
+	jr L1909
+L1910:
 	push xix
 	push xiy
-	ld a,(_s_current__11)
+	ld a,(_s_current__13)
 	push xwa
-	call _slot_ptr__11
+	call _slot_ptr__13
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
 	ld xix,xwa
 	ld iz,0
-	jr L1462
-L1459:
+	jr L1914
+L1911:
 	ld xwa,xix
 	ld bc,iz
 	extz xbc
@@ -6959,14 +9431,14 @@ L1459:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L1461:
+L1913:
 	inc 1,iz
-L1462:
+L1914:
 	ld wa,iz
 	cp wa,256
-	jr ult,L1459
-L1460:
-L1457:
+	jr ult,L1911
+L1912:
+L1909:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -6977,58 +9449,58 @@ _ngpc_flash_load_legacy:
 	lda xsp,(xsp-12)
 	ld xwa,(xsp+20)
 	ld (xsp+0),xwa
-	ld xwa,(_s_offset__11)
+	ld xwa,(_s_offset__13)
 	cp xwa,0
-	jr nz,L1476
+	jr nz,L1928
 	ld wa,0
-	jp L1475
-L1476:
+	jp L1927
+L1928:
 	ldb (xsp+8),32
-	jr L1479
-L1477:
+	jr L1931
+L1929:
 	push xix
 	ld a,(xsp+12)
 	push xwa
-	call _slot_ptr__11
+	call _slot_ptr__13
 	lda xsp,(xsp+4)
 	pop xix
 	ld xix,xwa
 	ld a,(xix)
 	cp a,202
-	jr nz,L1481
+	jr nz,L1933
 	ld a,(xix+1)
 	cp a,254
-	jr nz,L1481
+	jr nz,L1933
 	ld a,(xix+2)
 	cp a,32
-	jr nz,L1481
+	jr nz,L1933
 	ld a,(xix+3)
 	cp a,38
-	jr z,L1480
-L1481:
-	jr L1479
-L1480:
+	jr z,L1932
+L1933:
+	jr L1931
+L1932:
 	push xix
 	ld a,(xsp+12)
 	push xwa
-	call _slot_looks_valid__11
+	call _slot_looks_valid__13
 	lda xsp,(xsp+4)
 	pop xix
 	cp a,0
-	jr z,L1482
+	jr z,L1934
 	push xix
 	ld a,(xsp+12)
 	push xwa
-	call _slot_crc_ok__11
+	call _slot_crc_ok__13
 	lda xsp,(xsp+4)
 	pop xix
 	cp a,0
-	jr z,L1482
-	jr L1479
-L1482:
+	jr z,L1934
+	jr L1931
+L1934:
 	ld iz,0
-	jr L1486
-L1483:
+	jr L1938
+L1935:
 	ld xwa,xix
 	ld bc,iz
 	extz xbc
@@ -7039,24 +9511,24 @@ L1483:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L1485:
+L1937:
 	inc 1,iz
-L1486:
+L1938:
 	ld wa,iz
 	cp wa,256
-	jr ult,L1483
-L1484:
+	jr ult,L1935
+L1936:
 	ld wa,1
-	jr L1475
-L1479:
+	jr L1927
+L1931:
 	ld a,(xsp+8)
 	decb 1,(xsp+8)
 	cp a,0
-	jp ugt,L1477
-L1478:
+	jp ugt,L1929
+L1930:
 	ld wa,0
-	jr L1475
-L1475:
+	jr L1927
+L1927:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -7069,28 +9541,28 @@ _ngpc_flash_verify:
 	ld (xsp+0),xwa
 	ld wa,0
 	ld ix,wa
-	ld xwa,(_s_offset__11)
+	ld xwa,(_s_offset__13)
 	cp xwa,0
-	jr z,L1497
-	ld a,(_s_last_slot__11)
+	jr z,L1949
+	ld a,(_s_last_slot__13)
 	cp a,255
-	jr nz,L1496
-L1497:
+	jr nz,L1948
+L1949:
 	ld wa,65535
-	jr L1495
-L1496:
+	jr L1947
+L1948:
 	push xix
 	push xiy
-	ld a,(_s_last_slot__11)
+	ld a,(_s_last_slot__13)
 	push xwa
-	call _slot_ptr__11
+	call _slot_ptr__13
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
 	ld xiy,xwa
 	ld iz,0
-	jr L1501
-L1498:
+	jr L1953
+L1950:
 	ld xwa,xiy
 	ld bc,iz
 	extz xbc
@@ -7102,19 +9574,19 @@ L1498:
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jr z,L1502
+	jr z,L1954
 	inc 1,ix
-L1502:
-L1500:
+L1954:
+L1952:
 	inc 1,iz
-L1501:
+L1953:
 	ld wa,iz
 	cp wa,256
-	jr ult,L1498
-L1499:
+	jr ult,L1950
+L1951:
 	ld wa,ix
-	jr L1495
-L1495:
+	jr L1947
+L1947:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -7125,62 +9597,62 @@ _ngpc_flash_slots_used:
 	lda xsp,(xsp-4)
 	ld wa,0
 	ld (xsp+1),a
-	ld c,(_s_current__11)
+	ld c,(_s_current__13)
 	cp c,255
-	jr nz,L1513
+	jr nz,L1965
 	ld wa,0
-	jr L1514
-L1513:
-	ld a,(_s_current__11)
+	jr L1966
+L1965:
+	ld a,(_s_current__13)
 	push xwa
-	call _bank_of__11
+	call _bank_of__13
 	lda xsp,(xsp+4)
 	extz wa
-L1514:
+L1966:
 	ld (xsp+2),a
-	ld xwa,(_s_offset__11)
+	ld xwa,(_s_offset__13)
 	cp xwa,0
-	jr nz,L1515
+	jr nz,L1967
 	ld wa,0
-	jr L1512
-L1515:
+	jr L1964
+L1967:
 	ld a,(xsp+2)
 	ld izl,a
-	jr L1519
-L1516:
+	jr L1971
+L1968:
 	ld a,izl
 	push xwa
-	call _slot_erased__11
+	call _slot_erased__13
 	lda xsp,(xsp+4)
 	cp a,0
-	jr nz,L1520
+	jr nz,L1972
 	incb 1,(xsp+1)
-L1520:
-L1518:
+L1972:
+L1970:
 	inc 1,izl
-L1519:
+L1971:
 	ld a,izl
 	ld c,(xsp+2)
 	add c,32
 	cp a,c
-	jr ult,L1516
-L1517:
+	jr ult,L1968
+L1969:
 	ld a,(xsp+1)
-	jr L1512
-L1512:
+	jr L1964
+L1964:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
 
 ; function erase_bank
-_erase_bank__11:
+_erase_bank__13:
 	push xiz
 	lda xsp,(xsp-2)
 	ld xwa,2097152
 	push xwa
 	ld a,(xsp+14)
 	push xwa
-	call _slot_offset__11
+	call _slot_offset__13
 	lda xsp,(xsp+4)
 	ld xbc,xwa
 	pop xwa
@@ -7190,65 +9662,65 @@ _erase_bank__11:
 	lda xsp,(xsp+4)
 	ld a,(xsp+10)
 	ld izl,a
-	jr L1531
-L1528:
+	jr L1983
+L1980:
 	ld a,izl
 	push xwa
-	call _slot_erased__11
+	call _slot_erased__13
 	lda xsp,(xsp+4)
 	cp a,0
-	jr nz,L1532
+	jr nz,L1984
 	ld wa,0
-	jr L1527
-L1532:
-L1530:
+	jr L1979
+L1984:
+L1982:
 	inc 1,izl
-L1531:
+L1983:
 	ld a,izl
 	ld c,(xsp+10)
 	add c,32
 	cp a,c
-	jr ult,L1528
-L1529:
+	jr ult,L1980
+L1981:
 	ld wa,1
-	jr L1527
-L1527:
+	jr L1979
+L1979:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
 
 ; function ngpc_flash_erase
 _ngpc_flash_erase:
-	ld xwa,(_s_offset__11)
+	ld xwa,(_s_offset__13)
 	cp xwa,0
-	jr nz,L1538
+	jr nz,L1990
 	ld wa,0
-	jr L1537
-L1538:
+	jr L1989
+L1990:
 	ld wa,0
 	push xwa
-	call _erase_bank__11
+	call _erase_bank__13
 	lda xsp,(xsp+4)
 	cp a,0
-	jr z,L1540
+	jr z,L1992
 	ld a,32
 	push xwa
-	call _erase_bank__11
+	call _erase_bank__13
 	lda xsp,(xsp+4)
 	cp a,0
-	jr nz,L1539
-L1540:
+	jr nz,L1991
+L1992:
 	call _ngpc_flash_init
 	ld wa,0
-	jr L1537
-L1539:
-	ldb (_s_current__11),255
-	ldb (_s_last_slot__11),255
+	jr L1989
+L1991:
+	ldb (_s_current__13),255
+	ldb (_s_last_slot__13),255
 	ld xwa,0
-	ld (_s_sequence__11),xwa
+	ld (_s_sequence__13),xwa
 	ld wa,1
-	jr L1537
-L1537:
+	jr L1989
+L1989:
 	ret
 
 ; function ngpc_flash_save
@@ -7259,137 +9731,137 @@ _ngpc_flash_save:
 	ld (xsp+0),xwa
 	ld wa,65535
 	ld (xsp+10),wa
-	ldb (_s_last_slot__11),255
-	ld xwa,(_s_offset__11)
+	ldb (_s_last_slot__13),255
+	ld xwa,(_s_offset__13)
 	cp xwa,0
-	jr nz,L1572
+	jr nz,L2024
 	ld wa,0
-	jp L1571
-L1572:
+	jp L2023
+L2024:
 	ld xwa,(xsp+0)
 	ld a,(xwa)
 	cp a,202
-	jr nz,L1574
+	jr nz,L2026
 	ld xwa,(xsp+0)
 	ld a,(xwa+1)
 	cp a,254
-	jr nz,L1574
+	jr nz,L2026
 	ld xwa,(xsp+0)
 	ld a,(xwa+2)
 	cp a,32
-	jr nz,L1574
+	jr nz,L2026
 	ld xwa,(xsp+0)
 	ld a,(xwa+3)
 	cp a,38
-	jr z,L1573
-L1574:
+	jr z,L2025
+L2026:
 	ld wa,0
-	jp L1571
-L1573:
-	ld c,(_s_current__11)
+	jp L2023
+L2025:
+	ld c,(_s_current__13)
 	cp c,255
-	jr nz,L1575
+	jr nz,L2027
 	ld wa,0
-	jr L1576
-L1575:
-	ld a,(_s_current__11)
+	jr L2028
+L2027:
+	ld a,(_s_current__13)
 	push xwa
-	call _bank_of__11
+	call _bank_of__13
 	lda xsp,(xsp+4)
 	extz wa
-L1576:
+L2028:
 	ld (xsp+5),a
-	ld c,(_s_current__11)
+	ld c,(_s_current__13)
 	cp c,255
-	jr nz,L1577
+	jr nz,L2029
 	ld a,(xsp+5)
 	extz wa
-	jr L1578
-L1577:
-	ld a,(_s_current__11)
+	jr L2030
+L2029:
+	ld a,(_s_current__13)
 	add a,1
 	extz wa
-L1578:
+L2030:
 	ld (xsp+4),a
-	jr L1581
-L1579:
+	jr L2033
+L2031:
 	incb 1,(xsp+4)
-L1581:
+L2033:
 	ld a,(xsp+4)
 	ld c,(xsp+5)
 	add c,32
 	cp a,c
-	jr uge,L1582
+	jr uge,L2034
 	ld a,(xsp+4)
 	push xwa
-	call _slot_erased__11
+	call _slot_erased__13
 	lda xsp,(xsp+4)
 	cp a,0
-	jr z,L1579
-L1582:
-L1580:
+	jr z,L2031
+L2034:
+L2032:
 	ld a,(xsp+4)
 	ld c,(xsp+5)
 	add c,32
 	cp a,c
-	jr ult,L1583
+	jr ult,L2035
 	ld a,(xsp+5)
 	xor a,32
 	ld (xsp+5),a
 	ld a,(xsp+5)
 	ld izl,a
-	jr L1587
-L1584:
+	jr L2039
+L2036:
 	ld a,izl
 	push xwa
-	call _slot_erased__11
+	call _slot_erased__13
 	lda xsp,(xsp+4)
 	cp a,0
-	jr nz,L1588
-	jr L1585
-L1588:
-L1586:
+	jr nz,L2040
+	jr L2037
+L2040:
+L2038:
 	inc 1,izl
-L1587:
+L2039:
 	ld a,izl
 	ld c,(xsp+5)
 	add c,32
 	cp a,c
-	jr ult,L1584
-L1585:
+	jr ult,L2036
+L2037:
 	ld a,izl
 	ld c,(xsp+5)
 	add c,32
 	cp a,c
-	jr z,L1589
+	jr z,L2041
 	ld a,(xsp+5)
 	push xwa
-	call _erase_bank__11
+	call _erase_bank__13
 	lda xsp,(xsp+4)
 	cp a,0
-	jr nz,L1589
+	jr nz,L2041
 	ld wa,0
-	jp L1571
-L1589:
+	jp L2023
+L2041:
 	ld a,(xsp+5)
 	ld (xsp+4),a
-L1583:
-	ld xwa,(_s_sequence__11)
+L2035:
+	ld xwa,(_s_sequence__13)
 	add xwa,1
 	ld (xsp+12),xwa
 	ld izl,0
-	jr L1593
-L1590:
+	jr L2045
+L2042:
 	ld xwa,(xsp+12)
 	ld c,izl
 	extz bc
 	sll 3,bc
 	cp c,0
-	jr z,L1595
-L1594:
+	jr z,L2047
+L2046:
 	srl 1,xwa
-	djnz c,L1594
-L1595:
+	djnz c,L2046
+L2047:
 	ld xbc,(xsp+0)
 	ld de,248
 	ld l,izl
@@ -7398,16 +9870,16 @@ L1595:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L1592:
+L2044:
 	inc 1,izl
-L1593:
+L2045:
 	ld a,izl
 	cp a,4
-	jr ult,L1590
-L1591:
+	jr ult,L2042
+L2043:
 	ldw (xsp+8),0
-	jr L1599
-L1596:
+	jr L2051
+L2048:
 	ld xwa,(xsp+0)
 	ld bc,(xsp+8)
 	extz xbc
@@ -7416,16 +9888,16 @@ L1596:
 	push xwa
 	ld wa,(xsp+14)
 	push xwa
-	call _crc_byte__11
+	call _crc_byte__13
 	lda xsp,(xsp+8)
 	ld (xsp+10),wa
-L1598:
+L2050:
 	incw 1,(xsp+8)
-L1599:
+L2051:
 	ld wa,(xsp+8)
 	cp wa,252
-	jr ult,L1596
-L1597:
+	jr ult,L2048
+L2049:
 	ld a,(xsp+10)
 	ld xbc,(xsp+0)
 	ld (xbc+252),a
@@ -7440,12 +9912,12 @@ L1597:
 	ld xbc,(xsp+0)
 	ld (xbc+255),a
 	ld a,(xsp+4)
-	ld (_s_last_slot__11),a
+	ld (_s_last_slot__13),a
 	ld xwa,1
 	push xwa
 	ld a,(xsp+8)
 	push xwa
-	call _slot_offset__11
+	call _slot_offset__13
 	lda xsp,(xsp+4)
 	push xwa
 	ld xwa,(xsp+8)
@@ -7457,17 +9929,17 @@ L1597:
 	call _ngpc_flash_verify
 	lda xsp,(xsp+4)
 	cp wa,0
-	jr z,L1600
+	jr z,L2052
 	ld wa,0
-	jr L1571
-L1600:
+	jr L2023
+L2052:
 	ld a,(xsp+4)
-	ld (_s_current__11),a
+	ld (_s_current__13),a
 	ld xwa,(xsp+12)
-	ld (_s_sequence__11),xwa
+	ld (_s_sequence__13),xwa
 	ld wa,1
-	jr L1571
-L1571:
+	jr L2023
+L2023:
 	lda xsp,(xsp+16)
 	pop xiz
 	ret
@@ -7477,26 +9949,26 @@ _ngpc_input_vblank:
 	lda xsp,(xsp-2)
 	ld a,(06F82h)
 	ld (xsp+0),a
-	ld a,(_s_vbl_down__12)
+	ld a,(_s_vbl_down__14)
 	ld c,(xsp+0)
-	ld e,(_s_vbl_prev__12)
+	ld e,(_s_vbl_prev__14)
 	cpl e
 	and c,e
 	or a,c
-	ld (_s_vbl_down__12),a
+	ld (_s_vbl_down__14),a
 	ld a,(xsp+0)
-	ld (_s_vbl_prev__12),a
-L1602:
+	ld (_s_vbl_prev__14),a
+L2054:
 	lda xsp,(xsp+2)
 	ret
 
 ; function ngpc_input_set_repeat
 _ngpc_input_set_repeat:
 	ld a,(xsp+4)
-	ld (_s_repeat_delay__12),a
+	ld (_s_repeat_delay__14),a
 	ld a,(xsp+8)
-	ld (_s_repeat_rate__12),a
-L1604:
+	ld (_s_repeat_rate__14),a
+L2056:
 	ret
 
 ; function ngpc_input_update
@@ -7505,61 +9977,61 @@ _ngpc_input_update:
 	di
 	ld a,(06F82h)
 	ld (xsp+2),a
-	ld a,(_s_vbl_down__12)
+	ld a,(_s_vbl_down__14)
 	ld (xsp+3),a
-	ldb (_s_vbl_down__12),0
+	ldb (_s_vbl_down__14),0
 	ld a,(xsp+2)
-	ld (_s_vbl_prev__12),a
+	ld (_s_vbl_prev__14),a
 	ei 0
 	ld a,(xsp+2)
 	ld (_ngpc_pad_held),a
 	ld a,(xsp+2)
-	ld c,(_s_pad_prev__12)
+	ld c,(_s_pad_prev__14)
 	cpl c
 	and a,c
 	or a,(xsp+3)
 	ld (_ngpc_pad_pressed),a
 	ld a,(xsp+2)
 	cpl a
-	and a,(_s_pad_prev__12)
+	and a,(_s_pad_prev__14)
 	ld (_ngpc_pad_released),a
 	ldb (_ngpc_pad_repeat),0
 	ldb (xsp+1),1
 	ldb (xsp+0),0
-	jp L1620
-L1617:
+	jp L2072
+L2069:
 	ld a,(xsp+2)
 	extz wa
 	ld c,(xsp+1)
 	extz bc
 	and wa,bc
 	cp wa,0
-	jr z,L1621
+	jr z,L2073
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	ld c,(xsp+1)
 	extz bc
 	and wa,bc
 	cp wa,0
-	jr z,L1622
-	ld a,(_s_repeat_delay__12)
-	ld xbc,_s_repeat_timer__12
+	jr z,L2074
+	ld a,(_s_repeat_delay__14)
+	ld xbc,_s_repeat_timer__14
 	ld e,(xsp+0)
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-	jr L1623
-L1622:
-	ld xwa,_s_repeat_timer__12
+	jr L2075
+L2074:
+	ld xwa,_s_repeat_timer__14
 	ld c,(xsp+0)
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr ule,L1624
-	ld xbc,_s_repeat_timer__12
+	jr ule,L2076
+	ld xbc,_s_repeat_timer__14
 	ld e,(xsp+0)
 	extz de
 	exts xde
@@ -7567,52 +10039,52 @@ L1622:
 	ld a,(xbc)
 	dec 1,a
 	ld (xbc),a
-	jr L1625
-L1624:
+	jr L2077
+L2076:
 	ld a,(_ngpc_pad_repeat)
 	extz wa
 	ld c,(xsp+1)
 	extz bc
 	or wa,bc
 	ld (_ngpc_pad_repeat),a
-	ld a,(_s_repeat_rate__12)
-	ld xbc,_s_repeat_timer__12
+	ld a,(_s_repeat_rate__14)
+	ld xbc,_s_repeat_timer__14
 	ld e,(xsp+0)
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1625:
-L1623:
-	jr L1626
-L1621:
+L2077:
+L2075:
+	jr L2078
+L2073:
 	ld a,0
-	ld xbc,_s_repeat_timer__12
+	ld xbc,_s_repeat_timer__14
 	ld e,(xsp+0)
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1626:
+L2078:
 	ld a,(xsp+1)
 	extz wa
 	sll 1,wa
 	ld (xsp+1),a
-L1619:
+L2071:
 	incb 1,(xsp+0)
-L1620:
+L2072:
 	ld a,(xsp+0)
 	cp a,8
-	jp ult,L1617
-L1618:
+	jp ult,L2069
+L2070:
 	ld a,(xsp+2)
-	ld (_s_pad_prev__12),a
-L1616:
+	ld (_s_pad_prev__14),a
+L2068:
 	lda xsp,(xsp+4)
 	ret
 
 ; function runtime_bootstrap
-_runtime_bootstrap__13:
+_runtime_bootstrap__15:
 	push xiz
 	lda xsp,(xsp-20)
 	ld xwa,__DataROM_START
@@ -7625,8 +10097,8 @@ _runtime_bootstrap__13:
 	ld xiz,xwa
 	ld xwa,__Bss_END
 	ld (xsp+16),xwa
-	jr L1637
-L1635:
+	jr L2089
+L2087:
 	ld xwa,xix
 	inc 1,xwa
 	ld xix,xwa
@@ -7637,31 +10109,31 @@ L1635:
 	ld xiy,xbc
 	dec 1,xbc
 	ld (xbc),a
-L1637:
+L2089:
 	ld xwa,xix
 	cp xwa,(xsp+4)
-	jr ult,L1635
-L1636:
-	jr L1640
-L1638:
+	jr ult,L2087
+L2088:
+	jr L2092
+L2090:
 	ld a,0
 	ld xbc,xiz
 	inc 1,xbc
 	ld xiz,xbc
 	dec 1,xbc
 	ld (xbc),a
-L1640:
+L2092:
 	ld xwa,xiz
 	cp xwa,(xsp+16)
-	jr ult,L1638
-L1639:
-L1634:
+	jr ult,L2090
+L2091:
+L2086:
 	lda xsp,(xsp+20)
 	pop xiz
 	ret
 
 ; function isr_dummy
-_isr_dummy__13:
+_isr_dummy__15:
 	push xwa
 	push xbc
 	push xde
@@ -7669,7 +10141,7 @@ _isr_dummy__13:
 	push xix
 	push xiy
 	push xiz
-L1642:
+L2094:
 	pop xiz
 	pop xiy
 	pop xix
@@ -7682,12 +10154,12 @@ L1642:
 ; function ngpc_set_vblank_hook
 _ngpc_set_vblank_hook:
 	ld xwa,(xsp+4)
-	ld (_g_vb_hook__13),xwa
-L1644:
+	ld (_g_vb_hook__15),xwa
+L2096:
 	ret
 
 ; function isr_vblank
-_isr_vblank__13:
+_isr_vblank__15:
 	push xwa
 	push xbc
 	push xde
@@ -7696,17 +10168,17 @@ _isr_vblank__13:
 	push xiy
 	push xiz
 	ldb (06Fh),78
-	ld xwa,(_g_vb_hook__13)
+	ld xwa,(_g_vb_hook__15)
 	cp xwa,0
-	jr z,L1648
-	ld xwa,(_g_vb_hook__13)
+	jr z,L2100
+	ld xwa,(_g_vb_hook__15)
 	ld xhl,xwa
 	call (xhl)
-L1648:
+L2100:
 	call _ngpc_vramq_flush
 	incb 1,(_g_vb_counter)
 	call _ngpc_input_vblank
-L1647:
+L2099:
 	pop xiz
 	pop xiy
 	pop xix
@@ -7720,54 +10192,54 @@ L1647:
 _ngpc_init:
 	lda xsp,(xsp-2)
 	call _ngpc_sys_patch
-	call _runtime_bootstrap__13
+	call _runtime_bootstrap__15
 	ld c,(06F91h)
 	cp c,0
-	jr z,L1657
+	jr z,L2109
 	ld wa,1
-	jr L1658
-L1657:
+	jr L2110
+L2109:
 	ld wa,0
-L1658:
-	ld (_s_is_color__13),a
+L2110:
+	ld (_s_is_color__15),a
 	ld a,(06F87h)
-	ld (_s_language__13),a
+	ld (_s_language__15),a
 	andb (06F86h),223
 	orb (06F86h),64
 	call _ngpc_vramq_init
-	ld xwa,_isr_dummy__13
+	ld xwa,_isr_dummy__15
 	ld (06FB8h),xwa
-	ld xwa,_isr_dummy__13
+	ld xwa,_isr_dummy__15
 	ld (06FBCh),xwa
-	ld xwa,_isr_dummy__13
+	ld xwa,_isr_dummy__15
 	ld (06FC0h),xwa
-	ld xwa,_isr_dummy__13
+	ld xwa,_isr_dummy__15
 	ld (06FC4h),xwa
-	ld xwa,_isr_dummy__13
+	ld xwa,_isr_dummy__15
 	ld (06FC8h),xwa
-	ld xwa,_isr_vblank__13
+	ld xwa,_isr_vblank__15
 	ld (06FCCh),xwa
-	ld xwa,_isr_dummy__13
+	ld xwa,_isr_dummy__15
 	ld (06FD0h),xwa
-	ld xwa,_isr_dummy__13
+	ld xwa,_isr_dummy__15
 	ld (06FD4h),xwa
-	ld xwa,_isr_dummy__13
+	ld xwa,_isr_dummy__15
 	ld (06FD8h),xwa
-	ld xwa,_isr_dummy__13
+	ld xwa,_isr_dummy__15
 	ld (06FDCh),xwa
-	ld xwa,_isr_dummy__13
+	ld xwa,_isr_dummy__15
 	ld (06FE0h),xwa
-	ld xwa,_isr_dummy__13
+	ld xwa,_isr_dummy__15
 	ld (06FE4h),xwa
-	ld xwa,_isr_dummy__13
+	ld xwa,_isr_dummy__15
 	ld (06FE8h),xwa
-	ld xwa,_isr_dummy__13
+	ld xwa,_isr_dummy__15
 	ld (06FF0h),xwa
-	ld xwa,_isr_dummy__13
+	ld xwa,_isr_dummy__15
 	ld (06FF4h),xwa
-	ld xwa,_isr_dummy__13
+	ld xwa,_isr_dummy__15
 	ld (06FF8h),xwa
-	ld xwa,_isr_dummy__13
+	ld xwa,_isr_dummy__15
 	ld (06FFCh),xwa
 	ldb (08002h),0
 	ldb (08003h),0
@@ -7782,8 +10254,8 @@ L1658:
 	ldb (08021h),0
 	andb (08012h),127
 	ldb (xsp+0),0
-	jr L1662
-L1659:
+	jr L2114
+L2111:
 	ld wa,0
 	ld xbc,40960
 	ld e,(xsp+0)
@@ -7792,30 +10264,30 @@ L1659:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1661:
+L2113:
 	incb 1,(xsp+0)
-L1662:
+L2114:
 	ld a,(xsp+0)
 	cp a,8
-	jr ult,L1659
-L1660:
+	jr ult,L2111
+L2112:
 	ei
-L1656:
+L2108:
 	lda xsp,(xsp+2)
 	ret
 
 ; function ngpc_is_color
 _ngpc_is_color:
-	ld a,(_s_is_color__13)
-	jr L1664
-L1664:
+	ld a,(_s_is_color__15)
+	jr L2116
+L2116:
 	ret
 
 ; function ngpc_get_language
 _ngpc_get_language:
-	ld a,(_s_language__13)
-	jr L1666
-L1666:
+	ld a,(_s_language__15)
+	jr L2118
+L2118:
 	ret
 
 ; function ngpc_shutdown_reason
@@ -7826,30 +10298,30 @@ _ngpc_shutdown_reason:
 	extz wa
 	and wa,32
 	cp wa,0
-	jr z,L1682
+	jr z,L2134
 	ld iy,15
-	jr L1683
-L1682:
+	jr L2135
+L2134:
 	ld a,(xsp+14)
 	extz wa
 	and wa,128
 	cp wa,0
-	jr z,L1684
+	jr z,L2136
 	ld iy,4095
-	jr L1685
-L1684:
+	jr L2137
+L2136:
 	ld a,(xsp+14)
 	extz wa
 	and wa,64
 	cp wa,0
-	jr z,L1686
+	jr z,L2138
 	ld iy,240
-	jr L1687
-L1686:
+	jr L2139
+L2138:
 	ld iy,3840
-L1687:
-L1685:
-L1683:
+L2139:
+L2137:
+L2135:
 	ld wa,iy
 	ld xbc,33776
 	ld (xbc),wa
@@ -7861,30 +10333,30 @@ L1683:
 	ldb (08004h),0
 	ldb (08005h),0
 	ld iz,0
-	jr L1691
-L1688:
+	jr L2143
+L2140:
 	ld a,(_g_vb_counter)
 	ld ixl,a
-	jr L1694
-L1692:
-L1694:
+	jr L2146
+L2144:
+L2146:
 	ld a,(_g_vb_counter)
 	cp a,ixl
-	jr z,L1692
-L1693:
-L1690:
+	jr z,L2144
+L2145:
+L2142:
 	inc 1,iz
-L1691:
+L2143:
 	ld wa,iz
 	cp wa,180
-	jr ult,L1688
-L1689:
+	jr ult,L2140
+L2141:
 	push xix
 	push xiy
 	call _ngpc_shutdown
 	pop xiy
 	pop xix
-L1681:
+L2133:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -7894,7 +10366,7 @@ _ngpc_shutdown:
 	ldb ra3, 3
 	ldb rw3, 0
 	swi 1
-L1696:
+L2148:
 	ret
 
 ; function ngpc_load_sysfont
@@ -7904,9 +10376,9 @@ _ngpc_load_sysfont:
 	ld xwa,41472
 	ld xix,xwa
 	ld iz,0
-	jr L1706
-L1703:
-	ld xwa,_overrev_dash_tiles__13
+	jr L2158
+L2155:
+	ld xwa,_overrev_dash_tiles__15
 	ld bc,iz
 	extz xbc
 	sll 1,xbc
@@ -7918,14 +10390,14 @@ L1703:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1705:
+L2157:
 	inc 1,iz
-L1706:
+L2158:
 	ld wa,iz
 	cp wa,768
-	jr ult,L1703
-L1704:
-L1702:
+	jr ult,L2155
+L2156:
+L2154:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -7936,8 +10408,8 @@ _ngpc_memcpy:
 	ld xix,(xsp+8)
 	ld xiz,(xsp+12)
 	ld iy,(xsp+16)
-	jr L1714
-L1712:
+	jr L2166
+L2164:
 	ld xwa,xiz
 	inc 1,xwa
 	ld xiz,xwa
@@ -7948,13 +10420,13 @@ L1712:
 	ld xix,xbc
 	dec 1,xbc
 	ld (xbc),a
-L1714:
+L2166:
 	ld wa,iy
 	dec 1,iy
 	cp wa,0
-	jr nz,L1712
-L1713:
-L1711:
+	jr nz,L2164
+L2165:
+L2163:
 	pop xiz
 	ret
 
@@ -7965,21 +10437,21 @@ _ngpc_memset:
 	ld a,(xsp+12)
 	ld iyl,a
 	ld ix,(xsp+16)
-	jr L1722
-L1720:
+	jr L2174
+L2172:
 	ld a,iyl
 	ld xbc,xiz
 	inc 1,xbc
 	ld xiz,xbc
 	dec 1,xbc
 	ld (xbc),a
-L1722:
+L2174:
 	ld wa,ix
 	dec 1,ix
 	cp wa,0
-	jr nz,L1720
-L1721:
-L1719:
+	jr nz,L2172
+L2173:
+L2171:
 	pop xiz
 	ret
 
@@ -7989,22 +10461,22 @@ _ngpc_vsync:
 	lda xsp,(xsp-2)
 	ld a,(_g_vb_counter)
 	ld izl,a
-	jr L1733
-L1731:
-L1733:
+	jr L2185
+L2183:
+L2185:
 	ld a,(_g_vb_counter)
 	cp a,izl
-	jr z,L1731
-L1732:
+	jr z,L2183
+L2184:
 	ld a,(06F85h)
 	cp a,0
-	jr z,L1734
+	jr z,L2186
 	ld a,(06F85h)
 	push xwa
 	call _ngpc_shutdown_reason
 	lda xsp,(xsp+4)
-L1734:
-L1729:
+L2186:
+L2181:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -8015,14 +10487,14 @@ _ngpc_in_vblank:
 	extz bc
 	and bc,64
 	cp bc,0
-	jr z,L1739
+	jr z,L2191
 	ld wa,1
-	jr L1740
-L1739:
+	jr L2192
+L2191:
 	ld wa,0
-L1740:
-	jr L1738
-L1738:
+L2192:
+	jr L2190
+L2190:
 	ret
 
 ; function ngpc_sleep
@@ -8034,21 +10506,21 @@ _ngpc_sleep:
 	call _ngpc_cpu_speed
 	lda xsp,(xsp+4)
 	ld izl,0
-	jr L1750
-L1747:
+	jr L2202
+L2199:
 	call _ngpc_vsync
-L1749:
+L2201:
 	inc 1,izl
-L1750:
+L2202:
 	ld a,izl
 	cp a,(xsp+10)
-	jr ult,L1747
-L1748:
+	jr ult,L2199
+L2200:
 	ld wa,0
 	push xwa
 	call _ngpc_cpu_speed
 	lda xsp,(xsp+4)
-L1746:
+L2198:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -8065,23 +10537,23 @@ _ngpc_cpu_speed:
 	ld xix, 0xfffe00
 	ld xix, (xix+w)
 	call xix
-L1752:
+L2204:
 	ret
 
 ; function dst_range_ok
-_dst_range_ok__15:
+_dst_range_ok__17:
 	push xiz
 	lda xsp,(xsp-12)
 	ld xwa,(xsp+20)
 	cp xwa,0
-	jr z,L1760
+	jr z,L2212
 	ld wa,(xsp+24)
 	cp wa,0
-	jr nz,L1759
-L1760:
+	jr nz,L2211
+L2212:
 	ld wa,0
-	jr L1758
-L1759:
+	jr L2210
+L2211:
 	ld xwa,(xsp+20)
 	extz xwa
 	ld xiz,xwa
@@ -8095,29 +10567,29 @@ L1759:
 	ld (xsp+8),xwa
 	ld xwa,xiz
 	cp xwa,32768
-	jr uge,L1761
+	jr uge,L2213
 	ld wa,0
-	jr L1758
-L1761:
+	jr L2210
+L2213:
 	ld xwa,(xsp+8)
 	cp xwa,49151
-	jr ule,L1762
+	jr ule,L2214
 	ld wa,0
-	jr L1758
-L1762:
+	jr L2210
+L2214:
 	ld wa,1
-	jr L1758
-L1758:
+	jr L2210
+L2210:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
 
 ; function ngpc_vramq_init
 _ngpc_vramq_init:
-	ldb (_s_cmd_count__15),0
-	ldb (_s_drop_count__15),0
-	ldb (_s_lock__15),0
-L1764:
+	ldb (_s_cmd_count__17),0
+	ldb (_s_drop_count__17),0
+	ldb (_s_lock__17),0
+L2216:
 	ret
 
 ; function ngpc_vramq_copy
@@ -8126,32 +10598,32 @@ _ngpc_vramq_copy:
 	lda xsp,(xsp-2)
 	ld xwa,(xsp+14)
 	cp xwa,0
-	jr z,L1771
+	jr z,L2223
 	ld wa,(xsp+18)
 	push xwa
 	ld xwa,(xsp+14)
 	push xwa
-	call _dst_range_ok__15
+	call _dst_range_ok__17
 	lda xsp,(xsp+8)
 	cp a,0
-	jr nz,L1770
-L1771:
+	jr nz,L2222
+L2223:
 	ld wa,0
-	jp L1769
-L1770:
-	ldb (_s_lock__15),1
-	ld a,(_s_cmd_count__15)
+	jp L2221
+L2222:
+	ldb (_s_lock__17),1
+	ld a,(_s_cmd_count__17)
 	ld izl,a
 	ld a,izl
 	cp a,16
-	jr ult,L1772
-	incb 1,(_s_drop_count__15)
-	ldb (_s_lock__15),0
+	jr ult,L2224
+	incb 1,(_s_drop_count__17)
+	ldb (_s_lock__17),0
 	ld wa,0
-	jr L1769
-L1772:
+	jr L2221
+L2224:
 	ld xwa,(xsp+10)
-	ld xbc,_s_cmd_dst__15
+	ld xbc,_s_cmd_dst__17
 	ld e,izl
 	extz de
 	exts xde
@@ -8159,7 +10631,7 @@ L1772:
 	add xbc,xde
 	ld (xbc),wa
 	ld wa,(xsp+18)
-	ld xbc,_s_cmd_len__15
+	ld xbc,_s_cmd_len__17
 	ld e,izl
 	extz de
 	exts xde
@@ -8167,7 +10639,7 @@ L1772:
 	add xbc,xde
 	ld (xbc),wa
 	ld xwa,(xsp+14)
-	ld xbc,_s_cmd_src__15
+	ld xbc,_s_cmd_src__17
 	ld e,izl
 	extz de
 	exts xde
@@ -8175,7 +10647,7 @@ L1772:
 	add xbc,xde
 	ld (xbc),xwa
 	ld wa,0
-	ld xbc,_s_cmd_fill__15
+	ld xbc,_s_cmd_fill__17
 	ld e,izl
 	extz de
 	exts xde
@@ -8183,7 +10655,7 @@ L1772:
 	add xbc,xde
 	ld (xbc),wa
 	ld a,1
-	ld xbc,_s_cmd_type__15
+	ld xbc,_s_cmd_type__17
 	ld e,izl
 	extz de
 	exts xde
@@ -8191,11 +10663,11 @@ L1772:
 	ld (xbc),a
 	ld a,izl
 	add a,1
-	ld (_s_cmd_count__15),a
-	ldb (_s_lock__15),0
+	ld (_s_cmd_count__17),a
+	ldb (_s_lock__17),0
 	ld wa,1
-	jr L1769
-L1769:
+	jr L2221
+L2221:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -8208,26 +10680,26 @@ _ngpc_vramq_fill:
 	push xwa
 	ld xwa,(xsp+14)
 	push xwa
-	call _dst_range_ok__15
+	call _dst_range_ok__17
 	lda xsp,(xsp+8)
 	cp a,0
-	jr nz,L1777
+	jr nz,L2229
 	ld wa,0
-	jp L1776
-L1777:
-	ldb (_s_lock__15),1
-	ld a,(_s_cmd_count__15)
+	jp L2228
+L2229:
+	ldb (_s_lock__17),1
+	ld a,(_s_cmd_count__17)
 	ld izl,a
 	ld a,izl
 	cp a,16
-	jr ult,L1778
-	incb 1,(_s_drop_count__15)
-	ldb (_s_lock__15),0
+	jr ult,L2230
+	incb 1,(_s_drop_count__17)
+	ldb (_s_lock__17),0
 	ld wa,0
-	jr L1776
-L1778:
+	jr L2228
+L2230:
 	ld xwa,(xsp+10)
-	ld xbc,_s_cmd_dst__15
+	ld xbc,_s_cmd_dst__17
 	ld e,izl
 	extz de
 	exts xde
@@ -8235,7 +10707,7 @@ L1778:
 	add xbc,xde
 	ld (xbc),wa
 	ld wa,(xsp+18)
-	ld xbc,_s_cmd_len__15
+	ld xbc,_s_cmd_len__17
 	ld e,izl
 	extz de
 	exts xde
@@ -8243,7 +10715,7 @@ L1778:
 	add xbc,xde
 	ld (xbc),wa
 	ld xwa,0
-	ld xbc,_s_cmd_src__15
+	ld xbc,_s_cmd_src__17
 	ld e,izl
 	extz de
 	exts xde
@@ -8251,7 +10723,7 @@ L1778:
 	add xbc,xde
 	ld (xbc),xwa
 	ld wa,(xsp+14)
-	ld xbc,_s_cmd_fill__15
+	ld xbc,_s_cmd_fill__17
 	ld e,izl
 	extz de
 	exts xde
@@ -8259,7 +10731,7 @@ L1778:
 	add xbc,xde
 	ld (xbc),wa
 	ld a,2
-	ld xbc,_s_cmd_type__15
+	ld xbc,_s_cmd_type__17
 	ld e,izl
 	extz de
 	exts xde
@@ -8267,11 +10739,11 @@ L1778:
 	ld (xbc),a
 	ld a,izl
 	add a,1
-	ld (_s_cmd_count__15),a
-	ldb (_s_lock__15),0
+	ld (_s_cmd_count__17),a
+	ldb (_s_lock__17),0
 	ld wa,1
-	jr L1776
-L1776:
+	jr L2228
+L2228:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -8280,23 +10752,23 @@ L1776:
 _ngpc_vramq_flush:
 	push xiz
 	lda xsp,(xsp-10)
-	ld a,(_s_lock__15)
+	ld a,(_s_lock__17)
 	cp a,0
-	jr z,L1793
-	jp L1792
-L1793:
-	ld a,(_s_cmd_count__15)
+	jr z,L2245
+	jp L2244
+L2245:
+	ld a,(_s_cmd_count__17)
 	ld (xsp+1),a
 	ld a,(xsp+1)
 	cp a,0
-	jr nz,L1794
-	jp L1792
-L1794:
-	ldb (_s_lock__15),1
+	jr nz,L2246
+	jp L2244
+L2246:
+	ldb (_s_lock__17),1
 	ld izl,0
-	jp L1798
-L1795:
-	ld xwa,_s_cmd_dst__15
+	jp L2250
+L2247:
+	ld xwa,_s_cmd_dst__17
 	ld c,izl
 	extz bc
 	exts xbc
@@ -8305,7 +10777,7 @@ L1795:
 	ld wa,(xwa)
 	extz xwa
 	ld xix,xwa
-	ld xwa,_s_cmd_len__15
+	ld xwa,_s_cmd_len__17
 	ld c,izl
 	extz bc
 	exts xbc
@@ -8313,20 +10785,20 @@ L1795:
 	add xwa,xbc
 	ld wa,(xwa)
 	ld iy,wa
-	ld xwa,_s_cmd_type__15
+	ld xwa,_s_cmd_type__17
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,1
-	jr nz,L1799
+	jr nz,L2251
 	push xix
 	push xiy
 	ld wa,iy
 	extz xwa
 	push xwa
-	ld xwa,_s_cmd_src__15
+	ld xwa,_s_cmd_src__17
 	ld c,izl
 	extz bc
 	exts xbc
@@ -8334,7 +10806,7 @@ L1795:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	ld xwa,_s_cmd_dst__15
+	ld xwa,_s_cmd_dst__17
 	ld c,izl
 	extz bc
 	exts xbc
@@ -8347,17 +10819,17 @@ L1795:
 	lda xsp,(xsp+12)
 	pop xiy
 	pop xix
-	jr L1800
-L1799:
-	ld xwa,_s_cmd_type__15
+	jr L2252
+L2251:
+	ld xwa,_s_cmd_type__17
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,2
-	jr nz,L1801
-	ld xwa,_s_cmd_fill__15
+	jr nz,L2253
+	ld xwa,_s_cmd_fill__17
 	ld c,izl
 	extz bc
 	exts xbc
@@ -8365,116 +10837,116 @@ L1799:
 	add xwa,xbc
 	ld wa,(xwa)
 	ld (xsp+8),wa
-	jr L1804
-L1802:
+	jr L2256
+L2254:
 	ld wa,(xsp+8)
 	ld xbc,xix
 	inc 2,xbc
 	ld xix,xbc
 	dec 2,xbc
 	ld (xbc),wa
-L1804:
+L2256:
 	ld wa,iy
 	dec 1,iy
 	cp wa,0
-	jr nz,L1802
-L1803:
-L1801:
-L1800:
-L1797:
+	jr nz,L2254
+L2255:
+L2253:
+L2252:
+L2249:
 	inc 1,izl
-L1798:
+L2250:
 	ld a,izl
 	cp a,(xsp+1)
-	jp ult,L1795
-L1796:
-	ldb (_s_cmd_count__15),0
-	ldb (_s_lock__15),0
-L1792:
+	jp ult,L2247
+L2248:
+	ldb (_s_cmd_count__17),0
+	ldb (_s_lock__17),0
+L2244:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
 
 ; function ngpc_vramq_clear
 _ngpc_vramq_clear:
-	ld a,(_s_lock__15)
+	ld a,(_s_lock__17)
 	cp a,0
-	jr z,L1808
-	jr L1807
-L1808:
-	ldb (_s_cmd_count__15),0
-L1807:
+	jr z,L2260
+	jr L2259
+L2260:
+	ldb (_s_cmd_count__17),0
+L2259:
 	ret
 
 ; function ngpc_vramq_pending
 _ngpc_vramq_pending:
-	ld a,(_s_cmd_count__15)
-	jr L1810
-L1810:
+	ld a,(_s_cmd_count__17)
+	jr L2262
+L2262:
 	ret
 
 ; function ngpc_vramq_dropped
 _ngpc_vramq_dropped:
-	ld a,(_s_drop_count__15)
-	jr L1812
-L1812:
+	ld a,(_s_drop_count__17)
+	jr L2264
+L2264:
 	ret
 
 ; function ngpc_vramq_clear_dropped
 _ngpc_vramq_clear_dropped:
-	ldb (_s_drop_count__15),0
-L1814:
+	ldb (_s_drop_count__17),0
+L2266:
 	ret
 
 ; function rnd16
-_rnd16__16:
-	ld wa,(_rs__16)
-	ld bc,(_rs__16)
+_rnd16__18:
+	ld wa,(_rs__18)
+	ld bc,(_rs__18)
 	sll 7,bc
 	xor wa,bc
-	ld (_rs__16),wa
-	ld wa,(_rs__16)
-	ld bc,(_rs__16)
+	ld (_rs__18),wa
+	ld wa,(_rs__18)
+	ld bc,(_rs__18)
 	srl 9,bc
 	xor wa,bc
-	ld (_rs__16),wa
-	ld wa,(_rs__16)
-	ld bc,(_rs__16)
+	ld (_rs__18),wa
+	ld wa,(_rs__18)
+	ld bc,(_rs__18)
 	sll 8,bc
 	xor wa,bc
-	ld (_rs__16),wa
-	ld wa,(_rs__16)
-	jr L1816
-L1816:
+	ld (_rs__18),wa
+	ld wa,(_rs__18)
+	jr L2268
+L2268:
 	ret
 
 ; function rndn
-_rndn__16:
-	call _rnd16__16
+_rndn__18:
+	call _rnd16__18
 	extz xwa
 	div xwa,(xsp+4)
 	ld wa,qwa
-	jr L1818
-L1818:
+	jr L2270
+L2270:
 	ret
 
 ; function stage_of
-_stage_of__16:
+_stage_of__18:
 	push xiz
 	lda xsp,(xsp-2)
 	ld a,(xsp+10)
 	ld ixl,a
 	ld wa,0
 	ld izl,a
-	jr L1827
-L1825:
+	jr L2279
+L2277:
 	inc 1,izl
-L1827:
+L2279:
 	ld a,izl
 	extz wa
 	add wa,1
 	cp wa,5
-	jr uge,L1828
+	jr uge,L2280
 	ld a,izl
 	extz wa
 	add wa,1
@@ -8486,66 +10958,66 @@ L1827:
 	srl 1,wa
 	add wa,0
 	cp a,ixl
-	jr ule,L1825
-L1828:
-L1826:
+	jr ule,L2277
+L2280:
+L2278:
 	ld a,izl
-	jr L1824
-L1824:
+	jr L2276
+L2276:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
 
 ; function put
-_put__16:
+_put__18:
 	ld wa,(xsp+4)
-	ld xbc,(_gp__16)
-	ld e,(_gn__16)
+	ld xbc,(_gp__18)
+	ld e,(_gn__18)
 	extz de
 	muls xde,6
 	add xbc,xde
 	ld (xbc),wa
 	ld wa,(xsp+8)
-	ld xbc,(_gp__16)
-	ld e,(_gn__16)
+	ld xbc,(_gp__18)
+	ld e,(_gn__18)
 	extz de
 	muls xde,6
 	add xbc,xde
 	ld (xbc+2),wa
 	ld a,(xsp+12)
-	ld xbc,(_gp__16)
-	ld e,(_gn__16)
+	ld xbc,(_gp__18)
+	ld e,(_gn__18)
 	extz de
 	muls xde,6
 	add xbc,xde
 	ld (xbc+4),a
-	incb 1,(_gn__16)
-L1830:
+	incb 1,(_gn__18)
+L2282:
 	ret
 
 ; function slope_for
-_slope_for__16:
+_slope_for__18:
 	push xiz
 	lda xsp,(xsp-2)
 	ld a,(xsp+10)
 	cp a,0
-	jr z,L1838
+	jr z,L2290
 	ld wa,100
 	push xwa
-	call _rndn__16
+	call _rndn__18
 	lda xsp,(xsp+4)
 	ld bc,18
 	ld e,(xsp+10)
 	extz de
 	mul xbc,de
 	cp wa,bc
-	jr uge,L1838
+	jr uge,L2290
 	ld wa,6
 	push xwa
-	call _rndn__16
+	call _rndn__18
 	lda xsp,(xsp+4)
 	ld (xsp+0),a
-	ld xwa,_slopes__16
+	ld xwa,_slopes__18
 	ld c,(xsp+0)
 	extz bc
 	exts xbc
@@ -8554,46 +11026,46 @@ _slope_for__16:
 	ld izl,a
 	ld a,(xsp+0)
 	cp a,0
-	jr nz,L1839
+	jr nz,L2291
 	ld a,(xsp+10)
 	neg a
 	ld izl,a
-L1839:
+L2291:
 	ld a,(xsp+0)
 	cp a,3
-	jr nz,L1840
+	jr nz,L2292
 	ld a,(xsp+10)
 	ld izl,a
-L1840:
+L2292:
 	ld a,izl
 	cp a,252
-	jr ge,L1841
+	jr ge,L2293
 	ld izl,252
-L1841:
+L2293:
 	ld a,izl
 	cp a,3
-	jr le,L1842
+	jr le,L2294
 	ld izl,3
-L1842:
+L2294:
 	ld a,izl
-	jr L1837
-L1838:
+	jr L2289
+L2290:
 	ld wa,0
-	jr L1837
-L1837:
+	jr L2289
+L2289:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
 
 ; function sharp
-_sharp__16:
+_sharp__18:
 	push xiz
 	lda xsp,(xsp-2)
-	ld xwa,_sharp_bends__16
+	ld xwa,_sharp_bends__18
 	push xwa
 	ld wa,3
 	push xwa
-	call _rndn__16
+	call _rndn__18
 	lda xsp,(xsp+4)
 	ld xbc,xwa
 	pop xwa
@@ -8617,23 +11089,23 @@ _sharp__16:
 	ld iz,wa
 	ld wa,iz
 	cp wa,52
-	jr uge,L1847
+	jr uge,L2299
 	ld iz,52
-L1847:
+L2299:
 	ld wa,iz
 	cp wa,72
-	jr ule,L1848
+	jr ule,L2300
 	ld iz,72
-L1848:
+L2300:
 	ld wa,iz
-	jr L1846
-L1846:
+	jr L2298
+L2298:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
 
 ; function gen_leg
-_gen_leg__16:
+_gen_leg__18:
 	push xiz
 	lda xsp,(xsp-30)
 	ld xwa,_gfx_themes
@@ -8650,7 +11122,7 @@ _gen_leg__16:
 	ld (xsp+0),xwa
 	ld a,(xsp+38)
 	push xwa
-	call _stage_of__16
+	call _stage_of__18
 	lda xsp,(xsp+4)
 	ld (xsp+4),a
 	ld wa,160
@@ -8672,72 +11144,72 @@ _gen_leg__16:
 	ld wa,1
 	ld (xsp+16),wa
 	ld xwa,(xsp+42)
-	ld (_gp__16),xwa
-	ldb (_gn__16),0
+	ld (_gp__18),xwa
+	ldb (_gn__18),0
 	ld wa,(_free_seed)
 	ld c,(xsp+38)
 	extz bc
 	add bc,1
 	mul xbc,40503
 	xor wa,bc
-	ld (_rs__16),wa
-	ld wa,(_rs__16)
+	ld (_rs__18),wa
+	ld wa,(_rs__18)
 	cp wa,0
-	jr nz,L1873
-	ldw (_rs__16),44257
-L1873:
-	call _rnd16__16
+	jr nz,L2325
+	ldw (_rs__18),44257
+L2325:
+	call _rnd16__18
 	ld wa,0
 	push xwa
 	ld wa,0
 	push xwa
 	ld wa,900
 	push xwa
-	call _put__16
+	call _put__18
 	lda xsp,(xsp+12)
-	jp L1876
-L1874:
+	jp L2328
+L2326:
 	ld wa,1000
 	push xwa
-	call _rndn__16
+	call _rndn__18
 	lda xsp,(xsp+4)
 	ld (xsp+18),wa
 	push xwa
 	ld wa,1000
 	push xwa
-	call _rndn__16
+	call _rndn__18
 	lda xsp,(xsp+4)
 	ld xbc,xwa
 	pop xwa
 	cp bc,600
-	jr uge,L1877
+	jr uge,L2329
 	ld wa,(xsp+16)
 	neg wa
-	jr L1878
-L1877:
+	jr L2330
+L2329:
 	ld wa,(xsp+16)
-L1878:
+L2330:
 	ld (xsp+20),wa
 	ld wa,(xsp+18)
 	cp wa,(xsp+8)
-	jp uge,L1879
+	jp uge,L2331
 	ld xwa,(xsp+0)
 	ld a,(xwa+16)
 	push xwa
-	call _sharp__16
+	call _sharp__18
 	lda xsp,(xsp+4)
 	ld (xsp+22),wa
 	ld xwa,(xsp+0)
 	ld a,(xwa+16)
 	push xwa
-	call _sharp__16
+	call _sharp__18
 	lda xsp,(xsp+4)
 	ld (xsp+24),wa
-	ld xwa,_sp_s__16
+	ld xwa,_sp_s__18
 	push xwa
 	ld wa,3
 	push xwa
-	call _rndn__16
+	call _rndn__18
 	lda xsp,(xsp+4)
 	ld xbc,xwa
 	pop xwa
@@ -8746,11 +11218,11 @@ L1878:
 	add xwa,xbc
 	ld wa,(xwa)
 	ld (xsp+26),wa
-	ld xwa,_sp_gap__16
+	ld xwa,_sp_gap__18
 	push xwa
 	ld wa,3
 	push xwa
-	call _rndn__16
+	call _rndn__18
 	lda xsp,(xsp+4)
 	ld xbc,xwa
 	pop xwa
@@ -8762,22 +11234,22 @@ L1878:
 	push xwa
 	ld wa,2
 	push xwa
-	call _rndn__16
+	call _rndn__18
 	lda xsp,(xsp+4)
 	ld xbc,xwa
 	pop xwa
 	cp bc,0
-	jr z,L1880
+	jr z,L2332
 	ld wa,500
-	jr L1881
-L1880:
+	jr L2333
+L2332:
 	ld wa,400
-L1881:
+L2333:
 	ld (xsp+12),wa
 	ld xwa,(xsp+0)
 	ld a,(xwa+17)
 	push xwa
-	call _slope_for__16
+	call _slope_for__18
 	lda xsp,(xsp+4)
 	ld (xsp+14),a
 	ld a,(xsp+14)
@@ -8786,7 +11258,7 @@ L1881:
 	push xwa
 	ld wa,(xsp+20)
 	push xwa
-	call _put__16
+	call _put__18
 	lda xsp,(xsp+12)
 	ld wa,0
 	push xwa
@@ -8795,20 +11267,20 @@ L1881:
 	push xwa
 	ld wa,(xsp+34)
 	push xwa
-	call _put__16
+	call _put__18
 	lda xsp,(xsp+12)
 	ld wa,(xsp+28)
 	cp wa,0
-	jr z,L1882
+	jr z,L2334
 	ld wa,0
 	push xwa
 	ld wa,0
 	push xwa
 	ld wa,(xsp+36)
 	push xwa
-	call _put__16
+	call _put__18
 	lda xsp,(xsp+12)
-L1882:
+L2334:
 	ld wa,0
 	push xwa
 	ld wa,(xsp+24)
@@ -8817,7 +11289,7 @@ L1882:
 	push xwa
 	ld wa,(xsp+34)
 	push xwa
-	call _put__16
+	call _put__18
 	lda xsp,(xsp+12)
 	ld wa,iz
 	add wa,450
@@ -8829,32 +11301,32 @@ L1882:
 	ld wa,(xsp+20)
 	neg wa
 	ld (xsp+16),wa
-	jp L1883
-L1879:
+	jp L2335
+L2331:
 	ld wa,(xsp+18)
 	ld bc,(xsp+8)
 	add bc,(xsp+6)
 	cp wa,bc
-	jp uge,L1884
+	jp uge,L2336
 	push xwa
 	ld wa,2
 	push xwa
-	call _rndn__16
+	call _rndn__18
 	lda xsp,(xsp+4)
 	ld xbc,xwa
 	pop xwa
 	cp bc,0
-	jr z,L1885
+	jr z,L2337
 	ld wa,500
-	jr L1886
-L1885:
+	jr L2338
+L2337:
 	ld wa,400
-L1886:
+L2338:
 	ld (xsp+12),wa
 	ld xwa,(xsp+0)
 	ld a,(xwa+17)
 	push xwa
-	call _slope_for__16
+	call _slope_for__18
 	lda xsp,(xsp+4)
 	ld (xsp+14),a
 	ld a,(xsp+14)
@@ -8863,13 +11335,13 @@ L1886:
 	push xwa
 	ld wa,(xsp+20)
 	push xwa
-	call _put__16
+	call _put__18
 	lda xsp,(xsp+12)
-	ld xwa,_sp_sharp__16
+	ld xwa,_sp_sharp__18
 	push xwa
 	ld wa,3
 	push xwa
-	call _rndn__16
+	call _rndn__18
 	lda xsp,(xsp+4)
 	ld xbc,xwa
 	pop xwa
@@ -8885,7 +11357,7 @@ L1886:
 	ld xwa,(xsp+8)
 	ld a,(xwa+16)
 	push xwa
-	call _sharp__16
+	call _sharp__18
 	lda xsp,(xsp+4)
 	ld xbc,xwa
 	pop xwa
@@ -8893,7 +11365,7 @@ L1886:
 	push xwa
 	ld wa,(xsp+30)
 	push xwa
-	call _put__16
+	call _put__18
 	lda xsp,(xsp+12)
 	ld wa,iz
 	add wa,450
@@ -8901,22 +11373,22 @@ L1886:
 	ld iz,wa
 	ld wa,(xsp+20)
 	ld (xsp+16),wa
-	jp L1887
-L1884:
+	jp L2339
+L2336:
 	ld wa,100
 	push xwa
-	call _rndn__16
+	call _rndn__18
 	lda xsp,(xsp+4)
 	ld xbc,(xsp+0)
 	ld c,(xbc+18)
 	extz bc
 	cp wa,bc
-	jr uge,L1888
-	ld xwa,_sp_straight__16
+	jr uge,L2340
+	ld xwa,_sp_straight__18
 	push xwa
 	ld wa,4
 	push xwa
-	call _rndn__16
+	call _rndn__18
 	lda xsp,(xsp+4)
 	ld xbc,xwa
 	pop xwa
@@ -8928,25 +11400,25 @@ L1884:
 	ld xwa,(xsp+0)
 	ld a,(xwa+17)
 	push xwa
-	call _slope_for__16
+	call _slope_for__18
 	lda xsp,(xsp+4)
 	push xwa
 	ld wa,0
 	push xwa
 	ld wa,(xsp+30)
 	push xwa
-	call _put__16
+	call _put__18
 	lda xsp,(xsp+12)
 	ld wa,iz
 	add wa,(xsp+22)
 	ld iz,wa
-	jp L1889
-L1888:
-	ld xwa,_sp_bend__16
+	jp L2341
+L2340:
+	ld xwa,_sp_bend__18
 	push xwa
 	ld wa,5
 	push xwa
-	call _rndn__16
+	call _rndn__18
 	lda xsp,(xsp+4)
 	ld xbc,xwa
 	pop xwa
@@ -8955,18 +11427,18 @@ L1888:
 	add xwa,xbc
 	ld wa,(xwa)
 	ld (xsp+22),wa
-	ld xwa,_easy_bends__16
+	ld xwa,_easy_bends__18
 	push xwa
 	ld c,(xsp+8)
 	cp c,1
-	jr ult,L1890
+	jr ult,L2342
 	ld wa,5
-	jr L1891
-L1890:
+	jr L2343
+L2342:
 	ld wa,3
-L1891:
+L2343:
 	push xwa
-	call _rndn__16
+	call _rndn__18
 	lda xsp,(xsp+4)
 	ld xbc,xwa
 	pop xwa
@@ -8986,18 +11458,18 @@ L1891:
 	ld (xsp+24),wa
 	ld wa,(xsp+24)
 	cp wa,18
-	jr uge,L1892
+	jr uge,L2344
 	ldw (xsp+24),18
-L1892:
+L2344:
 	ld wa,(xsp+24)
 	cp wa,48
-	jr ule,L1893
+	jr ule,L2345
 	ldw (xsp+24),48
-L1893:
+L2345:
 	ld xwa,(xsp+0)
 	ld a,(xwa+17)
 	push xwa
-	call _slope_for__16
+	call _slope_for__18
 	lda xsp,(xsp+4)
 	push xwa
 	ld wa,(xsp+24)
@@ -9006,49 +11478,49 @@ L1893:
 	push xwa
 	ld wa,(xsp+30)
 	push xwa
-	call _put__16
+	call _put__18
 	lda xsp,(xsp+12)
 	ld wa,iz
 	add wa,(xsp+22)
 	ld iz,wa
 	ld wa,(xsp+20)
 	ld (xsp+16),wa
-L1889:
-L1887:
-L1883:
-L1876:
+L2341:
+L2339:
+L2335:
+L2328:
 	ld wa,iz
 	cp wa,11700
-	jr uge,L1894
-	ld a,(_gn__16)
+	jr uge,L2346
+	ld a,(_gn__18)
 	cp a,30
-	jp ule,L1874
-L1894:
-L1875:
+	jp ule,L2326
+L2346:
+L2327:
 	ld wa,0
 	push xwa
 	ld wa,0
 	push xwa
 	ld wa,2400
 	push xwa
-	call _put__16
+	call _put__18
 	lda xsp,(xsp+12)
-	ld a,(_gn__16)
-	jr L1872
-L1872:
+	ld a,(_gn__18)
+	jr L2324
+L2324:
 	lda xsp,(xsp+30)
 	pop xiz
 	ret
 
 ; function cost_of
-_cost_of__16:
+_cost_of__18:
 	push xiz
 	lda xsp,(xsp-10)
 	ld xwa,0
 	ld (xsp+0),xwa
 	ld ixl,0
-	jr L1909
-L1906:
+	jr L2361
+L2358:
 	ld xwa,(xsp+18)
 	ld c,ixl
 	extz bc
@@ -9060,26 +11532,26 @@ L1906:
 	ld iz,wa
 	ld wa,iy
 	cp wa,0
-	jr ge,L1910
+	jr ge,L2362
 	ld wa,iy
 	neg wa
 	ld iy,wa
-L1910:
-	jr L1913
-L1911:
+L2362:
+	jr L2365
+L2363:
 	dec 1,iz
-L1913:
+L2365:
 	ld wa,iz
 	cp wa,6
-	jr ule,L1914
+	jr ule,L2366
 	ld wa,iz
 	mul xwa,iz
 	ld bc,iy
 	mul xwa,bc
 	cp wa,6000
-	jr ugt,L1911
-L1914:
-L1912:
+	jr ugt,L2363
+L2366:
+L2364:
 	ld xwa,(xsp+0)
 	ld xbc,(xsp+18)
 	ld e,ixl
@@ -9103,63 +11575,63 @@ L1912:
 	pop xwa
 	add xwa,xbc
 	ld (xsp+0),xwa
-L1908:
+L2360:
 	inc 1,ixl
-L1909:
+L2361:
 	ld a,ixl
 	cp a,(xsp+22)
-	jr ult,L1906
-L1907:
+	jr ult,L2358
+L2359:
 	ld xwa,(xsp+0)
 	srl 4,xwa
-	jr L1905
-L1905:
+	jr L2357
+L2357:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
 
 ; function put_placeholder
-_put_placeholder__16:
+_put_placeholder__18:
 	push xiz
 	ld a,(xsp+8)
 	ld izl,a
 	ld wa,4000
-	ld xbc,_buf__16
+	ld xbc,_buf__18
 	ld e,izl
 	extz de
 	muls xde,6
 	add xbc,xde
 	ld (xbc),wa
 	ld wa,0
-	ld xbc,_buf__16
+	ld xbc,_buf__18
 	ld e,izl
 	extz de
 	muls xde,6
 	add xbc,xde
 	ld (xbc+2),wa
 	ld a,0
-	ld xbc,_buf__16
+	ld xbc,_buf__18
 	ld e,izl
 	extz de
 	muls xde,6
 	add xbc,xde
 	ld (xbc+4),a
-L1916:
+L2368:
 	pop xiz
 	ret
 
 ; function copy_leg
-_copy_leg__16:
+_copy_leg__18:
 	push xiz
 	lda xsp,(xsp-6)
 	ld a,(xsp+18)
 	ld iyl,a
 	ld a,(_difficulty)
 	cp a,3
-	jr nz,L1926
+	jr nz,L2378
 	push xix
 	push xiy
-	ld xwa,_buf__16
+	ld xwa,_buf__18
 	ld c,iyl
 	extz bc
 	muls xbc,6
@@ -9168,13 +11640,13 @@ _copy_leg__16:
 	push xwa
 	ld a,(xsp+26)
 	push xwa
-	call _gen_leg__16
+	call _gen_leg__18
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
 	ld ixl,a
-	jr L1927
-L1926:
+	jr L2379
+L2378:
 	ld xwa,_gfx_legs
 	ld c,(xsp+14)
 	extz bc
@@ -9192,14 +11664,14 @@ L1926:
 	add wa,bc
 	add wa,1
 	cp wa,72
-	jr ule,L1928
+	jr ule,L2380
 	ld a,71
 	sub a,iyl
 	ld ixl,a
-L1928:
+L2380:
 	ld izl,0
-	jr L1932
-L1929:
+	jr L2384
+L2381:
 	push xwa
 	ld xwa,(xsp+6)
 	ld xwa,(xwa)
@@ -9208,7 +11680,7 @@ L1929:
 	muls xbc,6
 	add xwa,xbc
 	push xwa
-	ld xwa,_buf__16
+	ld xwa,_buf__18
 	ld c,iyl
 	add c,izl
 	extz bc
@@ -9219,61 +11691,61 @@ L1929:
 	ld bc,6
 	ldirb
 	pop xwa
-L1931:
+L2383:
 	inc 1,izl
-L1932:
+L2384:
 	ld a,izl
 	cp a,ixl
-	jr ult,L1929
-L1930:
-L1927:
+	jr ult,L2381
+L2382:
+L2379:
 	push xix
 	push xiy
 	ld a,ixl
 	push xwa
-	ld xwa,_buf__16
+	ld xwa,_buf__18
 	ld c,iyl
 	extz bc
 	muls xbc,6
 	add xwa,xbc
 	lda xwa,(xwa)
 	push xwa
-	call _cost_of__16
+	call _cost_of__18
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
 	ld (_next_leg_cost),wa
 	ld a,ixl
-	jr L1925
-L1925:
+	jr L2377
+L2377:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
 
 ; function load_current
-_load_current__16:
+_load_current__18:
 	push xiz
 	lda xsp,(xsp-2)
 	ld wa,0
 	push xwa
 	ld a,(_cur_leg)
 	push xwa
-	call _copy_leg__16
+	call _copy_leg__18
 	lda xsp,(xsp+8)
-	ld (_n_cur__16),a
-	ld a,(_n_cur__16)
+	ld (_n_cur__18),a
+	ld a,(_n_cur__18)
 	push xwa
-	call _put_placeholder__16
+	call _put_placeholder__18
 	lda xsp,(xsp+4)
-	ld a,(_n_cur__16)
+	ld a,(_n_cur__18)
 	add a,1
 	ld (_track_len),a
 	ldw (_leg_len),0
 	ld izl,0
-	jr L1942
-L1939:
+	jr L2394
+L2391:
 	ld wa,(_leg_len)
-	ld xbc,_buf__16
+	ld xbc,_buf__18
 	ld e,izl
 	extz de
 	muls xde,6
@@ -9281,15 +11753,15 @@ L1939:
 	ld bc,(xbc)
 	add wa,bc
 	ld (_leg_len),wa
-L1941:
+L2393:
 	inc 1,izl
-L1942:
+L2394:
 	ld a,izl
-	cp a,(_n_cur__16)
-	jr ult,L1939
-L1940:
+	cp a,(_n_cur__18)
+	jr ult,L2391
+L2392:
 	ldb (_fork_choice),0
-L1938:
+L2390:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -9302,8 +11774,8 @@ _course_start:
 	ldb (_cur_branch),0
 	ldb (_cur_leg),0
 	ld izl,0
-	jr L1963
-L1960:
+	jr L2415
+L2412:
 	ld a,0
 	ld xbc,_route_hist
 	ld e,izl
@@ -9311,16 +11783,16 @@ L1960:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1962:
+L2414:
 	inc 1,izl
-L1963:
+L2415:
 	ld a,izl
 	cp a,5
-	jr ult,L1960
-L1961:
+	jr ult,L2412
+L2413:
 	ld izl,0
-	jr L1967
-L1964:
+	jr L2419
+L2416:
 	ld xwa,_gfx_legs
 	ld c,izl
 	extz bc
@@ -9333,37 +11805,37 @@ L1964:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1966:
+L2418:
 	inc 1,izl
-L1967:
+L2419:
 	ld a,izl
 	cp a,15
-	jr ult,L1964
-L1965:
+	jr ult,L2416
+L2417:
 	ld a,(_difficulty)
 	cp a,3
-	jp nz,L1968
+	jp nz,L2420
 	ld wa,(_free_seed)
 	cp wa,0
-	jr nz,L1969
+	jr nz,L2421
 	ldw (_free_seed),24301
-L1969:
+L2421:
 	ld wa,(_free_seed)
 	xor wa,15450
-	ld (_rs__16),wa
-	ld wa,(_rs__16)
+	ld (_rs__18),wa
+	ld wa,(_rs__18)
 	cp wa,0
-	jr nz,L1970
-	ldw (_rs__16),44257
-L1970:
+	jr nz,L2422
+	ldw (_rs__18),44257
+L2422:
 	ld izl,14
-	jr L1974
-L1971:
+	jr L2426
+L2423:
 	ld a,izl
 	extz wa
 	add wa,1
 	push xwa
-	call _rndn__16
+	call _rndn__18
 	lda xsp,(xsp+4)
 	ld (xsp+1),a
 	ld xwa,_leg_theme
@@ -9392,16 +11864,16 @@ L1971:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1973:
+L2425:
 	dec 1,izl
-L1974:
+L2426:
 	ld a,izl
 	cp a,0
-	jr ugt,L1971
-L1972:
-L1968:
-	call _load_current__16
-L1959:
+	jr ugt,L2423
+L2424:
+L2420:
+	call _load_current__18
+L2411:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -9412,14 +11884,14 @@ _course_is_last_stage:
 	extz bc
 	add bc,1
 	cp bc,5
-	jr ult,L1979
+	jr ult,L2431
 	ld wa,1
-	jr L1980
-L1979:
+	jr L2432
+L2431:
 	ld wa,0
-L1980:
-	jr L1978
-L1978:
+L2432:
+	jr L2430
+L2430:
 	ret
 
 ; function course_fork_zone
@@ -9427,31 +11899,31 @@ _course_fork_zone:
 	ld bc,(xsp+4)
 	add bc,2400
 	cp bc,(_leg_len)
-	jr ult,L1985
+	jr ult,L2437
 	ld wa,1
-	jr L1986
-L1985:
+	jr L2438
+L2437:
 	ld wa,0
-L1986:
-	jr L1984
-L1984:
+L2438:
+	jr L2436
+L2436:
 	ret
 
 ; function course_start_zone
 _course_start_zone:
 	ld c,(_cur_stage)
 	cp c,0
-	jr z,L1991
+	jr z,L2443
 	ld bc,(xsp+4)
 	cp bc,900
-	jr uge,L1991
+	jr uge,L2443
 	ld wa,1
-	jr L1992
-L1991:
+	jr L2444
+L2443:
 	ld wa,0
-L1992:
-	jr L1990
-L1990:
+L2444:
+	jr L2442
+L2442:
 	ret
 
 ; function course_decide
@@ -9460,21 +11932,21 @@ _course_decide:
 	lda xsp,(xsp-2)
 	ld a,(_fork_choice)
 	cp a,0
-	jr nz,L2005
+	jr nz,L2457
 	call _course_is_last_stage
 	cp a,0
-	jr z,L2004
-L2005:
-	jp L2003
-L2004:
+	jr z,L2456
+L2457:
+	jp L2455
+L2456:
 	ld c,(xsp+10)
 	cp c,0
-	jr z,L2006
+	jr z,L2458
 	ld wa,2
-	jr L2007
-L2006:
+	jr L2459
+L2458:
 	ld wa,1
-L2007:
+L2459:
 	ld (_fork_choice),a
 	ld a,(_cur_stage)
 	extz wa
@@ -9489,52 +11961,52 @@ L2007:
 	extz bc
 	ld l,(xsp+10)
 	cp l,0
-	jr z,L2008
+	jr z,L2460
 	ld de,1
-	jr L2009
-L2008:
+	jr L2461
+L2460:
 	ld de,0
-L2009:
+L2461:
 	add bc,de
 	add wa,bc
 	ld (xsp+0),a
-	ld a,(_n_cur__16)
+	ld a,(_n_cur__18)
 	push xwa
 	ld a,(xsp+4)
 	push xwa
-	call _copy_leg__16
+	call _copy_leg__18
 	lda xsp,(xsp+8)
 	ld izl,a
 	ld a,izl
-	ld (_n_next__16),a
+	ld (_n_next__18),a
 	ld a,izl
 	cp a,0
-	jr z,L2010
+	jr z,L2462
 	ld c,(xsp+10)
 	cp c,0
-	jr z,L2011
+	jr z,L2463
 	ld wa,65486
-	jr L2012
-L2011:
+	jr L2464
+L2463:
 	ld wa,50
-L2012:
-	ld xbc,_buf__16
-	ld e,(_n_cur__16)
+L2464:
+	ld xbc,_buf__18
+	ld e,(_n_cur__18)
 	extz de
 	muls xde,6
 	add xbc,xde
 	ld (xbc+2),wa
-L2010:
-	ld a,(_n_cur__16)
+L2462:
+	ld a,(_n_cur__18)
 	add a,izl
 	push xwa
-	call _put_placeholder__16
+	call _put_placeholder__18
 	lda xsp,(xsp+4)
-	ld a,(_n_cur__16)
+	ld a,(_n_cur__18)
 	add a,izl
 	add a,1
 	ld (_track_len),a
-L2003:
+L2455:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -9547,34 +12019,34 @@ _course_next_leg:
 	call _course_is_last_stage
 	pop xix
 	cp a,0
-	jr z,L2027
+	jr z,L2479
 	ld wa,0
-	jp L2026
-L2027:
+	jp L2478
+L2479:
 	ld a,(_fork_choice)
 	cp a,0
-	jr nz,L2028
+	jr nz,L2480
 	push xix
 	ld wa,0
 	push xwa
 	call _course_decide
 	lda xsp,(xsp+4)
 	pop xix
-L2028:
-	ld a,(_n_cur__16)
+L2480:
+	ld a,(_n_cur__18)
 	ld ixl,a
 	ld izl,0
-	jr L2032
-L2029:
+	jr L2484
+L2481:
 	push xwa
-	ld xwa,_buf__16
+	ld xwa,_buf__18
 	ld c,izl
 	add c,ixl
 	extz bc
 	muls xbc,6
 	add xwa,xbc
 	push xwa
-	ld xwa,_buf__16
+	ld xwa,_buf__18
 	ld c,izl
 	extz bc
 	muls xbc,6
@@ -9584,22 +12056,22 @@ L2029:
 	ld bc,6
 	ldirb
 	pop xwa
-L2031:
+L2483:
 	inc 1,izl
-L2032:
+L2484:
 	ld a,izl
 	add a,ixl
 	cp a,(_track_len)
-	jr ult,L2029
-L2030:
+	jr ult,L2481
+L2482:
 	ld a,(_track_len)
 	sub a,ixl
 	ld (_track_len),a
 	ld a,(_fork_choice)
 	cp a,2
-	jr nz,L2033
+	jr nz,L2485
 	incb 1,(_cur_branch)
-L2033:
+L2485:
 	incb 1,(_cur_stage)
 	ld a,(_cur_branch)
 	ld xbc,_route_hist
@@ -9619,21 +12091,21 @@ L2033:
 	extz bc
 	add wa,bc
 	ld (_cur_leg),a
-	ld a,(_n_next__16)
-	ld (_n_cur__16),a
-	ld a,(_n_cur__16)
+	ld a,(_n_next__18)
+	ld (_n_cur__18),a
+	ld a,(_n_cur__18)
 	cp a,(_track_len)
-	jr ult,L2034
+	jr ult,L2486
 	ld a,(_track_len)
 	sub a,1
-	ld (_n_cur__16),a
-L2034:
+	ld (_n_cur__18),a
+L2486:
 	ldw (_leg_len),0
 	ld izl,0
-	jr L2038
-L2035:
+	jr L2490
+L2487:
 	ld wa,(_leg_len)
-	ld xbc,_buf__16
+	ld xbc,_buf__18
 	ld e,izl
 	extz de
 	muls xde,6
@@ -9641,17 +12113,17 @@ L2035:
 	ld bc,(xbc)
 	add wa,bc
 	ld (_leg_len),wa
-L2037:
+L2489:
 	inc 1,izl
-L2038:
+L2490:
 	ld a,izl
-	cp a,(_n_cur__16)
-	jr ult,L2035
-L2036:
+	cp a,(_n_cur__18)
+	jr ult,L2487
+L2488:
 	ldb (_fork_choice),0
 	ld a,ixl
-	jr L2026
-L2026:
+	jr L2478
+L2478:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -9686,22 +12158,22 @@ _course_debug_leg:
 	add xbc,xde
 	ld (xbc),a
 	push xix
-	call _load_current__16
+	call _load_current__18
 	pop xix
-L2040:
+L2492:
 	pop xiz
 	ret
 
 ; function rnd
-_rnd__17:
-	ld wa,(_seed__17)
+_rnd__19:
+	ld wa,(_seed__19)
 	mul xwa,25173
 	add wa,13849
-	ld (_seed__17),wa
-	ld wa,(_seed__17)
+	ld (_seed__19),wa
+	ld wa,(_seed__19)
 	srl 8,wa
-	jr L2042
-L2042:
+	jr L2494
+L2494:
 	ret
 
 ; function ending_start
@@ -9710,10 +12182,10 @@ _ending_start:
 	lda xsp,(xsp-8)
 	ld a,(xsp+16)
 	cp a,5
-	jr ule,L2054
+	jr ule,L2506
 	ldb (xsp+16),5
-L2054:
-	ld xwa,_endings__17
+L2506:
+	ld xwa,_endings__19
 	ld c,(xsp+16)
 	extz bc
 	exts xbc
@@ -9722,8 +12194,8 @@ L2054:
 	lda xwa,(xwa)
 	ld (xsp+0),xwa
 	ldw (xsp+4),0
-	jr L2058
-L2055:
+	jr L2510
+L2507:
 	ld xwa,_gfx_particle_tiles
 	ld bc,(xsp+4)
 	extz xbc
@@ -9736,13 +12208,13 @@ L2055:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2057:
+L2509:
 	incw 1,(xsp+4)
-L2058:
+L2510:
 	ld wa,(xsp+4)
 	cp wa,24
-	jr ult,L2055
-L2056:
+	jr ult,L2507
+L2508:
 	ld xwa,(xsp+0)
 	lda xwa,(xwa+8)
 	ld wa,(xwa+4)
@@ -9839,87 +12311,87 @@ L2056:
 	lda xsp,(xsp+8)
 	ld xwa,(xsp+0)
 	ld a,(xwa+14)
-	ld (_fx__17),a
-	ldb (_timer__17),0
+	ld (_fx__19),a
+	ldb (_timer__19),0
 	ld izl,0
-	jr L2062
-L2059:
+	jr L2514
+L2511:
 	ld a,0
-	ld xbc,_life__17
+	ld xbc,_life__19
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-	call _rnd__17
+	call _rnd__19
 	extz wa
 	extz xwa
 	div xwa,152
 	ld wa,qwa
 	sll 4,wa
-	ld xbc,_px__17
+	ld xbc,_px__19
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	call _rnd__17
+	call _rnd__19
 	extz wa
 	extz xwa
 	div xwa,140
 	ld wa,qwa
 	sll 4,wa
-	ld xbc,_py__17
+	ld xbc,_py__19
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2061:
+L2513:
 	inc 1,izl
-L2062:
+L2514:
 	ld a,izl
 	cp a,14
-	jr ult,L2059
-L2060:
-L2053:
+	jr ult,L2511
+L2512:
+L2505:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
 
 ; function pal_of
-_pal_of__17:
-	ld xwa,_pals__17_L2066
+_pal_of__19:
+	ld xwa,_pals__19_L2518
 	ld c,(xsp+4)
 	extz bc
 	and bc,3
 	extz xbc
 	add xwa,xbc
 	ld a,(xwa)
-	jr L2065
-L2065:
+	jr L2517
+L2517:
 	ret
 
 ; function ending_tick
 _ending_tick:
 	push xiz
 	lda xsp,(xsp-14)
-	incb 1,(_timer__17)
-	ld a,(_fx__17)
+	incb 1,(_timer__19)
+	ld a,(_fx__19)
 	cp a,1
-	jp nz,L2104
-	ld a,(_timer__17)
+	jp nz,L2556
+	ld a,(_timer__19)
 	extz wa
 	extz xwa
 	div xwa,40
 	ld wa,qwa
 	cp wa,1
-	jp nz,L2104
+	jp nz,L2556
 	ld wa,24
 	push xwa
-	call _rnd__17
+	call _rnd__19
 	ld xbc,xwa
 	pop xwa
 	extz bc
@@ -9931,7 +12403,7 @@ _ending_tick:
 	ld (xsp+2),wa
 	ld wa,20
 	push xwa
-	call _rnd__17
+	call _rnd__19
 	ld xbc,xwa
 	pop xwa
 	extz bc
@@ -9941,28 +12413,28 @@ _ending_tick:
 	add wa,bc
 	sll 4,wa
 	ld (xsp+4),wa
-	call _rnd__17
+	call _rnd__19
 	push xwa
-	call _pal_of__17
+	call _pal_of__19
 	lda xsp,(xsp+4)
 	ld (xsp+6),a
 	ld izl,0
-	jp L2108
-L2105:
+	jp L2560
+L2557:
 	ld a,izl
 	and a,7
 	ld (xsp+7),a
 	ld c,izl
 	cp c,8
-	jr uge,L2109
+	jr uge,L2561
 	ld wa,2
-	jr L2110
-L2109:
+	jr L2562
+L2561:
 	ld wa,1
-L2110:
+L2562:
 	ld (xsp+8),wa
 	ld wa,(xsp+2)
-	ld xbc,_px__17
+	ld xbc,_px__19
 	ld e,izl
 	extz de
 	exts xde
@@ -9970,14 +12442,14 @@ L2110:
 	add xbc,xde
 	ld (xbc),wa
 	ld wa,(xsp+4)
-	ld xbc,_py__17
+	ld xbc,_py__19
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	ld xwa,_dir_x__17
+	ld xwa,_dir_x__19
 	ld c,(xsp+7)
 	extz bc
 	exts xbc
@@ -9985,14 +12457,14 @@ L2110:
 	ld a,(xwa)
 	exts wa
 	mul xwa,(xsp+8)
-	ld xbc,_vx__17
+	ld xbc,_vx__19
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	ld xwa,_dir_y__17
+	ld xwa,_dir_y__19
 	ld c,(xsp+7)
 	extz bc
 	exts xbc
@@ -10000,7 +12472,7 @@ L2110:
 	ld a,(xwa)
 	exts wa
 	mul xwa,(xsp+8)
-	ld xbc,_vy__17
+	ld xbc,_vy__19
 	ld e,izl
 	extz de
 	exts xde
@@ -10008,61 +12480,61 @@ L2110:
 	add xbc,xde
 	ld (xbc),wa
 	ld a,34
-	ld xbc,_life__17
+	ld xbc,_life__19
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,0
-	ld xbc,_ptile__17
+	ld xbc,_ptile__19
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,(xsp+6)
-	ld xbc,_ppal__17
+	ld xbc,_ppal__19
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2107:
+L2559:
 	inc 1,izl
-L2108:
+L2560:
 	ld a,izl
 	cp a,14
-	jp ult,L2105
-L2106:
-L2104:
+	jp ult,L2557
+L2558:
+L2556:
 	ld izl,0
-	jp L2114
-L2111:
+	jp L2566
+L2563:
 	ld a,56
 	add a,izl
 	ld (xsp+1),a
-	ld a,(_fx__17)
+	ld a,(_fx__19)
 	extz wa
 	cp wa,1
-	jr z,L2116
+	jr z,L2568
 	cp wa,2
-	jp z,L2117
+	jp z,L2569
 	cp wa,3
-	jp z,L2118
+	jp z,L2570
 	cp wa,4
-	jp z,L2119
-	jp L2120
-L2116:
-	ld xwa,_life__17
+	jp z,L2571
+	jp L2572
+L2568:
+	ld xwa,_life__19
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jp z,L2121
-	ld xbc,_life__17
+	jp z,L2573
+	ld xbc,_life__19
 	ld e,izl
 	extz de
 	exts xde
@@ -10070,14 +12542,14 @@ L2116:
 	ld a,(xbc)
 	dec 1,a
 	ld (xbc),a
-	ld xwa,_px__17
+	ld xwa,_px__19
 	ld c,izl
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld xbc,_vx__17
+	ld xbc,_vx__19
 	ld e,izl
 	extz de
 	exts xde
@@ -10085,21 +12557,21 @@ L2116:
 	add xbc,xde
 	ld bc,(xbc)
 	add wa,bc
-	ld xbc,_px__17
+	ld xbc,_px__19
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	ld xwa,_py__17
+	ld xwa,_py__19
 	ld c,izl
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld xbc,_vy__17
+	ld xbc,_vy__19
 	ld e,izl
 	extz de
 	exts xde
@@ -10107,14 +12579,14 @@ L2116:
 	add xbc,xde
 	ld bc,(xbc)
 	add wa,bc
-	ld xbc,_py__17
+	ld xbc,_py__19
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	ld xwa,_vy__17
+	ld xwa,_vy__19
 	ld c,izl
 	extz bc
 	exts xbc
@@ -10122,25 +12594,25 @@ L2116:
 	add xwa,xbc
 	ld wa,(xwa)
 	add wa,1
-	ld xbc,_vy__17
+	ld xbc,_vy__19
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2121:
-	jp L2115
-L2117:
-	ld xwa,_life__17
+L2573:
+	jp L2567
+L2569:
+	ld xwa,_life__19
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L2123
-	ld xwa,_py__17
+	jr z,L2575
+	ld xwa,_py__19
 	ld c,izl
 	extz bc
 	exts xbc
@@ -10148,27 +12620,27 @@ L2117:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,2400
-	jp le,L2122
-L2123:
-	call _rnd__17
+	jp le,L2574
+L2575:
+	call _rnd__19
 	extz wa
 	extz xwa
 	div xwa,152
 	ld wa,qwa
 	sll 4,wa
-	ld xbc,_px__17
+	ld xbc,_px__19
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	call _rnd__17
+	call _rnd__19
 	extz wa
 	and wa,63
 	neg wa
 	sll 4,wa
-	ld xbc,_py__17
+	ld xbc,_py__19
 	ld e,izl
 	extz de
 	exts xde
@@ -10177,52 +12649,52 @@ L2123:
 	ld (xbc),wa
 	ld wa,12
 	push xwa
-	call _rnd__17
+	call _rnd__19
 	ld xbc,xwa
 	pop xwa
 	extz bc
 	and bc,15
 	add wa,bc
-	ld xbc,_vy__17
+	ld xbc,_vy__19
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	call _rnd__17
+	call _rnd__19
 	push xwa
-	call _pal_of__17
+	call _pal_of__19
 	lda xsp,(xsp+4)
-	ld xbc,_ppal__17
+	ld xbc,_ppal__19
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,1
-	ld xbc,_ptile__17
+	ld xbc,_ptile__19
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,1
-	ld xbc,_life__17
+	ld xbc,_life__19
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2122:
-	ld xwa,_py__17
+L2574:
+	ld xwa,_py__19
 	ld c,izl
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld xbc,_vy__17
+	ld xbc,_vy__19
 	ld e,izl
 	extz de
 	exts xde
@@ -10230,21 +12702,21 @@ L2122:
 	add xbc,xde
 	ld bc,(xbc)
 	add wa,bc
-	ld xbc,_py__17
+	ld xbc,_py__19
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	ld xwa,_px__17
+	ld xwa,_px__19
 	ld c,izl
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld e,(_timer__17)
+	ld e,(_timer__19)
 	extz de
 	ld l,izl
 	extz hl
@@ -10252,31 +12724,31 @@ L2122:
 	add de,hl
 	and de,32
 	cp de,0
-	jr z,L2124
+	jr z,L2576
 	ld bc,6
-	jr L2125
-L2124:
+	jr L2577
+L2576:
 	ld bc,65530
-L2125:
+L2577:
 	add wa,bc
-	ld xbc,_px__17
+	ld xbc,_px__19
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	jp L2115
-L2118:
-	ld xwa,_life__17
+	jp L2567
+L2570:
+	ld xwa,_life__19
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L2127
-	ld xwa,_py__17
+	jr z,L2579
+	ld xwa,_py__19
 	ld c,izl
 	extz bc
 	exts xbc
@@ -10284,11 +12756,11 @@ L2118:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,65408
-	jp ge,L2126
-L2127:
+	jp ge,L2578
+L2579:
 	ld wa,8
 	push xwa
-	call _rnd__17
+	call _rnd__19
 	ld xbc,xwa
 	pop xwa
 	extz bc
@@ -10297,7 +12769,7 @@ L2127:
 	ld bc,qbc
 	add wa,bc
 	sll 4,wa
-	ld xbc,_px__17
+	ld xbc,_px__19
 	ld e,izl
 	extz de
 	exts xde
@@ -10306,14 +12778,14 @@ L2127:
 	ld (xbc),wa
 	ld wa,152
 	push xwa
-	call _rnd__17
+	call _rnd__19
 	ld xbc,xwa
 	pop xwa
 	extz bc
 	and bc,63
 	add wa,bc
 	sll 4,wa
-	ld xbc,_py__17
+	ld xbc,_py__19
 	ld e,izl
 	extz de
 	exts xde
@@ -10322,53 +12794,53 @@ L2127:
 	ld (xbc),wa
 	ld wa,8
 	push xwa
-	call _rnd__17
+	call _rnd__19
 	ld xbc,xwa
 	pop xwa
 	extz bc
 	and bc,7
 	add wa,bc
 	neg wa
-	ld xbc,_vy__17
+	ld xbc,_vy__19
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	call _rnd__17
+	call _rnd__19
 	push xwa
-	call _pal_of__17
+	call _pal_of__19
 	lda xsp,(xsp+4)
-	ld xbc,_ppal__17
+	ld xbc,_ppal__19
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,2
-	ld xbc,_ptile__17
+	ld xbc,_ptile__19
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,1
-	ld xbc,_life__17
+	ld xbc,_life__19
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2126:
-	ld xwa,_py__17
+L2578:
+	ld xwa,_py__19
 	ld c,izl
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld xbc,_vy__17
+	ld xbc,_vy__19
 	ld e,izl
 	extz de
 	exts xde
@@ -10376,21 +12848,21 @@ L2126:
 	add xbc,xde
 	ld bc,(xbc)
 	add wa,bc
-	ld xbc,_py__17
+	ld xbc,_py__19
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	ld xwa,_px__17
+	ld xwa,_px__19
 	ld c,izl
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld e,(_timer__17)
+	ld e,(_timer__19)
 	extz de
 	ld l,izl
 	extz hl
@@ -10398,50 +12870,50 @@ L2126:
 	add de,hl
 	and de,64
 	cp de,0
-	jr z,L2128
+	jr z,L2580
 	ld bc,3
-	jr L2129
-L2128:
+	jr L2581
+L2580:
 	ld bc,65533
-L2129:
+L2581:
 	add wa,bc
-	ld xbc,_px__17
+	ld xbc,_px__19
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	jp L2115
-L2119:
-	ld xwa,_life__17
+	jp L2567
+L2571:
+	ld xwa,_life__19
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jp nz,L2130
-	call _rnd__17
+	jp nz,L2582
+	call _rnd__19
 	extz wa
 	extz xwa
 	div xwa,152
 	ld wa,qwa
 	sll 4,wa
-	ld xbc,_px__17
+	ld xbc,_px__19
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	call _rnd__17
+	call _rnd__19
 	extz wa
 	extz xwa
 	div xwa,100
 	ld wa,qwa
 	sll 4,wa
-	ld xbc,_py__17
+	ld xbc,_py__19
 	ld e,izl
 	extz de
 	exts xde
@@ -10450,13 +12922,13 @@ L2119:
 	ld (xbc),wa
 	ld wa,10
 	push xwa
-	call _rnd__17
+	call _rnd__19
 	ld xbc,xwa
 	pop xwa
 	extz bc
 	and bc,31
 	add wa,bc
-	ld xbc,_life__17
+	ld xbc,_life__19
 	ld e,izl
 	extz de
 	exts xde
@@ -10466,28 +12938,28 @@ L2119:
 	extz bc
 	and bc,1
 	cp bc,0
-	jr z,L2131
+	jr z,L2583
 	ld wa,2
-	jr L2132
-L2131:
+	jr L2584
+L2583:
 	ld wa,9
-L2132:
-	ld xbc,_ppal__17
+L2584:
+	ld xbc,_ppal__19
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,0
-	ld xbc,_ptile__17
+	ld xbc,_ptile__19
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-	jr L2133
-L2130:
-	ld xbc,_life__17
+	jr L2585
+L2582:
+	ld xbc,_life__19
 	ld e,izl
 	extz de
 	exts xde
@@ -10495,20 +12967,20 @@ L2130:
 	ld a,(xbc)
 	dec 1,a
 	ld (xbc),a
-L2133:
-	jr L2115
-L2120:
-	jr L2115
-L2115:
-	ld xwa,_life__17
+L2585:
+	jr L2567
+L2572:
+	jr L2567
+L2567:
+	ld xwa,_life__19
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jp z,L2135
-	ld xwa,_px__17
+	jp z,L2587
+	ld xwa,_px__19
 	ld c,izl
 	extz bc
 	exts xbc
@@ -10516,8 +12988,8 @@ L2115:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,65424
-	jr lt,L2135
-	ld xwa,_px__17
+	jr lt,L2587
+	ld xwa,_px__19
 	ld c,izl
 	extz bc
 	exts xbc
@@ -10525,8 +12997,8 @@ L2115:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,2544
-	jr gt,L2135
-	ld xwa,_py__17
+	jr gt,L2587
+	ld xwa,_py__19
 	ld c,izl
 	extz bc
 	exts xbc
@@ -10534,8 +13006,8 @@ L2115:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,65424
-	jr lt,L2135
-	ld xwa,_py__17
+	jr lt,L2587
+	ld xwa,_py__19
 	ld c,izl
 	extz bc
 	exts xbc
@@ -10543,11 +13015,11 @@ L2115:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,2416
-	jr gt,L2135
-	ld a,(_fx__17)
+	jr gt,L2587
+	ld a,(_fx__19)
 	cp a,4
-	jr nz,L2134
-	ld xwa,_life__17
+	jr nz,L2586
+	ld xwa,_life__19
 	ld c,izl
 	extz bc
 	exts xbc
@@ -10556,8 +13028,8 @@ L2115:
 	extz wa
 	and wa,4
 	cp wa,0
-	jr z,L2134
-L2135:
+	jr z,L2586
+L2587:
 	ld a,(xsp+1)
 	add a,1
 	push xwa
@@ -10565,12 +13037,12 @@ L2135:
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-	jp L2113
-L2134:
-L2136:
+	jp L2565
+L2586:
+L2588:
 	ld a,(xsp+1)
 	ld (xsp+2),a
-	ld xwa,_px__17
+	ld xwa,_px__19
 	ld c,izl
 	extz bc
 	exts xbc
@@ -10579,7 +13051,7 @@ L2136:
 	ld wa,(xwa)
 	sra 4,wa
 	ld (xsp+3),a
-	ld xwa,_py__17
+	ld xwa,_py__19
 	ld c,izl
 	extz bc
 	exts xbc
@@ -10589,7 +13061,7 @@ L2136:
 	sra 4,wa
 	ld (xsp+4),a
 	ld wa,107
-	ld xbc,_ptile__17
+	ld xbc,_ptile__19
 	ld e,izl
 	extz de
 	exts xde
@@ -10598,7 +13070,7 @@ L2136:
 	extz bc
 	add wa,bc
 	ld (xsp+6),wa
-	ld xwa,_ppal__17
+	ld xwa,_ppal__19
 	ld c,izl
 	extz bc
 	exts xbc
@@ -10644,16 +13116,16 @@ L2136:
 	add bc,de
 	extz xbc
 	ld (xbc),a
-L2138:
-L2137:
-L2113:
+L2590:
+L2589:
+L2565:
 	inc 1,izl
-L2114:
+L2566:
 	ld a,izl
 	cp a,14
-	jp ult,L2111
-L2112:
-L2103:
+	jp ult,L2563
+L2564:
+L2555:
 	lda xsp,(xsp+14)
 	pop xiz
 	ret
@@ -10666,12 +13138,12 @@ _ending_stop:
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-	ldb (_fx__17),0
-L2140:
+	ldb (_fx__19),0
+L2592:
 	ret
 
 ; function dma0_program
-_dma0_program__18:
+_dma0_program__20:
 	ld wa,(xsp+12)
 	push xwa
 	ld xwa,(xsp+12)
@@ -10680,11 +13152,11 @@ _dma0_program__18:
 	push xwa
 	call _dma0_program_asm
 	lda xsp,(xsp+12)
-L2142:
+L2594:
 	ret
 
 ; function dma1_program
-_dma1_program__18:
+_dma1_program__20:
 	ld wa,(xsp+12)
 	push xwa
 	ld xwa,(xsp+12)
@@ -10693,11 +13165,11 @@ _dma1_program__18:
 	push xwa
 	call _dma1_program_asm
 	lda xsp,(xsp+12)
-L2144:
+L2596:
 	ret
 
 ; function dma2_program
-_dma2_program__18:
+_dma2_program__20:
 	ld wa,(xsp+12)
 	push xwa
 	ld xwa,(xsp+12)
@@ -10706,11 +13178,11 @@ _dma2_program__18:
 	push xwa
 	call _dma2_program_asm
 	lda xsp,(xsp+12)
-L2146:
+L2598:
 	ret
 
 ; function dma3_program
-_dma3_program__18:
+_dma3_program__20:
 	ld wa,(xsp+12)
 	push xwa
 	ld xwa,(xsp+12)
@@ -10719,11 +13191,11 @@ _dma3_program__18:
 	push xwa
 	call _dma3_program_asm
 	lda xsp,(xsp+12)
-L2148:
+L2600:
 	ret
 
 ; function dma0_program_u16
-_dma0_program_u16__18:
+_dma0_program_u16__20:
 	ld wa,(xsp+12)
 	push xwa
 	ld xwa,(xsp+12)
@@ -10732,11 +13204,11 @@ _dma0_program_u16__18:
 	push xwa
 	call _dma0_program_u16_asm
 	lda xsp,(xsp+12)
-L2150:
+L2602:
 	ret
 
 ; function dma1_program_u16
-_dma1_program_u16__18:
+_dma1_program_u16__20:
 	ld wa,(xsp+12)
 	push xwa
 	ld xwa,(xsp+12)
@@ -10745,11 +13217,11 @@ _dma1_program_u16__18:
 	push xwa
 	call _dma1_program_u16_asm
 	lda xsp,(xsp+12)
-L2152:
+L2604:
 	ret
 
 ; function dma2_program_u16
-_dma2_program_u16__18:
+_dma2_program_u16__20:
 	ld wa,(xsp+12)
 	push xwa
 	ld xwa,(xsp+12)
@@ -10758,11 +13230,11 @@ _dma2_program_u16__18:
 	push xwa
 	call _dma2_program_u16_asm
 	lda xsp,(xsp+12)
-L2154:
+L2606:
 	ret
 
 ; function dma3_program_u16
-_dma3_program_u16__18:
+_dma3_program_u16__20:
 	ld wa,(xsp+12)
 	push xwa
 	ld xwa,(xsp+12)
@@ -10771,11 +13243,11 @@ _dma3_program_u16__18:
 	push xwa
 	call _dma3_program_u16_asm
 	lda xsp,(xsp+12)
-L2156:
+L2608:
 	ret
 
 ; function dma0_program_u32
-_dma0_program_u32__18:
+_dma0_program_u32__20:
 	ld wa,(xsp+12)
 	push xwa
 	ld xwa,(xsp+12)
@@ -10784,11 +13256,11 @@ _dma0_program_u32__18:
 	push xwa
 	call _dma0_program_u32_asm
 	lda xsp,(xsp+12)
-L2158:
+L2610:
 	ret
 
 ; function dma1_program_u32
-_dma1_program_u32__18:
+_dma1_program_u32__20:
 	ld wa,(xsp+12)
 	push xwa
 	ld xwa,(xsp+12)
@@ -10797,11 +13269,11 @@ _dma1_program_u32__18:
 	push xwa
 	call _dma1_program_u32_asm
 	lda xsp,(xsp+12)
-L2160:
+L2612:
 	ret
 
 ; function dma2_program_u32
-_dma2_program_u32__18:
+_dma2_program_u32__20:
 	ld wa,(xsp+12)
 	push xwa
 	ld xwa,(xsp+12)
@@ -10810,11 +13282,11 @@ _dma2_program_u32__18:
 	push xwa
 	call _dma2_program_u32_asm
 	lda xsp,(xsp+12)
-L2162:
+L2614:
 	ret
 
 ; function dma3_program_u32
-_dma3_program_u32__18:
+_dma3_program_u32__20:
 	ld wa,(xsp+12)
 	push xwa
 	ld xwa,(xsp+12)
@@ -10823,112 +13295,112 @@ _dma3_program_u32__18:
 	push xwa
 	call _dma3_program_u32_asm
 	lda xsp,(xsp+12)
-L2164:
+L2616:
 	ret
 
 ; function dma0_clear
-_dma0_clear__18:
+_dma0_clear__20:
 	ld wa,0
 	ldc dmac0,wa
 	ld a,0
 	ldc dmam0,a
-L2166:
+L2618:
 	ret
 
 ; function dma1_clear
-_dma1_clear__18:
+_dma1_clear__20:
 	ld wa,0
 	ldc dmac1,wa
 	ld a,0
 	ldc dmam1,a
-L2168:
+L2620:
 	ret
 
 ; function dma2_clear
-_dma2_clear__18:
+_dma2_clear__20:
 	ld wa,0
 	ldc dmac2,wa
 	ld a,0
 	ldc dmam2,a
-L2170:
+L2622:
 	ret
 
 ; function dma3_clear
-_dma3_clear__18:
+_dma3_clear__20:
 	ld wa,0
 	ldc dmac3,wa
 	ld a,0
 	ldc dmam3,a
-L2172:
+L2624:
 	ret
 
 ; function dma_set_start_vector
-_dma_set_start_vector__18:
+_dma_set_start_vector__20:
 	push xiz
 	ld a,(xsp+12)
 	ld izl,a
 	ld a,(xsp+8)
 	extz wa
 	cp wa,0
-	jr z,L2181
+	jr z,L2633
 	cp wa,1
-	jr z,L2182
+	jr z,L2634
 	cp wa,2
-	jr z,L2183
+	jr z,L2635
 	cp wa,3
-	jr z,L2184
-	jr L2180
-L2181:
+	jr z,L2636
+	jr L2632
+L2633:
 	ld a,izl
 	ld (07Ch),a
-	jr L2180
-L2182:
+	jr L2632
+L2634:
 	ld a,izl
 	ld (07Dh),a
-	jr L2180
-L2183:
+	jr L2632
+L2635:
 	ld a,izl
 	ld (07Eh),a
-	jr L2180
-L2184:
+	jr L2632
+L2636:
 	ld a,izl
 	ld (07Fh),a
-	jr L2180
-L2180:
-L2179:
+	jr L2632
+L2632:
+L2631:
 	pop xiz
 	ret
 
 ; function dma_rearm_in_isr
-_dma_rearm_in_isr__18:
+_dma_rearm_in_isr__20:
 	push xiz
 	ld a,(xsp+8)
 	ld izl,a
-	jr L2210
-	jp L2209
-L2210:
+	jr L2662
+	jp L2661
+L2662:
 	ld a,izl
 	cp a,3
-	jr ule,L2211
-	jp L2209
-L2211:
-	ld xwa,_s_rearm_enabled__18
+	jr ule,L2663
+	jp L2661
+L2663:
+	ld xwa,_s_rearm_enabled__20
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr nz,L2212
-	jp L2209
-L2212:
+	jr nz,L2664
+	jp L2661
+L2664:
 	ld wa,0
 	push xwa
 	ld a,izl
 	push xwa
-	call _dma_set_start_vector__18
+	call _dma_set_start_vector__20
 	lda xsp,(xsp+8)
-	ld xwa,_s_rearm_elem__18
+	ld xwa,_s_rearm_elem__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -10936,27 +13408,27 @@ L2212:
 	ld a,(xwa)
 	extz wa
 	cp wa,0
-	jr z,L2215
+	jr z,L2667
 	cp wa,1
-	jp z,L2216
+	jp z,L2668
 	cp wa,2
-	jp z,L2217
-	jr L2214
-L2214:
-L2215:
+	jp z,L2669
+	jr L2666
+L2666:
+L2667:
 	ld a,izl
 	extz wa
 	cp wa,0
-	jr z,L2219
+	jr z,L2671
 	cp wa,1
-	jr z,L2220
+	jr z,L2672
 	cp wa,2
-	jp z,L2221
+	jp z,L2673
 	cp wa,3
-	jp z,L2222
-	jp L2218
-L2219:
-	ld xwa,_s_rearm_count__18
+	jp z,L2674
+	jp L2670
+L2671:
+	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -10964,7 +13436,7 @@ L2219:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_dst__18
+	ld xwa,_s_rearm_dst__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -10972,7 +13444,7 @@ L2219:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_src__18
+	ld xwa,_s_rearm_src__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -10980,11 +13452,11 @@ L2219:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	call _dma0_program__18
+	call _dma0_program__20
 	lda xsp,(xsp+12)
-	jp L2218
-L2220:
-	ld xwa,_s_rearm_count__18
+	jp L2670
+L2672:
+	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -10992,7 +13464,7 @@ L2220:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_dst__18
+	ld xwa,_s_rearm_dst__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11000,7 +13472,7 @@ L2220:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_src__18
+	ld xwa,_s_rearm_src__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11008,11 +13480,11 @@ L2220:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	call _dma1_program__18
+	call _dma1_program__20
 	lda xsp,(xsp+12)
-	jp L2218
-L2221:
-	ld xwa,_s_rearm_count__18
+	jp L2670
+L2673:
+	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11020,7 +13492,7 @@ L2221:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_dst__18
+	ld xwa,_s_rearm_dst__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11028,7 +13500,7 @@ L2221:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_src__18
+	ld xwa,_s_rearm_src__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11036,11 +13508,11 @@ L2221:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	call _dma2_program__18
+	call _dma2_program__20
 	lda xsp,(xsp+12)
-	jr L2218
-L2222:
-	ld xwa,_s_rearm_count__18
+	jr L2670
+L2674:
+	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11048,7 +13520,7 @@ L2222:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_dst__18
+	ld xwa,_s_rearm_dst__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11056,7 +13528,7 @@ L2222:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_src__18
+	ld xwa,_s_rearm_src__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11064,25 +13536,25 @@ L2222:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	call _dma3_program__18
+	call _dma3_program__20
 	lda xsp,(xsp+12)
-	jr L2218
-L2218:
-	jp L2213
-L2216:
+	jr L2670
+L2670:
+	jp L2665
+L2668:
 	ld a,izl
 	extz wa
 	cp wa,0
-	jr z,L2224
+	jr z,L2676
 	cp wa,1
-	jr z,L2225
+	jr z,L2677
 	cp wa,2
-	jp z,L2226
+	jp z,L2678
 	cp wa,3
-	jp z,L2227
-	jp L2223
-L2224:
-	ld xwa,_s_rearm_count__18
+	jp z,L2679
+	jp L2675
+L2676:
+	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11090,7 +13562,7 @@ L2224:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_dst__18
+	ld xwa,_s_rearm_dst__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11098,7 +13570,7 @@ L2224:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_src__18
+	ld xwa,_s_rearm_src__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11106,11 +13578,11 @@ L2224:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	call _dma0_program_u16__18
+	call _dma0_program_u16__20
 	lda xsp,(xsp+12)
-	jp L2223
-L2225:
-	ld xwa,_s_rearm_count__18
+	jp L2675
+L2677:
+	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11118,7 +13590,7 @@ L2225:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_dst__18
+	ld xwa,_s_rearm_dst__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11126,7 +13598,7 @@ L2225:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_src__18
+	ld xwa,_s_rearm_src__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11134,11 +13606,11 @@ L2225:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	call _dma1_program_u16__18
+	call _dma1_program_u16__20
 	lda xsp,(xsp+12)
-	jp L2223
-L2226:
-	ld xwa,_s_rearm_count__18
+	jp L2675
+L2678:
+	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11146,7 +13618,7 @@ L2226:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_dst__18
+	ld xwa,_s_rearm_dst__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11154,7 +13626,7 @@ L2226:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_src__18
+	ld xwa,_s_rearm_src__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11162,11 +13634,11 @@ L2226:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	call _dma2_program_u16__18
+	call _dma2_program_u16__20
 	lda xsp,(xsp+12)
-	jr L2223
-L2227:
-	ld xwa,_s_rearm_count__18
+	jr L2675
+L2679:
+	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11174,7 +13646,7 @@ L2227:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_dst__18
+	ld xwa,_s_rearm_dst__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11182,7 +13654,7 @@ L2227:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_src__18
+	ld xwa,_s_rearm_src__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11190,25 +13662,25 @@ L2227:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	call _dma3_program_u16__18
+	call _dma3_program_u16__20
 	lda xsp,(xsp+12)
-	jr L2223
-L2223:
-	jp L2213
-L2217:
+	jr L2675
+L2675:
+	jp L2665
+L2669:
 	ld a,izl
 	extz wa
 	cp wa,0
-	jr z,L2229
+	jr z,L2681
 	cp wa,1
-	jr z,L2230
+	jr z,L2682
 	cp wa,2
-	jp z,L2231
+	jp z,L2683
 	cp wa,3
-	jp z,L2232
-	jp L2228
-L2229:
-	ld xwa,_s_rearm_count__18
+	jp z,L2684
+	jp L2680
+L2681:
+	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11216,7 +13688,7 @@ L2229:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_dst__18
+	ld xwa,_s_rearm_dst__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11224,7 +13696,7 @@ L2229:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_src__18
+	ld xwa,_s_rearm_src__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11232,11 +13704,11 @@ L2229:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	call _dma0_program_u32__18
+	call _dma0_program_u32__20
 	lda xsp,(xsp+12)
-	jp L2228
-L2230:
-	ld xwa,_s_rearm_count__18
+	jp L2680
+L2682:
+	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11244,7 +13716,7 @@ L2230:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_dst__18
+	ld xwa,_s_rearm_dst__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11252,7 +13724,7 @@ L2230:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_src__18
+	ld xwa,_s_rearm_src__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11260,11 +13732,11 @@ L2230:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	call _dma1_program_u32__18
+	call _dma1_program_u32__20
 	lda xsp,(xsp+12)
-	jp L2228
-L2231:
-	ld xwa,_s_rearm_count__18
+	jp L2680
+L2683:
+	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11272,7 +13744,7 @@ L2231:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_dst__18
+	ld xwa,_s_rearm_dst__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11280,7 +13752,7 @@ L2231:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_src__18
+	ld xwa,_s_rearm_src__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11288,11 +13760,11 @@ L2231:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	call _dma2_program_u32__18
+	call _dma2_program_u32__20
 	lda xsp,(xsp+12)
-	jr L2228
-L2232:
-	ld xwa,_s_rearm_count__18
+	jr L2680
+L2684:
+	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11300,7 +13772,7 @@ L2232:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_dst__18
+	ld xwa,_s_rearm_dst__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11308,7 +13780,7 @@ L2232:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_src__18
+	ld xwa,_s_rearm_src__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11316,13 +13788,13 @@ L2232:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	call _dma3_program_u32__18
+	call _dma3_program_u32__20
 	lda xsp,(xsp+12)
-	jr L2228
-L2228:
-	jr L2213
-L2213:
-	ld xwa,_s_rearm_vector__18
+	jr L2680
+L2680:
+	jr L2665
+L2665:
+	ld xwa,_s_rearm_vector__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -11331,14 +13803,14 @@ L2213:
 	push xwa
 	ld a,izl
 	push xwa
-	call _dma_set_start_vector__18
+	call _dma_set_start_vector__20
 	lda xsp,(xsp+8)
-L2209:
+L2661:
 	pop xiz
 	ret
 
 ; function isr_dma0_inttc
-_isr_dma0_inttc__18:
+_isr_dma0_inttc__20:
 	push xwa
 	push xbc
 	push xde
@@ -11346,23 +13818,23 @@ _isr_dma0_inttc__18:
 	push xix
 	push xiy
 	push xiz
-	jr L2238
-	ldb (_s_done_flag__18),1
-L2238:
+	jr L2690
+	ldb (_s_done_flag__20),1
+L2690:
 	ld wa,0
 	push xwa
-	call _dma_rearm_in_isr__18
+	call _dma_rearm_in_isr__20
 	lda xsp,(xsp+4)
-	jr L2239
-	ld xwa,(_s_done_cb__18)
+	jr L2691
+	ld xwa,(_s_done_cb__20)
 	cp xwa,0
-	jr z,L2240
-	ld xwa,(_s_done_cb__18)
+	jr z,L2692
+	ld xwa,(_s_done_cb__20)
 	ld xhl,xwa
 	call (xhl)
-L2240:
-L2239:
-L2237:
+L2692:
+L2691:
+L2689:
 	pop xiz
 	pop xiy
 	pop xix
@@ -11373,7 +13845,7 @@ L2237:
 	reti
 
 ; function isr_dma1_inttc
-_isr_dma1_inttc__18:
+_isr_dma1_inttc__20:
 	push xwa
 	push xbc
 	push xde
@@ -11381,23 +13853,23 @@ _isr_dma1_inttc__18:
 	push xix
 	push xiy
 	push xiz
-	jr L2246
-	ldb (_s_done_flag__18+1),1
-L2246:
+	jr L2698
+	ldb (_s_done_flag__20+1),1
+L2698:
 	ld wa,1
 	push xwa
-	call _dma_rearm_in_isr__18
+	call _dma_rearm_in_isr__20
 	lda xsp,(xsp+4)
-	jr L2247
-	ld xwa,(_s_done_cb__18+4)
+	jr L2699
+	ld xwa,(_s_done_cb__20+4)
 	cp xwa,0
-	jr z,L2248
-	ld xwa,(_s_done_cb__18+4)
+	jr z,L2700
+	ld xwa,(_s_done_cb__20+4)
 	ld xhl,xwa
 	call (xhl)
-L2248:
-L2247:
-L2245:
+L2700:
+L2699:
+L2697:
 	pop xiz
 	pop xiy
 	pop xix
@@ -11408,7 +13880,7 @@ L2245:
 	reti
 
 ; function isr_dma2_inttc
-_isr_dma2_inttc__18:
+_isr_dma2_inttc__20:
 	push xwa
 	push xbc
 	push xde
@@ -11416,23 +13888,23 @@ _isr_dma2_inttc__18:
 	push xix
 	push xiy
 	push xiz
-	jr L2254
-	ldb (_s_done_flag__18+2),1
-L2254:
+	jr L2706
+	ldb (_s_done_flag__20+2),1
+L2706:
 	ld wa,2
 	push xwa
-	call _dma_rearm_in_isr__18
+	call _dma_rearm_in_isr__20
 	lda xsp,(xsp+4)
-	jr L2255
-	ld xwa,(_s_done_cb__18+8)
+	jr L2707
+	ld xwa,(_s_done_cb__20+8)
 	cp xwa,0
-	jr z,L2256
-	ld xwa,(_s_done_cb__18+8)
+	jr z,L2708
+	ld xwa,(_s_done_cb__20+8)
 	ld xhl,xwa
 	call (xhl)
-L2256:
-L2255:
-L2253:
+L2708:
+L2707:
+L2705:
 	pop xiz
 	pop xiy
 	pop xix
@@ -11443,7 +13915,7 @@ L2253:
 	reti
 
 ; function isr_dma3_inttc
-_isr_dma3_inttc__18:
+_isr_dma3_inttc__20:
 	push xwa
 	push xbc
 	push xde
@@ -11451,23 +13923,23 @@ _isr_dma3_inttc__18:
 	push xix
 	push xiy
 	push xiz
-	jr L2262
-	ldb (_s_done_flag__18+3),1
-L2262:
+	jr L2714
+	ldb (_s_done_flag__20+3),1
+L2714:
 	ld wa,3
 	push xwa
-	call _dma_rearm_in_isr__18
+	call _dma_rearm_in_isr__20
 	lda xsp,(xsp+4)
-	jr L2263
-	ld xwa,(_s_done_cb__18+12)
+	jr L2715
+	ld xwa,(_s_done_cb__20+12)
 	cp xwa,0
-	jr z,L2264
-	ld xwa,(_s_done_cb__18+12)
+	jr z,L2716
+	ld xwa,(_s_done_cb__20+12)
 	ld xhl,xwa
 	call (xhl)
-L2264:
-L2263:
-L2261:
+L2716:
+L2715:
+L2713:
 	pop xiz
 	pop xiy
 	pop xix
@@ -11478,42 +13950,42 @@ L2261:
 	reti
 
 ; function dma_start_common
-_dma_start_common__18:
+_dma_start_common__20:
 	push xiz
 	ld iz,(xsp+20)
 	ld a,(xsp+8)
 	cp a,3
-	jr ule,L2291
-	jp L2290
-L2291:
+	jr ule,L2743
+	jp L2742
+L2743:
 	ld xwa,(xsp+12)
 	cp xwa,0
-	jr z,L2293
+	jr z,L2745
 	ld xwa,(xsp+16)
 	cp xwa,0
-	jr nz,L2292
-L2293:
-	jp L2290
-L2292:
+	jr nz,L2744
+L2745:
+	jp L2742
+L2744:
 	ld wa,iz
 	cp wa,0
-	jr nz,L2294
-	jp L2290
-L2294:
+	jr nz,L2746
+	jp L2742
+L2746:
 	ld a,(xsp+24)
 	cp a,11
-	jr nz,L2295
-	jp L2290
-L2295:
+	jr nz,L2747
+	jp L2742
+L2747:
 	ld a,0
-	ld xbc,_s_done_flag__18
+	ld xbc,_s_done_flag__20
 	ld e,(xsp+8)
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,1
-	ld xbc,_s_was_active__18
+	ld xbc,_s_was_active__20
 	ld e,(xsp+8)
 	extz de
 	exts xde
@@ -11523,186 +13995,186 @@ L2295:
 	push xwa
 	ld a,(xsp+12)
 	push xwa
-	call _dma_set_start_vector__18
+	call _dma_set_start_vector__20
 	lda xsp,(xsp+8)
 	ld wa,(xsp+28)
 	cp wa,0
-	jr z,L2297
+	jr z,L2749
 	cp wa,1
-	jr z,L2298
+	jr z,L2750
 	cp wa,2
-	jp z,L2299
-	jp L2296
-L2297:
+	jp z,L2751
+	jp L2748
+L2749:
 	ld a,(xsp+8)
 	extz wa
 	cp wa,0
-	jr z,L2301
+	jr z,L2753
 	cp wa,1
-	jr z,L2302
+	jr z,L2754
 	cp wa,2
-	jr z,L2303
+	jr z,L2755
 	cp wa,3
-	jr z,L2304
-	jr L2300
-L2301:
+	jr z,L2756
+	jr L2752
+L2753:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
 	push xwa
 	ld xwa,(xsp+24)
 	push xwa
-	call _dma0_program__18
+	call _dma0_program__20
 	lda xsp,(xsp+12)
-	jr L2300
-L2302:
+	jr L2752
+L2754:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
 	push xwa
 	ld xwa,(xsp+24)
 	push xwa
-	call _dma1_program__18
+	call _dma1_program__20
 	lda xsp,(xsp+12)
-	jr L2300
-L2303:
+	jr L2752
+L2755:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
 	push xwa
 	ld xwa,(xsp+24)
 	push xwa
-	call _dma2_program__18
+	call _dma2_program__20
 	lda xsp,(xsp+12)
-	jr L2300
-L2304:
+	jr L2752
+L2756:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
 	push xwa
 	ld xwa,(xsp+24)
 	push xwa
-	call _dma3_program__18
+	call _dma3_program__20
 	lda xsp,(xsp+12)
-	jr L2300
-L2300:
-	jp L2296
-L2298:
+	jr L2752
+L2752:
+	jp L2748
+L2750:
 	ld a,(xsp+8)
 	extz wa
 	cp wa,0
-	jr z,L2306
+	jr z,L2758
 	cp wa,1
-	jr z,L2307
+	jr z,L2759
 	cp wa,2
-	jr z,L2308
+	jr z,L2760
 	cp wa,3
-	jr z,L2309
-	jr L2305
-L2306:
+	jr z,L2761
+	jr L2757
+L2758:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
 	push xwa
 	ld xwa,(xsp+24)
 	push xwa
-	call _dma0_program_u16__18
+	call _dma0_program_u16__20
 	lda xsp,(xsp+12)
-	jr L2305
-L2307:
+	jr L2757
+L2759:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
 	push xwa
 	ld xwa,(xsp+24)
 	push xwa
-	call _dma1_program_u16__18
+	call _dma1_program_u16__20
 	lda xsp,(xsp+12)
-	jr L2305
-L2308:
+	jr L2757
+L2760:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
 	push xwa
 	ld xwa,(xsp+24)
 	push xwa
-	call _dma2_program_u16__18
+	call _dma2_program_u16__20
 	lda xsp,(xsp+12)
-	jr L2305
-L2309:
+	jr L2757
+L2761:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
 	push xwa
 	ld xwa,(xsp+24)
 	push xwa
-	call _dma3_program_u16__18
+	call _dma3_program_u16__20
 	lda xsp,(xsp+12)
-	jr L2305
-L2305:
-	jr L2296
-L2299:
+	jr L2757
+L2757:
+	jr L2748
+L2751:
 	ld a,(xsp+8)
 	extz wa
 	cp wa,0
-	jr z,L2311
+	jr z,L2763
 	cp wa,1
-	jr z,L2312
+	jr z,L2764
 	cp wa,2
-	jr z,L2313
+	jr z,L2765
 	cp wa,3
-	jr z,L2314
-	jr L2310
-L2311:
+	jr z,L2766
+	jr L2762
+L2763:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
 	push xwa
 	ld xwa,(xsp+24)
 	push xwa
-	call _dma0_program_u32__18
+	call _dma0_program_u32__20
 	lda xsp,(xsp+12)
-	jr L2310
-L2312:
+	jr L2762
+L2764:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
 	push xwa
 	ld xwa,(xsp+24)
 	push xwa
-	call _dma1_program_u32__18
+	call _dma1_program_u32__20
 	lda xsp,(xsp+12)
-	jr L2310
-L2313:
+	jr L2762
+L2765:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
 	push xwa
 	ld xwa,(xsp+24)
 	push xwa
-	call _dma2_program_u32__18
+	call _dma2_program_u32__20
 	lda xsp,(xsp+12)
-	jr L2310
-L2314:
+	jr L2762
+L2766:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
 	push xwa
 	ld xwa,(xsp+24)
 	push xwa
-	call _dma3_program_u32__18
+	call _dma3_program_u32__20
 	lda xsp,(xsp+12)
-	jr L2310
-L2310:
-	jr L2296
-L2296:
+	jr L2762
+L2762:
+	jr L2748
+L2748:
 	ld a,(xsp+24)
 	push xwa
 	ld a,(xsp+12)
 	push xwa
-	call _dma_set_start_vector__18
+	call _dma_set_start_vector__20
 	lda xsp,(xsp+8)
-L2290:
+L2742:
 	pop xiz
 	ret
 
@@ -11711,10 +14183,10 @@ _ngpc_dma_init:
 	push xiz
 	lda xsp,(xsp-2)
 	ld izl,0
-	jp L2325
-L2322:
+	jp L2777
+L2774:
 	ld xwa,0
-	ld xbc,_s_done_cb__18
+	ld xbc,_s_done_cb__20
 	ld e,izl
 	extz de
 	exts xde
@@ -11722,42 +14194,42 @@ L2322:
 	add xbc,xde
 	ld (xbc),xwa
 	ld a,0
-	ld xbc,_s_done_flag__18
+	ld xbc,_s_done_flag__20
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,0
-	ld xbc,_s_was_active__18
+	ld xbc,_s_was_active__20
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,0
-	ld xbc,_s_rearm_enabled__18
+	ld xbc,_s_rearm_enabled__20
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,0
-	ld xbc,_s_rearm_elem__18
+	ld xbc,_s_rearm_elem__20
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,0
-	ld xbc,_s_rearm_vector__18
+	ld xbc,_s_rearm_vector__20
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld wa,0
-	ld xbc,_s_rearm_count__18
+	ld xbc,_s_rearm_count__20
 	ld e,izl
 	extz de
 	exts xde
@@ -11765,7 +14237,7 @@ L2322:
 	add xbc,xde
 	ld (xbc),wa
 	ld xwa,0
-	ld xbc,_s_rearm_dst__18
+	ld xbc,_s_rearm_dst__20
 	ld e,izl
 	extz de
 	exts xde
@@ -11773,32 +14245,32 @@ L2322:
 	add xbc,xde
 	ld (xbc),xwa
 	ld xwa,0
-	ld xbc,_s_rearm_src__18
+	ld xbc,_s_rearm_src__20
 	ld e,izl
 	extz de
 	exts xde
 	sll 2,xde
 	add xbc,xde
 	ld (xbc),xwa
-L2324:
+L2776:
 	inc 1,izl
-L2325:
+L2777:
 	ld a,izl
 	cp a,4
-	jp ult,L2322
-L2323:
-	ld xwa,_isr_dma0_inttc__18
+	jp ult,L2774
+L2775:
+	ld xwa,_isr_dma0_inttc__20
 	ld (06FF0h),xwa
-	ld xwa,_isr_dma1_inttc__18
+	ld xwa,_isr_dma1_inttc__20
 	ld (06FF4h),xwa
-	ld xwa,_isr_dma2_inttc__18
+	ld xwa,_isr_dma2_inttc__20
 	ld (06FF8h),xwa
-	ld xwa,_isr_dma3_inttc__18
+	ld xwa,_isr_dma3_inttc__20
 	ld (06FFCh),xwa
 	ldb (079h),153
 	ldb (07Ah),153
-L2326:
-L2321:
+L2778:
+L2773:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -11817,9 +14289,9 @@ _ngpc_dma_start_table_u8:
 	push xwa
 	ld a,(xsp+24)
 	push xwa
-	call _dma_start_common__18
+	call _dma_start_common__20
 	lda xsp,(xsp+24)
-L2328:
+L2780:
 	ret
 
 ; function ngpc_dma_start_table_u16
@@ -11836,9 +14308,9 @@ _ngpc_dma_start_table_u16:
 	push xwa
 	ld a,(xsp+24)
 	push xwa
-	call _dma_start_common__18
+	call _dma_start_common__20
 	lda xsp,(xsp+24)
-L2330:
+L2782:
 	ret
 
 ; function ngpc_dma_start_table_u32
@@ -11855,9 +14327,9 @@ _ngpc_dma_start_table_u32:
 	push xwa
 	ld a,(xsp+24)
 	push xwa
-	call _dma_start_common__18
+	call _dma_start_common__20
 	lda xsp,(xsp+24)
-L2332:
+L2784:
 	ret
 
 ; function ngpc_dma_link_hblank
@@ -11874,7 +14346,7 @@ _ngpc_dma_link_hblank:
 	push xwa
 	call _ngpc_dma_start_table_u8
 	lda xsp,(xsp+20)
-L2334:
+L2786:
 	ret
 
 ; function ngpc_dma_link_vblank
@@ -11891,7 +14363,7 @@ _ngpc_dma_link_vblank:
 	push xwa
 	call _ngpc_dma_start_table_u8
 	lda xsp,(xsp+20)
-L2336:
+L2788:
 	ret
 
 ; function ngpc_dma_link_hblank_u16
@@ -11908,7 +14380,7 @@ _ngpc_dma_link_hblank_u16:
 	push xwa
 	call _ngpc_dma_start_table_u16
 	lda xsp,(xsp+20)
-L2338:
+L2790:
 	ret
 
 ; function ngpc_dma_link_hblank_u32
@@ -11925,7 +14397,7 @@ _ngpc_dma_link_hblank_u32:
 	push xwa
 	call _ngpc_dma_start_table_u32
 	lda xsp,(xsp+20)
-L2340:
+L2792:
 	ret
 
 ; function ngpc_dma_timer0_hblank_enable
@@ -11934,7 +14406,7 @@ _ngpc_dma_timer0_hblank_enable:
 	push xwa
 	call _ngpc_dma_timer0_hblank_enable_treg0
 	lda xsp,(xsp+4)
-L2342:
+L2794:
 	ret
 
 ; function ngpc_dma_timer0_hblank_enable_treg0
@@ -11943,13 +14415,13 @@ _ngpc_dma_timer0_hblank_enable_treg0:
 	ld a,(xsp+4)
 	ld (022h),a
 	orb (020h),1
-L2344:
+L2796:
 	ret
 
 ; function ngpc_dma_timer0_hblank_disable
 _ngpc_dma_timer0_hblank_disable:
 	andb (020h),254
-L2346:
+L2798:
 	ret
 
 ; function ngpc_dma_timer01_hblank_enable
@@ -11958,13 +14430,13 @@ _ngpc_dma_timer01_hblank_enable:
 	ldb (022h),1
 	ldb (023h),1
 	orb (020h),3
-L2348:
+L2800:
 	ret
 
 ; function ngpc_dma_timer01_hblank_disable
 _ngpc_dma_timer01_hblank_disable:
 	andb (020h),252
-L2350:
+L2802:
 	ret
 
 ; function ngpc_dma_timer1_from_timer0_enable
@@ -11973,7 +14445,7 @@ _ngpc_dma_timer1_from_timer0_enable:
 	push xwa
 	call _ngpc_dma_timer1_from_timer0_enable_treg1
 	lda xsp,(xsp+4)
-L2352:
+L2804:
 	ret
 
 ; function ngpc_dma_timer1_from_timer0_enable_treg1
@@ -11982,13 +14454,13 @@ _ngpc_dma_timer1_from_timer0_enable_treg1:
 	ld a,(xsp+4)
 	ld (023h),a
 	orb (020h),2
-L2354:
+L2806:
 	ret
 
 ; function ngpc_dma_timer1_disable
 _ngpc_dma_timer1_disable:
 	andb (020h),253
-L2356:
+L2808:
 	ret
 
 ; function ngpc_dma_hblank_stream_begin
@@ -11997,9 +14469,9 @@ _ngpc_dma_hblank_stream_begin:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2360
-	jr L2359
-L2360:
+	jr nz,L2812
+	jr L2811
+L2812:
 	ld a,(xsp+12)
 	ld (xiz),a
 	ld xwa,(xsp+16)
@@ -12008,7 +14480,7 @@ L2360:
 	ld (xiz+6),xwa
 	ld wa,(xsp+24)
 	ld (xiz+10),wa
-L2359:
+L2811:
 	pop xiz
 	ret
 
@@ -12018,9 +14490,9 @@ _ngpc_dma_hblank_stream_rearm:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2364
-	jr L2363
-L2364:
+	jr nz,L2816
+	jr L2815
+L2816:
 	ld wa,16
 	push xwa
 	ld wa,(xiz+10)
@@ -12033,7 +14505,7 @@ L2364:
 	push xwa
 	call _ngpc_dma_start_table_u8
 	lda xsp,(xsp+20)
-L2363:
+L2815:
 	pop xiz
 	ret
 
@@ -12041,15 +14513,15 @@ L2363:
 _ngpc_dma_hblank_stream_end:
 	ld xwa,(xsp+4)
 	cp xwa,0
-	jr nz,L2368
-	jr L2367
-L2368:
+	jr nz,L2820
+	jr L2819
+L2820:
 	ld xwa,(xsp+4)
 	ld a,(xwa)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
-L2367:
+L2819:
 	ret
 
 ; function ngpc_dma_stream_begin_u8
@@ -12058,9 +14530,9 @@ _ngpc_dma_stream_begin_u8:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2372
-	jr L2371
-L2372:
+	jr nz,L2824
+	jr L2823
+L2824:
 	ld a,(xsp+12)
 	ld (xiz),a
 	ld xwa,(xsp+16)
@@ -12071,7 +14543,7 @@ L2372:
 	ld (xiz+10),wa
 	ld a,(xsp+28)
 	ld (xiz+12),a
-L2371:
+L2823:
 	pop xiz
 	ret
 
@@ -12081,9 +14553,9 @@ _ngpc_dma_stream_rearm_u8:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2376
-	jr L2375
-L2376:
+	jr nz,L2828
+	jr L2827
+L2828:
 	ld a,(xiz+12)
 	push xwa
 	ld wa,(xiz+10)
@@ -12096,7 +14568,7 @@ L2376:
 	push xwa
 	call _ngpc_dma_start_table_u8
 	lda xsp,(xsp+20)
-L2375:
+L2827:
 	pop xiz
 	ret
 
@@ -12104,15 +14576,15 @@ L2375:
 _ngpc_dma_stream_end_u8:
 	ld xwa,(xsp+4)
 	cp xwa,0
-	jr nz,L2380
-	jr L2379
-L2380:
+	jr nz,L2832
+	jr L2831
+L2832:
 	ld xwa,(xsp+4)
 	ld a,(xwa)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
-L2379:
+L2831:
 	ret
 
 ; function ngpc_dma_stream_begin_u16
@@ -12121,9 +14593,9 @@ _ngpc_dma_stream_begin_u16:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2384
-	jr L2383
-L2384:
+	jr nz,L2836
+	jr L2835
+L2836:
 	ld a,(xsp+12)
 	ld (xiz),a
 	ld xwa,(xsp+16)
@@ -12134,7 +14606,7 @@ L2384:
 	ld (xiz+10),wa
 	ld a,(xsp+28)
 	ld (xiz+12),a
-L2383:
+L2835:
 	pop xiz
 	ret
 
@@ -12144,9 +14616,9 @@ _ngpc_dma_stream_rearm_u16:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2388
-	jr L2387
-L2388:
+	jr nz,L2840
+	jr L2839
+L2840:
 	ld a,(xiz+12)
 	push xwa
 	ld wa,(xiz+10)
@@ -12159,7 +14631,7 @@ L2388:
 	push xwa
 	call _ngpc_dma_start_table_u16
 	lda xsp,(xsp+20)
-L2387:
+L2839:
 	pop xiz
 	ret
 
@@ -12167,15 +14639,15 @@ L2387:
 _ngpc_dma_stream_end_u16:
 	ld xwa,(xsp+4)
 	cp xwa,0
-	jr nz,L2392
-	jr L2391
-L2392:
+	jr nz,L2844
+	jr L2843
+L2844:
 	ld xwa,(xsp+4)
 	ld a,(xwa)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
-L2391:
+L2843:
 	ret
 
 ; function ngpc_dma_stream_begin_u32
@@ -12184,9 +14656,9 @@ _ngpc_dma_stream_begin_u32:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2396
-	jr L2395
-L2396:
+	jr nz,L2848
+	jr L2847
+L2848:
 	ld a,(xsp+12)
 	ld (xiz),a
 	ld xwa,(xsp+16)
@@ -12197,7 +14669,7 @@ L2396:
 	ld (xiz+10),wa
 	ld a,(xsp+28)
 	ld (xiz+12),a
-L2395:
+L2847:
 	pop xiz
 	ret
 
@@ -12207,9 +14679,9 @@ _ngpc_dma_stream_rearm_u32:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2400
-	jr L2399
-L2400:
+	jr nz,L2852
+	jr L2851
+L2852:
 	ld a,(xiz+12)
 	push xwa
 	ld wa,(xiz+10)
@@ -12222,7 +14694,7 @@ L2400:
 	push xwa
 	call _ngpc_dma_start_table_u32
 	lda xsp,(xsp+20)
-L2399:
+L2851:
 	pop xiz
 	ret
 
@@ -12230,15 +14702,15 @@ L2399:
 _ngpc_dma_stream_end_u32:
 	ld xwa,(xsp+4)
 	cp xwa,0
-	jr nz,L2404
-	jr L2403
-L2404:
+	jr nz,L2856
+	jr L2855
+L2856:
 	ld xwa,(xsp+4)
 	ld a,(xwa)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
-L2403:
+L2855:
 	ret
 
 ; function ngpc_dma_stop
@@ -12248,24 +14720,24 @@ _ngpc_dma_stop:
 	ld izl,a
 	ld a,izl
 	cp a,3
-	jr ule,L2413
-	jr L2412
-L2413:
+	jr ule,L2865
+	jr L2864
+L2865:
 	ld wa,0
 	push xwa
 	ld a,izl
 	push xwa
-	call _dma_set_start_vector__18
+	call _dma_set_start_vector__20
 	lda xsp,(xsp+8)
 	ld a,0
-	ld xbc,_s_was_active__18
+	ld xbc,_s_was_active__20
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,0
-	ld xbc,_s_done_flag__18
+	ld xbc,_s_done_flag__20
 	ld e,izl
 	extz de
 	exts xde
@@ -12274,28 +14746,28 @@ L2413:
 	ld a,izl
 	extz wa
 	cp wa,0
-	jr z,L2415
+	jr z,L2867
 	cp wa,1
-	jr z,L2416
+	jr z,L2868
 	cp wa,2
-	jr z,L2417
+	jr z,L2869
 	cp wa,3
-	jr z,L2418
-	jr L2414
-L2415:
-	call _dma0_clear__18
-	jr L2414
-L2416:
-	call _dma1_clear__18
-	jr L2414
-L2417:
-	call _dma2_clear__18
-	jr L2414
-L2418:
-	call _dma3_clear__18
-	jr L2414
-L2414:
-L2412:
+	jr z,L2870
+	jr L2866
+L2867:
+	call _dma0_clear__20
+	jr L2866
+L2868:
+	call _dma1_clear__20
+	jr L2866
+L2869:
+	call _dma2_clear__20
+	jr L2866
+L2870:
+	call _dma3_clear__20
+	jr L2866
+L2866:
+L2864:
 	pop xiz
 	ret
 
@@ -12304,31 +14776,31 @@ _ngpc_dma_remaining:
 	ld a,(xsp+4)
 	extz wa
 	cp wa,0
-	jr z,L2428
+	jr z,L2880
 	cp wa,1
-	jr z,L2429
+	jr z,L2881
 	cp wa,2
-	jr z,L2430
+	jr z,L2882
 	cp wa,3
-	jr z,L2431
-	jr L2432
-L2428:
+	jr z,L2883
+	jr L2884
+L2880:
 	ldc wa,dmac0
-	jr L2426
-L2429:
+	jr L2878
+L2881:
 	ldc wa,dmac1
-	jr L2426
-L2430:
+	jr L2878
+L2882:
 	ldc wa,dmac2
-	jr L2426
-L2431:
+	jr L2878
+L2883:
 	ldc wa,dmac3
-	jr L2426
-L2432:
+	jr L2878
+L2884:
 	ld wa,0
-	jr L2426
-L2427:
-L2426:
+	jr L2878
+L2879:
+L2878:
 	ret
 
 ; function ngpc_dma_active
@@ -12341,32 +14813,32 @@ _ngpc_dma_active:
 	ld xbc,xwa
 	pop xwa
 	cp bc,0
-	jr z,L2437
+	jr z,L2889
 	ld wa,1
-	jr L2438
-L2437:
+	jr L2890
+L2889:
 	ld wa,0
-L2438:
-	jr L2436
-L2436:
+L2890:
+	jr L2888
+L2888:
 	ret
 
 ; function ngpc_dma_set_done_handler
 _ngpc_dma_set_done_handler:
 	ld a,(xsp+4)
 	cp a,3
-	jr ule,L2442
-	jr L2441
-L2442:
+	jr ule,L2894
+	jr L2893
+L2894:
 	ld xwa,(xsp+8)
-	ld xbc,_s_done_cb__18
+	ld xbc,_s_done_cb__20
 	ld e,(xsp+4)
 	extz de
 	exts xde
 	sll 2,xde
 	add xbc,xde
 	ld (xbc),xwa
-L2441:
+L2893:
 	ret
 
 ; function ngpc_dma_poll_done
@@ -12377,11 +14849,11 @@ _ngpc_dma_poll_done:
 	ld izl,a
 	ld a,izl
 	cp a,3
-	jr ule,L2448
+	jr ule,L2900
 	ld wa,0
-	jr L2447
-L2448:
-	ld xwa,_s_done_flag__18
+	jr L2899
+L2900:
+	ld xwa,_s_done_flag__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -12390,51 +14862,51 @@ L2448:
 	ld (xsp+0),a
 	ld a,(xsp+0)
 	cp a,0
-	jr z,L2449
+	jr z,L2901
 	ld a,0
-	ld xbc,_s_done_flag__18
+	ld xbc,_s_done_flag__20
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,0
-	ld xbc,_s_was_active__18
+	ld xbc,_s_was_active__20
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld wa,1
-	jr L2447
-L2449:
-	ld xwa,_s_was_active__18
+	jr L2899
+L2901:
+	ld xwa,_s_was_active__20
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L2450
+	jr z,L2902
 	ld a,izl
 	push xwa
 	call _ngpc_dma_remaining
 	lda xsp,(xsp+4)
 	cp wa,0
-	jr nz,L2450
+	jr nz,L2902
 	ld a,0
-	ld xbc,_s_was_active__18
+	ld xbc,_s_was_active__20
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld wa,1
-	jr L2447
-L2450:
+	jr L2899
+L2902:
 	ld wa,0
-	jr L2447
-L2447:
+	jr L2899
+L2899:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -12445,15 +14917,15 @@ _ngpc_dma_pp_init:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2454
-	jr L2453
-L2454:
+	jr nz,L2906
+	jr L2905
+L2906:
 	ld xwa,(xsp+12)
 	ld (xiz),xwa
 	ld wa,(xsp+16)
 	ld (xiz+4),wa
 	ldw (xiz+6),0
-L2453:
+L2905:
 	pop xiz
 	ret
 
@@ -12463,20 +14935,20 @@ _ngpc_dma_pp_front:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr z,L2460
+	jr z,L2912
 	ld xwa,(xiz)
 	cp xwa,0
-	jr nz,L2459
-L2460:
+	jr nz,L2911
+L2912:
 	ld xwa,0
-	jr L2458
-L2459:
+	jr L2910
+L2911:
 	ld xwa,(xiz)
 	ld bc,(xiz+6)
 	extz xbc
 	add xwa,xbc
-	jr L2458
-L2458:
+	jr L2910
+L2910:
 	pop xiz
 	ret
 
@@ -12486,21 +14958,21 @@ _ngpc_dma_pp_back:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr z,L2466
+	jr z,L2918
 	ld xwa,(xiz)
 	cp xwa,0
-	jr nz,L2465
-L2466:
+	jr nz,L2917
+L2918:
 	ld xwa,0
-	jr L2464
-L2465:
+	jr L2916
+L2917:
 	ld xwa,(xiz)
 	ld bc,(xiz+6)
 	xor bc,(xiz+4)
 	extz xbc
 	add xwa,xbc
-	jr L2464
-L2464:
+	jr L2916
+L2916:
 	pop xiz
 	ret
 
@@ -12510,13 +14982,13 @@ _ngpc_dma_pp_swap:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2470
-	jr L2469
-L2470:
+	jr nz,L2922
+	jr L2921
+L2922:
 	ld wa,(xiz+6)
 	xor wa,(xiz+4)
 	ld (xiz+6),wa
-L2469:
+L2921:
 	pop xiz
 	ret
 
@@ -12527,18 +14999,18 @@ _ngpc_dma_autorearm_begin_u8:
 	ld izl,a
 	ld a,izl
 	cp a,3
-	jr ule,L2474
-	jr L2473
-L2474:
+	jr ule,L2926
+	jr L2925
+L2926:
 	ld a,0
-	ld xbc,_s_rearm_elem__18
+	ld xbc,_s_rearm_elem__20
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld xwa,(xsp+12)
-	ld xbc,_s_rearm_dst__18
+	ld xbc,_s_rearm_dst__20
 	ld e,izl
 	extz de
 	exts xde
@@ -12546,7 +15018,7 @@ L2474:
 	add xbc,xde
 	ld (xbc),xwa
 	ld xwa,(xsp+16)
-	ld xbc,_s_rearm_src__18
+	ld xbc,_s_rearm_src__20
 	ld e,izl
 	extz de
 	exts xde
@@ -12554,7 +15026,7 @@ L2474:
 	add xbc,xde
 	ld (xbc),xwa
 	ld wa,(xsp+20)
-	ld xbc,_s_rearm_count__18
+	ld xbc,_s_rearm_count__20
 	ld e,izl
 	extz de
 	exts xde
@@ -12562,13 +15034,13 @@ L2474:
 	add xbc,xde
 	ld (xbc),wa
 	ld a,(xsp+24)
-	ld xbc,_s_rearm_vector__18
+	ld xbc,_s_rearm_vector__20
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2473:
+L2925:
 	pop xiz
 	ret
 
@@ -12579,18 +15051,18 @@ _ngpc_dma_autorearm_begin_u16:
 	ld izl,a
 	ld a,izl
 	cp a,3
-	jr ule,L2478
-	jr L2477
-L2478:
+	jr ule,L2930
+	jr L2929
+L2930:
 	ld a,1
-	ld xbc,_s_rearm_elem__18
+	ld xbc,_s_rearm_elem__20
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld xwa,(xsp+12)
-	ld xbc,_s_rearm_dst__18
+	ld xbc,_s_rearm_dst__20
 	ld e,izl
 	extz de
 	exts xde
@@ -12598,7 +15070,7 @@ L2478:
 	add xbc,xde
 	ld (xbc),xwa
 	ld xwa,(xsp+16)
-	ld xbc,_s_rearm_src__18
+	ld xbc,_s_rearm_src__20
 	ld e,izl
 	extz de
 	exts xde
@@ -12606,7 +15078,7 @@ L2478:
 	add xbc,xde
 	ld (xbc),xwa
 	ld wa,(xsp+20)
-	ld xbc,_s_rearm_count__18
+	ld xbc,_s_rearm_count__20
 	ld e,izl
 	extz de
 	exts xde
@@ -12614,13 +15086,13 @@ L2478:
 	add xbc,xde
 	ld (xbc),wa
 	ld a,(xsp+24)
-	ld xbc,_s_rearm_vector__18
+	ld xbc,_s_rearm_vector__20
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2477:
+L2929:
 	pop xiz
 	ret
 
@@ -12631,18 +15103,18 @@ _ngpc_dma_autorearm_begin_u32:
 	ld izl,a
 	ld a,izl
 	cp a,3
-	jr ule,L2482
-	jr L2481
-L2482:
+	jr ule,L2934
+	jr L2933
+L2934:
 	ld a,2
-	ld xbc,_s_rearm_elem__18
+	ld xbc,_s_rearm_elem__20
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld xwa,(xsp+12)
-	ld xbc,_s_rearm_dst__18
+	ld xbc,_s_rearm_dst__20
 	ld e,izl
 	extz de
 	exts xde
@@ -12650,7 +15122,7 @@ L2482:
 	add xbc,xde
 	ld (xbc),xwa
 	ld xwa,(xsp+16)
-	ld xbc,_s_rearm_src__18
+	ld xbc,_s_rearm_src__20
 	ld e,izl
 	extz de
 	exts xde
@@ -12658,7 +15130,7 @@ L2482:
 	add xbc,xde
 	ld (xbc),xwa
 	ld wa,(xsp+20)
-	ld xbc,_s_rearm_count__18
+	ld xbc,_s_rearm_count__20
 	ld e,izl
 	extz de
 	exts xde
@@ -12666,13 +15138,13 @@ L2482:
 	add xbc,xde
 	ld (xbc),wa
 	ld a,(xsp+24)
-	ld xbc,_s_rearm_vector__18
+	ld xbc,_s_rearm_vector__20
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2481:
+L2933:
 	pop xiz
 	ret
 
@@ -12680,54 +15152,54 @@ L2481:
 _ngpc_dma_autorearm_set_src_u8:
 	ld a,(xsp+4)
 	cp a,3
-	jr ule,L2486
-	jr L2485
-L2486:
+	jr ule,L2938
+	jr L2937
+L2938:
 	ld xwa,(xsp+8)
-	ld xbc,_s_rearm_src__18
+	ld xbc,_s_rearm_src__20
 	ld e,(xsp+4)
 	extz de
 	exts xde
 	sll 2,xde
 	add xbc,xde
 	ld (xbc),xwa
-L2485:
+L2937:
 	ret
 
 ; function ngpc_dma_autorearm_set_src_u16
 _ngpc_dma_autorearm_set_src_u16:
 	ld a,(xsp+4)
 	cp a,3
-	jr ule,L2490
-	jr L2489
-L2490:
+	jr ule,L2942
+	jr L2941
+L2942:
 	ld xwa,(xsp+8)
-	ld xbc,_s_rearm_src__18
+	ld xbc,_s_rearm_src__20
 	ld e,(xsp+4)
 	extz de
 	exts xde
 	sll 2,xde
 	add xbc,xde
 	ld (xbc),xwa
-L2489:
+L2941:
 	ret
 
 ; function ngpc_dma_autorearm_set_src_u32
 _ngpc_dma_autorearm_set_src_u32:
 	ld a,(xsp+4)
 	cp a,3
-	jr ule,L2494
-	jr L2493
-L2494:
+	jr ule,L2946
+	jr L2945
+L2946:
 	ld xwa,(xsp+8)
-	ld xbc,_s_rearm_src__18
+	ld xbc,_s_rearm_src__20
 	ld e,(xsp+4)
 	extz de
 	exts xde
 	sll 2,xde
 	add xbc,xde
 	ld (xbc),xwa
-L2493:
+L2945:
 	ret
 
 ; function ngpc_dma_autorearm_enable
@@ -12737,20 +15209,20 @@ _ngpc_dma_autorearm_enable:
 	ld izl,a
 	ld a,izl
 	cp a,3
-	jr ule,L2504
-	jp L2503
-L2504:
-	jr L2505
-	jp L2503
-L2505:
+	jr ule,L2956
+	jp L2955
+L2956:
+	jr L2957
+	jp L2955
+L2957:
 	ld a,1
-	ld xbc,_s_rearm_enabled__18
+	ld xbc,_s_rearm_enabled__20
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-	ld xwa,_s_rearm_elem__18
+	ld xwa,_s_rearm_elem__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -12758,22 +15230,22 @@ L2505:
 	ld a,(xwa)
 	extz wa
 	cp wa,0
-	jr z,L2508
+	jr z,L2960
 	cp wa,1
-	jr z,L2509
+	jr z,L2961
 	cp wa,2
-	jp z,L2510
-	jr L2507
-L2507:
-L2508:
-	ld xwa,_s_rearm_vector__18
+	jp z,L2962
+	jr L2959
+L2959:
+L2960:
+	ld xwa,_s_rearm_vector__20
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	push xwa
-	ld xwa,_s_rearm_count__18
+	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -12781,7 +15253,7 @@ L2508:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_src__18
+	ld xwa,_s_rearm_src__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -12789,7 +15261,7 @@ L2508:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_dst__18
+	ld xwa,_s_rearm_dst__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -12801,16 +15273,16 @@ L2508:
 	push xwa
 	call _ngpc_dma_start_table_u8
 	lda xsp,(xsp+20)
-	jp L2506
-L2509:
-	ld xwa,_s_rearm_vector__18
+	jp L2958
+L2961:
+	ld xwa,_s_rearm_vector__20
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	push xwa
-	ld xwa,_s_rearm_count__18
+	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -12818,7 +15290,7 @@ L2509:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_src__18
+	ld xwa,_s_rearm_src__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -12826,7 +15298,7 @@ L2509:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_dst__18
+	ld xwa,_s_rearm_dst__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -12838,16 +15310,16 @@ L2509:
 	push xwa
 	call _ngpc_dma_start_table_u16
 	lda xsp,(xsp+20)
-	jr L2506
-L2510:
-	ld xwa,_s_rearm_vector__18
+	jr L2958
+L2962:
+	ld xwa,_s_rearm_vector__20
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	push xwa
-	ld xwa,_s_rearm_count__18
+	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -12855,7 +15327,7 @@ L2510:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_src__18
+	ld xwa,_s_rearm_src__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -12863,7 +15335,7 @@ L2510:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	ld xwa,_s_rearm_dst__18
+	ld xwa,_s_rearm_dst__20
 	ld c,izl
 	extz bc
 	exts xbc
@@ -12875,9 +15347,9 @@ L2510:
 	push xwa
 	call _ngpc_dma_start_table_u32
 	lda xsp,(xsp+20)
-	jr L2506
-L2506:
-L2503:
+	jr L2958
+L2958:
+L2955:
 	pop xiz
 	ret
 
@@ -12885,43 +15357,43 @@ L2503:
 _ngpc_dma_autorearm_disable:
 	ld a,(xsp+4)
 	cp a,3
-	jr ule,L2514
-	jr L2513
-L2514:
+	jr ule,L2966
+	jr L2965
+L2966:
 	ld a,0
-	ld xbc,_s_rearm_enabled__18
+	ld xbc,_s_rearm_enabled__20
 	ld e,(xsp+4)
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2513:
+L2965:
 	ret
 
 ; function plane_reg_x
-_plane_reg_x__19:
+_plane_reg_x__21:
 	ld a,(xsp+4)
 	cp a,1
-	jr nz,L2518
+	jr nz,L2970
 	ld xwa,08034h
-	jr L2517
-L2518:
+	jr L2969
+L2970:
 	ld xwa,08032h
-	jr L2517
-L2517:
+	jr L2969
+L2969:
 	ret
 
 ; function plane_reg_y
-_plane_reg_y__19:
+_plane_reg_y__21:
 	ld a,(xsp+4)
 	cp a,1
-	jr nz,L2522
+	jr nz,L2974
 	ld xwa,08035h
-	jr L2521
-L2522:
+	jr L2973
+L2974:
 	ld xwa,08033h
-	jr L2521
-L2521:
+	jr L2973
+L2973:
 	ret
 
 ; function ngpc_dma_raster_begin
@@ -12940,7 +15412,7 @@ _ngpc_dma_raster_begin:
 	push xwa
 	call _ngpc_dma_raster_begin_ex
 	lda xsp,(xsp+24)
-L2524:
+L2976:
 	ret
 
 ; function ngpc_dma_raster_begin_ex
@@ -12950,9 +15422,9 @@ _ngpc_dma_raster_begin_ex:
 	ld xiz,(xsp+16)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2534
-	jp L2533
-L2534:
+	jr nz,L2986
+	jp L2985
+L2986:
 	ld a,(xsp+20)
 	ld (xiz),a
 	ldb (xiz+1),0
@@ -12962,17 +15434,17 @@ L2534:
 	ld (xiz+6),xwa
 	ld a,(xsp+20)
 	push xwa
-	call _plane_reg_x__19
+	call _plane_reg_x__21
 	lda xsp,(xsp+4)
 	ld (xsp+0),xwa
 	ld a,(xsp+20)
 	push xwa
-	call _plane_reg_y__19
+	call _plane_reg_y__21
 	lda xsp,(xsp+4)
 	ld (xsp+4),xwa
 	ld xwa,(xsp+28)
 	cp xwa,0
-	jr z,L2535
+	jr z,L2987
 	ld wa,16
 	push xwa
 	ld wa,152
@@ -12987,11 +15459,11 @@ L2534:
 	push xwa
 	call _ngpc_dma_stream_begin_u8
 	lda xsp,(xsp+24)
-	jr L2536
-L2535:
+	jr L2988
+L2987:
 	ld xwa,(xsp+36)
 	cp xwa,0
-	jr z,L2537
+	jr z,L2989
 	ld wa,16
 	push xwa
 	ld wa,152
@@ -13006,8 +15478,8 @@ L2535:
 	push xwa
 	call _ngpc_dma_stream_begin_u8
 	lda xsp,(xsp+24)
-	jr L2538
-L2537:
+	jr L2990
+L2989:
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -13022,14 +15494,14 @@ L2537:
 	push xwa
 	call _ngpc_dma_stream_begin_u8
 	lda xsp,(xsp+24)
-L2538:
-L2536:
+L2990:
+L2988:
 	ld xwa,(xsp+28)
 	cp xwa,0
-	jr z,L2539
+	jr z,L2991
 	ld xwa,(xsp+36)
 	cp xwa,0
-	jr z,L2539
+	jr z,L2991
 	ld wa,17
 	push xwa
 	ld wa,152
@@ -13044,8 +15516,8 @@ L2536:
 	push xwa
 	call _ngpc_dma_stream_begin_u8
 	lda xsp,(xsp+24)
-	jr L2540
-L2539:
+	jr L2992
+L2991:
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -13060,8 +15532,8 @@ L2539:
 	push xwa
 	call _ngpc_dma_stream_begin_u8
 	lda xsp,(xsp+24)
-L2540:
-L2533:
+L2992:
+L2985:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -13072,31 +15544,31 @@ _ngpc_dma_raster_enable:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2547
-	jr L2546
-L2547:
+	jr nz,L2999
+	jr L2998
+L2999:
 	ldb (xiz+1),0
 	ld xwa,(xiz+2)
 	cp xwa,0
-	jr nz,L2548
+	jr nz,L3000
 	ld xwa,(xiz+6)
 	cp xwa,0
-	jr nz,L2548
-	jr L2546
-L2548:
+	jr nz,L3000
+	jr L2998
+L3000:
 	ld xwa,(xiz+2)
 	cp xwa,0
-	jr z,L2549
+	jr z,L3001
 	ld xwa,(xiz+6)
 	cp xwa,0
-	jr z,L2549
+	jr z,L3001
 	call _ngpc_dma_timer01_hblank_enable
-	jr L2550
-L2549:
+	jr L3002
+L3001:
 	call _ngpc_dma_timer0_hblank_enable
-L2550:
+L3002:
 	ldb (xiz+1),1
-L2546:
+L2998:
 	pop xiz
 	ret
 
@@ -13106,41 +15578,41 @@ _ngpc_dma_raster_rearm:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2559
-	jr L2558
-L2559:
+	jr nz,L3011
+	jr L3010
+L3011:
 	ld a,(xiz+1)
 	cp a,0
-	jr nz,L2560
-	jr L2558
-L2560:
+	jr nz,L3012
+	jr L3010
+L3012:
 	ld xwa,(xiz+2)
 	cp xwa,0
-	jr z,L2561
+	jr z,L3013
 	lda xwa,(xiz+10)
 	push xwa
 	call _ngpc_dma_stream_rearm_u8
 	lda xsp,(xsp+4)
 	ld xwa,(xiz+6)
 	cp xwa,0
-	jr z,L2562
+	jr z,L3014
 	lda xwa,(xiz+24)
 	push xwa
 	call _ngpc_dma_stream_rearm_u8
 	lda xsp,(xsp+4)
-L2562:
-	jr L2563
-L2561:
+L3014:
+	jr L3015
+L3013:
 	ld xwa,(xiz+6)
 	cp xwa,0
-	jr z,L2564
+	jr z,L3016
 	lda xwa,(xiz+10)
 	push xwa
 	call _ngpc_dma_stream_rearm_u8
 	lda xsp,(xsp+4)
-L2564:
-L2563:
-L2558:
+L3016:
+L3015:
+L3010:
 	pop xiz
 	ret
 
@@ -13150,34 +15622,34 @@ _ngpc_dma_raster_disable:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2571
-	jr L2570
-L2571:
+	jr nz,L3023
+	jr L3022
+L3023:
 	ld a,(xiz+1)
 	cp a,0
-	jr z,L2572
+	jr z,L3024
 	ld a,(xiz+10)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
 	ld xwa,(xiz+2)
 	cp xwa,0
-	jr z,L2573
+	jr z,L3025
 	ld xwa,(xiz+6)
 	cp xwa,0
-	jr z,L2573
+	jr z,L3025
 	ld a,(xiz+24)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
 	call _ngpc_dma_timer01_hblank_disable
-	jr L2574
-L2573:
+	jr L3026
+L3025:
 	call _ngpc_dma_timer0_hblank_disable
-L2574:
-L2572:
+L3026:
+L3024:
 	ldb (xiz+1),0
-L2570:
+L3022:
 	pop xiz
 	ret
 
@@ -13188,19 +15660,19 @@ _ngpc_dma_raster_build_parallax_table:
 	ld xiy,(xsp+18)
 	ld xwa,(xsp+14)
 	cp xwa,0
-	jr nz,L2594
-	jp L2593
-L2594:
+	jr nz,L3046
+	jp L3045
+L3046:
 	ld xwa,xiy
 	cp xwa,0
-	jr z,L2596
+	jr z,L3048
 	ld a,(xsp+22)
 	cp a,0
-	jr nz,L2595
-L2596:
+	jr nz,L3047
+L3048:
 	ld izl,0
-	jr L2600
-L2597:
+	jr L3052
+L3049:
 	ld a,0
 	ld xbc,(xsp+14)
 	ld e,izl
@@ -13208,18 +15680,18 @@ L2597:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2599:
+L3051:
 	inc 1,izl
-L2600:
+L3052:
 	ld a,izl
 	cp a,152
-	jr ult,L2597
-L2598:
-	jp L2593
-L2595:
+	jr ult,L3049
+L3050:
+	jp L3045
+L3047:
 	ld ixl,0
-	jp L2604
-L2601:
+	jp L3056
+L3053:
 	ld xwa,xiy
 	ld c,ixl
 	extz bc
@@ -13234,7 +15706,7 @@ L2601:
 	ld e,(xsp+22)
 	extz de
 	cp bc,de
-	jr ge,L2605
+	jr ge,L3057
 	ld xwa,xiy
 	ld c,ixl
 	extz bc
@@ -13244,11 +15716,11 @@ L2601:
 	add xwa,xbc
 	ld a,(xwa)
 	extz wa
-	jr L2606
-L2605:
+	jr L3058
+L3057:
 	ld a,152
 	extz wa
-L2606:
+L3058:
 	ld (xsp+3),a
 	ld wa,(xsp+26)
 	ld xbc,xiy
@@ -13263,8 +15735,8 @@ L2606:
 	ld (xsp+4),a
 	ld a,(xsp+2)
 	ld izl,a
-	jr L2610
-L2607:
+	jr L3062
+L3059:
 	ld a,(xsp+4)
 	ld xbc,(xsp+14)
 	ld e,izl
@@ -13272,21 +15744,21 @@ L2607:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2609:
+L3061:
 	inc 1,izl
-L2610:
+L3062:
 	ld a,izl
 	cp a,(xsp+3)
-	jr ult,L2607
-L2608:
-L2603:
+	jr ult,L3059
+L3060:
+L3055:
 	inc 1,ixl
-L2604:
+L3056:
 	ld a,ixl
 	cp a,(xsp+22)
-	jp ult,L2601
-L2602:
-L2593:
+	jp ult,L3053
+L3054:
+L3045:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -13303,7 +15775,7 @@ _ngpc_dma_raster_xy_begin:
 	push xwa
 	call _ngpc_dma_raster_xy_begin_ex
 	lda xsp,(xsp+16)
-L2612:
+L3064:
 	ret
 
 ; function ngpc_dma_raster_xy_begin_ex
@@ -13313,9 +15785,9 @@ _ngpc_dma_raster_xy_begin_ex:
 	ld xiz,(xsp+12)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2618
-	jr L2617
-L2618:
+	jr nz,L3070
+	jr L3069
+L3070:
 	ld a,(xsp+16)
 	ld (xiz),a
 	ldb (xiz+1),0
@@ -13323,12 +15795,12 @@ L2618:
 	ld (xiz+2),xwa
 	ld a,(xsp+16)
 	push xwa
-	call _plane_reg_x__19
+	call _plane_reg_x__21
 	lda xsp,(xsp+4)
 	ld (xsp+0),xwa
 	ld xwa,(xsp+24)
 	cp xwa,0
-	jr z,L2619
+	jr z,L3071
 	ld wa,16
 	push xwa
 	ld wa,152
@@ -13343,8 +15815,8 @@ L2618:
 	push xwa
 	call _ngpc_dma_stream_begin_u16
 	lda xsp,(xsp+24)
-	jr L2620
-L2619:
+	jr L3072
+L3071:
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -13359,8 +15831,8 @@ L2619:
 	push xwa
 	call _ngpc_dma_stream_begin_u16
 	lda xsp,(xsp+24)
-L2620:
-L2617:
+L3072:
+L3069:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -13371,18 +15843,18 @@ _ngpc_dma_raster_xy_enable:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2625
-	jr L2624
-L2625:
+	jr nz,L3077
+	jr L3076
+L3077:
 	ldb (xiz+1),0
 	ld xwa,(xiz+2)
 	cp xwa,0
-	jr nz,L2626
-	jr L2624
-L2626:
+	jr nz,L3078
+	jr L3076
+L3078:
 	call _ngpc_dma_timer0_hblank_enable
 	ldb (xiz+1),1
-L2624:
+L3076:
 	pop xiz
 	ret
 
@@ -13392,19 +15864,19 @@ _ngpc_dma_raster_xy_rearm:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2631
-	jr L2630
-L2631:
+	jr nz,L3083
+	jr L3082
+L3083:
 	ld a,(xiz+1)
 	cp a,0
-	jr nz,L2632
-	jr L2630
-L2632:
+	jr nz,L3084
+	jr L3082
+L3084:
 	lda xwa,(xiz+6)
 	push xwa
 	call _ngpc_dma_stream_rearm_u16
 	lda xsp,(xsp+4)
-L2630:
+L3082:
 	pop xiz
 	ret
 
@@ -13414,20 +15886,20 @@ _ngpc_dma_raster_xy_disable:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L2637
-	jr L2636
-L2637:
+	jr nz,L3089
+	jr L3088
+L3089:
 	ld a,(xiz+1)
 	cp a,0
-	jr z,L2638
+	jr z,L3090
 	ld a,(xiz+6)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
 	call _ngpc_dma_timer0_hblank_disable
-L2638:
+L3090:
 	ldb (xiz+1),0
-L2636:
+L3088:
 	pop xiz
 	ret
 
@@ -13438,19 +15910,19 @@ _ngpc_dma_raster_build_parallax_table_xy:
 	ld xiy,(xsp+20)
 	ld xwa,(xsp+16)
 	cp xwa,0
-	jr nz,L2658
-	jp L2657
-L2658:
+	jr nz,L3110
+	jp L3109
+L3110:
 	ld xwa,xiy
 	cp xwa,0
-	jr z,L2660
+	jr z,L3112
 	ld a,(xsp+24)
 	cp a,0
-	jr nz,L2659
-L2660:
+	jr nz,L3111
+L3112:
 	ld izl,0
-	jr L2664
-L2661:
+	jr L3116
+L3113:
 	ld a,(xsp+32)
 	extz wa
 	sll 8,wa
@@ -13462,18 +15934,18 @@ L2661:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2663:
+L3115:
 	inc 1,izl
-L2664:
+L3116:
 	ld a,izl
 	cp a,152
-	jr ult,L2661
-L2662:
-	jp L2657
-L2659:
+	jr ult,L3113
+L3114:
+	jp L3109
+L3111:
 	ld ixl,0
-	jp L2668
-L2665:
+	jp L3120
+L3117:
 	ld xwa,xiy
 	ld c,ixl
 	extz bc
@@ -13488,7 +15960,7 @@ L2665:
 	ld e,(xsp+24)
 	extz de
 	cp bc,de
-	jr ge,L2669
+	jr ge,L3121
 	ld xwa,xiy
 	ld c,ixl
 	extz bc
@@ -13498,11 +15970,11 @@ L2665:
 	add xwa,xbc
 	ld a,(xwa)
 	extz wa
-	jr L2670
-L2669:
+	jr L3122
+L3121:
 	ld a,152
 	extz wa
-L2670:
+L3122:
 	ld (xsp+3),a
 	ld wa,(xsp+28)
 	ld xbc,xiy
@@ -13524,8 +15996,8 @@ L2670:
 	ld (xsp+6),wa
 	ld a,(xsp+2)
 	ld izl,a
-	jr L2674
-L2671:
+	jr L3126
+L3123:
 	ld wa,(xsp+6)
 	ld xbc,(xsp+16)
 	ld e,izl
@@ -13534,21 +16006,21 @@ L2671:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2673:
+L3125:
 	inc 1,izl
-L2674:
+L3126:
 	ld a,izl
 	cp a,(xsp+3)
-	jr ult,L2671
-L2672:
-L2667:
+	jr ult,L3123
+L3124:
+L3119:
 	inc 1,ixl
-L2668:
+L3120:
 	ld a,ixl
 	cp a,(xsp+24)
-	jp ult,L2665
-L2666:
-L2657:
+	jp ult,L3117
+L3118:
+L3109:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -13556,13 +16028,13 @@ L2657:
 ; function audio_init
 _audio_init:
 	call _player_init
-L2676:
+L3128:
 	ret
 
 ; function audio_update
 _audio_update:
 	call _player_update
-L2678:
+L3130:
 	ret
 
 ; function music_play
@@ -13571,10 +16043,10 @@ _music_play:
 	lda xsp,(xsp-4)
 	ld a,(xsp+12)
 	cp a,6
-	jr ult,L2682
+	jr ult,L3134
 	call _music_stop
-	jr L2681
-L2682:
+	jr L3133
+L3134:
 	ld xwa,_music_songs
 	ld c,(xsp+12)
 	extz bc
@@ -13583,7 +16055,7 @@ L2682:
 	lda xwa,(xwa)
 	ld xiz,xwa
 	ld a,(xsp+12)
-	ld (_cur_song__20),a
+	ld (_cur_song__22),a
 	ld xwa,(xiz+12)
 	push xwa
 	ld xwa,(xiz+8)
@@ -13594,7 +16066,7 @@ L2682:
 	push xwa
 	call _player_start
 	lda xsp,(xsp+16)
-L2681:
+L3133:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -13602,21 +16074,21 @@ L2681:
 ; function music_stop
 _music_stop:
 	call _player_stop
-	ldb (_cur_song__20),255
-L2684:
+	ldb (_cur_song__22),255
+L3136:
 	ret
 
 ; function music_fade
 _music_fade:
 	call _player_stop
-L2686:
+L3138:
 	ret
 
 ; function music_current
 _music_current:
-	ld a,(_cur_song__20)
-	jr L2688
-L2688:
+	ld a,(_cur_song__22)
+	jr L3140
+L3140:
 	ret
 
 ; function sfx
@@ -13624,23 +16096,23 @@ _sfx:
 	ld a,(xsp+4)
 	extz wa
 	cp wa,0
-	jr z,L2702
+	jr z,L3154
 	cp wa,1
-	jr z,L2703
+	jr z,L3155
 	cp wa,2
-	jr z,L2704
+	jr z,L3156
 	cp wa,3
-	jp z,L2705
+	jp z,L3157
 	cp wa,4
-	jp z,L2706
+	jp z,L3158
 	cp wa,5
-	jp z,L2707
+	jp z,L3159
 	cp wa,7
-	jp z,L2708
+	jp z,L3160
 	cp wa,6
-	jp z,L2709
-	jp L2710
-L2702:
+	jp z,L3161
+	jp L3162
+L3154:
 	ld wa,0
 	push xwa
 	ld wa,12
@@ -13655,8 +16127,8 @@ L2702:
 	push xwa
 	call _player_sfx_tone
 	lda xsp,(xsp+24)
-	jp L2701
-L2703:
+	jp L3153
+L3155:
 	ld wa,6
 	push xwa
 	ld wa,45
@@ -13671,8 +16143,8 @@ L2703:
 	push xwa
 	call _player_sfx_tone
 	lda xsp,(xsp+24)
-	jp L2701
-L2704:
+	jp L3153
+L3156:
 	ld wa,5
 	push xwa
 	ld wa,70
@@ -13701,8 +16173,8 @@ L2704:
 	push xwa
 	call _player_sfx_tone
 	lda xsp,(xsp+24)
-	jp L2701
-L2705:
+	jp L3153
+L3157:
 	ld wa,4
 	push xwa
 	ld wa,60
@@ -13713,8 +16185,8 @@ L2705:
 	push xwa
 	call _player_sfx_noise
 	lda xsp,(xsp+16)
-	jr L2701
-L2706:
+	jr L3153
+L3158:
 	ld wa,1
 	push xwa
 	ld wa,10
@@ -13725,8 +16197,8 @@ L2706:
 	push xwa
 	call _player_sfx_noise
 	lda xsp,(xsp+16)
-	jr L2701
-L2707:
+	jr L3153
+L3159:
 	ld wa,0
 	push xwa
 	ld wa,5
@@ -13741,8 +16213,8 @@ L2707:
 	push xwa
 	call _player_sfx_tone
 	lda xsp,(xsp+24)
-	jr L2701
-L2708:
+	jr L3153
+L3160:
 	ld wa,0
 	push xwa
 	ld wa,8
@@ -13757,8 +16229,8 @@ L2708:
 	push xwa
 	call _player_sfx_tone
 	lda xsp,(xsp+24)
-	jr L2701
-L2709:
+	jr L3153
+L3161:
 	ld wa,1
 	push xwa
 	ld wa,6
@@ -13773,44 +16245,44 @@ L2709:
 	push xwa
 	call _player_sfx_tone
 	lda xsp,(xsp+24)
-	jr L2701
-L2710:
-	jr L2701
-L2701:
-L2700:
+	jr L3153
+L3162:
+	jr L3153
+L3153:
+L3152:
 	ret
 
 ; function scr_map
-_scr_map__21:
+_scr_map__23:
 	ld c,(xsp+4)
 	cp c,0
-	jr nz,L2715
+	jr nz,L3167
 	ld xwa,36864
-	jr L2716
-L2715:
+	jr L3168
+L3167:
 	ld xwa,38912
-L2716:
-	jr L2714
-L2714:
+L3168:
+	jr L3166
+L3166:
 	ret
 
 ; function pal_base
-_pal_base__21:
+_pal_base__23:
 	ld a,(xsp+4)
 	cp a,2
-	jr nz,L2721
+	jr nz,L3173
 	ld xwa,33280
-	jr L2720
-L2721:
+	jr L3172
+L3173:
 	ld a,(xsp+4)
 	cp a,0
-	jr nz,L2722
+	jr nz,L3174
 	ld xwa,33408
-	jr L2720
-L2722:
+	jr L3172
+L3174:
 	ld xwa,33536
-	jr L2720
-L2720:
+	jr L3172
+L3172:
 	ret
 
 ; function ngpc_gfx_load_tiles
@@ -13820,8 +16292,8 @@ _ngpc_gfx_load_tiles:
 	ld xwa,40960
 	ld xiy,xwa
 	ld iz,0
-	jr L2732
-L2729:
+	jr L3184
+L3181:
 	ld xwa,(xsp+16)
 	ld bc,iz
 	extz xbc
@@ -13847,14 +16319,14 @@ L2729:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L2731:
+L3183:
 	inc 1,iz
-L2732:
+L3184:
 	ld wa,iz
 	cp wa,(xsp+20)
-	jr ult,L2729
-L2730:
-L2728:
+	jr ult,L3181
+L3182:
+L3180:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -13871,8 +16343,8 @@ _ngpc_gfx_load_tiles_at:
 	add xwa,xbc
 	ld xiy,xwa
 	ld iz,0
-	jr L2742
-L2739:
+	jr L3194
+L3191:
 	ld xwa,(xsp+16)
 	ld bc,iz
 	extz xbc
@@ -13898,14 +16370,14 @@ L2739:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L2741:
+L3193:
 	inc 1,iz
-L2742:
+L3194:
 	ld wa,iz
 	cp wa,(xsp+20)
-	jr ult,L2739
-L2740:
-L2738:
+	jr ult,L3191
+L3192:
+L3190:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -13920,8 +16392,8 @@ _ngpc_gfx_load_tiles_u8:
 	sll 4,wa
 	ld ix,wa
 	ld iz,0
-	jr L2752
-L2749:
+	jr L3204
+L3201:
 	ld xwa,(xsp+16)
 	ld bc,iz
 	extz xbc
@@ -13932,14 +16404,14 @@ L2749:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L2751:
+L3203:
 	inc 1,iz
-L2752:
+L3204:
 	ld wa,iz
 	cp wa,ix
-	jr ult,L2749
-L2750:
-L2748:
+	jr ult,L3201
+L3202:
+L3200:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -13958,8 +16430,8 @@ _ngpc_gfx_load_tiles_u8_at:
 	sll 4,wa
 	ld ix,wa
 	ld iz,0
-	jr L2762
-L2759:
+	jr L3214
+L3211:
 	ld xwa,(xsp+16)
 	ld bc,iz
 	extz xbc
@@ -13970,20 +16442,20 @@ L2759:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L2761:
+L3213:
 	inc 1,iz
-L2762:
+L3214:
 	ld wa,iz
 	cp wa,ix
-	jr ult,L2759
-L2760:
-L2758:
+	jr ult,L3211
+L3212:
+L3210:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
 
 ; function make_entry
-_make_entry__21:
+_make_entry__23:
 	ld wa,(xsp+4)
 	and wa,255
 	ld bc,(xsp+4)
@@ -14006,8 +16478,8 @@ _make_entry__21:
 	and bc,1
 	sll 14,bc
 	or wa,bc
-	jr L2764
-L2764:
+	jr L3216
+L3216:
 	ret
 
 ; function ngpc_gfx_put_tile
@@ -14015,7 +16487,7 @@ _ngpc_gfx_put_tile:
 	lda xsp,(xsp-4)
 	ld a,(xsp+8)
 	push xwa
-	call _scr_map__21
+	call _scr_map__23
 	lda xsp,(xsp+4)
 	ld (xsp+0),xwa
 	ld wa,0
@@ -14026,7 +16498,7 @@ _ngpc_gfx_put_tile:
 	push xwa
 	ld wa,(xsp+32)
 	push xwa
-	call _make_entry__21
+	call _make_entry__23
 	lda xsp,(xsp+16)
 	ld xbc,(xsp+0)
 	ld e,(xsp+16)
@@ -14039,7 +16511,7 @@ _ngpc_gfx_put_tile:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2766:
+L3218:
 	lda xsp,(xsp+4)
 	ret
 
@@ -14048,7 +16520,7 @@ _ngpc_gfx_put_tile_ex:
 	lda xsp,(xsp-4)
 	ld a,(xsp+8)
 	push xwa
-	call _scr_map__21
+	call _scr_map__23
 	lda xsp,(xsp+4)
 	ld (xsp+0),xwa
 	ld a,(xsp+32)
@@ -14059,7 +16531,7 @@ _ngpc_gfx_put_tile_ex:
 	push xwa
 	ld wa,(xsp+32)
 	push xwa
-	call _make_entry__21
+	call _make_entry__23
 	lda xsp,(xsp+16)
 	ld xbc,(xsp+0)
 	ld e,(xsp+16)
@@ -14072,7 +16544,7 @@ _ngpc_gfx_put_tile_ex:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2768:
+L3220:
 	lda xsp,(xsp+4)
 	ret
 
@@ -14082,7 +16554,7 @@ _ngpc_gfx_get_tile:
 	lda xsp,(xsp-6)
 	ld a,(xsp+14)
 	push xwa
-	call _scr_map__21
+	call _scr_map__23
 	lda xsp,(xsp+4)
 	ld (xsp+0),xwa
 	ld xwa,(xsp+0)
@@ -14111,7 +16583,7 @@ _ngpc_gfx_get_tile:
 	and wa,15
 	ld xbc,(xsp+30)
 	ld (xbc),a
-L2770:
+L3222:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -14123,13 +16595,13 @@ _ngpc_gfx_clear:
 	push xix
 	ld a,(xsp+18)
 	push xwa
-	call _scr_map__21
+	call _scr_map__23
 	lda xsp,(xsp+4)
 	pop xix
 	ld xix,xwa
 	ld iz,0
-	jr L2780
-L2777:
+	jr L3232
+L3229:
 	ld wa,0
 	ld xbc,xix
 	ld de,iz
@@ -14137,14 +16609,14 @@ L2777:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2779:
+L3231:
 	inc 1,iz
-L2780:
+L3232:
 	ld wa,iz
 	cp wa,1024
-	jr ult,L2777
-L2778:
-L2776:
+	jr ult,L3229
+L3230:
+L3228:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -14157,7 +16629,7 @@ _ngpc_gfx_fill:
 	push xiy
 	ld a,(xsp+24)
 	push xwa
-	call _scr_map__21
+	call _scr_map__23
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
@@ -14172,14 +16644,14 @@ _ngpc_gfx_fill:
 	push xwa
 	ld wa,(xsp+40)
 	push xwa
-	call _make_entry__21
+	call _make_entry__23
 	lda xsp,(xsp+16)
 	pop xiy
 	pop xix
 	ld ix,wa
 	ld iz,0
-	jr L2790
-L2787:
+	jr L3242
+L3239:
 	ld wa,ix
 	ld xbc,xiy
 	ld de,iz
@@ -14187,14 +16659,14 @@ L2787:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2789:
+L3241:
 	inc 1,iz
-L2790:
+L3242:
 	ld wa,iz
 	cp wa,1024
-	jr ult,L2787
-L2788:
-L2786:
+	jr ult,L3239
+L3240:
+L3238:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -14207,7 +16679,7 @@ _ngpc_gfx_fill_rect:
 	push xiy
 	ld a,(xsp+28)
 	push xwa
-	call _scr_map__21
+	call _scr_map__23
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
@@ -14222,14 +16694,14 @@ _ngpc_gfx_fill_rect:
 	push xwa
 	ld wa,(xsp+60)
 	push xwa
-	call _make_entry__21
+	call _make_entry__23
 	lda xsp,(xsp+16)
 	pop xiy
 	pop xix
 	ld (xsp+4),wa
 	ld ixl,0
-	jr L2804
-L2801:
+	jr L3256
+L3253:
 	ld a,(xsp+28)
 	add a,ixl
 	and a,31
@@ -14239,8 +16711,8 @@ L2801:
 	sll 5,wa
 	ld (xsp+10),wa
 	ld izl,0
-	jr L2808
-L2805:
+	jr L3260
+L3257:
 	ld a,(xsp+24)
 	add a,izl
 	and a,31
@@ -14255,21 +16727,21 @@ L2805:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2807:
+L3259:
 	inc 1,izl
-L2808:
+L3260:
 	ld a,izl
 	cp a,(xsp+32)
-	jr ult,L2805
-L2806:
-L2803:
+	jr ult,L3257
+L3258:
+L3255:
 	inc 1,ixl
-L2804:
+L3256:
 	ld a,ixl
 	cp a,(xsp+36)
-	jr ult,L2801
-L2802:
-L2800:
+	jr ult,L3253
+L3254:
+L3252:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -14282,7 +16754,7 @@ _ngpc_gfx_set_rect_pal:
 	push xiy
 	ld a,(xsp+30)
 	push xwa
-	call _scr_map__21
+	call _scr_map__23
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
@@ -14293,8 +16765,8 @@ _ngpc_gfx_set_rect_pal:
 	sll 9,wa
 	ld (xsp+4),wa
 	ldb (xsp+6),0
-	jr L2822
-L2819:
+	jr L3274
+L3271:
 	ld a,(xsp+30)
 	add a,(xsp+6)
 	and a,31
@@ -14304,8 +16776,8 @@ L2819:
 	sll 5,wa
 	ld (xsp+10),wa
 	ld ixl,0
-	jr L2826
-L2823:
+	jr L3278
+L3275:
 	ld a,(xsp+26)
 	add a,ixl
 	and a,31
@@ -14334,21 +16806,21 @@ L2823:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2825:
+L3277:
 	inc 1,ixl
-L2826:
+L3278:
 	ld a,ixl
 	cp a,(xsp+34)
-	jr ult,L2823
-L2824:
-L2821:
+	jr ult,L3275
+L3276:
+L3273:
 	incb 1,(xsp+6)
-L2822:
+L3274:
 	ld a,(xsp+6)
 	cp a,(xsp+38)
-	jr ult,L2819
-L2820:
-L2818:
+	jr ult,L3271
+L3272:
+L3270:
 	lda xsp,(xsp+14)
 	pop xiz
 	ret
@@ -14360,7 +16832,7 @@ _ngpc_gfx_set_palette:
 	push xix
 	ld a,(xsp+18)
 	push xwa
-	call _pal_base__21
+	call _pal_base__23
 	lda xsp,(xsp+4)
 	pop xix
 	ld xix,xwa
@@ -14400,7 +16872,7 @@ _ngpc_gfx_set_palette:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2828:
+L3280:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -14411,26 +16883,26 @@ _ngpc_gfx_set_bg_color:
 	ld xbc,33760
 	ld (xbc),wa
 	ldb (08118h),128
-L2830:
+L3282:
 	ret
 
 ; function ngpc_gfx_scroll
 _ngpc_gfx_scroll:
 	ld a,(xsp+4)
 	cp a,0
-	jr nz,L2835
+	jr nz,L3287
 	ld a,(xsp+8)
 	ld (08032h),a
 	ld a,(xsp+12)
 	ld (08033h),a
-	jr L2836
-L2835:
+	jr L3288
+L3287:
 	ld a,(xsp+8)
 	ld (08034h),a
 	ld a,(xsp+12)
 	ld (08035h),a
-L2836:
-L2834:
+L3288:
+L3286:
 	ret
 
 ; function ngpc_gfx_scroll_parallax
@@ -14442,68 +16914,68 @@ _ngpc_gfx_scroll_parallax:
 	ld izl,a
 	ld a,ixl
 	cp a,255
-	jr nz,L2851
+	jr nz,L3303
 	ldb (08032h),0
 	ldb (08033h),0
-	jr L2852
-L2851:
+	jr L3304
+L3303:
 	ld a,(xsp+8)
 	extz wa
 	ld c,ixl
 	cp c,0
-	jr z,L2854
-L2853:
+	jr z,L3306
+L3305:
 	sra 1,wa
-	djnz c,L2853
-L2854:
+	djnz c,L3305
+L3306:
 	ld (08032h),a
 	ld a,(xsp+12)
 	extz wa
 	ld c,ixl
 	cp c,0
-	jr z,L2856
-L2855:
+	jr z,L3308
+L3307:
 	sra 1,wa
-	djnz c,L2855
-L2856:
+	djnz c,L3307
+L3308:
 	ld (08033h),a
-L2852:
+L3304:
 	ld a,izl
 	cp a,255
-	jr nz,L2857
+	jr nz,L3309
 	ldb (08034h),0
 	ldb (08035h),0
-	jr L2858
-L2857:
+	jr L3310
+L3309:
 	ld a,(xsp+8)
 	extz wa
 	ld c,izl
 	cp c,0
-	jr z,L2860
-L2859:
+	jr z,L3312
+L3311:
 	sra 1,wa
-	djnz c,L2859
-L2860:
+	djnz c,L3311
+L3312:
 	ld (08034h),a
 	ld a,(xsp+12)
 	extz wa
 	ld c,izl
 	cp c,0
-	jr z,L2862
-L2861:
+	jr z,L3314
+L3313:
 	sra 1,wa
-	djnz c,L2861
-L2862:
+	djnz c,L3313
+L3314:
 	ld (08035h),a
-L2858:
-L2850:
+L3310:
+L3302:
 	pop xiz
 	ret
 
 ; function ngpc_gfx_swap_planes
 _ngpc_gfx_swap_planes:
 	xorb (08030h),128
-L2864:
+L3316:
 	ret
 
 ; function ngpc_gfx_set_viewport
@@ -14516,7 +16988,7 @@ _ngpc_gfx_set_viewport:
 	ld (08004h),a
 	ld a,(xsp+16)
 	ld (08005h),a
-L2866:
+L3318:
 	ret
 
 ; function ngpc_gfx_sprite_offset
@@ -14525,20 +16997,20 @@ _ngpc_gfx_sprite_offset:
 	ld (08020h),a
 	ld a,(xsp+8)
 	ld (08021h),a
-L2868:
+L3320:
 	ret
 
 ; function ngpc_gfx_lcd_invert
 _ngpc_gfx_lcd_invert:
 	ld a,(xsp+4)
 	cp a,0
-	jr z,L2873
+	jr z,L3325
 	orb (08012h),128
-	jr L2874
-L2873:
+	jr L3326
+L3325:
 	andb (08012h),127
-L2874:
-L2872:
+L3326:
+L3324:
 	ret
 
 ; function ngpc_gfx_set_outside_color
@@ -14549,7 +17021,7 @@ _ngpc_gfx_set_outside_color:
 	and c,7
 	or a,c
 	ld (08012h),a
-L2876:
+L3328:
 	ret
 
 ; function ngpc_gfx_char_over
@@ -14558,14 +17030,14 @@ _ngpc_gfx_char_over:
 	extz bc
 	and bc,128
 	cp bc,0
-	jr z,L2881
+	jr z,L3333
 	ld wa,1
-	jr L2882
-L2881:
+	jr L3334
+L3333:
 	ld wa,0
-L2882:
-	jr L2880
-L2880:
+L3334:
+	jr L3332
+L3332:
 	ret
 
 ; function ngpc_gfx_set_color_direct
@@ -14573,7 +17045,7 @@ _ngpc_gfx_set_color_direct:
 	lda xsp,(xsp-4)
 	ld a,(xsp+8)
 	push xwa
-	call _pal_base__21
+	call _pal_base__23
 	lda xsp,(xsp+4)
 	ld (xsp+0),xwa
 	ld wa,(xsp+20)
@@ -14588,7 +17060,7 @@ _ngpc_gfx_set_color_direct:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2884:
+L3336:
 	lda xsp,(xsp+4)
 	ret
 
@@ -14597,12 +17069,12 @@ _ngpc_tile_rotate90:
 	push xiz
 	lda xsp,(xsp-6)
 	ld ixl,0
-	jr L2902
-L2899:
+	jr L3354
+L3351:
 	ld iy,0
 	ld izl,0
-	jr L2906
-L2903:
+	jr L3358
+L3355:
 	ld xwa,(xsp+14)
 	ld bc,7
 	ld e,izl
@@ -14618,11 +17090,11 @@ L2903:
 	sll 1,de
 	sub bc,de
 	cp c,0
-	jr z,L2908
-L2907:
+	jr z,L3360
+L3359:
 	srl 1,wa
-	djnz c,L2907
-L2908:
+	djnz c,L3359
+L3360:
 	and wa,3
 	ld (xsp+4),a
 	ld wa,iy
@@ -14634,20 +17106,20 @@ L2908:
 	sll 1,hl
 	sub de,hl
 	cp e,0
-	jr z,L2910
-L2909:
+	jr z,L3362
+L3361:
 	sll 1,bc
-	djnz e,L2909
-L2910:
+	djnz e,L3361
+L3362:
 	or wa,bc
 	ld iy,wa
-L2905:
+L3357:
 	inc 1,izl
-L2906:
+L3358:
 	ld a,izl
 	cp a,8
-	jr ult,L2903
-L2904:
+	jr ult,L3355
+L3356:
 	ld wa,iy
 	ld xbc,(xsp+18)
 	ld e,ixl
@@ -14656,14 +17128,14 @@ L2904:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2901:
+L3353:
 	inc 1,ixl
-L2902:
+L3354:
 	ld a,ixl
 	cp a,8
-	jp ult,L2899
-L2900:
-L2898:
+	jp ult,L3351
+L3352:
+L3350:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -14673,12 +17145,12 @@ _ngpc_tile_rotate270:
 	push xiz
 	lda xsp,(xsp-6)
 	ld ixl,0
-	jr L2928
-L2925:
+	jr L3380
+L3377:
 	ld iy,0
 	ld izl,0
-	jr L2932
-L2929:
+	jr L3384
+L3381:
 	ld xwa,(xsp+14)
 	ld c,izl
 	extz bc
@@ -14694,11 +17166,11 @@ L2929:
 	sll 1,de
 	sub bc,de
 	cp c,0
-	jr z,L2934
-L2933:
+	jr z,L3386
+L3385:
 	srl 1,wa
-	djnz c,L2933
-L2934:
+	djnz c,L3385
+L3386:
 	and wa,3
 	ld (xsp+4),a
 	ld wa,iy
@@ -14710,20 +17182,20 @@ L2934:
 	sll 1,hl
 	sub de,hl
 	cp e,0
-	jr z,L2936
-L2935:
+	jr z,L3388
+L3387:
 	sll 1,bc
-	djnz e,L2935
-L2936:
+	djnz e,L3387
+L3388:
 	or wa,bc
 	ld iy,wa
-L2931:
+L3383:
 	inc 1,izl
-L2932:
+L3384:
 	ld a,izl
 	cp a,8
-	jr ult,L2929
-L2930:
+	jr ult,L3381
+L3382:
 	ld wa,iy
 	ld xbc,(xsp+18)
 	ld e,ixl
@@ -14732,14 +17204,14 @@ L2930:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2927:
+L3379:
 	inc 1,ixl
-L2928:
+L3380:
 	ld a,ixl
 	cp a,8
-	jp ult,L2925
-L2926:
-L2924:
+	jp ult,L3377
+L3378:
+L3376:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -14761,7 +17233,7 @@ _ngpc_tile_rotate90_to:
 	push xwa
 	call _ngpc_gfx_load_tiles_at
 	lda xsp,(xsp+12)
-L2938:
+L3390:
 	lda xsp,(xsp+16)
 	ret
 
@@ -14782,7 +17254,7 @@ _ngpc_tile_rotate270_to:
 	push xwa
 	call _ngpc_gfx_load_tiles_at
 	lda xsp,(xsp+12)
-L2940:
+L3392:
 	lda xsp,(xsp+16)
 	ret
 
@@ -14821,7 +17293,7 @@ _ngpc_sprite_set:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2942:
+L3394:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -14842,7 +17314,7 @@ _ngpc_sprite_move:
 	ld a,(xsp+16)
 	ld xbc,(xsp+0)
 	ld (xbc+3),a
-L2944:
+L3396:
 	lda xsp,(xsp+4)
 	ret
 
@@ -14858,7 +17330,7 @@ _ngpc_sprite_hide:
 	ld (xsp+0),xwa
 	ld xbc,(xsp+0)
 	andb (xbc+1),231
-L2946:
+L3398:
 	lda xsp,(xsp+4)
 	ret
 
@@ -14867,20 +17339,20 @@ _ngpc_sprite_hide_all:
 	push xiz
 	lda xsp,(xsp-2)
 	ld izl,0
-	jr L2956
-L2953:
+	jr L3408
+L3405:
 	ld a,izl
 	push xwa
 	call _ngpc_sprite_hide
 	lda xsp,(xsp+4)
-L2955:
+L3407:
 	inc 1,izl
-L2956:
+L3408:
 	ld a,izl
 	cp a,64
-	jr ult,L2953
-L2954:
-L2952:
+	jr ult,L3405
+L3406:
+L3404:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -14901,7 +17373,7 @@ _ngpc_sprite_set_flags:
 	or a,(xsp+12)
 	ld xbc,(xsp+0)
 	ld (xbc+1),a
-L2958:
+L3410:
 	lda xsp,(xsp+4)
 	ret
 
@@ -14929,7 +17401,7 @@ _ngpc_sprite_set_tile:
 	extz bc
 	or wa,bc
 	ld (xiz+1),a
-L2960:
+L3412:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -14944,8 +17416,8 @@ _ngpc_sprite_get_pal:
 	ld a,(xwa)
 	extz wa
 	and wa,15
-	jr L2962
-L2962:
+	jr L3414
+L3414:
 	ret
 
 ; function ngpc_text_print
@@ -14955,16 +17427,16 @@ _ngpc_text_print:
 	ld xiz,(xsp+26)
 	ld a,(xsp+18)
 	ld iyl,a
-	jr L2972
-L2970:
+	jr L3424
+L3422:
 	ld a,(xiz)
 	ld ixl,a
 	ld a,ixl
 	cp a,32
-	jr ult,L2973
+	jr ult,L3425
 	ld a,ixl
 	cp a,128
-	jr uge,L2973
+	jr uge,L3425
 	push xix
 	push xiy
 	ld a,(xsp+22)
@@ -14982,22 +17454,22 @@ L2970:
 	lda xsp,(xsp+20)
 	pop xiy
 	pop xix
-L2973:
+L3425:
 	inc 1,iyl
 	ld a,iyl
 	cp a,20
-	jr ult,L2974
-	jr L2971
-L2974:
+	jr ult,L3426
+	jr L3423
+L3426:
 	ld xwa,xiz
 	inc 1,xwa
 	ld xiz,xwa
-L2972:
+L3424:
 	ld a,(xiz)
 	cp a,0
-	jr nz,L2970
-L2971:
-L2969:
+	jr nz,L3422
+L3423:
+L3421:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -15009,8 +17481,8 @@ _ngpc_text_print_dec:
 	ld wa,(xsp+34)
 	ld (xsp+6),wa
 	ld izl,0
-	jr L2988
-L2985:
+	jr L3440
+L3437:
 	ld wa,(xsp+6)
 	extz xwa
 	div xwa,10
@@ -15027,18 +17499,18 @@ L2985:
 	extz xwa
 	div xwa,10
 	ld (xsp+6),wa
-L2987:
+L3439:
 	inc 1,izl
-L2988:
+L3440:
 	ld a,izl
 	cp a,5
-	jr ult,L2985
-L2986:
+	jr ult,L3437
+L3438:
 	ld a,5
 	sub a,(xsp+38)
 	ld izl,a
-	jr L2992
-L2989:
+	jr L3444
+L3441:
 	lda xwa,(xsp+0)
 	ld c,izl
 	extz bc
@@ -15061,14 +17533,14 @@ L2989:
 	call _ngpc_gfx_put_tile
 	lda xsp,(xsp+20)
 	incb 1,(xsp+26)
-L2991:
+L3443:
 	inc 1,izl
-L2992:
+L3444:
 	ld a,izl
 	cp a,5
-	jr ult,L2989
-L2990:
-L2984:
+	jr ult,L3441
+L3442:
+L3436:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -15078,8 +17550,8 @@ _ngpc_text_print_hex:
 	push xiz
 	lda xsp,(xsp-8)
 	ld izl,0
-	jr L3006
-L3003:
+	jr L3458
+L3455:
 	ld a,(xsp+36)
 	extz wa
 	sub wa,1
@@ -15091,28 +17563,28 @@ L3003:
 	ld wa,(xsp+32)
 	ld bc,(xsp+2)
 	cp c,0
-	jr z,L3008
-L3007:
+	jr z,L3460
+L3459:
 	srl 1,wa
-	djnz c,L3007
-L3008:
+	djnz c,L3459
+L3460:
 	and wa,15
 	ld ixl,a
 	ld a,ixl
 	cp a,10
-	jr uge,L3009
+	jr uge,L3461
 	ld a,ixl
 	extz wa
 	add wa,48
 	ld iy,wa
-	jr L3010
-L3009:
+	jr L3462
+L3461:
 	ld a,ixl
 	extz wa
 	sub wa,10
 	add wa,65
 	ld iy,wa
-L3010:
+L3462:
 	push xix
 	push xiy
 	ld a,(xsp+28)
@@ -15133,14 +17605,14 @@ L3010:
 	lda xsp,(xsp+20)
 	pop xiy
 	pop xix
-L3005:
+L3457:
 	inc 1,izl
-L3006:
+L3458:
 	ld a,izl
 	cp a,(xsp+36)
-	jp ult,L3003
-L3004:
-L3002:
+	jp ult,L3455
+L3456:
+L3454:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -15154,8 +17626,8 @@ _ngpc_text_print_num:
 	ld wa,1
 	ld (xsp+8),a
 	ld izl,0
-	jr L3026
-L3023:
+	jr L3478
+L3475:
 	ld wa,(xsp+6)
 	extz xwa
 	div xwa,10
@@ -15172,21 +17644,21 @@ L3023:
 	extz xwa
 	div xwa,10
 	ld (xsp+6),wa
-L3025:
+L3477:
 	inc 1,izl
-L3026:
+L3478:
 	ld a,izl
 	cp a,5
-	jr ult,L3023
-L3024:
+	jr ult,L3475
+L3476:
 	ld a,5
 	sub a,(xsp+40)
 	ld izl,a
-	jr L3030
-L3027:
+	jr L3482
+L3479:
 	ld a,(xsp+8)
 	cp a,0
-	jr z,L3031
+	jr z,L3483
 	lda xwa,(xsp+0)
 	ld c,izl
 	extz bc
@@ -15194,13 +17666,13 @@ L3027:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr nz,L3031
+	jr nz,L3483
 	ld a,izl
 	cp a,4
-	jr uge,L3031
+	jr uge,L3483
 	ld ix,32
-	jr L3032
-L3031:
+	jr L3484
+L3483:
 	ldb (xsp+8),0
 	lda xwa,(xsp+0)
 	ld c,izl
@@ -15211,7 +17683,7 @@ L3031:
 	extz wa
 	add wa,48
 	ld ix,wa
-L3032:
+L3484:
 	push xix
 	ld a,(xsp+28)
 	push xwa
@@ -15227,14 +17699,14 @@ L3032:
 	lda xsp,(xsp+20)
 	pop xix
 	incb 1,(xsp+28)
-L3029:
+L3481:
 	inc 1,izl
-L3030:
+L3482:
 	ld a,izl
 	cp a,5
-	jr ult,L3027
-L3028:
-L3022:
+	jr ult,L3479
+L3480:
+L3474:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -15274,7 +17746,7 @@ _ngpc_text_print_hex32:
 	push xwa
 	call _ngpc_text_print_hex
 	lda xsp,(xsp+24)
-L3034:
+L3486:
 	ret
 
 ; function ngpc_text_tile_screen
@@ -15284,11 +17756,11 @@ _ngpc_text_tile_screen:
 	ld wa,0
 	ld (xsp+2),wa
 	ld ixl,0
-	jr L3048
-L3045:
+	jr L3500
+L3497:
 	ld izl,0
-	jr L3052
-L3049:
+	jr L3504
+L3501:
 	push xix
 	ld a,(xsp+20)
 	push xwa
@@ -15309,21 +17781,21 @@ L3049:
 	lda xsp,(xsp+20)
 	pop xix
 	incw 1,(xsp+2)
-L3051:
+L3503:
 	inc 1,izl
-L3052:
+L3504:
 	ld a,izl
 	cp a,20
-	jr ult,L3049
-L3050:
-L3047:
+	jr ult,L3501
+L3502:
+L3499:
 	inc 1,ixl
-L3048:
+L3500:
 	ld a,ixl
 	cp a,19
-	jr ult,L3045
-L3046:
-L3044:
+	jr ult,L3497
+L3498:
+L3496:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -15333,23 +17805,23 @@ _hud_score_reset:
 	push xiz
 	lda xsp,(xsp-2)
 	ld izl,0
-	jr L3062
-L3059:
+	jr L3514
+L3511:
 	ld a,0
-	ld xbc,_s_dig__24
+	ld xbc,_s_dig__26
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L3061:
+L3513:
 	inc 1,izl
-L3062:
+L3514:
 	ld a,izl
 	cp a,7
-	jr ult,L3059
-L3060:
-L3058:
+	jr ult,L3511
+L3512:
+L3510:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -15362,10 +17834,10 @@ _hud_score_add:
 	ld iy,wa
 	ld wa,7
 	ld izl,a
-	jr L3071
-L3069:
+	jr L3523
+L3521:
 	dec 1,izl
-	ld xwa,_s_dig__24
+	ld xwa,_s_dig__26
 	ld c,izl
 	extz bc
 	exts xbc
@@ -15378,7 +17850,7 @@ L3069:
 	extz xwa
 	div xwa,10
 	ld wa,qwa
-	ld xbc,_s_dig__24
+	ld xbc,_s_dig__26
 	ld e,izl
 	extz de
 	exts xde
@@ -15388,16 +17860,16 @@ L3069:
 	extz xwa
 	div xwa,10
 	ld iy,wa
-L3071:
+L3523:
 	ld wa,iy
 	cp wa,0
-	jr z,L3072
+	jr z,L3524
 	ld a,izl
 	cp a,0
-	jr ugt,L3069
-L3072:
-L3070:
-L3068:
+	jr ugt,L3521
+L3524:
+L3522:
+L3520:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -15409,9 +17881,9 @@ _hud_init:
 	ld xwa,41472
 	ld (xsp+2),xwa
 	ld iz,0
-	jr L3082
-L3079:
-	ld xwa,_gfx_font_tiles__24
+	jr L3534
+L3531:
+	ld xwa,_gfx_font_tiles__26
 	ld bc,iz
 	extz xbc
 	sll 1,xbc
@@ -15423,13 +17895,13 @@ L3079:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3081:
+L3533:
 	inc 1,iz
-L3082:
+L3534:
 	ld wa,iz
 	cp wa,552
-	jr ult,L3079
-L3080:
+	jr ult,L3531
+L3532:
 	ld wa,4095
 	push xwa
 	ld wa,2184
@@ -15528,7 +18000,7 @@ L3080:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-L3078:
+L3530:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -15536,13 +18008,13 @@ L3078:
 ; function hud_reset
 _hud_reset:
 	ld a,255
-	ld (_h_stage__24),a
-	ld (_h_prog__24),a
-	ld (_h_gear__24),a
-	ld (_h_kmh__24),a
-	ld (_h_time__24),a
-	ldb (_h_score_ok__24),0
-L3084:
+	ld (_h_stage__26),a
+	ld (_h_prog__26),a
+	ld (_h_gear__26),a
+	ld (_h_kmh__26),a
+	ld (_h_time__26),a
+	ldb (_h_score_ok__26),0
+L3536:
 	ret
 
 ; function hud_clear_top
@@ -15550,11 +18022,11 @@ _hud_clear_top:
 	push xiz
 	lda xsp,(xsp-2)
 	ld ixl,0
-	jr L3098
-L3095:
+	jr L3550
+L3547:
 	ld izl,0
-	jr L3102
-L3099:
+	jr L3554
+L3551:
 	ld wa,0
 	ld xbc,36864
 	ld e,ixl
@@ -15567,21 +18039,21 @@ L3099:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3101:
+L3553:
 	inc 1,izl
-L3102:
+L3554:
 	ld a,izl
 	cp a,20
-	jr ult,L3099
-L3100:
-L3097:
+	jr ult,L3551
+L3552:
+L3549:
 	inc 1,ixl
-L3098:
+L3550:
 	ld a,ixl
 	cp a,15
-	jr ult,L3095
-L3096:
-L3094:
+	jr ult,L3547
+L3548:
+L3546:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -15593,10 +18065,10 @@ _hud_message:
 	ld xix,(xsp+14)
 	ld wa,0
 	ld izl,a
-	jr L3110
-L3108:
+	jr L3562
+L3560:
 	inc 1,izl
-L3110:
+L3562:
 	ld xwa,xix
 	ld c,izl
 	extz bc
@@ -15604,8 +18076,8 @@ L3110:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr nz,L3108
-L3109:
+	jr nz,L3560
+L3561:
 	push xix
 	ld a,(xsp+14)
 	push xwa
@@ -15630,7 +18102,7 @@ L3109:
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
 	pop xix
-L3107:
+L3559:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -15642,8 +18114,8 @@ _hud_clear_message:
 	ld a,(xsp+10)
 	ld ixl,a
 	ld izl,0
-	jr L3120
-L3117:
+	jr L3572
+L3569:
 	ld wa,0
 	ld xbc,36864
 	ld e,ixl
@@ -15656,20 +18128,20 @@ L3117:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3119:
+L3571:
 	inc 1,izl
-L3120:
+L3572:
 	ld a,izl
 	cp a,20
-	jr ult,L3117
-L3118:
-L3116:
+	jr ult,L3569
+L3570:
+L3568:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
 
 ; function put_digit
-_put_digit__24:
+_put_digit__26:
 	ld a,(xsp+16)
 	push xwa
 	ld wa,48
@@ -15685,7 +18157,7 @@ _put_digit__24:
 	push xwa
 	call _ngpc_gfx_put_tile
 	lda xsp,(xsp+20)
-L3122:
+L3574:
 	ret
 
 ; function hud_race
@@ -15693,12 +18165,12 @@ _hud_race:
 	push xiz
 	lda xsp,(xsp-4)
 	ld a,(xsp+12)
-	cp a,(_h_time__24)
-	jr z,L3148
-	ld a,(_h_time__24)
+	cp a,(_h_time__26)
+	jr z,L3600
+	ld a,(_h_time__26)
 	cp a,255
-	jr nz,L3149
-	ld xwa,_S24_0
+	jr nz,L3601
+	ld xwa,_S26_0
 	push xwa
 	ld wa,0
 	push xwa
@@ -15710,15 +18182,15 @@ _hud_race:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-L3149:
+L3601:
 	ld c,(xsp+12)
 	cp c,10
-	jr uge,L3150
+	jr uge,L3602
 	ld wa,2
-	jr L3151
-L3150:
+	jr L3603
+L3602:
 	ld wa,1
-L3151:
+L3603:
 	push xwa
 	ld a,(xsp+16)
 	extz wa
@@ -15729,16 +18201,16 @@ L3151:
 	push xwa
 	ld wa,5
 	push xwa
-	call _put_digit__24
+	call _put_digit__26
 	lda xsp,(xsp+16)
 	ld c,(xsp+12)
 	cp c,10
-	jr uge,L3152
+	jr uge,L3604
 	ld wa,2
-	jr L3153
-L3152:
+	jr L3605
+L3604:
 	ld wa,1
-L3153:
+L3605:
 	push xwa
 	ld a,(xsp+16)
 	extz wa
@@ -15750,15 +18222,15 @@ L3153:
 	push xwa
 	ld wa,6
 	push xwa
-	call _put_digit__24
+	call _put_digit__26
 	lda xsp,(xsp+16)
 	ld a,(xsp+12)
-	ld (_h_time__24),a
-L3148:
+	ld (_h_time__26),a
+L3600:
 	ld a,(xsp+28)
-	cp a,(_h_stage__24)
-	jr z,L3154
-	ld xwa,_S24_1
+	cp a,(_h_stage__26)
+	jr z,L3606
+	ld xwa,_S26_1
 	push xwa
 	ld wa,0
 	push xwa
@@ -15779,12 +18251,12 @@ L3148:
 	push xwa
 	ld wa,15
 	push xwa
-	call _put_digit__24
+	call _put_digit__26
 	lda xsp,(xsp+16)
 	ld a,(xsp+28)
-	ld (_h_stage__24),a
-	ldb (_h_prog__24),255
-L3154:
+	ld (_h_stage__26),a
+	ldb (_h_prog__26),255
+L3606:
 	ld wa,(xsp+24)
 	mul xwa,3
 	add wa,9
@@ -15792,21 +18264,21 @@ L3154:
 	div xwa,10
 	ld (xsp+1),a
 	ld a,(xsp+1)
-	cp a,(_h_prog__24)
-	jr z,L3155
+	cp a,(_h_prog__26)
+	jr z,L3607
 	ld izl,0
-	jr L3159
-L3156:
+	jr L3611
+L3608:
 	ld wa,0
 	push xwa
 	ld c,izl
 	cp c,(xsp+5)
-	jr uge,L3160
+	jr uge,L3612
 	ld wa,97
-	jr L3161
-L3160:
+	jr L3613
+L3612:
 	ld wa,96
-L3161:
+L3613:
 	push xwa
 	ld wa,0
 	push xwa
@@ -15817,13 +18289,13 @@ L3161:
 	push xwa
 	call _ngpc_gfx_put_tile
 	lda xsp,(xsp+20)
-L3158:
+L3610:
 	inc 1,izl
-L3159:
+L3611:
 	ld a,izl
 	cp a,3
-	jr ult,L3156
-L3157:
+	jr ult,L3608
+L3609:
 	ld wa,1
 	push xwa
 	ld wa,100
@@ -15837,19 +18309,19 @@ L3157:
 	call _ngpc_gfx_put_tile
 	lda xsp,(xsp+20)
 	ld a,(xsp+1)
-	ld (_h_prog__24),a
-L3155:
+	ld (_h_prog__26),a
+L3607:
 	ld a,(xsp+16)
-	cp a,(_h_kmh__24)
-	jp z,L3162
+	cp a,(_h_kmh__26)
+	jp z,L3614
 	ld a,(xsp+16)
 	extz wa
 	sll 1,wa
 	ld (xsp+2),wa
-	ld a,(_h_kmh__24)
+	ld a,(_h_kmh__26)
 	cp a,255
-	jr nz,L3163
-	ld xwa,_S24_2
+	jr nz,L3615
+	ld xwa,_S26_2
 	push xwa
 	ld wa,1
 	push xwa
@@ -15861,7 +18333,7 @@ L3155:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-L3163:
+L3615:
 	ld wa,1
 	push xwa
 	ld wa,(xsp+6)
@@ -15872,7 +18344,7 @@ L3163:
 	push xwa
 	ld wa,0
 	push xwa
-	call _put_digit__24
+	call _put_digit__26
 	lda xsp,(xsp+16)
 	ld wa,1
 	push xwa
@@ -15887,7 +18359,7 @@ L3163:
 	push xwa
 	ld wa,1
 	push xwa
-	call _put_digit__24
+	call _put_digit__26
 	lda xsp,(xsp+16)
 	ld wa,1
 	push xwa
@@ -15900,22 +18372,22 @@ L3163:
 	push xwa
 	ld wa,2
 	push xwa
-	call _put_digit__24
+	call _put_digit__26
 	lda xsp,(xsp+16)
 	ld a,(xsp+16)
-	ld (_h_kmh__24),a
-L3162:
+	ld (_h_kmh__26),a
+L3614:
 	ld a,(xsp+20)
-	cp a,(_h_gear__24)
-	jr z,L3164
+	cp a,(_h_gear__26)
+	jr z,L3616
 	ld c,(xsp+20)
 	cp c,1
-	jr nz,L3165
-	ld xwa,_S24_3
-	jr L3166
-L3165:
-	ld xwa,_S24_4
-L3166:
+	jr nz,L3617
+	ld xwa,_S26_3
+	jr L3618
+L3617:
+	ld xwa,_S26_4
+L3618:
 	push xwa
 	ld wa,1
 	push xwa
@@ -15923,28 +18395,28 @@ L3166:
 	push xwa
 	ld c,(xsp+32)
 	cp c,1
-	jr nz,L3167
+	jr nz,L3619
 	ld wa,1
-	jr L3168
-L3167:
+	jr L3620
+L3619:
 	ld c,(xsp+32)
 	cp c,2
-	jr nz,L3169
+	jr nz,L3621
 	ld wa,2
-	jr L3170
-L3169:
+	jr L3622
+L3621:
 	ld wa,0
-L3170:
-L3168:
+L3622:
+L3620:
 	push xwa
 	ld wa,0
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
 	ld a,(xsp+20)
-	ld (_h_gear__24),a
-L3164:
-L3147:
+	ld (_h_gear__26),a
+L3616:
+L3599:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -15957,28 +18429,28 @@ _id_cars_steering:
 	ld izl,a
 	ld c,izl
 	cp c,96
-	jr uge,L3175
+	jr uge,L3627
 	ld a,izl
 	extz wa
 	mul xwa,7
 	extz xwa
 	div xwa,6
-	jr L3176
-L3175:
+	jr L3628
+L3627:
 	ld wa,112
 	ld c,izl
 	extz bc
 	sub bc,96
 	srl 3,bc
 	sub wa,bc
-L3176:
+L3628:
 	ld (xsp+0),wa
 	ld a,(xsp+14)
 	extz wa
 	mul xwa,(xsp+0)
 	srl 7,wa
-	jr L3174
-L3174:
+	jr L3626
+L3626:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -16006,7 +18478,7 @@ _id_fleet_body:
 	ldb (xiz+29),3
 	ldb (xiz+31),1
 	ldb (xiz+30),24
-L3178:
+L3630:
 	pop xiz
 	ret
 
@@ -16048,7 +18520,7 @@ _id_spr_put:
 	add bc,de
 	extz xbc
 	ld (xbc),a
-L3180:
+L3632:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -16061,9 +18533,9 @@ _id_spr_hide_range:
 	ld iyl,a
 	ld a,iyl
 	cp a,(xsp+18)
-	jr ult,L3187
-	jr L3186
-L3187:
+	jr ult,L3639
+	jr L3638
+L3639:
 	ld wa,34817
 	ld c,iyl
 	extz bc
@@ -16074,7 +18546,7 @@ L3187:
 	ld a,(xsp+18)
 	sub a,iyl
 	ld ixl,a
-L3188:
+L3640:
 	ld a,(xiz)
 	and a,231
 	ld (xiz),a
@@ -16083,19 +18555,19 @@ L3188:
 	ld xwa,xiz
 	add xwa,xbc
 	ld xiz,xwa
-L3190:
+L3642:
 	dec 1,ixl
 	ld a,ixl
 	cp a,0
-	jr nz,L3188
-L3189:
-L3186:
+	jr nz,L3640
+L3641:
+L3638:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
 
 ; function mesure_roues
-_mesure_roues__27:
+_mesure_roues__29:
 	push xiz
 	lda xsp,(xsp-20)
 	ld wa,0
@@ -16107,22 +18579,22 @@ _mesure_roues__27:
 	ld wa,0
 	ld (xsp+5),a
 	ldb (xsp+0),0
-	jp L3222
-L3219:
+	jp L3674
+L3671:
 	ld a,(xsp+0)
 	extz wa
-	ld c,(_body__27+29)
+	ld c,(_body__29+29)
 	extz bc
 	mul xwa,bc
 	ld (xsp+6),a
-	ld xwa,(_body__27+14)
+	ld xwa,(_body__29+14)
 	ld c,(xsp+6)
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	ld (xsp+7),a
-	ld xwa,(_body__27+10)
+	ld xwa,(_body__29+10)
 	ld c,(xsp+6)
 	extz bc
 	exts xbc
@@ -16130,9 +18602,9 @@ L3219:
 	ld a,(xwa)
 	ld (xsp+8),a
 	ldb (xsp+1),0
-	jp L3226
-L3223:
-	ld xwa,(_body__27+22)
+	jp L3678
+L3675:
+	ld xwa,(_body__29+22)
 	ld c,(xsp+7)
 	add c,(xsp+1)
 	extz bc
@@ -16140,7 +18612,7 @@ L3223:
 	add xwa,xbc
 	ld a,(xwa)
 	ld iyl,a
-	ld xwa,(_body__27+22)
+	ld xwa,(_body__29+22)
 	ld c,(xsp+7)
 	add c,(xsp+1)
 	extz bc
@@ -16148,7 +18620,7 @@ L3223:
 	add xwa,xbc
 	ld a,(xwa+1)
 	ld (xsp+10),a
-	ld xwa,(_body__27+22)
+	ld xwa,(_body__29+22)
 	ld c,(xsp+7)
 	add c,(xsp+1)
 	extz bc
@@ -16158,9 +18630,9 @@ L3223:
 	extz wa
 	ld (xsp+12),wa
 	ld ixl,0
-	jp L3230
-L3227:
-	ld xwa,(_body__27)
+	jp L3682
+L3679:
+	ld xwa,(_body__29)
 	ld bc,(xsp+12)
 	sll 3,bc
 	ld e,ixl
@@ -16172,8 +18644,8 @@ L3227:
 	ld wa,(xwa)
 	ld (xsp+16),wa
 	ld izl,0
-	jp L3234
-L3231:
+	jp L3686
+L3683:
 	ld wa,(xsp+16)
 	ld bc,14
 	ld de,2
@@ -16182,16 +18654,16 @@ L3231:
 	mul xde,hl
 	sub bc,de
 	cp c,0
-	jr z,L3237
-L3236:
+	jr z,L3689
+L3688:
 	srl 1,wa
-	djnz c,L3236
-L3237:
+	djnz c,L3688
+L3689:
 	and wa,3
 	cp wa,0
-	jr nz,L3235
-	jp L3233
-L3235:
+	jr nz,L3687
+	jp L3685
+L3687:
 	ld a,(xsp+10)
 	extz wa
 	sll 3,wa
@@ -16199,7 +18671,7 @@ L3235:
 	extz bc
 	add wa,bc
 	cp a,(xsp+2)
-	jr ule,L3238
+	jr ule,L3690
 	ld a,(xsp+10)
 	extz wa
 	sll 3,wa
@@ -16208,7 +18680,7 @@ L3235:
 	add wa,bc
 	ld (xsp+2),a
 	ldb (xsp+5),0
-L3238:
+L3690:
 	ld a,(xsp+10)
 	extz wa
 	sll 3,wa
@@ -16216,7 +18688,7 @@ L3238:
 	extz bc
 	add wa,bc
 	cp a,(xsp+2)
-	jr nz,L3239
+	jr nz,L3691
 	ld a,iyl
 	extz wa
 	sll 3,wa
@@ -16224,7 +18696,7 @@ L3238:
 	extz bc
 	add wa,bc
 	cp a,(xsp+5)
-	jr ule,L3239
+	jr ule,L3691
 	ld a,iyl
 	extz wa
 	sll 3,wa
@@ -16232,7 +18704,7 @@ L3238:
 	extz bc
 	add wa,bc
 	ld (xsp+5),a
-L3239:
+L3691:
 	ld a,iyl
 	extz wa
 	sll 3,wa
@@ -16240,7 +18712,7 @@ L3239:
 	extz bc
 	add wa,bc
 	cp a,(xsp+3)
-	jr ule,L3240
+	jr ule,L3692
 	ld a,iyl
 	extz wa
 	sll 3,wa
@@ -16248,7 +18720,7 @@ L3239:
 	extz bc
 	add wa,bc
 	ld (xsp+3),a
-L3240:
+L3692:
 	ld a,iyl
 	extz wa
 	sll 3,wa
@@ -16256,7 +18728,7 @@ L3240:
 	extz bc
 	add wa,bc
 	cp a,(xsp+4)
-	jr uge,L3241
+	jr uge,L3693
 	ld a,iyl
 	extz wa
 	sll 3,wa
@@ -16264,45 +18736,45 @@ L3240:
 	extz bc
 	add wa,bc
 	ld (xsp+4),a
-L3241:
-L3233:
+L3693:
+L3685:
 	inc 1,izl
-L3234:
+L3686:
 	ld a,izl
 	cp a,8
-	jp ult,L3231
-L3232:
-L3229:
+	jp ult,L3683
+L3684:
+L3681:
 	inc 1,ixl
-L3230:
+L3682:
 	ld a,ixl
 	cp a,8
-	jp ult,L3227
-L3228:
-L3225:
+	jp ult,L3679
+L3680:
+L3677:
 	incb 1,(xsp+1)
-L3226:
+L3678:
 	ld a,(xsp+1)
 	cp a,(xsp+8)
-	jp ult,L3223
-L3224:
-L3221:
+	jp ult,L3675
+L3676:
+L3673:
 	incb 1,(xsp+0)
-L3222:
+L3674:
 	ld a,(xsp+0)
-	cp a,(_body__27+28)
-	jp ult,L3219
-L3220:
+	cp a,(_body__29+28)
+	jp ult,L3671
+L3672:
 	ld a,(xsp+4)
 	cp a,(xsp+3)
-	jr ule,L3242
-	ld xwa,(_body__27+18)
+	jr ule,L3694
+	ld xwa,(_body__29+18)
 	ld a,(xwa)
 	extz wa
 	sll 2,wa
-	ld (_car_wheel_dx__27),a
-	jr L3218
-L3242:
+	ld (_car_wheel_dx__29),a
+	jr L3670
+L3694:
 	ld wa,2
 	ld c,(xsp+5)
 	extz bc
@@ -16317,17 +18789,17 @@ L3242:
 	ld (xsp+8),wa
 	ld bc,(xsp+6)
 	cp bc,(xsp+8)
-	jr ule,L3243
+	jr ule,L3695
 	ld wa,(xsp+6)
 	sub wa,(xsp+8)
 	srl 1,wa
 	extz wa
-	jr L3244
-L3243:
+	jr L3696
+L3695:
 	ld wa,0
-L3244:
-	ld (_car_wheel_dx__27),a
-L3218:
+L3696:
+	ld (_car_wheel_dx__29),a
+L3670:
 	lda xsp,(xsp+20)
 	pop xiz
 	ret
@@ -16336,55 +18808,55 @@ L3218:
 _id_car_select:
 	ld c,(xsp+4)
 	cp c,1
-	jr uge,L3249
+	jr uge,L3701
 	ld a,(xsp+4)
 	extz wa
-	jr L3250
-L3249:
+	jr L3702
+L3701:
 	ld a,0
 	extz wa
-L3250:
-	ld (_car_variant__27),a
-	ld xwa,_body__27
+L3702:
+	ld (_car_variant__29),a
+	ld xwa,_body__29
 	push xwa
-	ld a,(_car_variant__27)
+	ld a,(_car_variant__29)
 	push xwa
 	call _id_fleet_body
 	lda xsp,(xsp+8)
-	call _mesure_roues__27
-L3248:
+	call _mesure_roues__29
+L3700:
 	ret
 
 ; function id_car_char_count
 _id_car_char_count:
 	ld c,(xsp+4)
 	cp c,0
-	jr z,L3255
-	ld wa,(_body__27+4)
-	jr L3256
-L3255:
-	ld wa,(_body__27+26)
-L3256:
+	jr z,L3707
+	ld wa,(_body__29+4)
+	jr L3708
+L3707:
+	ld wa,(_body__29+26)
+L3708:
 	srl 3,wa
-	jr L3254
-L3254:
+	jr L3706
+L3706:
 	ret
 
 ; function id_car_half_width
 _id_car_half_width:
-	ld xwa,(_body__27+18)
+	ld xwa,(_body__29+18)
 	ld a,(xwa)
 	extz wa
 	sll 2,wa
-	jr L3258
-L3258:
+	jr L3710
+L3710:
 	ret
 
 ; function id_car_wheel_dx
 _id_car_wheel_dx:
-	ld a,(_car_wheel_dx__27)
-	jr L3260
-L3260:
+	ld a,(_car_wheel_dx__29)
+	jr L3712
+L3712:
 	ret
 
 ; function id_car_init
@@ -16400,13 +18872,13 @@ _id_car_init:
 	pop xiy
 	pop xix
 	ld (xsp+2),wa
-	ld xwa,(_body__27)
+	ld xwa,(_body__29)
 	ld (xsp+4),xwa
 	ld wa,(xsp+24)
-	ld (_car_tile_base__27),wa
+	ld (_car_tile_base__29),wa
 	ld ix,0
-	jr L3276
-L3273:
+	jr L3728
+L3725:
 	ld wa,40960
 	extz xwa
 	ld bc,(xsp+24)
@@ -16415,8 +18887,8 @@ L3273:
 	add xwa,xbc
 	ld (xsp+8),xwa
 	ld iz,0
-	jr L3280
-L3277:
+	jr L3732
+L3729:
 	ld xwa,(xsp+4)
 	ld bc,ix
 	sll 3,bc
@@ -16444,32 +18916,32 @@ L3277:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L3279:
+L3731:
 	inc 1,iz
-L3280:
+L3732:
 	ld wa,iz
 	cp wa,8
-	jr ult,L3277
-L3278:
-L3275:
+	jr ult,L3729
+L3730:
+L3727:
 	inc 1,ix
-L3276:
+L3728:
 	ld wa,ix
 	cp wa,(xsp+2)
-	jr ult,L3273
-L3274:
+	jr ult,L3725
+L3726:
 	push xix
 	push xiy
-	ld xwa,(_body__27+6)
+	ld xwa,(_body__29+6)
 	ld wa,(xwa+6)
 	push xwa
-	ld xwa,(_body__27+6)
+	ld xwa,(_body__29+6)
 	ld wa,(xwa+4)
 	push xwa
-	ld xwa,(_body__27+6)
+	ld xwa,(_body__29+6)
 	ld wa,(xwa+2)
 	push xwa
-	ld xwa,(_body__27+6)
+	ld xwa,(_body__29+6)
 	ld wa,(xwa)
 	push xwa
 	ld a,0
@@ -16480,21 +18952,21 @@ L3274:
 	lda xsp,(xsp+24)
 	pop xiy
 	pop xix
-	ld a,(_body__27+28)
+	ld a,(_body__29+28)
 	cp a,1
-	jr ule,L3281
+	jr ule,L3733
 	push xix
 	push xiy
-	ld xwa,(_body__27+6)
+	ld xwa,(_body__29+6)
 	ld wa,(xwa+14)
 	push xwa
-	ld xwa,(_body__27+6)
+	ld xwa,(_body__29+6)
 	ld wa,(xwa+12)
 	push xwa
-	ld xwa,(_body__27+6)
+	ld xwa,(_body__29+6)
 	ld wa,(xwa+10)
 	push xwa
-	ld xwa,(_body__27+6)
+	ld xwa,(_body__29+6)
 	ld wa,(xwa+8)
 	push xwa
 	ld a,5
@@ -16505,20 +18977,20 @@ L3274:
 	lda xsp,(xsp+24)
 	pop xiy
 	pop xix
-	jr L3282
-L3281:
+	jr L3734
+L3733:
 	push xix
 	push xiy
-	ld xwa,(_body__27+6)
+	ld xwa,(_body__29+6)
 	ld wa,(xwa+6)
 	push xwa
-	ld xwa,(_body__27+6)
+	ld xwa,(_body__29+6)
 	ld wa,(xwa+4)
 	push xwa
-	ld xwa,(_body__27+6)
+	ld xwa,(_body__29+6)
 	ld wa,(xwa+2)
 	push xwa
-	ld xwa,(_body__27+6)
+	ld xwa,(_body__29+6)
 	ld wa,(xwa)
 	push xwa
 	ld a,5
@@ -16529,7 +19001,7 @@ L3281:
 	lda xsp,(xsp+24)
 	pop xiy
 	pop xix
-L3282:
+L3734:
 	push xix
 	push xiy
 	ld a,24
@@ -16540,7 +19012,7 @@ L3282:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L3272:
+L3724:
 	lda xsp,(xsp+16)
 	pop xiz
 	ret
@@ -16552,14 +19024,14 @@ _id_car_portrait_angle:
 	ld a,(xsp+46)
 	ld (xsp+2),a
 	ld wa,2
-	ld c,(_body__27+29)
+	ld c,(_body__29+29)
 	extz bc
 	mul xwa,bc
 	sub wa,2
 	ld (xsp+3),a
-	ld a,(_body__27+29)
+	ld a,(_body__29+29)
 	cp a,2
-	jr uge,L3315
+	jr uge,L3767
 	push xix
 	push xiy
 	ld a,(xsp+54)
@@ -16583,8 +19055,8 @@ _id_car_portrait_angle:
 	lda xsp,(xsp+12)
 	pop xiy
 	pop xix
-	jp L3314
-L3315:
+	jp L3766
+L3767:
 	ld a,(xsp+50)
 	extz wa
 	exts xwa
@@ -16594,33 +19066,33 @@ L3315:
 	ld wa,qwa
 	ld (xsp+50),a
 	ld a,(xsp+50)
-	cp a,(_body__27+29)
-	jr uge,L3316
+	cp a,(_body__29+29)
+	jr uge,L3768
 	ld a,(xsp+50)
 	ld (xsp+4),a
 	ldb (xsp+5),0
-	jr L3317
-L3316:
+	jr L3769
+L3768:
 	ld a,(xsp+3)
 	sub a,(xsp+50)
 	ld (xsp+4),a
 	ldb (xsp+5),1
-L3317:
-	ld xwa,(_body__27+14)
+L3769:
+	ld xwa,(_body__29+14)
 	ld c,(xsp+4)
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	ld (xsp+9),a
-	ld xwa,(_body__27+10)
+	ld xwa,(_body__29+10)
 	ld c,(xsp+4)
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	ld (xsp+10),a
-	ld xwa,(_body__27+18)
+	ld xwa,(_body__29+18)
 	ld c,(xsp+4)
 	extz bc
 	exts xbc
@@ -16630,9 +19102,9 @@ L3317:
 	ldb (xsp+6),255
 	ldb (xsp+7),0
 	ld izl,0
-	jr L3321
-L3318:
-	ld xwa,(_body__27+22)
+	jr L3773
+L3770:
+	ld xwa,(_body__29+22)
 	ld c,(xsp+9)
 	add c,izl
 	extz bc
@@ -16642,42 +19114,42 @@ L3318:
 	ld (xsp+12),a
 	ld c,(xsp+5)
 	cp c,0
-	jr z,L3322
+	jr z,L3774
 	ld a,(xsp+11)
 	sub a,1
 	sub a,(xsp+12)
 	extz wa
-	jr L3323
-L3322:
+	jr L3775
+L3774:
 	ld a,(xsp+12)
 	extz wa
-L3323:
+L3775:
 	ld (xsp+13),a
 	ld a,(xsp+13)
 	cp a,(xsp+6)
-	jr uge,L3324
+	jr uge,L3776
 	ld a,(xsp+13)
 	ld (xsp+6),a
-L3324:
+L3776:
 	ld a,(xsp+13)
 	cp a,(xsp+7)
-	jr ule,L3325
+	jr ule,L3777
 	ld a,(xsp+13)
 	ld (xsp+7),a
-L3325:
-L3320:
+L3777:
+L3772:
 	inc 1,izl
-L3321:
+L3773:
 	ld a,izl
 	cp a,(xsp+10)
-	jr ult,L3318
-L3319:
+	jr ult,L3770
+L3771:
 	ld a,(xsp+6)
 	cp a,(xsp+7)
-	jr ule,L3326
+	jr ule,L3778
 	ldb (xsp+6),0
 	ldb (xsp+7),0
-L3326:
+L3778:
 	ld a,(xsp+38)
 	extz wa
 	ld c,(xsp+7)
@@ -16697,16 +19169,16 @@ L3326:
 	sub wa,bc
 	ld (xsp+8),a
 	ldb (xsp+1),0
-	jp L3330
-L3327:
-	ld a,(_body__27+28)
+	jp L3782
+L3779:
+	ld a,(_body__29+28)
 	sub a,1
 	sub a,(xsp+1)
 	ld (xsp+9),a
-	ld xwa,(_body__27+14)
+	ld xwa,(_body__29+14)
 	ld c,(xsp+9)
 	extz bc
-	ld e,(_body__27+29)
+	ld e,(_body__29+29)
 	extz de
 	mul xbc,de
 	ld e,(xsp+4)
@@ -16717,10 +19189,10 @@ L3327:
 	add xwa,xbc
 	ld a,(xwa)
 	ld (xsp+10),a
-	ld xwa,(_body__27+10)
+	ld xwa,(_body__29+10)
 	ld c,(xsp+9)
 	extz bc
-	ld e,(_body__27+29)
+	ld e,(_body__29+29)
 	extz de
 	mul xbc,de
 	ld e,(xsp+4)
@@ -16731,10 +19203,10 @@ L3327:
 	add xwa,xbc
 	ld a,(xwa)
 	ld (xsp+11),a
-	ld xwa,(_body__27+18)
+	ld xwa,(_body__29+18)
 	ld c,(xsp+9)
 	extz bc
-	ld e,(_body__27+29)
+	ld e,(_body__29+29)
 	extz de
 	mul xbc,de
 	ld e,(xsp+4)
@@ -16747,17 +19219,17 @@ L3327:
 	ld (xsp+12),a
 	ld c,(xsp+9)
 	cp c,0
-	jr nz,L3331
+	jr nz,L3783
 	ld wa,0
-	jr L3332
-L3331:
+	jr L3784
+L3783:
 	ld wa,5
-L3332:
+L3784:
 	ld (xsp+13),a
 	ld izl,0
-	jp L3336
-L3333:
-	ld xwa,(_body__27+22)
+	jp L3788
+L3785:
+	ld xwa,(_body__29+22)
 	ld c,(xsp+10)
 	add c,izl
 	extz bc
@@ -16767,18 +19239,18 @@ L3333:
 	ld xiy,xwa
 	ld c,(xsp+5)
 	cp c,0
-	jr z,L3337
+	jr z,L3789
 	ld a,(xsp+12)
 	sub a,1
 	sub a,(xiy)
 	extz wa
-	jr L3338
-L3337:
+	jr L3790
+L3789:
 	ld a,(xiy)
 	extz wa
-L3338:
+L3790:
 	ld (xsp+18),a
-L3339:
+L3791:
 	ld a,(xsp+2)
 	ld (xsp+19),a
 	ld a,(xsp+8)
@@ -16795,7 +19267,7 @@ L3339:
 	sll 3,bc
 	add wa,bc
 	ld (xsp+21),a
-	ld wa,(_car_tile_base__27)
+	ld wa,(_car_tile_base__29)
 	ld c,(xiy+2)
 	extz bc
 	add wa,bc
@@ -16804,12 +19276,12 @@ L3339:
 	ld (xsp+24),a
 	ld c,(xsp+5)
 	cp c,0
-	jr z,L3342
+	jr z,L3794
 	ld wa,128
-	jr L3343
-L3342:
+	jr L3795
+L3794:
 	ld wa,0
-L3343:
+L3795:
 	ld (xsp+25),a
 	ld wa,34816
 	ld c,(xsp+19)
@@ -16844,27 +19316,27 @@ L3343:
 	add bc,de
 	extz xbc
 	ld (xbc),a
-L3341:
-L3340:
+L3793:
+L3792:
 	incb 1,(xsp+2)
-L3335:
+L3787:
 	inc 1,izl
-L3336:
+L3788:
 	ld a,izl
 	cp a,(xsp+11)
-	jr uge,L3344
+	jr uge,L3796
 	ld a,(xsp+2)
 	cp a,64
-	jp ult,L3333
-L3344:
-L3334:
-L3329:
+	jp ult,L3785
+L3796:
+L3786:
+L3781:
 	incb 1,(xsp+1)
-L3330:
+L3782:
 	ld a,(xsp+1)
-	cp a,(_body__27+28)
-	jp ult,L3327
-L3328:
+	cp a,(_body__29+28)
+	jp ult,L3779
+L3780:
 	push xix
 	push xiy
 	ld a,64
@@ -16875,7 +19347,7 @@ L3328:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L3314:
+L3766:
 	lda xsp,(xsp+30)
 	pop xiz
 	ret
@@ -16887,26 +19359,26 @@ _id_car_portrait:
 	ld a,(xsp+40)
 	ld (xsp+2),a
 	ldb (xsp+1),0
-	jp L3364
-L3361:
-	ld a,(_body__27+28)
+	jp L3816
+L3813:
+	ld a,(_body__29+28)
 	sub a,1
 	sub a,(xsp+1)
 	ld (xsp+3),a
-	ld xwa,(_body__27+14)
+	ld xwa,(_body__29+14)
 	ld c,(xsp+3)
 	extz bc
-	ld e,(_body__27+29)
+	ld e,(_body__29+29)
 	extz de
 	mul xbc,de
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	ld (xsp+4),a
-	ld xwa,(_body__27+10)
+	ld xwa,(_body__29+10)
 	ld c,(xsp+3)
 	extz bc
-	ld e,(_body__27+29)
+	ld e,(_body__29+29)
 	extz de
 	mul xbc,de
 	exts xbc
@@ -16915,17 +19387,17 @@ L3361:
 	ld (xsp+5),a
 	ld c,(xsp+3)
 	cp c,0
-	jr nz,L3365
+	jr nz,L3817
 	ld wa,0
-	jr L3366
-L3365:
+	jr L3818
+L3817:
 	ld wa,5
-L3366:
+L3818:
 	ld (xsp+6),a
 	ldb (xsp+0),0
-	jp L3370
-L3367:
-	ld xwa,(_body__27+22)
+	jp L3822
+L3819:
+	ld xwa,(_body__29+22)
 	ld c,(xsp+4)
 	add c,(xsp+0)
 	extz bc
@@ -16933,7 +19405,7 @@ L3367:
 	add xwa,xbc
 	lda xwa,(xwa)
 	ld xiy,xwa
-L3371:
+L3823:
 	ld a,(xsp+2)
 	ld (xsp+12),a
 	ld a,(xsp+32)
@@ -16950,7 +19422,7 @@ L3371:
 	sll 3,bc
 	add wa,bc
 	ld (xsp+14),a
-	ld wa,(_car_tile_base__27)
+	ld wa,(_car_tile_base__29)
 	ld c,(xiy+2)
 	extz bc
 	add wa,bc
@@ -16992,27 +19464,27 @@ L3371:
 	add bc,de
 	extz xbc
 	ld (xbc),a
-L3373:
-L3372:
+L3825:
+L3824:
 	incb 1,(xsp+2)
-L3369:
+L3821:
 	incb 1,(xsp+0)
-L3370:
+L3822:
 	ld a,(xsp+0)
 	cp a,(xsp+5)
-	jr uge,L3374
+	jr uge,L3826
 	ld a,(xsp+2)
 	cp a,64
-	jp ult,L3367
-L3374:
-L3368:
-L3363:
+	jp ult,L3819
+L3826:
+L3820:
+L3815:
 	incb 1,(xsp+1)
-L3364:
+L3816:
 	ld a,(xsp+1)
-	cp a,(_body__27+28)
-	jp ult,L3361
-L3362:
+	cp a,(_body__29+28)
+	jp ult,L3813
+L3814:
 	push xix
 	push xiy
 	ld a,64
@@ -17023,13 +19495,13 @@ L3362:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L3360:
+L3812:
 	lda xsp,(xsp+24)
 	pop xiz
 	ret
 
 ; function car_layer
-_car_layer__27:
+_car_layer__29:
 	lda xsp,(xsp-22)
 	ld xwa,(xsp+26)
 	ld c,(xsp+30)
@@ -17041,7 +19513,7 @@ _car_layer__27:
 	ld wa,0
 	exts xwa
 	ld (xsp+4),xwa
-	ld wa,(_car_tile_base__27)
+	ld wa,(_car_tile_base__29)
 	ld (xsp+8),wa
 	ld a,(xsp+66)
 	push xwa
@@ -17053,12 +19525,12 @@ _car_layer__27:
 	sub wa,bc
 	add wa,(xsp+46)
 	ld (xsp+10),wa
-	ld wa,(_car_at_x__27)
+	ld wa,(_car_at_x__29)
 	cp wa,32767
-	jr z,L3380
-	ld wa,(_car_at_x__27)
+	jr z,L3832
+	ld wa,(_car_at_x__29)
 	ld (xsp+10),wa
-L3380:
+L3832:
 	ld a,(xsp+62)
 	sub a,(xsp+70)
 	ld (xsp+12),a
@@ -17069,12 +19541,12 @@ L3380:
 	ld (xsp+14),a
 	ld c,(xsp+42)
 	cp c,0
-	jr z,L3381
+	jr z,L3833
 	ld wa,128
-	jr L3382
-L3381:
+	jr L3834
+L3833:
 	ld wa,0
-L3382:
+L3834:
 	ld c,(_id_spr_priority)
 	extz bc
 	or wa,bc
@@ -17098,77 +19570,77 @@ L3382:
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-L3379:
+L3831:
 	lda xsp,(xsp+22)
 	ret
 
 ; function lean_last
-_lean_last__27:
+_lean_last__29:
 	push xiz
 	lda xsp,(xsp-2)
-	ld c,(_body__27+29)
+	ld c,(_body__29+29)
 	cp c,0
-	jr ule,L3388
-	ld a,(_body__27+29)
+	jr ule,L3840
+	ld a,(_body__29+29)
 	extz wa
 	sub wa,1
-	jr L3389
-L3388:
+	jr L3841
+L3840:
 	ld wa,0
-L3389:
+L3841:
 	ld izl,a
 	ld a,izl
 	cp a,2
-	jr ule,L3390
+	jr ule,L3842
 	ld izl,2
-L3390:
+L3842:
 	ld a,izl
-	jr L3387
-L3387:
+	jr L3839
+L3839:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
 
 ; function lean_pose
-_lean_pose__27:
+_lean_pose__29:
 	push xiz
 	lda xsp,(xsp-2)
-	call _lean_last__27
+	call _lean_last__29
 	ld (xsp+0),a
-	ld a,(_lean_hold__27)
+	ld a,(_lean_hold__29)
 	cp a,0
-	jr nz,L3400
+	jr nz,L3852
 	ld wa,0
-	jr L3399
-L3400:
-	ld c,(_lean_hold__27)
+	jr L3851
+L3852:
+	ld c,(_lean_hold__29)
 	cp c,12
-	jr ult,L3401
+	jr ult,L3853
 	ld wa,3
-	jr L3402
-L3401:
-	ld c,(_lean_hold__27)
+	jr L3854
+L3853:
+	ld c,(_lean_hold__29)
 	cp c,5
-	jr ult,L3403
+	jr ult,L3855
 	ld wa,2
-	jr L3404
-L3403:
+	jr L3856
+L3855:
 	ld wa,1
-L3404:
-L3402:
+L3856:
+L3854:
 	ld izl,a
 	ld c,izl
 	cp c,(xsp+0)
-	jr ule,L3405
+	jr ule,L3857
 	ld a,(xsp+0)
 	extz wa
-	jr L3406
-L3405:
+	jr L3858
+L3857:
 	ld a,izl
 	extz wa
-L3406:
-	jr L3399
-L3399:
+L3858:
+	jr L3851
+L3851:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -17177,20 +19649,20 @@ L3399:
 _id_car_lean_share:
 	push xiz
 	lda xsp,(xsp-4)
-	call _lean_last__27
+	call _lean_last__29
 	ld (xsp+0),a
-	call _lean_pose__27
+	call _lean_pose__29
 	ld (xsp+1),a
 	ld a,(xsp+1)
 	cp a,0
-	jr z,L3415
+	jr z,L3867
 	ld a,(xsp+0)
 	cp a,0
-	jr nz,L3414
-L3415:
+	jr nz,L3866
+L3867:
 	ld wa,0
-	jr L3413
-L3414:
+	jr L3865
+L3866:
 	ld a,(xsp+1)
 	extz wa
 	sll 4,wa
@@ -17201,36 +19673,36 @@ L3414:
 	ld iz,wa
 	ld wa,iz
 	cp wa,16
-	jr le,L3416
+	jr le,L3868
 	ld iz,16
-L3416:
-	ld c,(_lean_side__27)
+L3868:
+	ld c,(_lean_side__29)
 	cp c,0
-	jr ge,L3417
+	jr ge,L3869
 	ld wa,iz
 	neg wa
-	jr L3418
-L3417:
+	jr L3870
+L3869:
 	ld wa,iz
-L3418:
-	jr L3413
-L3413:
+L3870:
+	jr L3865
+L3865:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
 
 ; function id_car_last_x
 _id_car_last_x:
-	ld wa,(_car_last_x__27)
-	jr L3420
-L3420:
+	ld wa,(_car_last_x__29)
+	jr L3872
+L3872:
 	ret
 
 ; function id_car_last_top
 _id_car_last_top:
-	ld a,(_car_last_top__27)
-	jr L3422
-L3422:
+	ld a,(_car_last_top__29)
+	jr L3874
+L3874:
 	ret
 
 ; function id_car_draw
@@ -17239,79 +19711,79 @@ _id_car_draw:
 	lda xsp,(xsp-8)
 	ld a,(xsp+20)
 	cp a,0
-	jr z,L3451
-	ld a,(_lean_side__27)
+	jr z,L3903
+	ld a,(_lean_side__29)
 	cp a,(xsp+20)
-	jr z,L3452
+	jr z,L3904
 	ld a,(xsp+20)
-	ld (_lean_side__27),a
-	ldb (_lean_hold__27),0
-L3452:
-	ld a,(_lean_hold__27)
+	ld (_lean_side__29),a
+	ldb (_lean_hold__29),0
+L3904:
+	ld a,(_lean_hold__29)
 	cp a,255
-	jr uge,L3453
-	incb 1,(_lean_hold__27)
-L3453:
-	ldb (_lean_wait__27),2
-	jr L3454
-L3451:
-	ld a,(_lean_hold__27)
+	jr uge,L3905
+	incb 1,(_lean_hold__29)
+L3905:
+	ldb (_lean_wait__29),2
+	jr L3906
+L3903:
+	ld a,(_lean_hold__29)
 	cp a,0
-	jr z,L3455
-	ld a,(_lean_wait__27)
+	jr z,L3907
+	ld a,(_lean_wait__29)
 	cp a,0
-	jr z,L3456
-	decb 1,(_lean_wait__27)
-	jr L3457
-L3456:
-	ldb (_lean_wait__27),2
-	ld a,(_lean_hold__27)
+	jr z,L3908
+	decb 1,(_lean_wait__29)
+	jr L3909
+L3908:
+	ldb (_lean_wait__29),2
+	ld a,(_lean_hold__29)
 	cp a,12
-	jr ult,L3458
-	ldb (_lean_hold__27),11
-	jr L3459
-L3458:
-	ld a,(_lean_hold__27)
+	jr ult,L3910
+	ldb (_lean_hold__29),11
+	jr L3911
+L3910:
+	ld a,(_lean_hold__29)
 	cp a,5
-	jr ult,L3460
-	ldb (_lean_hold__27),4
-	jr L3461
-L3460:
-	ldb (_lean_hold__27),0
-L3461:
-L3459:
-L3457:
-L3455:
-L3454:
+	jr ult,L3912
+	ldb (_lean_hold__29),4
+	jr L3913
+L3912:
+	ldb (_lean_hold__29),0
+L3913:
+L3911:
+L3909:
+L3907:
+L3906:
 	ld a,(xsp+24)
 	cp a,0
-	jr nz,L3462
-	ldb (_bump_phase__27),0
+	jr nz,L3914
+	ldb (_bump_phase__29),0
 	ldb (xsp+2),0
-	jr L3463
-L3462:
-	incb 1,(_bump_phase__27)
-	ld c,(_bump_phase__27)
+	jr L3915
+L3914:
+	incb 1,(_bump_phase__29)
+	ld c,(_bump_phase__29)
 	extz bc
 	and bc,2
 	cp bc,0
-	jr z,L3464
+	jr z,L3916
 	ld a,(xsp+24)
 	extz wa
-	jr L3465
-L3464:
+	jr L3917
+L3916:
 	ld wa,0
-L3465:
+L3917:
 	ld (xsp+2),a
-L3463:
+L3915:
 	ld a,148
-	ld c,(_body__27+30)
+	ld c,(_body__29+30)
 	sub a,c
-	add a,(_body__27+30)
+	add a,(_body__29+30)
 	sub a,1
 	ld (xsp+4),a
 	ld a,148
-	ld c,(_body__27+30)
+	ld c,(_body__29+30)
 	sub a,c
 	extz wa
 	push xwa
@@ -17323,48 +19795,48 @@ L3463:
 	ld (xsp+6),wa
 	ld bc,(xsp+6)
 	cp bc,0
-	jr ge,L3466
+	jr ge,L3918
 	ld wa,0
-	jr L3467
-L3466:
+	jr L3919
+L3918:
 	ld wa,(xsp+6)
-L3467:
+L3919:
 	ld (xsp+3),a
 	ld a,(xsp+4)
 	push xwa
 	call _id_road_centre_at
 	lda xsp,(xsp+4)
-	ld xbc,(_body__27+18)
+	ld xbc,(_body__29+18)
 	ld c,(xbc)
 	extz bc
 	sll 2,bc
 	sub wa,bc
 	add wa,(xsp+16)
-	ld (_car_last_x__27),wa
+	ld (_car_last_x__29),wa
 	ld a,(xsp+3)
 	sub a,(xsp+2)
-	ld (_car_last_top__27),a
-	ld a,(_body__27+28)
+	ld (_car_last_top__29),a
+	ld a,(_body__29+28)
 	cp a,1
-	jp ule,L3468
-	call _lean_pose__27
+	jp ule,L3920
+	call _lean_pose__29
 	ld (xsp+0),a
 	ldb (xsp+1),0
 	ld c,(xsp+0)
 	cp c,0
-	jr nz,L3469
+	jr nz,L3921
 	ld wa,0
-	jr L3470
-L3469:
-	ld c,(_lean_side__27)
+	jr L3922
+L3921:
+	ld c,(_lean_side__29)
 	cp c,0
-	jr ge,L3471
+	jr ge,L3923
 	ld wa,2
-	jr L3472
-L3471:
+	jr L3924
+L3923:
 	ld wa,1
-L3472:
-L3470:
+L3924:
+L3922:
 	ld izl,a
 	ld a,(xsp+2)
 	push xwa
@@ -17382,8 +19854,8 @@ L3470:
 	push xwa
 	ld wa,0
 	push xwa
-	ld xwa,(_body__27+18)
-	ld c,(_body__27+29)
+	ld xwa,(_body__29+18)
+	ld c,(_body__29+29)
 	extz bc
 	ld e,izl
 	extz de
@@ -17392,8 +19864,8 @@ L3470:
 	add xwa,xbc
 	ld a,(xwa)
 	push xwa
-	ld xwa,(_body__27+10)
-	ld c,(_body__27+29)
+	ld xwa,(_body__29+10)
+	ld c,(_body__29+29)
 	extz bc
 	ld e,izl
 	extz de
@@ -17402,8 +19874,8 @@ L3470:
 	add xwa,xbc
 	ld a,(xwa)
 	push xwa
-	ld xwa,(_body__27+14)
-	ld c,(_body__27+29)
+	ld xwa,(_body__29+14)
+	ld c,(_body__29+29)
 	extz bc
 	ld e,izl
 	extz de
@@ -17412,9 +19884,9 @@ L3470:
 	add xwa,xbc
 	ld a,(xwa)
 	push xwa
-	ld xwa,(_body__27+22)
+	ld xwa,(_body__29+22)
 	push xwa
-	call _car_layer__27
+	call _car_layer__29
 	lda xsp,(xsp+48)
 	ld a,(xsp+2)
 	push xwa
@@ -17432,50 +19904,50 @@ L3470:
 	push xwa
 	ld a,(xsp+29)
 	push xwa
-	ld xwa,(_body__27+18)
+	ld xwa,(_body__29+18)
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	push xwa
-	ld xwa,(_body__27+10)
+	ld xwa,(_body__29+10)
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	push xwa
-	ld xwa,(_body__27+14)
+	ld xwa,(_body__29+14)
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	push xwa
-	ld xwa,(_body__27+22)
+	ld xwa,(_body__29+22)
 	push xwa
-	call _car_layer__27
+	call _car_layer__29
 	lda xsp,(xsp+48)
-	jp L3450
-L3468:
-	ld c,(_lean_hold__27)
+	jp L3902
+L3920:
+	ld c,(_lean_hold__29)
 	cp c,0
-	jr nz,L3473
+	jr nz,L3925
 	ld wa,0
-	jr L3474
-L3473:
+	jr L3926
+L3925:
 	ld wa,1
-L3474:
+L3926:
 	ld (xsp+0),a
-	ld c,(_lean_side__27)
+	ld c,(_lean_side__29)
 	cp c,0
-	jr le,L3475
+	jr le,L3927
 	ld wa,1
-	jr L3476
-L3475:
+	jr L3928
+L3927:
 	ld wa,0
-L3476:
+L3928:
 	ld (xsp+1),a
 	ld a,(xsp+2)
 	push xwa
@@ -17493,30 +19965,30 @@ L3476:
 	push xwa
 	ld a,(xsp+29)
 	push xwa
-	ld xwa,(_body__27+18)
+	ld xwa,(_body__29+18)
 	ld c,(xsp+32)
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	push xwa
-	ld xwa,(_body__27+10)
+	ld xwa,(_body__29+10)
 	ld c,(xsp+36)
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	push xwa
-	ld xwa,(_body__27+14)
+	ld xwa,(_body__29+14)
 	ld c,(xsp+40)
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	push xwa
-	ld xwa,(_body__27+22)
+	ld xwa,(_body__29+22)
 	push xwa
-	call _car_layer__27
+	call _car_layer__29
 	lda xsp,(xsp+48)
 	ld a,24
 	push xwa
@@ -17524,7 +19996,7 @@ L3476:
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-L3450:
+L3902:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -17532,10 +20004,10 @@ L3450:
 ; function id_car_draw_at
 _id_car_draw_at:
 	ld wa,(xsp+4)
-	ld (_car_at_x__27),wa
-	ld a,(_body__27+28)
+	ld (_car_at_x__29),wa
+	ld a,(_body__29+28)
 	cp a,1
-	jr ule,L3480
+	jr ule,L3932
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -17552,32 +20024,32 @@ _id_car_draw_at:
 	push xwa
 	ld wa,0
 	push xwa
-	ld xwa,(_body__27+18)
-	ld c,(_body__27+29)
+	ld xwa,(_body__29+18)
+	ld c,(_body__29+29)
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	push xwa
-	ld xwa,(_body__27+10)
-	ld c,(_body__27+29)
+	ld xwa,(_body__29+10)
+	ld c,(_body__29+29)
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	push xwa
-	ld xwa,(_body__27+14)
-	ld c,(_body__27+29)
+	ld xwa,(_body__29+14)
+	ld c,(_body__29+29)
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	push xwa
-	ld xwa,(_body__27+22)
+	ld xwa,(_body__29+22)
 	push xwa
-	call _car_layer__27
+	call _car_layer__29
 	lda xsp,(xsp+48)
-L3480:
+L3932:
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -17594,32 +20066,50 @@ L3480:
 	push xwa
 	ld wa,0
 	push xwa
-	ld xwa,(_body__27+18)
+	ld xwa,(_body__29+18)
 	ld a,(xwa)
 	push xwa
-	ld xwa,(_body__27+10)
+	ld xwa,(_body__29+10)
 	ld a,(xwa)
 	push xwa
-	ld xwa,(_body__27+14)
+	ld xwa,(_body__29+14)
 	ld a,(xwa)
 	push xwa
-	ld xwa,(_body__27+22)
+	ld xwa,(_body__29+22)
 	push xwa
-	call _car_layer__27
+	call _car_layer__29
 	lda xsp,(xsp+48)
-	ldw (_car_at_x__27),32767
-L3479:
+	ldw (_car_at_x__29),32767
+L3931:
 	ret
 
 ; function id_car_height
 _id_car_height:
-	ld a,(_body__27+30)
-	jr L3482
-L3482:
+	ld a,(_body__29+30)
+	jr L3934
+L3934:
+	ret
+
+; function id_car_tile_base
+_id_car_tile_base:
+	ld wa,(_car_tile_base__29)
+	jr L3936
+L3936:
+	ret
+
+; function id_car_restore
+_id_car_restore:
+	ld wa,0
+	push xwa
+	ld wa,(_car_tile_base__29)
+	push xwa
+	call _id_car_init
+	lda xsp,(xsp+8)
+L3938:
 	ret
 
 ; function course_art
-_course_art__28:
+_course_art__30:
 	push xiz
 	ld xiz,(xsp+12)
 	ld xwa,_id_route_tiles
@@ -17635,54 +20125,54 @@ _course_art__28:
 	ldb (xiz+20),32
 	ldb (xiz+21),64
 	ldb (xiz+22),151
-L3484:
+L3940:
 	pop xiz
 	ret
 
 ; function uses_akina
-_uses_akina__28:
+_uses_akina__30:
 	ld wa,0
-	jr L3486
-L3486:
+	jr L3942
+L3942:
 	ret
 
 ; function id_road_horizon
 _id_road_horizon:
-	ld xwa,_course_horizon__28
-	ld c,(_road_course__28)
+	ld xwa,_course_horizon__30
+	ld c,(_road_course__30)
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
-	jr L3488
-L3488:
+	jr L3944
+L3944:
 	ret
 
 ; function sky_is_tall_course
-_sky_is_tall_course__28:
+_sky_is_tall_course__30:
 	ld wa,0
-	jr L3490
-L3490:
+	jr L3946
+L3946:
 	ret
 
 ; function road_is_tarmac
-_road_is_tarmac__28:
+_road_is_tarmac__30:
 	ld wa,1
-	jr L3492
-L3492:
+	jr L3948
+L3948:
 	ret
 
 ; function id_build_weights
-_id_build_weights__28:
+_id_build_weights__30:
 	push xiz
 	lda xsp,(xsp-14)
-	ld a,(_road_lines__28)
+	ld a,(_road_lines__30)
 	extz wa
 	sub wa,1
 	ld (xsp+2),wa
-	ld a,(_road_lines__28)
+	ld a,(_road_lines__30)
 	extz wa
-	ld c,(_road_lines__28)
+	ld c,(_road_lines__30)
 	extz bc
 	add bc,1
 	mul xwa,bc
@@ -17694,25 +20184,25 @@ _id_build_weights__28:
 	extz xwa
 	div xwa,(xsp+4)
 	sll 2,wa
-	ld (_id_curve_cm__28),wa
+	ld (_id_curve_cm__30),wa
 	ld izl,0
-	jp L3527
-L3524:
+	jp L3983
+L3980:
 	push xix
 	push xiy
-	call _uses_akina__28
+	call _uses_akina__30
 	pop xiy
 	pop xix
 	cp a,0
-	jp nz,L3528
-	ld a,(_art__28+22)
+	jp nz,L3984
+	ld a,(_art__30+22)
 	extz wa
 	srl 3,wa
 	extz wa
 	add wa,1
 	sll 3,wa
 	sub wa,1
-	ld c,(_art__28+21)
+	ld c,(_art__30+21)
 	extz bc
 	sub wa,bc
 	ld (xsp+6),wa
@@ -17726,23 +20216,23 @@ L3524:
 	ld (xsp+8),wa
 	ld wa,(xsp+8)
 	cp wa,(xsp+6)
-	jr ule,L3529
+	jr ule,L3985
 	ld wa,(xsp+6)
 	ld (xsp+8),wa
-L3529:
+L3985:
 	ld a,(xsp+8)
-	ld xbc,_id_src__28
+	ld xbc,_id_src__30
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-	ld xwa,(_art__28+16)
+	ld xwa,(_art__30+16)
 	ld bc,(xsp+8)
 	extz xbc
 	add xwa,xbc
 	ld a,(xwa)
-	ld xbc,_id_half__28
+	ld xbc,_id_half__30
 	ld e,izl
 	extz de
 	exts xde
@@ -17753,22 +20243,22 @@ L3529:
 	extz xwa
 	div xwa,(xsp+6)
 	ld iy,wa
-	jr L3530
-L3528:
+	jr L3986
+L3984:
 	ld a,izl
-	ld xbc,_id_src__28
+	ld xbc,_id_src__30
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-	ld xwa,(_art__28+16)
+	ld xwa,(_art__30+16)
 	ld c,izl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
-	ld xbc,_id_half__28
+	ld xbc,_id_half__30
 	ld e,izl
 	extz de
 	exts xde
@@ -17780,20 +20270,20 @@ L3528:
 	extz xwa
 	div xwa,(xsp+2)
 	ld iy,wa
-L3530:
+L3986:
 	ld wa,255
 	sub wa,iy
 	ld (xsp+6),wa
-	ld a,(_road_top__28)
+	ld a,(_road_top__30)
 	add a,izl
-	ld xbc,_id_sl__28
+	ld xbc,_id_sl__30
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld a,iyl
-	ld xbc,_id_w_lat__28
+	ld xbc,_id_w_lat__30
 	ld e,izl
 	extz de
 	exts xde
@@ -17802,7 +20292,7 @@ L3530:
 	ld wa,(xsp+6)
 	mul xwa,(xsp+6)
 	srl 8,wa
-	ld xbc,_id_w_curve__28
+	ld xbc,_id_w_curve__30
 	ld e,izl
 	extz de
 	exts xde
@@ -17810,17 +20300,17 @@ L3530:
 	ld (xbc),a
 	ld wa,iy
 	cp wa,0
-	jr nz,L3531
+	jr nz,L3987
 	ld wa,1600
-	ld xbc,_id_ahead__28
+	ld xbc,_id_ahead__30
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	jr L3532
-L3531:
+	jr L3988
+L3987:
 	ld wa,60
 	mul xwa,(xsp+6)
 	extz xwa
@@ -17828,31 +20318,31 @@ L3531:
 	ld (xsp+8),wa
 	ld bc,(xsp+8)
 	cp bc,1600
-	jr ule,L3533
+	jr ule,L3989
 	ld wa,1600
-	jr L3534
-L3533:
+	jr L3990
+L3989:
 	ld wa,(xsp+8)
-L3534:
-	ld xbc,_id_ahead__28
+L3990:
+	ld xbc,_id_ahead__30
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3532:
+L3988:
 	ld a,izl
 	extz wa
 	mul xwa,47
 	extz xwa
-	ld c,(_road_lines__28)
+	ld c,(_road_lines__30)
 	extz bc
 	sub bc,1
 	div xwa,bc
 	ld (xsp+8),wa
 	ld wa,47
-	ld xbc,_id_ahead__28
+	ld xbc,_id_ahead__30
 	ld e,izl
 	extz de
 	exts xde
@@ -17886,76 +20376,76 @@ L3532:
 	ld (xsp+12),wa
 	ld bc,(xsp+12)
 	cp bc,47
-	jr ule,L3535
+	jr ule,L3991
 	ld wa,47
-	jr L3536
-L3535:
+	jr L3992
+L3991:
 	ld wa,(xsp+12)
-L3536:
-	ld xbc,_id_sl__28+128
+L3992:
+	ld xbc,_id_sl__30+128
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L3526:
+L3982:
 	inc 1,izl
-L3527:
+L3983:
 	ld a,izl
-	cp a,(_road_lines__28)
-	jp ult,L3524
-L3525:
-	ld a,(_road_lines__28)
+	cp a,(_road_lines__30)
+	jp ult,L3980
+L3981:
+	ld a,(_road_lines__30)
 	sub a,1
-	ld (_wide_k0__28),a
-	jr L3539
-L3537:
-	decb 1,(_wide_k0__28)
-L3539:
-	ld a,(_wide_k0__28)
+	ld (_wide_k0__30),a
+	jr L3995
+L3993:
+	decb 1,(_wide_k0__30)
+L3995:
+	ld a,(_wide_k0__30)
 	cp a,0
-	jr ule,L3540
-	ld xwa,_id_src__28
-	ld c,(_wide_k0__28)
+	jr ule,L3996
+	ld xwa,_id_src__30
+	ld c,(_wide_k0__30)
 	sub c,1
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,48
-	jr uge,L3537
-L3540:
-L3538:
-	ld a,(_road_top__28)
+	jr uge,L3993
+L3996:
+L3994:
+	ld a,(_road_top__30)
 	sub a,8
-	ld (_climb_room__28),a
+	ld (_climb_room__30),a
 	push xix
 	push xiy
-	call _uses_akina__28
+	call _uses_akina__30
 	pop xiy
 	pop xix
 	cp a,0
-	jr z,L3541
-	ld a,(_road_lines__28)
+	jr z,L3997
+	ld a,(_road_lines__30)
 	extz wa
 	extz xwa
 	div xwa,10
-	ld (_descent_room__28),a
-	jr L3542
-L3541:
-	ld a,(_road_lines__28)
+	ld (_descent_room__30),a
+	jr L3998
+L3997:
+	ld a,(_road_lines__30)
 	extz wa
 	srl 1,wa
-	ld (_descent_room__28),a
-L3542:
-	ldb (_grade_hi__28),0
-	ldb (_grade_lo__28),0
+	ld (_descent_room__30),a
+L3998:
+	ldb (_grade_hi__30),0
+	ldb (_grade_lo__30),0
 	ld ix,1
-	jr L3546
-L3543:
-	ld a,(_road_lines__28)
+	jr L4002
+L3999:
+	ld a,(_road_lines__30)
 	extz wa
-	ld xbc,_hill_rate__28
+	ld xbc,_hill_rate__30
 	ld de,20
 	add de,ix
 	exts xde
@@ -17966,29 +20456,29 @@ L3543:
 	srl 7,wa
 	ld (xsp+6),wa
 	ld wa,(xsp+6)
-	ld c,(_road_lines__28)
+	ld c,(_road_lines__30)
 	extz bc
-	ld e,(_climb_room__28)
+	ld e,(_climb_room__30)
 	extz de
 	add bc,de
 	cp wa,bc
-	jr ugt,L3547
+	jr ugt,L4003
 	ld a,ixl
-	ld (_grade_hi__28),a
-L3547:
-L3545:
+	ld (_grade_hi__30),a
+L4003:
+L4001:
 	inc 1,ix
-L3546:
+L4002:
 	ld wa,ix
 	cp wa,20
-	jr le,L3543
-L3544:
+	jr le,L3999
+L4000:
 	ld ix,1
-	jr L3551
-L3548:
-	ld a,(_road_lines__28)
+	jr L4007
+L4004:
+	ld a,(_road_lines__30)
 	extz wa
-	ld xbc,_hill_rate__28
+	ld xbc,_hill_rate__30
 	ld de,20
 	sub de,ix
 	exts xde
@@ -17999,68 +20489,68 @@ L3548:
 	srl 7,wa
 	ld (xsp+6),wa
 	ld wa,(xsp+6)
-	ld c,(_descent_room__28)
+	ld c,(_descent_room__30)
 	extz bc
 	add wa,bc
-	ld c,(_road_lines__28)
+	ld c,(_road_lines__30)
 	extz bc
 	cp wa,bc
-	jr ult,L3552
+	jr ult,L4008
 	ld a,ixl
 	neg a
-	ld (_grade_lo__28),a
-L3552:
-L3550:
+	ld (_grade_lo__30),a
+L4008:
+L4006:
 	inc 1,ix
-L3551:
+L4007:
 	ld wa,ix
 	cp wa,20
-	jr le,L3548
-L3549:
-L3523:
+	jr le,L4004
+L4005:
+L3979:
 	lda xsp,(xsp+14)
 	pop xiz
 	ret
 
 ; function rally_scan
-_rally_scan__28:
+_rally_scan__30:
 	push xiz
 	lda xsp,(xsp-6)
-	ld a,(_rally_scanned__28)
+	ld a,(_rally_scanned__30)
 	cp a,0
-	jr z,L3571
-	jp L3570
-L3571:
+	jr z,L4027
+	jp L4026
+L4027:
 	ldw (xsp+0),0
-	jr L3575
-L3572:
+	jr L4031
+L4028:
 	ld a,255
-	ld xbc,_rally_of__28
+	ld xbc,_rally_of__30
 	ld de,(xsp+0)
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L3574:
+L4030:
 	incw 1,(xsp+0)
-L3575:
+L4031:
 	ld wa,(xsp+0)
 	cp wa,512
-	jr ult,L3572
-L3573:
-	ldb (_rally_used__28),0
-	ld a,(_art__28+21)
+	jr ult,L4028
+L4029:
+	ldb (_rally_used__30),0
+	ld a,(_art__30+21)
 	extz wa
 	srl 3,wa
 	ld iyl,a
-	jp L3579
-L3576:
+	jp L4035
+L4032:
 	ld ixl,0
-	jr L3583
-L3580:
-	ld xwa,(_art__28+4)
+	jr L4039
+L4036:
+	ld xwa,(_art__30+4)
 	ld c,iyl
 	extz bc
-	ld e,(_art__28+20)
+	ld e,(_art__30+20)
 	extz de
 	mul xbc,de
 	ld e,ixl
@@ -18073,68 +20563,68 @@ L3580:
 	ld iz,wa
 	ld wa,iz
 	cp wa,512
-	jr uge,L3585
-	ld xwa,_rally_of__28
+	jr uge,L4041
+	ld xwa,_rally_of__30
 	ld bc,iz
 	extz xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,255
-	jr z,L3584
-L3585:
-	jr L3582
-L3584:
-	ld a,(_rally_used__28)
+	jr z,L4040
+L4041:
+	jr L4038
+L4040:
+	ld a,(_rally_used__30)
 	cp a,255
-	jr ult,L3586
-	jr L3582
-L3586:
-	ld a,(_rally_used__28)
-	ld xbc,_rally_of__28
+	jr ult,L4042
+	jr L4038
+L4042:
+	ld a,(_rally_used__30)
+	ld xbc,_rally_of__30
 	ld de,iz
 	extz xde
 	add xbc,xde
 	ld (xbc),a
 	ld wa,iz
-	ld xbc,_rally_src__28
-	ld e,(_rally_used__28)
+	ld xbc,_rally_src__30
+	ld e,(_rally_used__30)
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	incb 1,(_rally_used__28)
-L3582:
+	incb 1,(_rally_used__30)
+L4038:
 	inc 1,ixl
-L3583:
+L4039:
 	ld a,ixl
-	cp a,(_art__28+20)
-	jp ult,L3580
-L3581:
-L3578:
+	cp a,(_art__30+20)
+	jp ult,L4036
+L4037:
+L4034:
 	inc 1,iyl
-L3579:
+L4035:
 	ld a,iyl
 	cp a,29
-	jp ult,L3576
-L3577:
-	ldb (_rally_scanned__28),1
-L3570:
+	jp ult,L4032
+L4033:
+	ldb (_rally_scanned__30),1
+L4026:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
 
 ; function id_road_char_count
 _id_road_char_count:
-	call _rally_scan__28
-	ld a,(_rally_used__28)
+	call _rally_scan__30
+	ld a,(_rally_used__30)
 	extz wa
-	jr L3588
-L3588:
+	jr L4044
+L4044:
 	ret
 
 ; function id_load_chars
-_id_load_chars__28:
+_id_load_chars__30:
 	push xiz
 	lda xsp,(xsp-18)
 	push xix
@@ -18143,11 +20633,11 @@ _id_load_chars__28:
 	pop xiy
 	pop xix
 	ld (xsp+2),wa
-	ld xwa,(_art__28)
+	ld xwa,(_art__30)
 	ld (xsp+4),xwa
 	ld ix,0
-	jp L3604
-L3601:
+	jp L4060
+L4057:
 	ld wa,40960
 	extz xwa
 	ld bc,128
@@ -18158,27 +20648,27 @@ L3601:
 	push xwa
 	push xix
 	push xiy
-	call _uses_akina__28
+	call _uses_akina__30
 	ld xbc,xwa
 	pop xiy
 	pop xix
 	pop xwa
 	cp c,0
-	jr nz,L3605
-	ld xwa,_rally_src__28
+	jr nz,L4061
+	ld xwa,_rally_src__30
 	ld bc,ix
 	extz xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	jr L3606
-L3605:
+	jr L4062
+L4061:
 	ld wa,ix
-L3606:
+L4062:
 	ld (xsp+12),wa
 	ld iz,0
-	jr L3610
-L3607:
+	jr L4066
+L4063:
 	ld xwa,(xsp+4)
 	ld bc,(xsp+12)
 	sll 3,bc
@@ -18206,33 +20696,33 @@ L3607:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L3609:
+L4065:
 	inc 1,iz
-L3610:
+L4066:
 	ld wa,iz
 	cp wa,8
-	jr ult,L3607
-L3608:
-L3603:
+	jr ult,L4063
+L4064:
+L4059:
 	inc 1,ix
-L3604:
+L4060:
 	ld wa,ix
 	cp wa,(xsp+2)
-	jp ult,L3601
-L3602:
-L3600:
+	jp ult,L4057
+L4058:
+L4056:
 	lda xsp,(xsp+18)
 	pop xiz
 	ret
 
 ; function id_load_palettes
-_id_load_palettes__28:
+_id_load_palettes__30:
 	push xiz
 	lda xsp,(xsp-2)
 	ld izl,0
-	jr L3620
-L3617:
-	ld xwa,(_art__28+12)
+	jr L4076
+L4073:
+	ld xwa,(_art__30+12)
 	ld c,izl
 	extz bc
 	sll 2,bc
@@ -18242,7 +20732,7 @@ L3617:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	ld xwa,(_art__28+12)
+	ld xwa,(_art__30+12)
 	ld c,izl
 	extz bc
 	sll 2,bc
@@ -18252,7 +20742,7 @@ L3617:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	ld xwa,(_art__28+12)
+	ld xwa,(_art__30+12)
 	ld c,izl
 	extz bc
 	sll 2,bc
@@ -18262,7 +20752,7 @@ L3617:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	ld xwa,(_art__28+12)
+	ld xwa,(_art__30+12)
 	ld c,izl
 	extz bc
 	sll 2,bc
@@ -18277,13 +20767,13 @@ L3617:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-L3619:
+L4075:
 	inc 1,izl
-L3620:
+L4076:
 	ld a,izl
 	cp a,8
-	jp ult,L3617
-L3618:
+	jp ult,L4073
+L4074:
 	ld wa,4095
 	push xwa
 	ld wa,1365
@@ -18298,24 +20788,24 @@ L3618:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-	ld xwa,(_art__28+12)
+	ld xwa,(_art__30+12)
 	ld wa,(xwa)
 	push xwa
 	call _ngpc_gfx_set_bg_color
 	lda xsp,(xsp+4)
-L3616:
+L4072:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
 
 ; function id_road_reload_backdrop
 _id_road_reload_backdrop:
-	ld xwa,(_art__28+12)
+	ld xwa,(_art__30+12)
 	ld wa,(xwa)
 	push xwa
 	call _ngpc_gfx_set_bg_color
 	lda xsp,(xsp+4)
-L3622:
+L4078:
 	ret
 
 ; function id_road_set_colors
@@ -18362,8 +20852,8 @@ _id_road_set_colors:
 	lda xsp,(xsp+4)
 	pop xix
 	ld izl,0
-	jr L3632
-L3629:
+	jr L4088
+L4085:
 	ld xwa,xix
 	ld c,izl
 	extz bc
@@ -18371,36 +20861,36 @@ L3629:
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld xbc,_band_col__28
+	ld xbc,_band_col__30
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3631:
+L4087:
 	inc 1,izl
-L3632:
+L4088:
 	ld a,izl
 	cp a,4
-	jr ult,L3629
-L3630:
-	ldw (_bc_rest__28),65535
-	ldw (_bc_rest__28+2),65535
-L3628:
+	jr ult,L4085
+L4086:
+	ldw (_bc_rest__30),65535
+	ldw (_bc_rest__30+2),65535
+L4084:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
 
 ; function id_load_maps_rally
-_id_load_maps_rally__28:
+_id_load_maps_rally__30:
 	push xiz
 	lda xsp,(xsp-12)
-	ld a,(_road_plane0__28)
+	ld a,(_road_plane0__30)
 	extz wa
 	srl 3,wa
 	exts wa
-	ld c,(_art__28+21)
+	ld c,(_art__30+21)
 	extz bc
 	srl 3,bc
 	exts bc
@@ -18408,69 +20898,69 @@ _id_load_maps_rally__28:
 	ld (xsp+2),a
 	push xix
 	push xiy
-	call _rally_scan__28
+	call _rally_scan__30
 	pop xiy
 	pop xix
-	ld a,(_road_plane0__28)
+	ld a,(_road_plane0__30)
 	extz wa
 	srl 3,wa
 	ld iyl,a
-	jp L3654
-L3651:
+	jp L4110
+L4107:
 	ld a,iyl
 	ld c,(xsp+2)
 	sub a,c
 	ld (xsp+3),a
 	ld a,(xsp+3)
 	cp a,28
-	jr ule,L3655
+	jr ule,L4111
 	ldb (xsp+3),28
-L3655:
+L4111:
 	ld izl,0
-	jp L3659
-L3656:
+	jp L4115
+L4112:
 	ld wa,0
 	ld (xsp+4),a
 	ld a,(xsp+3)
 	ld (xsp+5),a
 	ld a,izl
 	cp a,0
-	jr uge,L3660
-	ld a,(_art__28+21)
+	jr uge,L4116
+	ld a,(_art__30+21)
 	extz wa
 	srl 3,wa
 	ld (xsp+5),a
-	jr L3661
-L3660:
+	jr L4117
+L4116:
 	ld a,izl
 	ld c,0
-	add c,(_art__28+20)
+	add c,(_art__30+20)
 	cp a,c
-	jr ult,L3662
-	ld a,(_art__28+20)
+	jr ult,L4118
+	ld a,(_art__30+20)
 	sub a,1
 	ld (xsp+4),a
-	ld a,(_art__28+21)
+	ld a,(_art__30+21)
 	extz wa
 	srl 3,wa
 	ld (xsp+5),a
-	jr L3663
-L3662:
+	jr L4119
+L4118:
 	ld a,izl
 	sub a,0
 	ld (xsp+4),a
-L3663:
-L3661:
+L4119:
+L4117:
 	ld a,(xsp+5)
 	extz wa
-	ld c,(_art__28+20)
+	ld c,(_art__30+20)
 	extz bc
 	mul xwa,bc
 	ld c,(xsp+4)
 	extz bc
 	add wa,bc
 	ld (xsp+6),wa
-	ld xwa,(_art__28+4)
+	ld xwa,(_art__30+4)
 	ld bc,(xsp+6)
 	extz xbc
 	sll 1,xbc
@@ -18479,28 +20969,28 @@ L3661:
 	ld (xsp+8),wa
 	ld bc,(xsp+8)
 	cp bc,512
-	jr uge,L3664
-	ld xwa,_rally_of__28
+	jr uge,L4120
+	ld xwa,_rally_of__30
 	ld bc,(xsp+8)
 	extz xbc
 	add xwa,xbc
 	ld a,(xwa)
 	extz wa
-	jr L3665
-L3664:
+	jr L4121
+L4120:
 	ld wa,255
-L3665:
+L4121:
 	ld ixl,a
 	ld a,ixl
 	cp a,255
-	jr nz,L3666
+	jr nz,L4122
 	ld ixl,0
-L3666:
+L4122:
 	ld wa,128
 	ld c,ixl
 	extz bc
 	add wa,bc
-	ld xbc,(_art__28+8)
+	ld xbc,(_art__30+8)
 	ld de,(xsp+6)
 	extz xde
 	add xbc,xde
@@ -18520,53 +21010,53 @@ L3666:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3658:
+L4114:
 	inc 1,izl
-L3659:
+L4115:
 	ld a,izl
 	cp a,32
-	jp ult,L3656
-L3657:
-L3653:
+	jp ult,L4112
+L4113:
+L4109:
 	inc 1,iyl
-L3654:
+L4110:
 	ld a,iyl
 	cp a,32
-	jp ult,L3651
-L3652:
-L3650:
+	jp ult,L4107
+L4108:
+L4106:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
 
 ; function id_load_maps
-_id_load_maps__28:
-	call _id_load_maps_rally__28
-L3668:
+_id_load_maps__30:
+	call _id_load_maps_rally__30
+L4124:
 	ret
 
 ; function id_road_reload_maps
 _id_road_reload_maps:
-	call _id_load_palettes__28
-	call _id_load_maps_rally__28
-L3670:
+	call _id_load_palettes__30
+	call _id_load_maps_rally__30
+L4126:
 	ret
 
 ; function id_build_shear_limits
-_id_build_shear_limits__28:
+_id_build_shear_limits__30:
 	push xiz
 	lda xsp,(xsp-18)
 	push xix
 	push xiy
-	call _uses_akina__28
+	call _uses_akina__30
 	pop xiy
 	pop xix
 	cp a,0
-	jp nz,L3702
+	jp nz,L4158
 	ld izl,0
-	jr L3706
-L3703:
-	ld xwa,_id_src__28
+	jr L4162
+L4159:
+	ld xwa,_id_src__30
 	ld c,izl
 	extz bc
 	exts xbc
@@ -18577,7 +21067,7 @@ L3703:
 	ld (xsp+2),wa
 	ld a,(xsp+1)
 	cp a,48
-	jr uge,L3707
+	jr uge,L4163
 	ld xwa,_id_route_lim0
 	ld c,(xsp+1)
 	extz bc
@@ -18589,14 +21079,14 @@ L3703:
 	ld (xsp+4),wa
 	ld wa,(xsp+4)
 	cp wa,(xsp+2)
-	jr ge,L3708
+	jr ge,L4164
 	ld wa,(xsp+4)
 	ld (xsp+2),wa
-L3708:
-L3707:
+L4164:
+L4163:
 	ld wa,(xsp+2)
 	neg wa
-	ld xbc,_id_dxc__28
+	ld xbc,_id_dxc__30
 	ld e,izl
 	extz de
 	exts xde
@@ -18604,26 +21094,26 @@ L3707:
 	add xbc,xde
 	ld (xbc),wa
 	ld wa,(xsp+2)
-	ld xbc,_id_dxc__28+128
+	ld xbc,_id_dxc__30+128
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3705:
+L4161:
 	inc 1,izl
-L3706:
+L4162:
 	ld a,izl
-	cp a,(_road_lines__28)
-	jp ult,L3703
-L3704:
-	jp L3701
-L3702:
+	cp a,(_road_lines__30)
+	jp ult,L4159
+L4160:
+	jp L4157
+L4158:
 	ld izl,0
-	jp L3712
-L3709:
-	ld a,(_road_top__28)
+	jp L4168
+L4165:
+	ld a,(_road_top__30)
 	extz wa
 	ld c,izl
 	extz bc
@@ -18634,20 +21124,20 @@ L3709:
 	ld wa,0
 	ld (xsp+8),wa
 	ldb (xsp+4),0
-	jr L3716
-L3713:
+	jr L4172
+L4169:
 	ld wa,0
 	ld (xsp+10),wa
 	ld wa,0
 	ld (xsp+12),wa
 	ld wa,(xsp+12)
 	cp wa,0
-	jr nz,L3717
-	jr L3715
-L3717:
+	jr nz,L4173
+	jr L4171
+L4173:
 	ld ixl,0
-	jr L3721
-L3718:
+	jr L4177
+L4174:
 	ld wa,(xsp+12)
 	ld bc,14
 	ld de,2
@@ -18656,14 +21146,14 @@ L3718:
 	mul xde,hl
 	sub bc,de
 	cp c,0
-	jr z,L3724
-L3723:
+	jr z,L4180
+L4179:
 	srl 1,wa
-	djnz c,L3723
-L3724:
+	djnz c,L4179
+L4180:
 	and wa,3
 	cp wa,0
-	jr z,L3722
+	jr z,L4178
 	ld a,(xsp+4)
 	extz wa
 	sll 3,wa
@@ -18673,36 +21163,36 @@ L3724:
 	ld iy,wa
 	ld wa,iy
 	cp wa,(xsp+6)
-	jr uge,L3725
+	jr uge,L4181
 	ld wa,iy
 	ld (xsp+6),wa
-L3725:
+L4181:
 	ld wa,iy
 	cp wa,(xsp+8)
-	jr ule,L3726
+	jr ule,L4182
 	ld wa,iy
 	ld (xsp+8),wa
-L3726:
-L3722:
-L3720:
+L4182:
+L4178:
+L4176:
 	inc 1,ixl
-L3721:
+L4177:
 	ld a,ixl
 	cp a,8
-	jr ult,L3718
-L3719:
-L3715:
+	jr ult,L4174
+L4175:
+L4171:
 	incb 1,(xsp+4)
-L3716:
+L4172:
 	ld a,(xsp+4)
 	cp a,32
-	jr ult,L3713
-L3714:
+	jr ult,L4169
+L4170:
 	ld wa,(xsp+6)
 	cp wa,(xsp+8)
-	jr ule,L3727
+	jr ule,L4183
 	ld wa,65409
-	ld xbc,_id_dxc__28
+	ld xbc,_id_dxc__30
 	ld e,izl
 	extz de
 	exts xde
@@ -18710,19 +21200,19 @@ L3714:
 	add xbc,xde
 	ld (xbc),wa
 	ld wa,127
-	ld xbc,_id_dxc__28+128
+	ld xbc,_id_dxc__30+128
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	jr L3728
-L3727:
+	jr L4184
+L4183:
 	ld wa,(xsp+8)
 	sub wa,255
 	sub wa,7
-	ld xbc,_id_dxc__28
+	ld xbc,_id_dxc__30
 	ld e,izl
 	extz de
 	exts xde
@@ -18732,15 +21222,15 @@ L3727:
 	ld wa,(xsp+6)
 	add wa,97
 	sub wa,7
-	ld xbc,_id_dxc__28+128
+	ld xbc,_id_dxc__30+128
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3728:
-	ld xwa,_id_dxc__28+128
+L4184:
+	ld xwa,_id_dxc__30+128
 	ld c,izl
 	extz bc
 	exts xbc
@@ -18748,17 +21238,17 @@ L3728:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,88
-	jr le,L3729
+	jr le,L4185
 	ld wa,88
-	ld xbc,_id_dxc__28+128
+	ld xbc,_id_dxc__30+128
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3729:
-	ld xwa,_id_dxc__28
+L4185:
+	ld xwa,_id_dxc__30
 	ld c,izl
 	extz bc
 	exts xbc
@@ -18766,47 +21256,47 @@ L3729:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,65448
-	jr ge,L3730
+	jr ge,L4186
 	ld wa,65448
-	ld xbc,_id_dxc__28
+	ld xbc,_id_dxc__30
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3730:
-L3711:
+L4186:
+L4167:
 	inc 1,izl
-L3712:
+L4168:
 	ld a,izl
-	cp a,(_road_lines__28)
-	jp ult,L3709
-L3710:
-L3701:
+	cp a,(_road_lines__30)
+	jp ult,L4165
+L4166:
+L4157:
 	lda xsp,(xsp+18)
 	pop xiz
 	ret
 
 ; function id_road_course
 _id_road_course:
-	ld a,(_road_course__28)
-	jr L3732
-L3732:
+	ld a,(_road_course__30)
+	jr L4188
+L4188:
 	ret
 
 ; function id_road_top
 _id_road_top:
-	ld a,(_road_top__28)
-	jr L3734
-L3734:
+	ld a,(_road_top__30)
+	jr L4190
+L4190:
 	ret
 
 ; function id_road_bottom
 _id_road_bottom:
-	ld a,(_road_bottom__28)
-	jr L3736
-L3736:
+	ld a,(_road_bottom__30)
+	jr L4192
+L4192:
 	ret
 
 ; function id_road_select
@@ -18815,14 +21305,14 @@ _id_road_select:
 	lda xsp,(xsp-14)
 	ld c,(xsp+22)
 	cp c,1
-	jr uge,L3776
+	jr uge,L4232
 	ld a,(xsp+22)
 	extz wa
-	jr L3777
-L3776:
+	jr L4233
+L4232:
 	ld wa,0
-L3777:
-	ld (_road_course__28),a
+L4233:
+	ld (_road_course__30),a
 	push xix
 	ld wa,0
 	push xwa
@@ -18830,129 +21320,129 @@ L3777:
 	lda xsp,(xsp+4)
 	pop xix
 	push xix
-	call _uses_akina__28
+	call _uses_akina__30
 	pop xix
 	cp a,0
-	jr nz,L3778
+	jr nz,L4234
 	push xix
-	ld xwa,_art__28
+	ld xwa,_art__30
 	push xwa
-	ld a,(_road_course__28)
+	ld a,(_road_course__30)
 	push xwa
-	call _course_art__28
+	call _course_art__30
 	lda xsp,(xsp+8)
 	pop xix
-	ldb (_rally_scanned__28),0
-L3778:
+	ldb (_rally_scanned__30),0
+L4234:
 	push xix
-	call _uses_akina__28
+	call _uses_akina__30
 	pop xix
 	cp a,0
-	jr nz,L3779
-	ldb (_road_base_x__28),48
-	ldb (_road_top__28),88
+	jr nz,L4235
+	ldb (_road_base_x__30),48
+	ldb (_road_top__30),88
 	push xwa
 	push xix
-	call _sky_is_tall_course__28
+	call _sky_is_tall_course__30
 	ld xbc,xwa
 	pop xix
 	pop xwa
 	cp c,0
-	jr z,L3780
+	jr z,L4236
 	ld a,88
 	extz wa
-	jr L3781
-L3780:
+	jr L4237
+L4236:
 	ld a,88
 	extz wa
-L3781:
-	ld (_road_plane0__28),a
-	ldb (_road_lines__28),64
-	jr L3782
-L3779:
-	ldb (_road_base_x__28),7
-	ldb (_road_top__28),72
-	ldb (_road_plane0__28),72
-	ldb (_road_lines__28),40
-L3782:
-	ld a,(_road_top__28)
-	add a,(_road_lines__28)
+L4237:
+	ld (_road_plane0__30),a
+	ldb (_road_lines__30),64
+	jr L4238
+L4235:
+	ldb (_road_base_x__30),7
+	ldb (_road_top__30),72
+	ldb (_road_plane0__30),72
+	ldb (_road_lines__30),40
+L4238:
+	ld a,(_road_top__30)
+	add a,(_road_lines__30)
 	sub a,1
-	ld (_road_bottom__28),a
-	ld a,(_road_lines__28)
+	ld (_road_bottom__30),a
+	ld a,(_road_lines__30)
 	extz wa
 	extz xwa
 	div xwa,6
-	ld (_car_stand__28),a
-	ld a,(_car_stand__28)
-	cp a,(_road_lines__28)
-	jr ult,L3783
-	ld a,(_road_lines__28)
+	ld (_car_stand__30),a
+	ld a,(_car_stand__30)
+	cp a,(_road_lines__30)
+	jr ult,L4239
+	ld a,(_road_lines__30)
 	sub a,1
-	ld (_car_stand__28),a
-L3783:
+	ld (_car_stand__30),a
+L4239:
 	push xix
-	call _id_load_chars__28
+	call _id_load_chars__30
 	pop xix
 	push xix
-	call _id_load_palettes__28
+	call _id_load_palettes__30
 	pop xix
 	push xix
-	call _uses_akina__28
+	call _uses_akina__30
 	pop xix
 	cp a,0
-	jr nz,L3784
+	jr nz,L4240
 	push xix
-	call _id_load_maps_rally__28
+	call _id_load_maps_rally__30
 	pop xix
-	jr L3785
-L3784:
+	jr L4241
+L4240:
 	push xix
-	call _id_load_maps__28
+	call _id_load_maps__30
 	pop xix
-L3785:
+L4241:
 	ldb (xsp+0),0
-	jr L3789
-L3786:
+	jr L4245
+L4242:
 	ld wa,0
-	ld xbc,_id_shear__28
+	ld xbc,_id_shear__30
 	ld e,(xsp+0)
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3788:
+L4244:
 	incb 1,(xsp+0)
-L3789:
+L4245:
 	ld a,(xsp+0)
-	cp a,(_road_lines__28)
-	jr ult,L3786
-L3787:
-	ldw (_band_top__28),65535
-	ldw (_band_top__28+2),65535
-	ldw (_band_mid__28),65535
-	ldw (_band_mid__28+2),65535
-	ldw (_band_tree__28),65535
-	ldw (_band_tree__28+2),65535
-	ldb (_band_bg_first__28),255
-	ldb (_band_bg_first__28+1),255
+	cp a,(_road_lines__30)
+	jr ult,L4242
+L4243:
+	ldw (_band_top__30),65535
+	ldw (_band_top__30+2),65535
+	ldw (_band_mid__30),65535
+	ldw (_band_mid__30+2),65535
+	ldw (_band_tree__30),65535
+	ldw (_band_tree__30+2),65535
+	ldb (_band_bg_first__30),255
+	ldb (_band_bg_first__30+1),255
 	push xwa
 	push xix
-	call _uses_akina__28
+	call _uses_akina__30
 	ld xbc,xwa
 	pop xix
 	pop xwa
 	cp c,0
-	jr z,L3790
+	jr z,L4246
 	ld wa,3
-	jr L3791
-L3790:
+	jr L4247
+L4246:
 	ld wa,0
-L3791:
-	ld (_road_band_pal__28),a
+L4247:
+	ld (_road_band_pal__30),a
 	ld xwa,33536
-	ld c,(_road_band_pal__28)
+	ld c,(_road_band_pal__30)
 	extz bc
 	sll 2,bc
 	add bc,2
@@ -18962,8 +21452,8 @@ L3791:
 	ld wa,(xwa)
 	ld (xsp+2),wa
 	ld izl,0
-	jp L3795
-L3792:
+	jp L4251
+L4248:
 	ld wa,3
 	ld c,izl
 	extz bc
@@ -18982,33 +21472,33 @@ L3792:
 	ld (xsp+12),wa
 	ld bc,(xsp+8)
 	cp bc,ix
-	jr ule,L3796
+	jr ule,L4252
 	ld wa,(xsp+8)
 	sub wa,ix
-	jr L3797
-L3796:
+	jr L4253
+L4252:
 	ld wa,0
-L3797:
+L4253:
 	ld (xsp+8),wa
 	ld bc,(xsp+10)
 	cp bc,ix
-	jr ule,L3798
+	jr ule,L4254
 	ld wa,(xsp+10)
 	sub wa,ix
-	jr L3799
-L3798:
+	jr L4255
+L4254:
 	ld wa,0
-L3799:
+L4255:
 	ld (xsp+10),wa
 	ld bc,(xsp+12)
 	cp bc,ix
-	jr ule,L3800
+	jr ule,L4256
 	ld wa,(xsp+12)
 	sub wa,ix
-	jr L3801
-L3800:
+	jr L4257
+L4256:
 	ld wa,0
-L3801:
+L4257:
 	ld (xsp+12),wa
 	ld wa,(xsp+8)
 	sll 8,wa
@@ -19016,30 +21506,30 @@ L3801:
 	sll 4,bc
 	or wa,bc
 	or wa,(xsp+12)
-	ld xbc,_band_col__28
+	ld xbc,_band_col__30
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3794:
+L4250:
 	inc 1,izl
-L3795:
+L4251:
 	ld a,izl
 	cp a,4
-	jp ult,L3792
-L3793:
+	jp ult,L4248
+L4249:
 	push xix
-	call _road_is_tarmac__28
+	call _road_is_tarmac__30
 	pop xix
 	cp a,0
-	jr z,L3802
+	jr z,L4258
 	ld izl,0
-	jr L3806
-L3803:
-	ld xwa,_course_sol__28
-	ld c,(_road_course__28)
+	jr L4262
+L4259:
+	ld xwa,_course_sol__30
+	ld c,(_road_course__30)
 	extz bc
 	muls xbc,18
 	add xwa,xbc
@@ -19050,55 +21540,55 @@ L3803:
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld xbc,_band_col__28
+	ld xbc,_band_col__30
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3805:
+L4261:
 	inc 1,izl
-L3806:
+L4262:
 	ld a,izl
 	cp a,4
-	jr ult,L3803
-L3804:
-	jr L3807
-L3802:
+	jr ult,L4259
+L4260:
+	jr L4263
+L4258:
 	push xix
-	call _uses_akina__28
+	call _uses_akina__30
 	pop xix
 	cp a,0
-	jr nz,L3808
+	jr nz,L4264
 	ld izl,0
-	jr L3812
-L3809:
+	jr L4268
+L4265:
 	ld wa,(xsp+2)
-	ld xbc,_band_col__28
+	ld xbc,_band_col__30
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3811:
+L4267:
 	inc 1,izl
-L3812:
+L4268:
 	ld a,izl
 	cp a,4
-	jr ult,L3809
-L3810:
-L3808:
-L3807:
+	jr ult,L4265
+L4266:
+L4264:
+L4263:
 	push xix
-	call _id_build_weights__28
+	call _id_build_weights__30
 	pop xix
 	push xix
-	call _id_build_shear_limits__28
+	call _id_build_shear_limits__30
 	pop xix
 	push xix
-	call _id_fill_hud_band__28
+	call _id_fill_hud_band__30
 	pop xix
 	push xix
 	ld wa,0
@@ -19110,88 +21600,88 @@ L3807:
 	call _id_road_frame
 	lda xsp,(xsp+12)
 	pop xix
-L3775:
+L4231:
 	lda xsp,(xsp+14)
 	pop xiz
 	ret
 
 ; function id_road_dma_pause
 _id_road_dma_pause:
-	ld a,(_road_dma_depth__28)
+	ld a,(_road_dma_depth__30)
 	cp a,255
-	jr uge,L3817
-	incb 1,(_road_dma_depth__28)
-L3817:
-	ld a,(_road_dma_live__28)
+	jr uge,L4273
+	incb 1,(_road_dma_depth__30)
+L4273:
+	ld a,(_road_dma_live__30)
 	cp a,0
-	jr z,L3818
+	jr z,L4274
 	ld xwa,0
 	push xwa
 	call _ngpc_set_vblank_hook
 	lda xsp,(xsp+4)
-	ld xwa,_id_raster__28
+	ld xwa,_id_raster__30
 	push xwa
 	call _ngpc_dma_raster_xy_disable
 	lda xsp,(xsp+4)
-	ld xwa,_id_bandstream__28
+	ld xwa,_id_bandstream__30
 	push xwa
 	call _ngpc_dma_stream_end_u16
 	lda xsp,(xsp+4)
-	ldb (_road_dma_live__28),0
-L3818:
-L3816:
+	ldb (_road_dma_live__30),0
+L4274:
+L4272:
 	ret
 
 ; function id_road_dma_resume
 _id_road_dma_resume:
-	ld a,(_road_dma_depth__28)
+	ld a,(_road_dma_depth__30)
 	cp a,0
-	jr z,L3825
-	decb 1,(_road_dma_depth__28)
-L3825:
-	ld a,(_road_dma_depth__28)
+	jr z,L4281
+	decb 1,(_road_dma_depth__30)
+L4281:
+	ld a,(_road_dma_depth__30)
 	cp a,0
-	jr z,L3826
-	jp L3824
-L3826:
-	ld a,(_road_dma_live__28)
+	jr z,L4282
+	jp L4280
+L4282:
+	ld a,(_road_dma_live__30)
 	cp a,0
-	jp nz,L3827
-	ld xwa,(_id_xy_live__28)
+	jp nz,L4283
+	ld xwa,(_id_xy_live__30)
 	push xwa
 	ld wa,1
 	push xwa
-	ld xwa,_id_raster__28
+	ld xwa,_id_raster__30
 	push xwa
 	call _ngpc_dma_raster_xy_begin
 	lda xsp,(xsp+12)
-	ld xwa,_id_raster__28
+	ld xwa,_id_raster__30
 	push xwa
 	call _ngpc_dma_raster_xy_enable
 	lda xsp,(xsp+4)
-	call _uses_akina__28
+	call _uses_akina__30
 	cp a,0
-	jr nz,L3828
-	call _road_is_tarmac__28
+	jr nz,L4284
+	call _road_is_tarmac__30
 	cp a,0
-	jr nz,L3828
-	ldw (_id_bandstream__28+10),0
-	ldb (_road_dma_live__28),1
+	jr nz,L4284
+	ldw (_id_bandstream__30+10),0
+	ldb (_road_dma_live__30),1
 	ld xwa,_id_road_rearm
 	push xwa
 	call _ngpc_set_vblank_hook
 	lda xsp,(xsp+4)
-	jr L3824
-L3828:
+	jr L4280
+L4284:
 	call _ngpc_dma_timer01_hblank_enable
 	ld wa,17
 	push xwa
 	ld wa,152
 	push xwa
-	ld xwa,(_id_bandcol__28)
+	ld xwa,(_id_bandcol__30)
 	push xwa
 	ld xwa,33536
-	ld c,(_road_band_pal__28)
+	ld c,(_road_band_pal__30)
 	extz bc
 	sll 2,bc
 	add bc,2
@@ -19202,21 +21692,21 @@ L3828:
 	push xwa
 	ld wa,1
 	push xwa
-	ld xwa,_id_bandstream__28
+	ld xwa,_id_bandstream__30
 	push xwa
 	call _ngpc_dma_stream_begin_u16
 	lda xsp,(xsp+24)
-	ld xwa,_id_bandstream__28
+	ld xwa,_id_bandstream__30
 	push xwa
 	call _ngpc_dma_stream_rearm_u16
 	lda xsp,(xsp+4)
-	ldb (_road_dma_live__28),1
+	ldb (_road_dma_live__30),1
 	ld xwa,_id_road_rearm
 	push xwa
 	call _ngpc_set_vblank_hook
 	lda xsp,(xsp+4)
-L3827:
-L3824:
+L4283:
+L4280:
 	ret
 
 ; function id_road_init
@@ -19227,7 +21717,7 @@ _id_road_init:
 	lda xsp,(xsp+4)
 	call _ngpc_dma_init
 	call _id_road_dma_resume
-L3830:
+L4286:
 	ret
 
 ; function id_road_flat
@@ -19235,168 +21725,168 @@ _id_road_flat:
 	push xiz
 	lda xsp,(xsp-2)
 	ld iz,0
-	jr L3840
-L3837:
+	jr L4296
+L4293:
 	ld wa,0
-	ld xbc,_id_xy_a__28
+	ld xbc,_id_xy_a__30
 	ld de,iz
 	extz xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
 	ld wa,0
-	ld xbc,_id_xy_b__28
+	ld xbc,_id_xy_b__30
 	ld de,iz
 	extz xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	ld wa,(_band_col__28+6)
-	ld xbc,_id_bandcol_a__28
+	ld wa,(_band_col__30+6)
+	ld xbc,_id_bandcol_a__30
 	ld de,iz
 	extz xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	ld wa,(_band_col__28+6)
-	ld xbc,_id_bandcol_b__28
+	ld wa,(_band_col__30+6)
+	ld xbc,_id_bandcol_b__30
 	ld de,iz
 	extz xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3839:
+L4295:
 	inc 1,iz
-L3840:
+L4296:
 	ld wa,iz
 	cp wa,152
-	jr ult,L3837
-L3838:
-	ldw (_bc_rest__28),65535
-	ldw (_bc_rest__28+2),65535
+	jr ult,L4293
+L4294:
+	ldw (_bc_rest__30),65535
+	ldw (_bc_rest__30+2),65535
 	ld wa,0
 	exts xwa
-	ld (_id_xy_done__28),xwa
+	ld (_id_xy_done__30),xwa
 	ld wa,0
 	exts xwa
-	ld (_id_bandcol_done__28),xwa
-	ldw (_band_top__28),65535
-	ldw (_band_top__28+2),65535
-	ldw (_band_mid__28),65535
-	ldw (_band_mid__28+2),65535
-	ldw (_band_tree__28),65535
-	ldw (_band_tree__28+2),65535
+	ld (_id_bandcol_done__30),xwa
+	ldw (_band_top__30),65535
+	ldw (_band_top__30+2),65535
+	ldw (_band_mid__30),65535
+	ldw (_band_mid__30+2),65535
+	ldw (_band_tree__30),65535
+	ldw (_band_tree__30+2),65535
 	ldb (08034h),0
 	ldb (08035h),0
-L3836:
+L4292:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
 
 ; function id_road_rearm
 _id_road_rearm:
-	ld xwa,(_id_xy_done__28)
+	ld xwa,(_id_xy_done__30)
 	cp xwa,0
-	jr z,L3845
-	ld xwa,(_id_xy_done__28)
-	ld (_id_xy_live__28),xwa
-	ld xwa,(_id_xy_done__28)
-	ld (_id_raster__28+2),xwa
-	ld xwa,(_id_xy_done__28)
-	ld (_id_raster__28+6+6),xwa
-	ld xwa,(_id_bandcol_done__28)
-	ld (_id_bandstream__28+6),xwa
+	jr z,L4301
+	ld xwa,(_id_xy_done__30)
+	ld (_id_xy_live__30),xwa
+	ld xwa,(_id_xy_done__30)
+	ld (_id_raster__30+2),xwa
+	ld xwa,(_id_xy_done__30)
+	ld (_id_raster__30+6+6),xwa
+	ld xwa,(_id_bandcol_done__30)
+	ld (_id_bandstream__30+6),xwa
 	ld wa,0
 	exts xwa
-	ld (_id_xy_done__28),xwa
+	ld (_id_xy_done__30),xwa
 	ld wa,0
 	exts xwa
-	ld (_id_bandcol_done__28),xwa
-L3845:
-	ld xwa,_id_raster__28
+	ld (_id_bandcol_done__30),xwa
+L4301:
+	ld xwa,_id_raster__30
 	push xwa
 	call _ngpc_dma_raster_xy_rearm
 	lda xsp,(xsp+4)
-	ld wa,(_id_bandstream__28+10)
+	ld wa,(_id_bandstream__30+10)
 	cp wa,0
-	jr z,L3846
-	ld xwa,_id_bandstream__28
+	jr z,L4302
+	ld xwa,_id_bandstream__30
 	push xwa
 	call _ngpc_dma_stream_rearm_u16
 	lda xsp,(xsp+4)
-L3846:
-L3844:
+L4302:
+L4300:
 	ret
 
 ; function id_road_dma_state
 _id_road_dma_state:
-	ld a,(_id_raster__28+1)
+	ld a,(_id_raster__30+1)
 	extz wa
-	ld xde,(_id_raster__28+2)
+	ld xde,(_id_raster__30+2)
 	cp xde,0
-	jr z,L3851
+	jr z,L4307
 	ld bc,2
-	jr L3852
-L3851:
+	jr L4308
+L4307:
 	ld bc,0
-L3852:
+L4308:
 	or wa,bc
-	jr L3850
-L3850:
+	jr L4306
+L4306:
 	ret
 
 ; function id_road_xy_at
 _id_road_xy_at:
-	ld xwa,(_id_xy__28)
+	ld xwa,(_id_xy__30)
 	ld c,(xsp+4)
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	jr L3854
-L3854:
+	jr L4310
+L4310:
 	ret
 
 ; function id_road_restore_map
 _id_road_restore_map:
-	call _uses_akina__28
+	call _uses_akina__30
 	cp a,0
-	jr nz,L3859
-	call _id_load_maps_rally__28
-	jr L3860
-L3859:
-	call _id_load_maps__28
-L3860:
-L3858:
+	jr nz,L4315
+	call _id_load_maps_rally__30
+	jr L4316
+L4315:
+	call _id_load_maps__30
+L4316:
+L4314:
 	ret
 
 ; function id_road_reload
 _id_road_reload:
-	call _id_fill_hud_band__28
+	call _id_fill_hud_band__30
 	ld wa,0
 	push xwa
 	call _ngpc_gfx_set_bg_color
 	lda xsp,(xsp+4)
-	call _id_load_palettes__28
-	call _uses_akina__28
+	call _id_load_palettes__30
+	call _uses_akina__30
 	cp a,0
-	jr nz,L3865
-	call _id_load_maps_rally__28
-	jr L3866
-L3865:
-	call _id_load_maps__28
-L3866:
-L3864:
+	jr nz,L4321
+	call _id_load_maps_rally__30
+	jr L4322
+L4321:
+	call _id_load_maps__30
+L4322:
+L4320:
 	ret
 
 ; function wide_rows
-_wide_rows__28:
+_wide_rows__30:
 	push xiz
 	lda xsp,(xsp-12)
-	ld a,(_road_bottom__28)
+	ld a,(_road_bottom__30)
 	ld ixl,a
-L3886:
+L4342:
 	ld xwa,(xsp+20)
 	ld c,ixl
 	extz bc
@@ -19416,46 +21906,46 @@ L3886:
 	ld (xsp+6),a
 	ld a,(xsp+6)
 	cp a,48
-	jr ult,L3891
+	jr ult,L4347
 	ld a,(xsp+6)
 	cp a,88
-	jr ult,L3890
-L3891:
-	jp L3887
-L3890:
+	jr ult,L4346
+L4347:
+	jp L4343
+L4346:
 	ld a,(xsp+5)
 	sub a,(xsp+24)
 	ld izl,a
 	ld wa,(xsp+36)
 	cp wa,0
-	jr lt,L3892
+	jr lt,L4348
 	ld c,izl
 	cp c,144
-	jr ult,L3893
+	jr ult,L4349
 	ld a,izl
 	extz wa
 	sub wa,256
-	jr L3894
-L3893:
+	jr L4350
+L4349:
 	ld a,izl
 	extz wa
-L3894:
+L4350:
 	ld iy,wa
-	jr L3895
-L3892:
+	jr L4351
+L4348:
 	ld c,izl
 	cp c,112
-	jr ule,L3896
+	jr ule,L4352
 	ld a,izl
 	extz wa
 	sub wa,256
-	jr L3897
-L3896:
+	jr L4353
+L4352:
 	ld a,izl
 	extz wa
-L3897:
+L4353:
 	ld iy,wa
-L3895:
+L4351:
 	ld xwa,_id_route_lim0
 	ld c,(xsp+6)
 	extz bc
@@ -19465,12 +21955,12 @@ L3895:
 	ld (xsp+10),a
 	ld wa,iy
 	cp wa,0
-	jr lt,L3898
+	jr lt,L4354
 	ld wa,iy
 	ld c,(xsp+10)
 	extz bc
 	cp wa,bc
-	jr ult,L3899
+	jr ult,L4355
 	ld a,(xsp+4)
 	add a,40
 	extz wa
@@ -19486,15 +21976,15 @@ L3895:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3899:
-	jr L3900
-L3898:
+L4355:
+	jr L4356
+L4354:
 	ld wa,iy
 	neg wa
 	ld c,(xsp+10)
 	extz bc
 	cp wa,bc
-	jr ult,L3901
+	jr ult,L4357
 	ld a,(xsp+4)
 	add a,80
 	extz wa
@@ -19510,61 +22000,61 @@ L3898:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3901:
-L3900:
+L4357:
+L4356:
 	ld a,ixl
 	extz wa
 	ld bc,(xsp+32)
 	add bc,1
 	cp wa,bc
-	jr gt,L3902
-	jr L3887
-L3902:
+	jr gt,L4358
+	jr L4343
+L4358:
 	dec 1,ixl
-L3888:
-L3889:
-	jp L3886
-L3887:
-L3885:
+L4344:
+L4345:
+	jp L4342
+L4343:
+L4341:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
 
 ; function id_road_write
-_id_road_write__28:
+_id_road_write__30:
 	push xiz
 	lda xsp,(xsp-82)
 	ld wa,0
 	ld (xsp+12),a
-	ld wa,(_band_col__28+6)
+	ld wa,(_band_col__30+6)
 	ld (xsp+14),wa
-	ld a,(_road_bottom__28)
+	ld a,(_road_bottom__30)
 	extz wa
 	ld iz,wa
-	ld a,(_road_top__28)
+	ld a,(_road_top__30)
 	extz wa
-	ld c,(_climb_room__28)
+	ld c,(_climb_room__30)
 	extz bc
 	sub wa,bc
 	ld (xsp+22),wa
-	ld xwa,_band_lut__28
-	ld bc,(_band_phase__28)
+	ld xwa,_band_lut__30
+	ld bc,(_band_phase__30)
 	srl 1,bc
 	and bc,15
 	mul xbc,48
 	add xwa,xbc
 	lda xwa,(xwa)
 	ld (xsp+28),xwa
-	ld xwa,(_id_xy__28)
+	ld xwa,(_id_xy__30)
 	ld (xsp+32),xwa
-	ld xwa,(_id_bandcol__28)
+	ld xwa,(_id_bandcol__30)
 	ld (xsp+36),xwa
-	ld a,(_road_base_x__28)
+	ld a,(_road_base_x__30)
 	ld (xsp+40),a
-	ld a,(_road_plane0__28)
+	ld a,(_road_plane0__30)
 	ld (xsp+41),a
-	ld xwa,_id_src__28
-	ld c,(_road_lines__28)
+	ld xwa,_id_src__30
+	ld c,(_road_lines__30)
 	extz bc
 	sub bc,1
 	extz xbc
@@ -19573,38 +22063,38 @@ _id_road_write__28:
 	extz wa
 	sll 8,wa
 	ld (xsp+16),wa
-	ld xwa,_id_src__28
-	ld c,(_road_lines__28)
+	ld xwa,_id_src__30
+	ld c,(_road_lines__30)
 	extz bc
 	sub bc,1
 	extz xbc
 	add xwa,xbc
 	ld a,(xwa)
 	extz wa
-	ld c,(_id_src__28)
+	ld c,(_id_src__30)
 	extz bc
 	sub wa,bc
 	sll 8,wa
 	exts xwa
-	ld c,(_road_lines__28)
+	ld c,(_road_lines__30)
 	extz bc
 	sub bc,1
 	divs xwa,bc
 	ld (xsp+18),wa
-	ld a,(_road_lines__28)
+	ld a,(_road_lines__30)
 	cp a,0
-	jr z,L4003
-	ld xwa,_id_w_lat__28
+	jr z,L4459
+	ld xwa,_id_w_lat__30
 	ld (xsp+42),xwa
-	ld xwa,_id_curve_dx__28
+	ld xwa,_id_curve_dx__30
 	ld (xsp+46),xwa
-	ld xwa,_id_dxc__28+128
+	ld xwa,_id_dxc__30+128
 	ld (xsp+50),xwa
-	ld xwa,_id_shear__28
+	ld xwa,_id_shear__30
 	ld (xsp+54),xwa
 	ld wa,(xsp+90)
 	ld (xsp+58),wa
-	ld a,(_road_lines__28)
+	ld a,(_road_lines__30)
 	extz wa
 	ld (xsp+60),wa
 	push xix
@@ -19615,23 +22105,23 @@ _id_road_write__28:
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-L4003:
-	ld a,(_road_lines__28)
+L4459:
+	ld a,(_road_lines__30)
 	cp a,0
-	jp z,L4004
+	jp z,L4460
 	ld wa,(xsp+22)
 	cp wa,2
-	jp lt,L4004
+	jp lt,L4460
 	ld wa,(xsp+22)
 	cp wa,255
-	jp gt,L4004
-	ld a,(_road_lines__28)
+	jp gt,L4460
+	ld a,(_road_lines__30)
 	extz wa
 	sub wa,1
 	ld (xsp+24),wa
 	ld wa,iz
 	cp wa,(xsp+22)
-	jp lt,L4005
+	jp lt,L4461
 	ld xwa,(xsp+32)
 	ld bc,iz
 	exts xbc
@@ -19646,24 +22136,24 @@ L4003:
 	add xwa,xbc
 	lda xwa,(xwa)
 	ld (xsp+46),xwa
-	ld xwa,_id_sl__28
-	ld c,(_road_lines__28)
+	ld xwa,_id_sl__30
+	ld c,(_road_lines__30)
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld (xsp+50),xwa
-	ld xwa,_id_shear__28
-	ld c,(_road_lines__28)
+	ld xwa,_id_shear__30
+	ld c,(_road_lines__30)
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+54),xwa
-	ld xwa,_hill_rate__28+20
+	ld xwa,_hill_rate__30+20
 	ld (xsp+58),xwa
 	ld xwa,(xsp+28)
 	ld (xsp+62),xwa
-	ld xwa,_band_col__28
+	ld xwa,_band_col__30
 	ld (xsp+66),xwa
 	ld wa,(xsp+16)
 	ld (xsp+70),wa
@@ -19678,7 +22168,7 @@ L4003:
 	ld (xsp+77),a
 	ld a,(xsp+40)
 	ld (xsp+78),a
-	ld a,(_road_lines__28)
+	ld a,(_road_lines__30)
 	ld (xsp+79),a
 	ld a,izl
 	ld (xsp+80),a
@@ -19697,18 +22187,18 @@ L4003:
 	ld a,(xsp+80)
 	extz wa
 	ld iz,wa
-L4005:
-	jp L4006
-L4004:
-	ld a,(_road_lines__28)
+L4461:
+	jp L4462
+L4460:
+	ld a,(_road_lines__30)
 	extz wa
 	sub wa,1
 	ld (xsp+24),wa
-	jp L4010
-L4007:
-	ld xwa,_hill_rate__28
+	jp L4466
+L4463:
+	ld xwa,_hill_rate__30
 	ld bc,20
-	ld xde,_id_sl__28+64
+	ld xde,_id_sl__30+64
 	ld hl,(xsp+24)
 	exts xhl
 	add xde,xhl
@@ -19733,7 +22223,7 @@ L4007:
 	ld (xsp+43),a
 	ld a,(xsp+44)
 	ld (xsp+12),a
-	ld xwa,_id_shear__28
+	ld xwa,_id_shear__30
 	ld bc,(xsp+24)
 	exts xbc
 	sll 1,xbc
@@ -19742,20 +22232,20 @@ L4007:
 	ld (xsp+46),wa
 	ld bc,iz
 	cp bc,(xsp+22)
-	jr ge,L4011
+	jr ge,L4467
 	ld wa,(xsp+22)
-	jr L4012
-L4011:
+	jr L4468
+L4467:
 	ld wa,iz
-L4012:
-	ld xbc,_id_sl__28
+L4468:
+	ld xbc,_id_sl__30
 	ld de,(xsp+24)
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-	ld xwa,_band_col__28
+	ld xwa,_band_col__30
 	ld xbc,(xsp+28)
-	ld xde,_id_sl__28+128
+	ld xde,_id_sl__30+128
 	ld hl,(xsp+24)
 	exts xhl
 	add xde,xhl
@@ -19772,10 +22262,10 @@ L4012:
 	ld (xsp+14),wa
 	ld a,(xsp+43)
 	cp a,1
-	jr ult,L4013
+	jr ult,L4469
 	ld wa,iz
 	cp wa,(xsp+22)
-	jr lt,L4013
+	jr lt,L4469
 	ld a,izl
 	ld (xsp+48),a
 	ld wa,(xsp+16)
@@ -19807,13 +22297,13 @@ L4012:
 	add xbc,xde
 	ld (xbc),wa
 	dec 1,iz
-L4013:
+L4469:
 	ld a,(xsp+43)
 	cp a,2
-	jr nz,L4014
+	jr nz,L4470
 	ld wa,iz
 	cp wa,(xsp+22)
-	jr lt,L4014
+	jr lt,L4470
 	ld a,izl
 	ld (xsp+48),a
 	ld wa,(xsp+18)
@@ -19821,13 +22311,13 @@ L4013:
 	ld (xsp+50),wa
 	ld bc,(xsp+16)
 	cp bc,(xsp+50)
-	jr ule,L4015
+	jr ule,L4471
 	ld wa,(xsp+16)
 	sub wa,(xsp+50)
-	jr L4016
-L4015:
+	jr L4472
+L4471:
 	ld wa,(xsp+16)
-L4016:
+L4472:
 	ld (xsp+52),wa
 	ld wa,(xsp+52)
 	srl 8,wa
@@ -19858,34 +22348,34 @@ L4016:
 	add xbc,xde
 	ld (xbc),wa
 	dec 1,iz
-L4014:
+L4470:
 	ld wa,(xsp+16)
 	ld bc,(xsp+18)
 	sub wa,bc
 	ld (xsp+16),wa
 	ld wa,iz
 	cp wa,(xsp+22)
-	jr ge,L4017
-	jr L4008
-L4017:
-L4009:
+	jr ge,L4473
+	jr L4464
+L4473:
+L4465:
 	decw 1,(xsp+24)
-L4010:
+L4466:
 	ld wa,(xsp+24)
 	cp wa,0
-	jp ge,L4007
-L4008:
-L4006:
-	ld xwa,_id_shear__28
-	ld c,(_wide_k0__28)
+	jp ge,L4463
+L4464:
+L4462:
+	ld xwa,_id_shear__30
+	ld c,(_wide_k0__30)
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
 	ld (xsp+42),wa
-	ld xwa,_id_shear__28
-	ld c,(_road_lines__28)
+	ld xwa,_id_shear__30
+	ld c,(_road_lines__30)
 	extz bc
 	sub bc,1
 	extz xbc
@@ -19895,25 +22385,25 @@ L4006:
 	ld (xsp+44),wa
 	ld wa,(xsp+42)
 	cp wa,0
-	jr ge,L4018
+	jr ge,L4474
 	ld wa,(xsp+42)
 	neg wa
 	ld (xsp+42),wa
-L4018:
+L4474:
 	ld wa,(xsp+44)
 	cp wa,0
-	jr ge,L4019
+	jr ge,L4475
 	ld wa,(xsp+44)
 	neg wa
 	ld (xsp+44),wa
-L4019:
+L4475:
 	ld wa,(xsp+42)
 	cp wa,46
-	jr ge,L4021
+	jr ge,L4477
 	ld wa,(xsp+44)
 	cp wa,46
-	jr lt,L4020
-L4021:
+	jr lt,L4476
+L4477:
 	push xix
 	push xiy
 	ld wa,(xsp+98)
@@ -19926,238 +22416,238 @@ L4021:
 	push xwa
 	ld xwa,(xsp+56)
 	push xwa
-	call _wide_rows__28
+	call _wide_rows__30
 	lda xsp,(xsp+20)
 	pop xiy
 	pop xix
-L4020:
+L4476:
 	ld bc,(xsp+24)
 	cp bc,0
-	jr ge,L4022
+	jr ge,L4478
 	ld wa,1
-	jr L4023
-L4022:
+	jr L4479
+L4478:
 	ld wa,0
-L4023:
+L4479:
 	ld (xsp+26),a
-	jr L4026
-L4024:
+	jr L4482
+L4480:
 	ld a,(xsp+22)
-	ld xbc,_id_sl__28
+	ld xbc,_id_sl__30
 	ld de,(xsp+24)
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	decw 1,(xsp+24)
-L4026:
+L4482:
 	ld wa,(xsp+24)
 	cp wa,0
-	jr ge,L4024
-L4025:
+	jr ge,L4480
+L4481:
 	ld a,izl
 	add a,1
-	ld (_band_first__28),a
-	ld a,(_band_first__28)
-	cp a,(_band_held__28)
-	jp ule,L4027
-	ld a,(_band_first__28)
-	sub a,(_band_held__28)
+	ld (_band_first__30),a
+	ld a,(_band_first__30)
+	cp a,(_band_held__30)
+	jp ule,L4483
+	ld a,(_band_first__30)
+	sub a,(_band_held__30)
 	cp a,2
-	jr uge,L4029
-	ld a,(_band_wait__28)
+	jr uge,L4485
+	ld a,(_band_wait__30)
 	cp a,16
-	jr ult,L4028
-L4029:
-	ldb (_band_wait__28),0
-	jr L4030
-L4028:
-	incb 1,(_band_wait__28)
-	jr L4033
-L4031:
-	decb 1,(_band_first__28)
-	ld xwa,(_id_xy__28)
-	ld c,(_band_first__28)
+	jr ult,L4484
+L4485:
+	ldb (_band_wait__30),0
+	jr L4486
+L4484:
+	incb 1,(_band_wait__30)
+	jr L4489
+L4487:
+	decb 1,(_band_first__30)
+	ld xwa,(_id_xy__30)
+	ld c,(_band_first__30)
 	extz bc
 	add bc,1
 	extz xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld xbc,(_id_xy__28)
-	ld e,(_band_first__28)
+	ld xbc,(_id_xy__30)
+	ld e,(_band_first__30)
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	ld xwa,(_id_bandcol__28)
-	ld c,(_band_first__28)
+	ld xwa,(_id_bandcol__30)
+	ld c,(_band_first__30)
 	extz bc
 	add bc,1
 	extz xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld xbc,(_id_bandcol__28)
-	ld e,(_band_first__28)
+	ld xbc,(_id_bandcol__30)
+	ld e,(_band_first__30)
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4033:
-	ld a,(_band_first__28)
-	cp a,(_band_held__28)
-	jr ugt,L4031
-L4032:
-L4030:
-	jr L4034
-L4027:
-	ldb (_band_wait__28),0
-L4034:
-	ld a,(_band_first__28)
-	ld (_band_held__28),a
-	ld a,(_road_top__28)
+L4489:
+	ld a,(_band_first__30)
+	cp a,(_band_held__30)
+	jr ugt,L4487
+L4488:
+L4486:
+	jr L4490
+L4483:
+	ldb (_band_wait__30),0
+L4490:
+	ld a,(_band_first__30)
+	ld (_band_held__30),a
+	ld a,(_road_top__30)
 	extz wa
-	ld c,(_band_first__28)
+	ld c,(_band_first__30)
 	extz bc
 	sub wa,bc
 	ld (xsp+42),wa
-	ld wa,(_band_col__28+6)
+	ld wa,(_band_col__30+6)
 	ld (xsp+46),wa
 	push xix
 	push xiy
-	call _road_is_tarmac__28
+	call _road_is_tarmac__30
 	pop xiy
 	pop xix
 	cp a,0
-	jp z,L4035
-	ld wa,(_band_col__28)
+	jp z,L4491
+	ld wa,(_band_col__30)
 	ld (xsp+56),wa
 	ld wa,0
-	ld bc,(_band_phase__28)
+	ld bc,(_band_phase__30)
 	srl 5,bc
 	sub wa,bc
 	ld (xsp+58),a
-	ld a,(_road_top__28)
+	ld a,(_road_top__30)
 	extz wa
 	ld (xsp+44),wa
 	ld wa,(xsp+44)
-	ld c,(_road_bottom__28)
+	ld c,(_road_bottom__30)
 	extz bc
 	cp wa,bc
-	jr ule,L4036
-	ld a,(_road_bottom__28)
+	jr ule,L4492
+	ld a,(_road_bottom__30)
 	extz wa
 	ld (xsp+44),wa
-L4036:
-	ld xwa,(_id_bandcol__28)
-	ld c,(_band_first__28)
+L4492:
+	ld xwa,(_id_bandcol__30)
+	ld c,(_band_first__30)
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+48),xwa
-	ld xwa,(_id_bandcol__28)
+	ld xwa,(_id_bandcol__30)
 	ld bc,(xsp+44)
 	extz xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+52),xwa
-	jr L4039
-L4037:
+	jr L4495
+L4493:
 	ld c,(xsp+58)
 	incb 1,(xsp+58)
 	extz bc
 	and bc,2
 	cp bc,0
-	jr z,L4040
+	jr z,L4496
 	ld wa,(xsp+46)
-	jr L4041
-L4040:
+	jr L4497
+L4496:
 	ld wa,(xsp+56)
-L4041:
+L4497:
 	ld xbc,(xsp+48)
 	inc 2,xbc
 	ld (xsp+48),xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4039:
+L4495:
 	ld xwa,(xsp+48)
 	cp xwa,(xsp+52)
-	jr ult,L4037
-L4038:
-	jr L4042
-L4035:
+	jr ult,L4493
+L4494:
+	jr L4498
+L4491:
 	ld wa,(xsp+42)
 	cp wa,24
-	jr le,L4043
+	jr le,L4499
 	ldw (xsp+42),24
-L4043:
-	ld a,(_band_first__28)
+L4499:
+	ld a,(_band_first__30)
 	extz wa
 	ld de,(xsp+42)
 	cp de,0
-	jr le,L4044
+	jr le,L4500
 	ld bc,(xsp+42)
-	jr L4045
-L4044:
+	jr L4501
+L4500:
 	ld bc,0
-L4045:
+L4501:
 	add wa,bc
 	ld (xsp+44),wa
 	ld wa,(xsp+44)
-	ld c,(_road_bottom__28)
+	ld c,(_road_bottom__30)
 	extz bc
 	cp wa,bc
-	jr ule,L4046
-	ld a,(_road_bottom__28)
+	jr ule,L4502
+	ld a,(_road_bottom__30)
 	extz wa
 	ld (xsp+44),wa
-L4046:
-	ld xwa,(_id_bandcol__28)
-	ld c,(_band_first__28)
+L4502:
+	ld xwa,(_id_bandcol__30)
+	ld c,(_band_first__30)
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+48),xwa
-	ld xwa,(_id_bandcol__28)
+	ld xwa,(_id_bandcol__30)
 	ld bc,(xsp+44)
 	extz xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+52),xwa
-	jr L4049
-L4047:
+	jr L4505
+L4503:
 	ld wa,(xsp+46)
 	ld xbc,(xsp+48)
 	inc 2,xbc
 	ld (xsp+48),xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4049:
+L4505:
 	ld xwa,(xsp+48)
 	cp xwa,(xsp+52)
-	jr ult,L4047
-L4048:
-L4042:
-	ld a,(_band_first__28)
+	jr ult,L4503
+L4504:
+L4498:
+	ld a,(_band_first__30)
 	extz wa
-	ld c,(_road_top__28)
+	ld c,(_road_top__30)
 	extz bc
 	sub wa,bc
-	ld (_band_shift__28),wa
-	ld a,(_road_bottom__28)
-	ld c,(_band_first__28)
+	ld (_band_shift__30),wa
+	ld a,(_road_bottom__30)
+	ld c,(_band_first__30)
 	sub a,c
 	add a,1
-	ld (_band_count__28),a
-	ld wa,(_band_col__28+6)
+	ld (_band_count__30),a
+	ld wa,(_band_col__30+6)
 	ld (xsp+12),wa
-	ld a,(_id_buf__28)
+	ld a,(_id_buf__30)
 	ld (xsp+14),a
-	ld xwa,_bc_rest__28
+	ld xwa,_bc_rest__30
 	ld c,(xsp+14)
 	extz bc
 	exts xbc
@@ -20165,9 +22655,9 @@ L4042:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,(xsp+12)
-	jr z,L4050
+	jr z,L4506
 	ld wa,(xsp+12)
-	ld xbc,_bc_rest__28
+	ld xbc,_bc_rest__30
 	ld e,(xsp+14)
 	extz de
 	exts xde
@@ -20175,13 +22665,13 @@ L4042:
 	add xbc,xde
 	ld (xbc),wa
 	ld a,0
-	ld xbc,_bc_top__28
+	ld xbc,_bc_top__30
 	ld e,(xsp+14)
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-	ld xwa,(_id_bandcol__28)
+	ld xwa,(_id_bandcol__30)
 	ld bc,152
 	extz xbc
 	sll 1,xbc
@@ -20191,36 +22681,36 @@ L4042:
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+16),xwa
-	ld xwa,(_id_bandcol__28)
+	ld xwa,(_id_bandcol__30)
 	ld bc,152
 	extz xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+20),xwa
-	jr L4053
-L4051:
+	jr L4509
+L4507:
 	ld wa,(xsp+12)
 	ld xbc,(xsp+16)
 	inc 2,xbc
 	ld (xsp+16),xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4053:
+L4509:
 	ld xwa,(xsp+16)
 	cp xwa,(xsp+20)
-	jr ult,L4051
-L4052:
-L4050:
-	ld xwa,_bc_top__28
+	jr ult,L4507
+L4508:
+L4506:
+	ld xwa,_bc_top__30
 	ld c,(xsp+14)
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
-	cp a,(_band_first__28)
-	jr uge,L4054
-	ld xwa,(_id_bandcol__28)
-	ld xbc,_bc_top__28
+	cp a,(_band_first__30)
+	jr uge,L4510
+	ld xwa,(_id_bandcol__30)
+	ld xbc,_bc_top__30
 	ld e,(xsp+14)
 	extz de
 	exts xde
@@ -20231,60 +22721,60 @@ L4050:
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+16),xwa
-	ld xwa,(_id_bandcol__28)
-	ld c,(_band_first__28)
+	ld xwa,(_id_bandcol__30)
+	ld c,(_band_first__30)
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+20),xwa
-	jr L4057
-L4055:
+	jr L4513
+L4511:
 	ld wa,(xsp+12)
 	ld xbc,(xsp+16)
 	inc 2,xbc
 	ld (xsp+16),xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4057:
+L4513:
 	ld xwa,(xsp+16)
 	cp xwa,(xsp+20)
-	jr ult,L4055
-L4056:
-L4054:
-	ld a,(_band_first__28)
-	ld xbc,_bc_top__28
+	jr ult,L4511
+L4512:
+L4510:
+	ld a,(_band_first__30)
+	ld xbc,_bc_top__30
 	ld e,(xsp+14)
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-	ld xwa,(_id_xy__28)
-	ld c,(_road_bottom__28)
+	ld xwa,(_id_xy__30)
+	ld c,(_road_bottom__30)
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld xbc,(_id_xy__28)
+	ld xbc,(_id_xy__30)
 	ld (xbc+304),wa
-	ld xwa,(_id_bandcol__28)
-	ld c,(_road_bottom__28)
+	ld xwa,(_id_bandcol__30)
+	ld c,(_road_bottom__30)
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld xbc,(_id_bandcol__28)
+	ld xbc,(_id_bandcol__30)
 	ld (xbc+304),wa
-	ld bc,(_band_shift__28)
+	ld bc,(_band_shift__30)
 	cp bc,0
-	jr le,L4058
-	ld wa,(_band_shift__28)
-	jr L4059
-L4058:
+	jr le,L4514
+	ld wa,(_band_shift__30)
+	jr L4515
+L4514:
 	ld wa,0
-L4059:
+L4515:
 	ld (xsp+10),wa
 	ldw (xsp+8),0
 	ld wa,(xsp+94)
@@ -20303,187 +22793,187 @@ L4059:
 	ld (xsp+6),wa
 	push xix
 	push xiy
-	call _uses_akina__28
+	call _uses_akina__30
 	pop xiy
 	pop xix
 	cp a,0
-	jp nz,L4060
-	ld a,(_road_base_x__28)
+	jp nz,L4516
+	ld a,(_road_base_x__30)
 	extz wa
-	ld e,(_pan_fine__28)
+	ld e,(_pan_fine__30)
 	cp e,0
-	jr z,L4061
-	ld bc,(_pan_head__28)
+	jr z,L4517
+	ld bc,(_pan_head__30)
 	exts xbc
 	divs xbc,2
 	neg bc
 	exts xbc
 	divs xbc,16
-	jr L4062
-L4061:
+	jr L4518
+L4517:
 	ld bc,(xsp+94)
 	sra 1,bc
 	neg bc
 	ld de,(xsp+90)
 	sra 4,de
 	add bc,de
-L4062:
+L4518:
 	add wa,bc
 	extz wa
 	ld (xsp+12),wa
-	ld a,(_road_base_x__28)
+	ld a,(_road_base_x__30)
 	extz wa
-	ld e,(_pan_fine__28)
+	ld e,(_pan_fine__30)
 	cp e,0
-	jr z,L4063
-	ld bc,(_pan_head__28)
+	jr z,L4519
+	ld bc,(_pan_head__30)
 	sll 1,bc
 	neg bc
 	exts xbc
 	divs xbc,16
-	jr L4064
-L4063:
+	jr L4520
+L4519:
 	ld bc,(xsp+94)
 	sll 1,bc
 	neg bc
 	ld de,(xsp+90)
 	sra 2,de
 	add bc,de
-L4064:
+L4520:
 	add wa,bc
 	extz wa
 	ld (xsp+14),wa
-	ld c,(_band_first__28)
+	ld c,(_band_first__30)
 	cp c,244
-	jr uge,L4065
-	ld a,(_band_first__28)
+	jr uge,L4521
+	ld a,(_band_first__30)
 	extz wa
 	add wa,0
-	jr L4066
-L4065:
-	ld a,(_band_first__28)
+	jr L4522
+L4521:
+	ld a,(_band_first__30)
 	extz wa
-L4066:
+L4522:
 	ld (xsp+16),a
 	ld c,(xsp+16)
-	cp c,40
-	jr ule,L4067
+	cp c,0
+	jr ule,L4523
 	ld a,(xsp+16)
 	extz wa
-	jr L4068
-L4067:
-	ld a,40
+	jr L4524
+L4523:
+	ld a,0
 	extz wa
-L4068:
+L4524:
 	ld (xsp+17),a
-	ld c,(_band_first__28)
+	ld c,(_band_first__30)
 	cp c,(xsp+17)
-	jr uge,L4069
-	ld a,(_band_first__28)
+	jr uge,L4525
+	ld a,(_band_first__30)
 	extz wa
-	jr L4070
-L4069:
+	jr L4526
+L4525:
 	ld a,(xsp+17)
 	extz wa
-L4070:
+L4526:
 	ld (xsp+18),a
 	ld a,(xsp+18)
 	extz wa
 	ld (xsp+20),wa
 	ld wa,(xsp+12)
-	ld xbc,_band_top__28
-	ld e,(_id_buf__28)
+	ld xbc,_band_top__30
+	ld e,(_id_buf__30)
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld bc,(xbc)
 	cp wa,bc
-	jr nz,L4072
+	jr nz,L4528
 	ld wa,(xsp+14)
-	ld xbc,_band_mid__28
-	ld e,(_id_buf__28)
+	ld xbc,_band_mid__30
+	ld e,(_id_buf__30)
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld bc,(xbc)
 	cp wa,bc
-	jr nz,L4072
+	jr nz,L4528
 	ld a,(xsp+17)
-	ld xbc,_band_bg_end__28
-	ld e,(_id_buf__28)
+	ld xbc,_band_bg_end__30
+	ld e,(_id_buf__30)
 	extz de
 	exts xde
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jr nz,L4072
+	jr nz,L4528
 	ld wa,(xsp+10)
-	ld xbc,_band_pitch__28
-	ld e,(_id_buf__28)
+	ld xbc,_band_pitch__30
+	ld e,(_id_buf__30)
 	extz de
 	exts xde
 	add xbc,xde
 	ld c,(xbc)
 	exts bc
 	cp wa,bc
-	jr nz,L4072
-	ld a,(_band_first__28)
-	ld xbc,_band_bg_first__28
-	ld e,(_id_buf__28)
+	jr nz,L4528
+	ld a,(_band_first__30)
+	ld xbc,_band_bg_first__30
+	ld e,(_id_buf__30)
 	extz de
 	exts xde
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jr z,L4071
-L4072:
+	jr z,L4527
+L4528:
 	ld wa,(xsp+12)
-	ld xbc,_band_top__28
-	ld e,(_id_buf__28)
+	ld xbc,_band_top__30
+	ld e,(_id_buf__30)
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
 	ld wa,(xsp+14)
-	ld xbc,_band_mid__28
-	ld e,(_id_buf__28)
+	ld xbc,_band_mid__30
+	ld e,(_id_buf__30)
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
 	ld a,(xsp+17)
-	ld xbc,_band_bg_end__28
-	ld e,(_id_buf__28)
+	ld xbc,_band_bg_end__30
+	ld e,(_id_buf__30)
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-	ld a,(_band_first__28)
-	ld xbc,_band_bg_first__28
-	ld e,(_id_buf__28)
+	ld a,(_band_first__30)
+	ld xbc,_band_bg_first__30
+	ld e,(_id_buf__30)
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ldw (xsp+20),0
-L4071:
+L4527:
 	push xix
 	push xiy
-	call _sky_is_tall_course__28
+	call _sky_is_tall_course__30
 	pop xiy
 	pop xix
 	ld (xsp+22),a
-	ld xwa,(_id_xy__28)
+	ld xwa,(_id_xy__30)
 	ld bc,(xsp+20)
 	extz xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld xix,xwa
-	ld xwa,(_id_xy__28)
+	ld xwa,(_id_xy__30)
 	ld c,(xsp+17)
 	extz bc
 	exts xbc
@@ -20492,22 +22982,22 @@ L4071:
 	ld (xsp+28),xwa
 	ld a,(xsp+22)
 	cp a,0
-	jr z,L4073
-	jr L4076
-L4074:
+	jr z,L4529
+	jr L4532
+L4530:
 	ld wa,(xsp+14)
 	ld xbc,xix
 	inc 2,xbc
 	ld xix,xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4076:
+L4532:
 	ld xwa,xix
 	cp xwa,(xsp+28)
-	jr ult,L4074
-L4075:
-	jp L4077
-L4073:
+	jr ult,L4530
+L4531:
+	jp L4533
+L4529:
 	ld a,(xsp+10)
 	neg a
 	extz wa
@@ -20515,16 +23005,16 @@ L4073:
 	ld (xsp+36),wa
 	ld wa,(xsp+20)
 	ld iy,wa
-	jr L4080
-L4078:
+	jr L4536
+L4534:
 	ld bc,iy
-	cp bc,40
-	jr uge,L4081
+	cp bc,0
+	jr uge,L4537
 	ld wa,(xsp+12)
-	jr L4082
-L4081:
+	jr L4538
+L4537:
 	ld wa,(xsp+14)
-L4082:
+L4538:
 	ld c,iyl
 	neg c
 	extz bc
@@ -20536,29 +23026,29 @@ L4082:
 	dec 2,xbc
 	ld (xbc),wa
 	inc 1,iy
-L4080:
+L4536:
 	ld xwa,xix
 	cp xwa,(xsp+28)
-	jr uge,L4083
+	jr uge,L4539
 	ld wa,iy
 	cp wa,(xsp+10)
-	jr lt,L4078
-L4083:
-L4079:
-	ld xwa,(_id_xy__28)
-	ld bc,40
+	jr lt,L4534
+L4539:
+L4535:
+	ld xwa,(_id_xy__30)
+	ld bc,0
 	extz xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+32),xwa
 	ld xwa,(xsp+32)
 	cp xwa,(xsp+28)
-	jr ule,L4084
+	jr ule,L4540
 	ld xwa,(xsp+28)
 	ld (xsp+32),xwa
-L4084:
-	jr L4087
-L4085:
+L4540:
+	jr L4543
+L4541:
 	ld wa,(xsp+12)
 	or wa,(xsp+36)
 	ld xbc,xix
@@ -20566,13 +23056,13 @@ L4085:
 	ld xix,xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4087:
+L4543:
 	ld xwa,xix
 	cp xwa,(xsp+32)
-	jr ult,L4085
-L4086:
-	jr L4090
-L4088:
+	jr ult,L4541
+L4542:
+	jr L4546
+L4544:
 	ld wa,(xsp+14)
 	or wa,(xsp+36)
 	ld xbc,xix
@@ -20580,197 +23070,197 @@ L4088:
 	ld xix,xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4090:
+L4546:
 	ld xwa,xix
 	cp xwa,(xsp+28)
-	jr ult,L4088
-L4089:
-L4077:
+	jr ult,L4544
+L4545:
+L4533:
 	ld a,(xsp+10)
-	ld xbc,_band_pitch__28
-	ld e,(_id_buf__28)
+	ld xbc,_band_pitch__30
+	ld e,(_id_buf__30)
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld wa,(xsp+14)
 	ld (xsp+8),wa
-	jp L4091
-L4060:
-	ld a,(_road_base_x__28)
+	jp L4547
+L4516:
+	ld a,(_road_base_x__30)
 	add a,(xsp+2)
 	extz wa
 	ld (xsp+12),wa
-	ld a,(_road_base_x__28)
+	ld a,(_road_base_x__30)
 	add a,(xsp+4)
 	extz wa
 	ld (xsp+14),wa
-	ld a,(_road_base_x__28)
+	ld a,(_road_base_x__30)
 	add a,(xsp+6)
 	extz wa
 	ld (xsp+16),wa
 	ld wa,(xsp+16)
-	ld xbc,_band_tree__28
-	ld e,(_id_buf__28)
+	ld xbc,_band_tree__30
+	ld e,(_id_buf__30)
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld bc,(xbc)
 	cp wa,bc
-	jr nz,L4093
+	jr nz,L4549
 	ld wa,(xsp+10)
-	ld xbc,_band_pitch__28
-	ld e,(_id_buf__28)
+	ld xbc,_band_pitch__30
+	ld e,(_id_buf__30)
 	extz de
 	exts xde
 	add xbc,xde
 	ld c,(xbc)
 	exts bc
 	cp wa,bc
-	jr nz,L4093
-	ld a,(_band_first__28)
-	ld xbc,_band_bg_end__28
-	ld e,(_id_buf__28)
+	jr nz,L4549
+	ld a,(_band_first__30)
+	ld xbc,_band_bg_end__30
+	ld e,(_id_buf__30)
 	extz de
 	exts xde
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jp z,L4092
-L4093:
+	jp z,L4548
+L4549:
 	ld a,(xsp+10)
-	ld xbc,_band_pitch__28
-	ld e,(_id_buf__28)
+	ld xbc,_band_pitch__30
+	ld e,(_id_buf__30)
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-	ld a,(_band_first__28)
-	ld xbc,_band_bg_end__28
-	ld e,(_id_buf__28)
+	ld a,(_band_first__30)
+	ld xbc,_band_bg_end__30
+	ld e,(_id_buf__30)
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
 	ld wa,(xsp+16)
-	ld xbc,_band_mid__28
-	ld e,(_id_buf__28)
+	ld xbc,_band_mid__30
+	ld e,(_id_buf__30)
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
 	ld wa,(xsp+16)
-	ld xbc,_band_tree__28
-	ld e,(_id_buf__28)
+	ld xbc,_band_tree__30
+	ld e,(_id_buf__30)
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
 	ld iy,0
-	jr L4097
-L4094:
+	jr L4553
+L4550:
 	push xwa
 	push xix
 	push xiy
-	call _sky_is_tall_course__28
+	call _sky_is_tall_course__30
 	ld xbc,xwa
 	pop xiy
 	pop xix
 	pop xwa
 	cp c,0
-	jr z,L4098
+	jr z,L4554
 	ld wa,0
-	jr L4099
-L4098:
+	jr L4555
+L4554:
 	ld wa,(xsp+10)
 	neg wa
-L4099:
+L4555:
 	ld (xsp+18),wa
 	ld wa,iy
 	add wa,(xsp+18)
 	cp wa,0
-	jr ge,L4100
+	jr ge,L4556
 	ld wa,iy
 	neg wa
 	ld (xsp+18),wa
-L4100:
+L4556:
 	ld wa,(xsp+16)
 	ld c,(xsp+18)
 	extz bc
 	sll 8,bc
 	or wa,bc
-	ld xbc,(_id_xy__28)
+	ld xbc,(_id_xy__30)
 	ld de,iy
 	extz xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4096:
+L4552:
 	inc 1,iy
-L4097:
+L4553:
 	ld wa,iy
-	ld c,(_band_first__28)
+	ld c,(_band_first__30)
 	extz bc
 	cp wa,bc
-	jr ult,L4094
-L4095:
-L4092:
+	jr ult,L4550
+L4551:
+L4548:
 	ld wa,(xsp+16)
 	ld (xsp+8),wa
-L4091:
-L4002:
+L4547:
+L4458:
 	lda xsp,(xsp+82)
 	pop xiz
 	ret
 
 ; function id_road_ready
 _id_road_ready:
-	ld xwa,(_id_xy__28)
-	ld (_id_xy_done__28),xwa
-	ld xwa,(_id_bandcol__28)
-	ld (_id_bandcol_done__28),xwa
-L4102:
+	ld xwa,(_id_xy__30)
+	ld (_id_xy_done__30),xwa
+	ld xwa,(_id_bandcol__30)
+	ld (_id_bandcol_done__30),xwa
+L4558:
 	ret
 
 ; function id_road_pan
 _id_road_pan:
 	ld wa,(xsp+4)
-	ld (_pan_head__28),wa
+	ld (_pan_head__30),wa
 	ld wa,(xsp+8)
-	ld (_pan_lat__28),wa
-	ldb (_pan_fine__28),1
-L4104:
+	ld (_pan_lat__30),wa
+	ldb (_pan_fine__30),1
+L4560:
 	ret
 
 ; function id_road_begin
 _id_road_begin:
-	ld xwa,(_id_xy_live__28)
-	cp xwa,_id_xy_a__28
-	jr nz,L4111
-	ld xwa,_id_xy_b__28
-	ld (_id_xy__28),xwa
-	ld xwa,_id_bandcol_b__28
-	ld (_id_bandcol__28),xwa
-	jr L4112
-L4111:
-	ld xwa,_id_xy_a__28
-	ld (_id_xy__28),xwa
-	ld xwa,_id_bandcol_a__28
-	ld (_id_bandcol__28),xwa
-L4112:
-	ld xbc,(_id_xy__28)
-	cp xbc,_id_xy_a__28
-	jr nz,L4113
+	ld xwa,(_id_xy_live__30)
+	cp xwa,_id_xy_a__30
+	jr nz,L4567
+	ld xwa,_id_xy_b__30
+	ld (_id_xy__30),xwa
+	ld xwa,_id_bandcol_b__30
+	ld (_id_bandcol__30),xwa
+	jr L4568
+L4567:
+	ld xwa,_id_xy_a__30
+	ld (_id_xy__30),xwa
+	ld xwa,_id_bandcol_a__30
+	ld (_id_bandcol__30),xwa
+L4568:
+	ld xbc,(_id_xy__30)
+	cp xbc,_id_xy_a__30
+	jr nz,L4569
 	ld wa,0
-	jr L4114
-L4113:
+	jr L4570
+L4569:
 	ld wa,1
-L4114:
-	ld (_id_buf__28),a
-L4110:
+L4570:
+	ld (_id_buf__30),a
+L4566:
 	ret
 
 ; function id_road_frame
@@ -20782,10 +23272,10 @@ _id_road_frame:
 	call _id_road_begin
 	pop xix
 	ld izl,0
-	jr L4124
-L4121:
+	jr L4580
+L4577:
 	ld wa,ix
-	ld xbc,_id_w_curve__28
+	ld xbc,_id_w_curve__30
 	ld e,izl
 	extz de
 	exts xde
@@ -20794,55 +23284,55 @@ L4121:
 	extz bc
 	mul xwa,bc
 	sra 8,wa
-	ld xbc,_id_curve_dx__28
+	ld xbc,_id_curve_dx__30
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4123:
+L4579:
 	inc 1,izl
-L4124:
+L4580:
 	ld a,izl
-	cp a,(_road_lines__28)
-	jr ult,L4121
-L4122:
+	cp a,(_road_lines__30)
+	jr ult,L4577
+L4578:
 	push xix
 	ld wa,(xsp+22)
 	push xwa
 	ld wa,(xsp+18)
 	push xwa
-	call _id_road_write__28
+	call _id_road_write__30
 	lda xsp,(xsp+8)
 	pop xix
 	push xix
 	call _id_road_ready
 	pop xix
-L4120:
+L4576:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
 
 ; function id_road_ahead
 _id_road_ahead:
-	ld xwa,_id_ahead__28
-	jr L4126
-L4126:
+	ld xwa,_id_ahead__30
+	jr L4582
+L4582:
 	ret
 
 ; function id_road_lines
 _id_road_lines:
-	ld a,(_road_lines__28)
-	jr L4128
-L4128:
+	ld a,(_road_lines__30)
+	jr L4584
+L4584:
 	ret
 
 ; function id_road_frame_ahead
 _id_road_frame_ahead:
 	push xiz
 	lda xsp,(xsp-18)
-	ld a,(_road_lines__28)
+	ld a,(_road_lines__30)
 	ld izl,a
 	ld wa,0
 	ld (xsp+2),wa
@@ -20851,7 +23341,7 @@ _id_road_frame_ahead:
 	call _id_road_begin
 	ld a,izl
 	cp a,0
-	jr z,L4132
+	jr z,L4588
 	ld xwa,(xsp+30)
 	ld c,izl
 	extz bc
@@ -20859,14 +23349,14 @@ _id_road_frame_ahead:
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+6),xwa
-	ld xwa,_id_curve_dx__28
+	ld xwa,_id_curve_dx__30
 	ld c,izl
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+10),xwa
-	ld wa,(_id_curve_cm__28)
+	ld wa,(_id_curve_cm__30)
 	ld (xsp+14),wa
 	ld a,izl
 	extz wa
@@ -20875,56 +23365,56 @@ _id_road_frame_ahead:
 	push xwa
 	call _id_road_curve_asm
 	lda xsp,(xsp+4)
-L4132:
+L4588:
 	ld wa,(xsp+34)
 	push xwa
 	ld wa,(xsp+30)
 	push xwa
-	call _id_road_write__28
+	call _id_road_write__30
 	lda xsp,(xsp+8)
 	call _id_road_ready
-L4131:
+L4587:
 	lda xsp,(xsp+18)
 	pop xiz
 	ret
 
 ; function id_fill_hud_band
-_id_fill_hud_band__28:
+_id_fill_hud_band__30:
 	push xiz
 	lda xsp,(xsp-2)
 	ld iz,152
-	jr L4142
-L4139:
+	jr L4598
+L4595:
 	ld wa,2048
-	ld c,(_road_base_x__28)
+	ld c,(_road_base_x__30)
 	extz bc
 	or wa,bc
-	ld xbc,_id_xy_a__28
+	ld xbc,_id_xy_a__30
 	ld de,iz
 	extz xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	ld xwa,_id_xy_a__28
+	ld xwa,_id_xy_a__30
 	ld bc,iz
 	extz xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld xbc,_id_xy_b__28
+	ld xbc,_id_xy_b__30
 	ld de,iz
 	extz xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4141:
+L4597:
 	inc 1,iz
-L4142:
+L4598:
 	ld wa,iz
 	cp wa,152
-	jr ult,L4139
-L4140:
-L4138:
+	jr ult,L4595
+L4596:
+L4594:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -20937,24 +23427,24 @@ _id_road_sprite_sample:
 	ld izl,a
 	ld xiy,(xsp+14)
 	ld a,izl
-	cp a,(_road_top__28)
-	jr uge,L4148
-	ld a,(_road_top__28)
+	cp a,(_road_top__30)
+	jr uge,L4604
+	ld a,(_road_top__30)
 	ld izl,a
-	jr L4149
-L4148:
+	jr L4605
+L4604:
 	ld a,izl
-	cp a,(_road_bottom__28)
-	jr ule,L4150
-	ld a,(_road_bottom__28)
+	cp a,(_road_bottom__30)
+	jr ule,L4606
+	ld a,(_road_bottom__30)
 	ld izl,a
-L4150:
-L4149:
+L4606:
+L4605:
 	ld a,izl
-	sub a,(_road_top__28)
+	sub a,(_road_top__30)
 	ld ixl,a
 	ld wa,80
-	ld xbc,_id_shear__28
+	ld xbc,_id_shear__30
 	ld e,ixl
 	extz de
 	exts xde
@@ -20965,7 +23455,7 @@ L4149:
 	ld (xiy),wa
 	ld a,izl
 	extz wa
-	ld xbc,_id_sl__28
+	ld xbc,_id_sl__30
 	ld e,ixl
 	extz de
 	exts xde
@@ -20976,14 +23466,14 @@ L4149:
 	exts bc
 	add wa,bc
 	ld (xiy+2),wa
-	ld xwa,_id_half__28
+	ld xwa,_id_half__30
 	ld c,ixl
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
 	ld (xiy+4),a
-L4147:
+L4603:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -20995,24 +23485,24 @@ _id_road_centre_at:
 	ld a,(xsp+10)
 	ld izl,a
 	ld a,izl
-	cp a,(_road_top__28)
-	jr uge,L4156
-	ld a,(_road_top__28)
+	cp a,(_road_top__30)
+	jr uge,L4612
+	ld a,(_road_top__30)
 	ld izl,a
-	jr L4157
-L4156:
+	jr L4613
+L4612:
 	ld a,izl
-	cp a,(_road_bottom__28)
-	jr ule,L4158
-	ld a,(_road_bottom__28)
+	cp a,(_road_bottom__30)
+	jr ule,L4614
+	ld a,(_road_bottom__30)
 	ld izl,a
-L4158:
-L4157:
+L4614:
+L4613:
 	ld a,izl
-	sub a,(_road_top__28)
+	sub a,(_road_top__30)
 	ld (xsp+0),a
 	ld wa,80
-	ld xbc,_id_shear__28
+	ld xbc,_id_shear__30
 	ld e,(xsp+0)
 	extz de
 	exts xde
@@ -21020,8 +23510,8 @@ L4157:
 	add xbc,xde
 	ld bc,(xbc)
 	sub wa,bc
-	jr L4155
-L4155:
+	jr L4611
+L4611:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -21029,28 +23519,28 @@ L4155:
 ; function id_road_band_phase
 _id_road_band_phase:
 	ld wa,(xsp+4)
-	ld (_band_phase__28),wa
-L4160:
+	ld (_band_phase__30),wa
+L4616:
 	ret
 
 ; function id_road_join
 _id_road_join:
 	ld c,(xsp+4)
 	cp c,1
-	jr uge,L4165
+	jr uge,L4621
 	ld a,(xsp+4)
 	extz wa
-	jr L4166
-L4165:
+	jr L4622
+L4621:
 	ld wa,0
-L4166:
-	ld (_road_course__28),a
-	call _id_load_palettes__28
+L4622:
+	ld (_road_course__30),a
+	call _id_load_palettes__30
 	ld wa,0
 	push xwa
 	call _id_road_join_white
 	lda xsp,(xsp+4)
-L4164:
+L4620:
 	ret
 
 ; function id_road_join_white
@@ -21058,10 +23548,10 @@ _id_road_join_white:
 	push xiz
 	lda xsp,(xsp-10)
 	ld izl,0
-	jp L4176
-L4173:
-	ld xwa,_course_sol__28
-	ld c,(_road_course__28)
+	jp L4632
+L4629:
+	ld xwa,_course_sol__30
+	ld c,(_road_course__30)
 	extz bc
 	muls xbc,18
 	add xwa,xbc
@@ -21123,30 +23613,30 @@ L4173:
 	sll 4,bc
 	or wa,bc
 	or wa,ix
-	ld xbc,_band_col__28
+	ld xbc,_band_col__30
 	ld e,izl
 	extz de
 	exts xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4175:
+L4631:
 	inc 1,izl
-L4176:
+L4632:
 	ld a,izl
 	cp a,4
-	jp ult,L4173
-L4174:
+	jp ult,L4629
+L4630:
 	ld wa,65535
-	ld (_band_top__28+2),wa
-	ld (_band_top__28),wa
+	ld (_band_top__30+2),wa
+	ld (_band_top__30),wa
 	ld wa,65535
-	ld (_band_mid__28+2),wa
-	ld (_band_mid__28),wa
+	ld (_band_mid__30+2),wa
+	ld (_band_mid__30),wa
 	ld wa,65535
-	ld (_band_tree__28+2),wa
-	ld (_band_tree__28),wa
-L4172:
+	ld (_band_tree__30+2),wa
+	ld (_band_tree__30),wa
+L4628:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -21157,21 +23647,21 @@ _id_road_hill_ahead:
 	lda xsp,(xsp-12)
 	ld xwa,(xsp+20)
 	ld (xsp+0),xwa
-	ld xwa,_id_sl__28+64
+	ld xwa,_id_sl__30+64
 	ld xiy,xwa
-	ld a,(_grade_hi__28)
+	ld a,(_grade_hi__30)
 	ld (xsp+8),a
-	ld a,(_grade_lo__28)
+	ld a,(_grade_lo__30)
 	ld (xsp+9),a
-	ld a,(_road_lines__28)
+	ld a,(_road_lines__30)
 	ld ixl,a
 	ld xwa,(xsp+0)
 	cp xwa,xiy
-	jr nz,L4186
+	jr nz,L4642
 	ld ixl,0
-L4186:
-	jr L4189
-L4187:
+L4642:
+	jr L4645
+L4643:
 	ld xwa,(xsp+0)
 	inc 1,xwa
 	ld (xsp+0),xwa
@@ -21180,18 +23670,18 @@ L4187:
 	ld izl,a
 	ld a,izl
 	cp a,(xsp+8)
-	jr le,L4190
+	jr le,L4646
 	ld a,(xsp+8)
 	ld izl,a
-	jr L4191
-L4190:
+	jr L4647
+L4646:
 	ld a,izl
 	cp a,(xsp+9)
-	jr ge,L4192
+	jr ge,L4648
 	ld a,(xsp+9)
 	ld izl,a
-L4192:
-L4191:
+L4648:
+L4647:
 	ld a,izl
 	ld xbc,xiy
 	inc 1,xbc
@@ -21199,87 +23689,87 @@ L4191:
 	dec 1,xbc
 	ld (xbc),a
 	dec 1,ixl
-L4189:
+L4645:
 	ld a,ixl
 	cp a,0
-	jr nz,L4187
-L4188:
-	ld xwa,_id_sl__28+64
-	ld c,(_road_lines__28)
+	jr nz,L4643
+L4644:
+	ld xwa,_id_sl__30+64
+	ld c,(_road_lines__30)
 	extz bc
 	sub bc,1
 	extz xbc
 	add xwa,xbc
 	ld a,(xwa)
-	ld (_road_grade__28),a
-L4185:
+	ld (_road_grade__30),a
+L4641:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
 
 ; function id_road_grade_buf
 _id_road_grade_buf:
-	ld xwa,_id_sl__28+64
-	jr L4194
-L4194:
+	ld xwa,_id_sl__30+64
+	jr L4650
+L4650:
 	ret
 
 ; function id_road_band_first
 _id_road_band_first:
-	ld a,(_band_first__28)
-	jr L4196
-L4196:
+	ld a,(_band_first__30)
+	jr L4652
+L4652:
 	ret
 
 ; function id_road_visible_top
 _id_road_visible_top:
 	push xiz
 	lda xsp,(xsp-2)
-	ld c,(_band_first__28)
+	ld c,(_band_first__30)
 	cp c,244
-	jr uge,L4204
-	ld a,(_band_first__28)
+	jr uge,L4660
+	ld a,(_band_first__30)
 	add a,0
 	extz wa
-	jr L4205
-L4204:
-	ld a,(_band_first__28)
+	jr L4661
+L4660:
+	ld a,(_band_first__30)
 	extz wa
-L4205:
+L4661:
 	ld izl,a
 	ld a,izl
-	cp a,40
-	jr uge,L4206
-	ld izl,40
-L4206:
+	cp a,0
+	jr uge,L4662
+	ld izl,0
+L4662:
 	ld c,izl
-	cp c,(_road_bottom__28)
-	jr ule,L4207
-	ld a,(_road_bottom__28)
+	cp c,(_road_bottom__30)
+	jr ule,L4663
+	ld a,(_road_bottom__30)
 	extz wa
-	jr L4208
-L4207:
+	jr L4664
+L4663:
 	ld a,izl
 	extz wa
-L4208:
-	jr L4203
-L4203:
+L4664:
+	jr L4659
+L4659:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
 
 ; function id_road_grade_hi
 _id_road_grade_hi:
-	ld a,(_grade_hi__28)
-	jr L4210
-L4210:
+	ld a,(_grade_hi__30)
+	jr L4666
+L4666:
 	ret
 
 ; function id_road_grade_lo
 _id_road_grade_lo:
-	ld a,(_grade_lo__28)
-	jr L4212
-L4212:
+	ld a,(_grade_lo__30)
+	jr L4668
+L4668:
 	ret
 
 ; function id_road_set_hill
@@ -21289,39 +23779,39 @@ _id_road_set_hill:
 	ld a,(xsp+10)
 	ld ixl,a
 	ld a,ixl
-	cp a,(_grade_hi__28)
-	jr le,L4222
-	ld a,(_grade_hi__28)
+	cp a,(_grade_hi__30)
+	jr le,L4678
+	ld a,(_grade_hi__30)
 	ld ixl,a
-	jr L4223
-L4222:
+	jr L4679
+L4678:
 	ld a,ixl
-	cp a,(_grade_lo__28)
-	jr ge,L4224
-	ld a,(_grade_lo__28)
+	cp a,(_grade_lo__30)
+	jr ge,L4680
+	ld a,(_grade_lo__30)
 	ld ixl,a
-L4224:
-L4223:
+L4680:
+L4679:
 	ld a,ixl
-	ld (_road_grade__28),a
+	ld (_road_grade__30),a
 	ld izl,0
-	jr L4228
-L4225:
+	jr L4684
+L4681:
 	ld a,ixl
-	ld xbc,_id_sl__28+64
+	ld xbc,_id_sl__30+64
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L4227:
+L4683:
 	inc 1,izl
-L4228:
+L4684:
 	ld a,izl
-	cp a,(_road_lines__28)
-	jr ult,L4225
-L4226:
-L4221:
+	cp a,(_road_lines__30)
+	jr ult,L4681
+L4682:
+L4677:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -21333,32 +23823,32 @@ _id_road_line_shift:
 	ld a,(xsp+12)
 	ld ixl,a
 	ld a,ixl
-	cp a,(_road_top__28)
-	jr ult,L4235
+	cp a,(_road_top__30)
+	jr ult,L4691
 	ld a,ixl
-	cp a,(_road_bottom__28)
-	jr ule,L4234
-L4235:
+	cp a,(_road_bottom__30)
+	jr ule,L4690
+L4691:
 	ld wa,0
-	jr L4233
-L4234:
+	jr L4689
+L4690:
 	ld a,ixl
 	extz wa
-	ld c,(_road_top__28)
+	ld c,(_road_top__30)
 	extz bc
 	sub wa,bc
 	ld iz,wa
 	ld wa,iz
-	ld c,(_road_lines__28)
+	ld c,(_road_lines__30)
 	extz bc
 	cp wa,bc
-	jr lt,L4236
-	ld a,(_road_lines__28)
+	jr lt,L4692
+	ld a,(_road_lines__30)
 	extz wa
 	sub wa,1
 	ld iz,wa
-L4236:
-	ld xwa,_id_sl__28
+L4692:
+	ld xwa,_id_sl__30
 	ld bc,iz
 	exts xbc
 	add xwa,xbc
@@ -21368,8 +23858,8 @@ L4236:
 	ld a,iyl
 	ld c,ixl
 	sub a,c
-	jr L4233
-L4233:
+	jr L4689
+L4689:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -21378,8 +23868,8 @@ L4233:
 _id_road_car_lift:
 	push xiz
 	lda xsp,(xsp-2)
-	ld a,(_road_bottom__28)
-	sub a,(_car_stand__28)
+	ld a,(_road_bottom__30)
+	sub a,(_car_stand__30)
 	push xwa
 	call _id_road_line_shift
 	lda xsp,(xsp+4)
@@ -21388,19 +23878,19 @@ _id_road_car_lift:
 	ld iz,wa
 	ld wa,iz
 	cp wa,8
-	jr le,L4242
+	jr le,L4698
 	ld iz,8
-	jr L4243
-L4242:
+	jr L4699
+L4698:
 	ld wa,iz
 	cp wa,65531
-	jr ge,L4244
+	jr ge,L4700
 	ld iz,65531
-L4244:
-L4243:
+L4700:
+L4699:
 	ld a,izl
-	jr L4241
-L4241:
+	jr L4697
+L4697:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -21411,28 +23901,28 @@ _id_road_half_at:
 	ld a,(xsp+8)
 	ld izl,a
 	ld a,izl
-	cp a,(_road_top__28)
-	jr uge,L4250
-	ld a,(_road_top__28)
+	cp a,(_road_top__30)
+	jr uge,L4706
+	ld a,(_road_top__30)
 	ld izl,a
-	jr L4251
-L4250:
+	jr L4707
+L4706:
 	ld a,izl
-	cp a,(_road_bottom__28)
-	jr ule,L4252
-	ld a,(_road_bottom__28)
+	cp a,(_road_bottom__30)
+	jr ule,L4708
+	ld a,(_road_bottom__30)
 	ld izl,a
-L4252:
-L4251:
-	ld xwa,_id_half__28
+L4708:
+L4707:
+	ld xwa,_id_half__30
 	ld c,izl
-	sub c,(_road_top__28)
+	sub c,(_road_top__30)
 	extz bc
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
-	jr L4249
-L4249:
+	jr L4705
+L4705:
 	pop xiz
 	ret
 
@@ -21442,17 +23932,17 @@ _id_road_line_at_distance:
 	lda xsp,(xsp-4)
 	ld wa,0
 	ld izl,a
-	ld a,(_road_lines__28)
+	ld a,(_road_lines__30)
 	sub a,1
 	ld iyl,a
 	ld wa,(xsp+12)
-	cp wa,(_id_ahead__28)
-	jr ule,L4261
+	cp wa,(_id_ahead__30)
+	jr ule,L4717
 	ld wa,255
-	jr L4260
-L4261:
-	jr L4264
-L4262:
+	jr L4716
+L4717:
+	jr L4720
+L4718:
 	ld a,izl
 	extz wa
 	ld c,iyl
@@ -21461,7 +23951,7 @@ L4262:
 	add wa,1
 	srl 1,wa
 	ld ixl,a
-	ld xwa,_id_ahead__28
+	ld xwa,_id_ahead__30
 	ld c,ixl
 	extz bc
 	exts xbc
@@ -21469,24 +23959,24 @@ L4262:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,(xsp+12)
-	jr ult,L4265
+	jr ult,L4721
 	ld a,ixl
 	ld izl,a
-	jr L4266
-L4265:
+	jr L4722
+L4721:
 	ld a,ixl
 	sub a,1
 	ld iyl,a
-L4266:
-L4264:
+L4722:
+L4720:
 	ld a,izl
 	cp a,iyl
-	jr ult,L4262
-L4263:
-	ld a,(_road_top__28)
+	jr ult,L4718
+L4719:
+	ld a,(_road_top__30)
 	add a,izl
-	jr L4260
-L4260:
+	jr L4716
+L4716:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -21497,106 +23987,106 @@ _id_road_distance_at_line:
 	ld a,(xsp+8)
 	ld izl,a
 	ld a,izl
-	cp a,(_road_top__28)
-	jr uge,L4272
-	ld a,(_road_top__28)
+	cp a,(_road_top__30)
+	jr uge,L4728
+	ld a,(_road_top__30)
 	ld izl,a
-	jr L4273
-L4272:
+	jr L4729
+L4728:
 	ld a,izl
-	cp a,(_road_bottom__28)
-	jr ule,L4274
-	ld a,(_road_bottom__28)
+	cp a,(_road_bottom__30)
+	jr ule,L4730
+	ld a,(_road_bottom__30)
 	ld izl,a
-L4274:
-L4273:
-	ld xwa,_id_ahead__28
+L4730:
+L4729:
+	ld xwa,_id_ahead__30
 	ld c,izl
-	sub c,(_road_top__28)
+	sub c,(_road_top__30)
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	jr L4271
-L4271:
+	jr L4727
+L4727:
 	pop xiz
 	ret
 
 ; function id_scenery_char_count
 _id_scenery_char_count:
 	ld wa,0
-	jr L4276
-L4276:
+	jr L4732
+L4732:
 	ret
 
 ; function id_scenery_init
 _id_scenery_init:
-	ldb (_scn_phase__29),0
-	ldw (_scn_frac__29),0
-	ldb (_scn_passed__29),0
-	ldb (_scn_mode__29),0
+	ldb (_scn_phase__31),0
+	ldw (_scn_frac__31),0
+	ldb (_scn_passed__31),0
+	ldb (_scn_mode__31),0
 	ld a,64
 	push xwa
 	ld a,50
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-L4278:
+L4734:
 	ret
 
 ; function scenery_mode
 _scenery_mode:
 	ld a,(xsp+4)
-	ld (_scn_mode__29),a
-L4280:
+	ld (_scn_mode__31),a
+L4736:
 	ret
 
 ; function id_scenery_passed
 _id_scenery_passed:
-	ld a,(_scn_passed__29)
-	jr L4282
-L4282:
+	ld a,(_scn_passed__31)
+	jr L4738
+L4738:
 	ret
 
 ; function kind_of
-_kind_of__29:
-	ld a,(_scn_mode__29)
+_kind_of__31:
+	ld a,(_scn_mode__31)
 	cp a,5
-	jr nz,L4291
+	jr nz,L4747
 	ld wa,14
-	jr L4290
-L4291:
-	ld a,(_scn_mode__29)
+	jr L4746
+L4747:
+	ld a,(_scn_mode__31)
 	cp a,1
-	jr nz,L4292
+	jr nz,L4748
 	ld wa,12
-	jr L4290
-L4292:
-	ld a,(_scn_mode__29)
+	jr L4746
+L4748:
+	ld a,(_scn_mode__31)
 	cp a,3
-	jr ult,L4293
+	jr ult,L4749
 	ld wa,11
-	jr L4290
-L4293:
-	ld a,(_scn_mode__29)
+	jr L4746
+L4749:
+	ld a,(_scn_mode__31)
 	cp a,2
-	jr nz,L4294
+	jr nz,L4750
 	ld wa,13
-	jr L4290
-L4294:
+	jr L4746
+L4750:
 	ld c,(xsp+4)
 	cp c,0
-	jr z,L4295
+	jr z,L4751
 	call _theme_obj_kind_right
 	extz wa
-	jr L4296
-L4295:
+	jr L4752
+L4751:
 	call _theme_obj_kind_left
 	extz wa
-L4296:
-	jr L4290
-L4290:
+L4752:
+	jr L4746
+L4746:
 	ret
 
 ; function id_scenery_hit
@@ -21626,31 +24116,31 @@ _id_scenery_hit:
 	add wa,bc
 	ld (xsp+4),wa
 	ld izl,0
-	jp L4313
-L4310:
-	ld a,(_scn_passed__29)
+	jp L4769
+L4766:
+	ld a,(_scn_passed__31)
 	extz wa
 	ld bc,1
 	ld e,izl
 	cp e,0
-	jr z,L4316
-L4315:
+	jr z,L4772
+L4771:
 	sll 1,bc
-	djnz e,L4315
-L4316:
+	djnz e,L4771
+L4772:
 	extz bc
 	and wa,bc
 	cp wa,0
-	jr nz,L4314
-	jp L4312
-L4314:
+	jr nz,L4770
+	jp L4768
+L4770:
 	ld xwa,_gfx_obj_frames
 	push xwa
 	push xix
 	push xiy
 	ld a,izl
 	push xwa
-	call _kind_of__29
+	call _kind_of__31
 	lda xsp,(xsp+4)
 	ld xbc,xwa
 	pop xiy
@@ -21681,66 +24171,66 @@ L4314:
 	ld (xsp+14),wa
 	ld a,izl
 	cp a,0
-	jr nz,L4317
+	jr nz,L4773
 	ld wa,iy
 	neg wa
 	add wa,12
 	cp wa,(xsp+12)
-	jr lt,L4318
+	jr lt,L4774
 	ld wa,iy
 	neg wa
 	sub wa,12
 	cp wa,(xsp+14)
-	jr gt,L4318
+	jr gt,L4774
 	ld wa,1
-	jr L4309
-L4318:
-	jr L4319
-L4317:
+	jr L4765
+L4774:
+	jr L4775
+L4773:
 	ld wa,iy
 	add wa,12
 	cp wa,(xsp+12)
-	jr lt,L4320
+	jr lt,L4776
 	ld wa,iy
 	sub wa,12
 	cp wa,(xsp+14)
-	jr gt,L4320
+	jr gt,L4776
 	ld wa,1
-	jr L4309
-L4320:
-L4319:
-L4312:
+	jr L4765
+L4776:
+L4775:
+L4768:
 	inc 1,izl
-L4313:
+L4769:
 	ld a,izl
 	cp a,2
-	jp ult,L4310
-L4311:
+	jp ult,L4766
+L4767:
 	ld wa,0
-	jr L4309
-L4309:
+	jr L4765
+L4765:
 	lda xsp,(xsp+16)
 	pop xiz
 	ret
 
 ; function obj_phase
-_obj_phase__29:
-	ld a,(_scn_phase__29)
+_obj_phase__31:
+	ld a,(_scn_phase__31)
 	extz wa
 	ld c,(xsp+4)
 	extz bc
 	mul xbc,43
 	extz bc
 	add wa,bc
-	jr L4322
-L4322:
+	jr L4778
+L4778:
 	ret
 
 ; function id_scenery_advance
 _id_scenery_advance:
 	push xiz
 	lda xsp,(xsp-6)
-	ld wa,(_scn_frac__29)
+	ld wa,(_scn_frac__31)
 	ld c,(xsp+14)
 	extz bc
 	mul xbc,158
@@ -21748,54 +24238,54 @@ _id_scenery_advance:
 	ld (xsp+0),wa
 	ld wa,(xsp+0)
 	and wa,2047
-	ld (_scn_frac__29),wa
+	ld (_scn_frac__31),wa
 	ld wa,(xsp+0)
 	srl 11,wa
 	ld (xsp+0),wa
-	ld a,(_scn_phase__29)
+	ld a,(_scn_phase__31)
 	ld iyl,a
-	ld a,(_scn_phase__29)
+	ld a,(_scn_phase__31)
 	ld c,(xsp+0)
 	add a,c
-	ld (_scn_phase__29),a
-	ldb (_scn_passed__29),0
+	ld (_scn_phase__31),a
+	ldb (_scn_passed__31),0
 	ld izl,0
-	jr L4335
-L4332:
+	jr L4791
+L4788:
 	ld a,izl
 	extz wa
 	mul xwa,43
 	ld ixl,a
-	ld a,(_scn_phase__29)
+	ld a,(_scn_phase__31)
 	add a,ixl
 	ld c,iyl
 	add c,ixl
 	cp a,c
-	jr uge,L4336
-	ld a,(_scn_passed__29)
+	jr uge,L4792
+	ld a,(_scn_passed__31)
 	extz wa
 	ld e,izl
 	extz de
 	and de,1
 	cp de,0
-	jr z,L4337
+	jr z,L4793
 	ld bc,2
-	jr L4338
-L4337:
+	jr L4794
+L4793:
 	ld bc,1
-L4338:
+L4794:
 	extz bc
 	or wa,bc
-	ld (_scn_passed__29),a
-L4336:
-L4334:
+	ld (_scn_passed__31),a
+L4792:
+L4790:
 	inc 1,izl
-L4335:
+L4791:
 	ld a,izl
 	cp a,6
-	jr ult,L4332
-L4333:
-L4331:
+	jr ult,L4788
+L4789:
+L4787:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -21807,7 +24297,7 @@ _id_scenery_frame:
 	call _id_scenery_advance
 	lda xsp,(xsp+4)
 	call _id_scenery_draw
-L4340:
+L4796:
 	ret
 
 ; function id_scenery_draw
@@ -21821,12 +24311,12 @@ _id_scenery_draw:
 	ld xbc,xwa
 	pop xwa
 	cp c,0
-	jr z,L4390
+	jr z,L4848
 	ld wa,58
-	jr L4391
-L4390:
+	jr L4849
+L4848:
 	ld wa,64
-L4391:
+L4849:
 	ld (xsp+3),a
 	call _id_road_top
 	ld (xsp+4),a
@@ -21843,34 +24333,34 @@ L4391:
 	ld (xsp+10),wa
 	ldb (xsp+1),0
 	ldb (xsp+0),1
-	jr L4395
-L4392:
+	jr L4853
+L4850:
 	ld a,(xsp+0)
 	push xwa
-	call _obj_phase__29
+	call _obj_phase__31
 	lda xsp,(xsp+4)
 	push xwa
 	ld a,(xsp+5)
 	push xwa
-	call _obj_phase__29
+	call _obj_phase__31
 	lda xsp,(xsp+4)
 	ld xbc,xwa
 	pop xwa
 	cp a,c
-	jr ule,L4396
+	jr ule,L4854
 	ld a,(xsp+0)
 	ld (xsp+1),a
-L4396:
-L4394:
+L4854:
+L4852:
 	incb 1,(xsp+0)
-L4395:
+L4853:
 	ld a,(xsp+0)
 	cp a,6
-	jr ult,L4392
-L4393:
+	jr ult,L4850
+L4851:
 	ldb (xsp+0),0
-	jp L4400
-L4397:
+	jp L4858
+L4855:
 	ld a,(xsp+1)
 	extz wa
 	add wa,6
@@ -21883,7 +24373,7 @@ L4397:
 	ld (xsp+12),a
 	ld a,(xsp+12)
 	push xwa
-	call _obj_phase__29
+	call _obj_phase__31
 	lda xsp,(xsp+4)
 	ld (xsp+13),a
 	ld a,(xsp+13)
@@ -21903,112 +24393,112 @@ L4397:
 	ld iz,wa
 	ld wa,iz
 	cp wa,(xsp+10)
-	jr ule,L4401
+	jr ule,L4859
 	ld wa,(xsp+10)
 	ld iz,wa
-L4401:
+L4859:
 	ld a,(xsp+4)
 	add a,izl
 	ld (xsp+18),a
 	ld wa,iz
 	cp wa,6
-	jr uge,L4402
+	jr uge,L4860
 	ldb (xsp+17),4
-	jr L4403
-L4402:
+	jr L4861
+L4860:
 	ld wa,iz
 	cp wa,10
-	jr uge,L4404
+	jr uge,L4862
 	ldb (xsp+17),3
-	jr L4405
-L4404:
+	jr L4863
+L4862:
 	ld wa,iz
 	cp wa,15
-	jr uge,L4406
+	jr uge,L4864
 	ldb (xsp+17),2
-	jr L4407
-L4406:
+	jr L4865
+L4864:
 	ld wa,iz
 	cp wa,22
-	jr uge,L4408
+	jr uge,L4866
 	ldb (xsp+17),1
-	jr L4409
-L4408:
+	jr L4867
+L4866:
 	ldb (xsp+17),0
-L4409:
-L4407:
-L4405:
-L4403:
+L4867:
+L4865:
+L4863:
+L4861:
 	ld c,(xsp+12)
 	extz bc
 	and bc,1
 	cp bc,0
-	jr z,L4410
+	jr z,L4868
 	ld wa,1
-	jr L4411
-L4410:
+	jr L4869
+L4868:
 	ld wa,0
-L4411:
+L4869:
 	ld (xsp+14),a
-	ld a,(_scn_mode__29)
+	ld a,(_scn_mode__31)
 	cp a,5
-	jr nz,L4412
+	jr nz,L4870
 	ldb (xsp+15),14
 	ldb (xsp+16),6
-	jr L4413
-L4412:
-	ld a,(_scn_mode__29)
+	jr L4871
+L4870:
+	ld a,(_scn_mode__31)
 	cp a,1
-	jr nz,L4414
+	jr nz,L4872
 	ldb (xsp+15),12
 	ldb (xsp+16),4
-	jr L4415
-L4414:
-	ld a,(_scn_mode__29)
+	jr L4873
+L4872:
+	ld a,(_scn_mode__31)
 	cp a,3
-	jr ult,L4416
+	jr ult,L4874
 	ldb (xsp+15),11
 	ldb (xsp+16),9
-	jr L4417
-L4416:
-	ld a,(_scn_mode__29)
+	jr L4875
+L4874:
+	ld a,(_scn_mode__31)
 	cp a,2
-	jr nz,L4418
+	jr nz,L4876
 	ldb (xsp+15),13
 	ldb (xsp+16),10
-	jr L4419
-L4418:
+	jr L4877
+L4876:
 	ld a,(xsp+14)
 	cp a,0
-	jr z,L4420
+	jr z,L4878
 	call _theme_obj_kind_right
 	ld (xsp+15),a
 	ldb (xsp+16),2
-	jr L4421
-L4420:
+	jr L4879
+L4878:
 	call _theme_obj_kind_left
 	ld (xsp+15),a
 	ldb (xsp+16),1
-L4421:
-L4419:
-L4417:
-L4415:
-L4413:
+L4879:
+L4877:
+L4875:
+L4873:
+L4871:
 	ld c,(xsp+14)
 	cp c,0
-	jr z,L4422
+	jr z,L4880
 	ld c,(xsp+15)
 	cp c,11
-	jr ult,L4422
+	jr ult,L4880
 	ld wa,1
-	jr L4423
-L4422:
+	jr L4881
+L4880:
 	ld wa,0
-L4423:
+L4881:
 	ld (xsp+20),a
-	ld a,(_scn_mode__29)
+	ld a,(_scn_mode__31)
 	cp a,5
-	jr nz,L4424
+	jr nz,L4882
 	ld a,(_g_vb_counter)
 	extz wa
 	sra 3,wa
@@ -22017,21 +24507,21 @@ L4423:
 	add wa,bc
 	and wa,1
 	ld (xsp+20),a
-	jr L4425
-L4424:
-	ld a,(_scn_mode__29)
+	jr L4883
+L4882:
+	ld a,(_scn_mode__31)
 	cp a,3
-	jr nz,L4426
+	jr nz,L4884
 	ldb (xsp+20),0
-	jr L4427
-L4426:
-	ld a,(_scn_mode__29)
+	jr L4885
+L4884:
+	ld a,(_scn_mode__31)
 	cp a,4
-	jr nz,L4428
+	jr nz,L4886
 	ldb (xsp+20),1
-L4428:
-L4427:
-L4425:
+L4886:
+L4885:
+L4883:
 	ld xwa,_gfx_obj_frames
 	ld c,(xsp+15)
 	extz bc
@@ -22055,15 +24545,15 @@ L4425:
 	ld (xsp+38),wa
 	ld wa,(xsp+38)
 	cp wa,(xsp+8)
-	jr ge,L4429
-	jp L4399
-L4429:
+	jr ge,L4887
+	jp L4857
+L4887:
 	ld wa,(xsp+38)
 	cp wa,(xsp+6)
-	jr le,L4430
+	jr le,L4888
 	ld wa,(xsp+6)
 	ld (xsp+38),wa
-L4430:
+L4888:
 	ld a,(xsp+38)
 	ld (xsp+19),a
 	ld a,(xsp+32)
@@ -22084,12 +24574,12 @@ L4430:
 	ld (xsp+42),wa
 	ld a,(xsp+14)
 	cp a,0
-	jr z,L4431
+	jr z,L4889
 	ld wa,(xsp+40)
 	add wa,(xsp+42)
 	ld (xsp+26),wa
-	jr L4432
-L4431:
+	jr L4890
+L4889:
 	ld wa,(xsp+40)
 	sub wa,(xsp+42)
 	ld xbc,(xsp+34)
@@ -22098,16 +24588,16 @@ L4431:
 	sub wa,bc
 	add wa,1
 	ld (xsp+26),wa
-L4432:
+L4890:
 	ld wa,(xsp+26)
 	cp wa,65504
-	jr lt,L4434
+	jr lt,L4892
 	ld wa,(xsp+26)
 	cp wa,168
-	jr le,L4433
-L4434:
-	jp L4399
-L4433:
+	jr le,L4891
+L4892:
+	jp L4857
+L4891:
 	ld xwa,_gfx_obj_cells
 	ld xbc,(xsp+34)
 	ld bc,(xbc+4)
@@ -22138,14 +24628,24 @@ L4433:
 	ld (xsp+52),a
 	ld c,(xsp+20)
 	cp c,0
-	jr z,L4435
+	jr z,L4893
 	ld wa,128
-	jr L4436
-L4435:
+	jr L4894
+L4893:
 	ld wa,0
-L4436:
+L4894:
+	ld e,(_bridge_line)
+	cp e,0
+	jr z,L4895
+	ld e,(xsp+19)
+	cp e,(_bridge_line)
+	jr uge,L4895
+	ld bc,16
+	jr L4896
+L4895:
 	ld c,(_id_spr_priority)
 	extz bc
+L4896:
 	or wa,bc
 	ld (xsp+53),a
 	ld a,(xsp+16)
@@ -22163,20 +24663,20 @@ L4436:
 	lda xsp,(xsp+4)
 	ld a,(xsp+55)
 	ld (xsp+2),a
-L4399:
+L4857:
 	incb 1,(xsp+0)
-L4400:
+L4858:
 	ld a,(xsp+0)
 	cp a,6
-	jp ult,L4397
-L4398:
+	jp ult,L4855
+L4856:
 	ld a,(xsp+3)
 	push xwa
 	ld a,(xsp+6)
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-L4389:
+L4847:
 	lda xsp,(xsp+60)
 	pop xiz
 	ret
@@ -22184,50 +24684,50 @@ L4389:
 ; function theme_init_tiles
 _theme_init_tiles:
 	ld wa,(xsp+4)
-	ld (_pano_base__30),wa
+	ld (_pano_base__32),wa
 	ld wa,(xsp+8)
-	ld (_obj_base__30),wa
+	ld (_obj_base__32),wa
 	ld wa,(xsp+12)
-	ld (_obj_end__30),wa
-L4438:
+	ld (_obj_end__32),wa
+L4898:
 	ret
 
 ; function theme_obj_map
 _theme_obj_map:
-	ld xwa,_objmap__30
-	jr L4440
-L4440:
+	ld xwa,_objmap__32
+	jr L4900
+L4900:
 	ret
 
 ; function theme_obj_tile
 _theme_obj_tile:
-	ld xwa,_objmap__30
+	ld xwa,_objmap__32
 	ld c,(xsp+4)
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	jr L4442
-L4442:
+	jr L4902
+L4902:
 	ret
 
 ; function theme_obj_kind_left
 _theme_obj_kind_left:
-	ld a,(_kind_l__30)
-	jr L4444
-L4444:
+	ld a,(_kind_l__32)
+	jr L4904
+L4904:
 	ret
 
 ; function theme_obj_kind_right
 _theme_obj_kind_right:
-	ld a,(_kind_r__30)
-	jr L4446
-L4446:
+	ld a,(_kind_r__32)
+	jr L4906
+L4906:
 	ret
 
 ; function load_tile
-_load_tile__30:
+_load_tile__32:
 	push xiz
 	lda xsp,(xsp-6)
 	ld xiy,(xsp+18)
@@ -22238,8 +24738,8 @@ _load_tile__30:
 	add xwa,xbc
 	ld xix,xwa
 	ld izl,0
-	jr L4456
-L4453:
+	jr L4916
+L4913:
 	ld xwa,xiy
 	ld c,izl
 	extz bc
@@ -22254,78 +24754,78 @@ L4453:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4455:
+L4915:
 	inc 1,izl
-L4456:
+L4916:
 	ld a,izl
 	cp a,8
-	jr ult,L4453
-L4454:
-L4452:
+	jr ult,L4913
+L4914:
+L4912:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
 
 ; function alloc_slot
-_alloc_slot__30:
+_alloc_slot__32:
 	push xiz
 	lda xsp,(xsp-4)
-	ld wa,(_next_slot__30)
+	ld wa,(_next_slot__32)
 	ld iz,wa
-	ld wa,(_pano_base__30)
-	add wa,114
+	ld wa,(_pano_base__32)
+	add wa,99
 	ld (xsp+2),wa
 	ld wa,iz
 	cp wa,32
-	jr ult,L4464
+	jr ult,L4924
 	ld wa,iz
 	cp wa,101
-	jr uge,L4464
+	jr uge,L4924
 	ld iz,101
-	jr L4465
-L4464:
+	jr L4925
+L4924:
 	ld wa,iz
 	cp wa,125
-	jr ult,L4466
+	jr ult,L4926
 	ld wa,iz
-	cp wa,(_pano_base__30)
-	jr uge,L4466
-	ld wa,(_obj_base__30)
+	cp wa,(_pano_base__32)
+	jr uge,L4926
+	ld wa,(_obj_base__32)
 	ld iz,wa
-L4466:
-L4465:
+L4926:
+L4925:
 	ld wa,iz
-	cp wa,(_obj_end__30)
-	jr ult,L4467
-	ld wa,(_pano_end__30)
+	cp wa,(_obj_end__32)
+	jr ult,L4927
+	ld wa,(_pano_end__32)
 	ld iz,wa
-L4467:
+L4927:
 	ld wa,iz
 	cp wa,(xsp+2)
-	jr ult,L4468
+	jr ult,L4928
 	ld wa,iz
-	cp wa,(_obj_base__30)
-	jr uge,L4468
+	cp wa,(_obj_base__32)
+	jr uge,L4928
 	ld wa,0
-	jr L4463
-L4468:
+	jr L4923
+L4928:
 	ld wa,iz
 	add wa,1
-	ld (_next_slot__30),wa
+	ld (_next_slot__32),wa
 	ld wa,iz
-	jr L4463
-L4463:
+	jr L4923
+L4923:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
 
 ; function load_kind
-_load_kind__30:
+_load_kind__32:
 	push xiz
 	lda xsp,(xsp-10)
 	ldb (xsp+0),0
-	jp L4484
-L4481:
+	jp L4944
+L4941:
 	ld xwa,_gfx_obj_frames
 	ld c,(xsp+18)
 	extz bc
@@ -22340,8 +24840,8 @@ L4481:
 	lda xwa,(xwa)
 	ld (xsp+2),xwa
 	ld izl,0
-	jp L4488
-L4485:
+	jp L4948
+L4945:
 	ld xwa,_gfx_obj_cells
 	ld xbc,(xsp+2)
 	ld bc,(xbc+4)
@@ -22352,7 +24852,7 @@ L4485:
 	add xwa,xbc
 	ld a,(xwa+2)
 	ld (xsp+7),a
-	ld xwa,_objmap__30
+	ld xwa,_objmap__32
 	ld c,(xsp+7)
 	extz bc
 	exts xbc
@@ -22360,11 +24860,11 @@ L4485:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,65535
-	jr nz,L4489
-	call _alloc_slot__30
+	jr nz,L4949
+	call _alloc_slot__32
 	ld (xsp+8),wa
 	ld wa,(xsp+8)
-	ld xbc,_objmap__30
+	ld xbc,_objmap__32
 	ld e,(xsp+7)
 	extz de
 	exts xde
@@ -22373,7 +24873,7 @@ L4485:
 	ld (xbc),wa
 	ld wa,(xsp+8)
 	cp wa,0
-	jr z,L4490
+	jr z,L4950
 	ld xwa,_gfx_obj_tiles
 	ld c,(xsp+7)
 	extz bc
@@ -22385,33 +24885,33 @@ L4485:
 	push xwa
 	ld wa,(xsp+12)
 	push xwa
-	call _load_tile__30
+	call _load_tile__32
 	lda xsp,(xsp+8)
-L4490:
-L4489:
-L4487:
+L4950:
+L4949:
+L4947:
 	inc 1,izl
-L4488:
+L4948:
 	ld a,izl
 	ld xbc,(xsp+2)
 	ld c,(xbc+2)
 	cp a,c
-	jp ult,L4485
-L4486:
-L4483:
+	jp ult,L4945
+L4946:
+L4943:
 	incb 1,(xsp+0)
-L4484:
+L4944:
 	ld a,(xsp+0)
 	cp a,5
-	jp ult,L4481
-L4482:
-L4480:
+	jp ult,L4941
+L4942:
+L4940:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
 
 ; function set_spr_pal
-_set_spr_pal__30:
+_set_spr_pal__32:
 	push xiz
 	lda xsp,(xsp-6)
 	ld a,(xsp+22)
@@ -22426,8 +24926,8 @@ _set_spr_pal__30:
 	lda xwa,(xwa)
 	ld xix,xwa
 	ld izl,0
-	jr L4500
-L4497:
+	jr L4960
+L4957:
 	ld xwa,xix
 	ld c,izl
 	extz bc
@@ -22435,7 +24935,7 @@ L4497:
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld xbc,_cur_spr__30
+	ld xbc,_cur_spr__32
 	ld e,iyl
 	extz de
 	exts xde
@@ -22448,13 +24948,13 @@ L4497:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4499:
+L4959:
 	inc 1,izl
-L4500:
+L4960:
 	ld a,izl
 	cp a,4
-	jr ult,L4497
-L4498:
+	jr ult,L4957
+L4958:
 	push xix
 	push xiy
 	ld wa,(xix+6)
@@ -22473,7 +24973,7 @@ L4498:
 	lda xsp,(xsp+24)
 	pop xiy
 	pop xix
-L4496:
+L4956:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -22503,8 +25003,8 @@ _theme_apply:
 	lda xwa,(xwa)
 	ld xiy,xwa
 	ld iz,0
-	jr L4539
-L4536:
+	jr L4999
+L4996:
 	push xix
 	push xiy
 	ld xwa,(xiy)
@@ -22515,48 +25015,48 @@ L4536:
 	add xwa,xbc
 	lda xwa,(xwa)
 	push xwa
-	ld wa,(_pano_base__30)
+	ld wa,(_pano_base__32)
 	add wa,iz
 	push xwa
-	call _load_tile__30
+	call _load_tile__32
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L4538:
+L4998:
 	inc 1,iz
-L4539:
+L4999:
 	ld wa,iz
 	cp wa,(xiy+4)
-	jr ult,L4536
-L4537:
+	jr ult,L4996
+L4997:
 	ld iz,0
-	jr L4543
-L4540:
+	jr L5003
+L5000:
 	ld xwa,(xiy+14)
 	ld bc,iz
 	extz xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld xbc,_cur_pals__30
+	ld xbc,_cur_pals__32
 	ld de,iz
 	extz xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4542:
+L5002:
 	inc 1,iz
-L4543:
+L5003:
 	ld wa,iz
 	cp wa,32
-	jr ult,L4540
-L4541:
+	jr ult,L5000
+L5001:
 	ldb (xsp+11),0
-	jr L4547
-L4544:
+	jr L5007
+L5004:
 	ld ixl,0
-	jr L4551
-L4548:
+	jr L5011
+L5008:
 	ld a,(xsp+11)
 	extz wa
 	sll 5,wa
@@ -22564,7 +25064,7 @@ L4548:
 	extz bc
 	add wa,bc
 	ld (xsp+12),wa
-	ld wa,(_pano_base__30)
+	ld wa,(_pano_base__32)
 	ld xbc,(xiy+6)
 	ld de,(xsp+12)
 	extz xde
@@ -22588,40 +25088,40 @@ L4548:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4550:
+L5010:
 	inc 1,ixl
-L4551:
+L5011:
 	ld a,ixl
 	cp a,32
-	jr ult,L4548
-L4549:
-L4546:
+	jr ult,L5008
+L5009:
+L5006:
 	incb 1,(xsp+11)
-L4547:
+L5007:
 	ld a,(xsp+11)
 	cp a,11
-	jr ult,L4544
-L4545:
-	ld wa,(_pano_base__30)
+	jr ult,L5004
+L5005:
+	ld wa,(_pano_base__32)
 	add wa,(xiy+4)
-	ld (_pano_end__30),wa
+	ld (_pano_end__32),wa
 	ld wa,(xiy+18)
-	ld (_cur_backdrop__30),wa
+	ld (_cur_backdrop__32),wa
 	ld wa,(xiy+18)
-	ld (_cur_road__30),wa
+	ld (_cur_road__32),wa
 	ld xwa,(xsp+0)
 	ld wa,(xwa+4)
-	ld (_cur_road__30+2),wa
+	ld (_cur_road__32+2),wa
 	ld xwa,(xsp+0)
 	lda xwa,(xwa+8)
 	ld wa,(xwa)
-	ld (_cur_road__30+4),wa
+	ld (_cur_road__32+4),wa
 	ld xwa,(xsp+0)
 	ld wa,(xwa+6)
-	ld (_cur_road__30+6),wa
+	ld (_cur_road__32+6),wa
 	ld iz,0
-	jr L4555
-L4552:
+	jr L5015
+L5012:
 	ld xwa,(xsp+0)
 	lda xwa,(xwa+8)
 	ld bc,iz
@@ -22629,142 +25129,142 @@ L4552:
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld xbc,_cur_band__30
+	ld xbc,_cur_band__32
 	ld de,iz
 	extz xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4554:
+L5014:
 	inc 1,iz
-L4555:
+L5015:
 	ld wa,iz
 	cp wa,4
-	jr ult,L4552
-L4553:
+	jr ult,L5012
+L5013:
 	ld iz,0
-	jr L4559
-L4556:
+	jr L5019
+L5016:
 	ld wa,65535
-	ld xbc,_objmap__30
+	ld xbc,_objmap__32
 	ld de,iz
 	extz xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4558:
+L5018:
 	inc 1,iz
-L4559:
+L5019:
 	ld wa,iz
 	cp wa,256
-	jr ult,L4556
-L4557:
-	ldw (_next_slot__30),2
+	jr ult,L5016
+L5017:
+	ldw (_next_slot__32),2
 	ld xwa,(xsp+0)
 	ld a,(xwa+1)
-	ld (_kind_l__30),a
+	ld (_kind_l__32),a
 	ld xwa,(xsp+0)
 	ld a,(xwa+2)
-	ld (_kind_r__30),a
+	ld (_kind_r__32),a
 	push xix
 	push xiy
-	ld a,(_kind_l__30)
+	ld a,(_kind_l__32)
 	push xwa
-	call _load_kind__30
+	call _load_kind__32
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-	ld a,(_kind_r__30)
-	cp a,(_kind_l__30)
-	jr z,L4560
+	ld a,(_kind_r__32)
+	cp a,(_kind_l__32)
+	jr z,L5020
 	push xix
 	push xiy
-	ld a,(_kind_r__30)
+	ld a,(_kind_r__32)
 	push xwa
-	call _load_kind__30
+	call _load_kind__32
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-L4560:
+L5020:
 	push xix
 	push xiy
 	ld wa,11
 	push xwa
-	call _load_kind__30
+	call _load_kind__32
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
 	ld a,(xsp+22)
 	cp a,10
-	jr uge,L4561
+	jr uge,L5021
 	push xix
 	push xiy
 	ld wa,12
 	push xwa
-	call _load_kind__30
+	call _load_kind__32
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-L4561:
+L5021:
 	push xix
 	push xiy
 	ld wa,13
 	push xwa
-	call _load_kind__30
+	call _load_kind__32
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
 	ld a,(xsp+22)
 	cp a,0
-	jr z,L4563
+	jr z,L5023
 	ld a,(xsp+22)
 	cp a,10
-	jr ult,L4562
-L4563:
+	jr ult,L5022
+L5023:
 	push xix
 	push xiy
 	ld wa,14
 	push xwa
-	call _load_kind__30
+	call _load_kind__32
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-L4562:
+L5022:
 	ld iz,0
-	jr L4567
-L4564:
-	ld xwa,_objmap__30
+	jr L5027
+L5024:
+	ld xwa,_objmap__32
 	ld bc,iz
 	extz xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,65535
-	jr nz,L4568
+	jr nz,L5028
 	ld wa,0
-	ld xbc,_objmap__30
+	ld xbc,_objmap__32
 	ld de,iz
 	extz xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4568:
-L4566:
+L5028:
+L5026:
 	inc 1,iz
-L4567:
+L5027:
 	ld wa,iz
 	cp wa,256
-	jr ult,L4564
-L4565:
+	jr ult,L5024
+L5025:
 	push xix
 	push xiy
 	ld wa,0
 	push xwa
-	ld a,(_kind_l__30)
+	ld a,(_kind_l__32)
 	push xwa
 	ld wa,1
 	push xwa
-	call _set_spr_pal__30
+	call _set_spr_pal__32
 	lda xsp,(xsp+12)
 	pop xiy
 	pop xix
@@ -22772,11 +25272,11 @@ L4565:
 	push xiy
 	ld wa,1
 	push xwa
-	ld a,(_kind_r__30)
+	ld a,(_kind_r__32)
 	push xwa
 	ld wa,2
 	push xwa
-	call _set_spr_pal__30
+	call _set_spr_pal__32
 	lda xsp,(xsp+12)
 	pop xiy
 	pop xix
@@ -22788,7 +25288,7 @@ L4565:
 	push xwa
 	ld wa,9
 	push xwa
-	call _set_spr_pal__30
+	call _set_spr_pal__32
 	lda xsp,(xsp+12)
 	pop xiy
 	pop xix
@@ -22800,7 +25300,7 @@ L4565:
 	push xwa
 	ld wa,10
 	push xwa
-	call _set_spr_pal__30
+	call _set_spr_pal__32
 	lda xsp,(xsp+12)
 	pop xiy
 	pop xix
@@ -22812,7 +25312,7 @@ L4565:
 	push xwa
 	ld wa,4
 	push xwa
-	call _set_spr_pal__30
+	call _set_spr_pal__32
 	lda xsp,(xsp+12)
 	pop xiy
 	pop xix
@@ -22824,7 +25324,7 @@ L4565:
 	push xwa
 	ld wa,6
 	push xwa
-	call _set_spr_pal__30
+	call _set_spr_pal__32
 	lda xsp,(xsp+12)
 	pop xiy
 	pop xix
@@ -22836,13 +25336,13 @@ L4565:
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-L4535:
+L4995:
 	lda xsp,(xsp+14)
 	pop xiz
 	ret
 
 ; function to_white
-_to_white__30:
+_to_white__32:
 	push xiz
 	lda xsp,(xsp-6)
 	ld wa,(xsp+14)
@@ -22858,10 +25358,10 @@ _to_white__30:
 	ld iz,wa
 	ld a,(xsp+18)
 	cp a,4
-	jr ult,L4572
+	jr ult,L5032
 	ld wa,4095
-	jr L4571
-L4572:
+	jr L5031
+L5032:
 	ld wa,iy
 	ld bc,15
 	sub bc,iy
@@ -22896,8 +25396,8 @@ L4572:
 	ld bc,iz
 	sll 8,bc
 	or wa,bc
-	jr L4571
-L4571:
+	jr L5031
+L5031:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -22907,11 +25407,11 @@ _theme_flash:
 	push xiz
 	lda xsp,(xsp-10)
 	ld izl,0
-	jp L4586
-L4583:
+	jp L5046
+L5043:
 	ld a,(xsp+18)
 	push xwa
-	ld xwa,_cur_pals__30
+	ld xwa,_cur_pals__32
 	ld c,izl
 	extz bc
 	sll 2,bc
@@ -22921,12 +25421,12 @@ L4583:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	call _to_white__30
+	call _to_white__32
 	lda xsp,(xsp+8)
 	push xwa
 	ld a,(xsp+22)
 	push xwa
-	ld xwa,_cur_pals__30
+	ld xwa,_cur_pals__32
 	ld c,izl
 	extz bc
 	sll 2,bc
@@ -22936,12 +25436,12 @@ L4583:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	call _to_white__30
+	call _to_white__32
 	lda xsp,(xsp+8)
 	push xwa
 	ld a,(xsp+26)
 	push xwa
-	ld xwa,_cur_pals__30
+	ld xwa,_cur_pals__32
 	ld c,izl
 	extz bc
 	sll 2,bc
@@ -22951,12 +25451,12 @@ L4583:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	call _to_white__30
+	call _to_white__32
 	lda xsp,(xsp+8)
 	push xwa
 	ld a,(xsp+30)
 	push xwa
-	ld xwa,_cur_pals__30
+	ld xwa,_cur_pals__32
 	ld c,izl
 	extz bc
 	sll 2,bc
@@ -22965,7 +25465,7 @@ L4583:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	call _to_white__30
+	call _to_white__32
 	lda xsp,(xsp+8)
 	push xwa
 	ld a,8
@@ -22975,19 +25475,19 @@ L4583:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-L4585:
+L5045:
 	inc 1,izl
-L4586:
+L5046:
 	ld a,izl
 	cp a,8
-	jp ult,L4583
-L4584:
+	jp ult,L5043
+L5044:
 	ldb (xsp+1),0
-	jr L4590
-L4587:
+	jr L5050
+L5047:
 	ld a,(xsp+18)
 	push xwa
-	ld xwa,_cur_band__30
+	ld xwa,_cur_band__32
 	ld c,(xsp+5)
 	extz bc
 	exts xbc
@@ -22995,7 +25495,7 @@ L4587:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	call _to_white__30
+	call _to_white__32
 	lda xsp,(xsp+8)
 	lda xbc,(xsp+2)
 	ld e,(xsp+1)
@@ -23004,39 +25504,39 @@ L4587:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4589:
+L5049:
 	incb 1,(xsp+1)
-L4590:
+L5050:
 	ld a,(xsp+1)
 	cp a,4
-	jr ult,L4587
-L4588:
+	jr ult,L5047
+L5048:
 	lda xwa,(xsp+2)
 	push xwa
 	ld a,(xsp+22)
 	push xwa
-	ld wa,(_cur_road__30+6)
+	ld wa,(_cur_road__32+6)
 	push xwa
-	call _to_white__30
+	call _to_white__32
 	lda xsp,(xsp+8)
 	push xwa
 	ld a,(xsp+26)
 	push xwa
-	ld wa,(_cur_road__30+2)
+	ld wa,(_cur_road__32+2)
 	push xwa
-	call _to_white__30
+	call _to_white__32
 	lda xsp,(xsp+8)
 	push xwa
 	ld a,(xsp+30)
 	push xwa
-	ld wa,(_cur_backdrop__30)
+	ld wa,(_cur_backdrop__32)
 	push xwa
-	call _to_white__30
+	call _to_white__32
 	lda xsp,(xsp+8)
 	push xwa
 	call _id_road_set_colors
 	lda xsp,(xsp+16)
-L4582:
+L5042:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -23044,29 +25544,29 @@ L4582:
 ; function traffic_set_hard
 _traffic_set_hard:
 	ld a,(xsp+4)
-	ld (_hard__31),a
+	ld (_hard__33),a
 	ld c,(xsp+4)
 	cp c,0
-	jr z,L4595
+	jr z,L5055
 	ld wa,7
-	jr L4596
-L4595:
+	jr L5056
+L5055:
 	ld wa,6
-L4596:
-	ld (_trf_cap__31),a
-L4594:
+L5056:
+	ld (_trf_cap__33),a
+L5054:
 	ret
 
 ; function rnd8
-_rnd8__31:
-	ld wa,(_rng__31)
+_rnd8__33:
+	ld wa,(_rng__33)
 	mul xwa,25173
 	add wa,13849
-	ld (_rng__31),wa
-	ld wa,(_rng__31)
+	ld (_rng__33),wa
+	ld wa,(_rng__33)
 	srl 8,wa
-	jr L4598
-L4598:
+	jr L5058
+L5058:
 	ret
 
 ; function traffic_init
@@ -23074,10 +25574,10 @@ _traffic_init:
 	push xiz
 	lda xsp,(xsp-2)
 	ld wa,(xsp+10)
-	ld (_trf_tiles__31),wa
+	ld (_trf_tiles__33),wa
 	ld iz,0
-	jr L4612
-L4609:
+	jr L5072
+L5069:
 	ld xwa,_gfx_traffic_tiles
 	ld bc,iz
 	extz xbc
@@ -23094,18 +25594,18 @@ L4609:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4611:
+L5071:
 	inc 1,iz
-L4612:
+L5072:
 	ld wa,iz
 	ld bc,(_gfx_traffic_tiles_count)
 	sll 3,bc
 	cp wa,bc
-	jr ult,L4609
-L4610:
+	jr ult,L5069
+L5070:
 	ld iz,0
-	jr L4616
-L4613:
+	jr L5076
+L5073:
 	ld xwa,_gfx_traffic_pals
 	ld bc,iz
 	sll 2,bc
@@ -23148,15 +25648,15 @@ L4613:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-L4615:
+L5075:
 	inc 1,iz
-L4616:
+L5076:
 	ld wa,iz
 	cp wa,5
-	jr ult,L4613
-L4614:
+	jr ult,L5073
+L5074:
 	call _traffic_clear
-L4608:
+L5068:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -23167,18 +25667,18 @@ _traffic_set_car_line:
 	push xwa
 	call _id_road_distance_at_line
 	lda xsp,(xsp+4)
-	ld (_car_d__31),wa
+	ld (_car_d__33),wa
 	ld a,(xsp+4)
 	push xwa
 	call _id_road_half_at
 	lda xsp,(xsp+4)
-	ld (_half_wheel__31),a
-	ld a,(_half_wheel__31)
+	ld (_half_wheel__33),a
+	ld a,(_half_wheel__33)
 	cp a,0
-	jr nz,L4620
-	ldb (_half_wheel__31),1
-L4620:
-L4619:
+	jr nz,L5080
+	ldb (_half_wheel__33),1
+L5080:
+L5079:
 	ret
 
 ; function traffic_clear
@@ -23186,29 +25686,29 @@ _traffic_clear:
 	push xiz
 	lda xsp,(xsp-2)
 	ld izl,0
-	jr L4630
-L4627:
+	jr L5090
+L5087:
 	ld a,0
-	ld xbc,_cars__31
+	ld xbc,_cars__33
 	ld e,izl
 	extz de
 	muls xde,14
 	add xbc,xde
 	ld (xbc),a
-L4629:
+L5089:
 	inc 1,izl
-L4630:
+L5090:
 	ld a,izl
 	cp a,7
-	jr ult,L4627
-L4628:
+	jr ult,L5087
+L5088:
 	ld a,50
 	push xwa
 	ld a,28
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-L4626:
+L5086:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -23219,35 +25719,35 @@ _traffic_reset:
 	ld a,(xsp+8)
 	ld izl,a
 	ld a,izl
-	cp a,(_trf_cap__31)
-	jr ule,L4636
-	ld a,(_trf_cap__31)
+	cp a,(_trf_cap__33)
+	jr ule,L5096
+	ld a,(_trf_cap__33)
 	ld izl,a
-L4636:
+L5096:
 	ld a,izl
-	ld (_dens_min__31),a
+	ld (_dens_min__33),a
 	ld c,(xsp+12)
-	cp c,(_trf_cap__31)
-	jr ule,L4637
-	ld a,(_trf_cap__31)
+	cp c,(_trf_cap__33)
+	jr ule,L5097
+	ld a,(_trf_cap__33)
 	extz wa
-	jr L4638
-L4637:
+	jr L5098
+L5097:
 	ld a,(xsp+12)
 	extz wa
-L4638:
-	ld (_dens_max__31),a
-	ld a,(_dens_min__31)
-	ld (_target__31),a
-	ldb (_cooldown__31),30
-L4635:
+L5098:
+	ld (_dens_max__33),a
+	ld a,(_dens_min__33)
+	ld (_target__33),a
+	ldb (_cooldown__33),30
+L5095:
 	pop xiz
 	ret
 
 ; function lane_lat
-_lane_lat__31:
+_lane_lat__33:
 	lda xsp,(xsp-2)
-	ld a,(_half_wheel__31)
+	ld a,(_half_wheel__33)
 	extz wa
 	sll 4,wa
 	exts xwa
@@ -23260,16 +25760,16 @@ _lane_lat__31:
 	mul xbc,de
 	sub bc,3
 	mul xwa,bc
-	jr L4640
-L4640:
+	jr L5100
+L5100:
 	lda xsp,(xsp+2)
 	ret
 
 ; function lane_of
-_lane_of__31:
+_lane_of__33:
 	push xiz
 	lda xsp,(xsp-4)
-	ld a,(_half_wheel__31)
+	ld a,(_half_wheel__33)
 	extz wa
 	sll 4,wa
 	exts xwa
@@ -23286,81 +25786,81 @@ _lane_of__31:
 	ld iz,wa
 	ld wa,iz
 	cp wa,0
-	jr ge,L4645
+	jr ge,L5105
 	ld iz,0
-L4645:
+L5105:
 	ld wa,iz
 	cp wa,3
-	jr le,L4646
+	jr le,L5106
 	ld iz,3
-L4646:
+L5106:
 	ld a,izl
-	jr L4644
-L4644:
+	jr L5104
+L5104:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
 
 ; function spawn
-_spawn__31:
+_spawn__33:
 	push xiz
 	lda xsp,(xsp-10)
 	ld wa,0
 	exts xwa
 	ld (xsp+4),xwa
 	ld izl,0
-	jr L4672
-L4669:
-	ld xwa,_cars__31
+	jr L5132
+L5129:
+	ld xwa,_cars__33
 	ld c,izl
 	extz bc
 	muls xbc,14
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr nz,L4673
-	ld xwa,_cars__31
+	jr nz,L5133
+	ld xwa,_cars__33
 	ld c,izl
 	extz bc
 	muls xbc,14
 	add xwa,xbc
 	lda xwa,(xwa)
 	ld (xsp+4),xwa
-	jr L4670
-L4673:
-L4671:
+	jr L5130
+L5133:
+L5131:
 	inc 1,izl
-L4672:
+L5132:
 	ld a,izl
 	cp a,7
-	jr ult,L4669
-L4670:
+	jr ult,L5129
+L5130:
 	ld xwa,(xsp+4)
 	cp xwa,0
-	jr nz,L4674
-	jp L4668
-L4674:
+	jr nz,L5134
+	jp L5128
+L5134:
 	ldb (xsp+2),0
-	jp L4678
-L4675:
+	jp L5138
+L5135:
 	ld wa,0
 	ld (xsp+8),a
-	call _rnd8__31
+	call _rnd8__33
 	extz wa
 	and wa,3
 	ld (xsp+1),a
 	ld izl,0
-	jr L4682
-L4679:
-	ld xwa,_cars__31
+	jr L5142
+L5139:
+	ld xwa,_cars__33
 	ld c,izl
 	extz bc
 	muls xbc,14
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L4683
-	ld xwa,_cars__31
+	jr z,L5143
+	ld xwa,_cars__33
 	ld c,izl
 	extz bc
 	muls xbc,14
@@ -23369,55 +25869,55 @@ L4679:
 	push xwa
 	ld a,(xsp+5)
 	push xwa
-	call _lane_lat__31
+	call _lane_lat__33
 	lda xsp,(xsp+4)
 	ld xbc,xwa
 	pop xwa
 	cp wa,bc
-	jr nz,L4683
-	ld xwa,_cars__31
+	jr nz,L5143
+	ld xwa,_cars__33
 	ld c,izl
 	extz bc
 	muls xbc,14
 	add xwa,xbc
 	ld wa,(xwa+6)
 	ld bc,1450
-	ld de,(_car_d__31)
+	ld de,(_car_d__33)
 	sub bc,de
 	sub bc,400
 	sll 4,bc
 	cp wa,bc
-	jr le,L4683
+	jr le,L5143
 	ldb (xsp+8),1
-L4683:
-L4681:
+L5143:
+L5141:
 	inc 1,izl
-L4682:
+L5142:
 	ld a,izl
 	cp a,7
-	jr ult,L4679
-L4680:
+	jr ult,L5139
+L5140:
 	ld a,(xsp+8)
 	cp a,0
-	jr nz,L4684
-	jr L4676
-L4684:
-L4677:
+	jr nz,L5144
+	jr L5136
+L5144:
+L5137:
 	incb 1,(xsp+2)
-L4678:
+L5138:
 	ld a,(xsp+2)
 	cp a,3
-	jp ult,L4675
-L4676:
+	jp ult,L5135
+L5136:
 	ld a,(xsp+2)
 	cp a,3
-	jr nz,L4685
-	jp L4668
-L4685:
+	jr nz,L5145
+	jp L5128
+L5145:
 	ld a,1
 	ld xbc,(xsp+4)
 	ld (xbc),a
-	call _rnd8__31
+	call _rnd8__33
 	extz wa
 	exts xwa
 	divs xwa,3
@@ -23426,7 +25926,7 @@ L4685:
 	ld (xbc+1),a
 	ld wa,11
 	push xwa
-	call _rnd8__31
+	call _rnd8__33
 	ld xbc,xwa
 	pop xwa
 	extz bc
@@ -23436,16 +25936,16 @@ L4685:
 	add wa,bc
 	ld xbc,(xsp+4)
 	ld (xbc+2),a
-	ld c,(_hard__31)
+	ld c,(_hard__33)
 	cp c,0
-	jr z,L4686
+	jr z,L5146
 	ld wa,42
-	jr L4687
-L4686:
+	jr L5147
+L5146:
 	ld wa,55
-L4687:
+L5147:
 	push xwa
-	call _rnd8__31
+	call _rnd8__33
 	ld xbc,xwa
 	pop xwa
 	extz bc
@@ -23458,16 +25958,16 @@ L4687:
 	ld xwa,(xsp+4)
 	ld a,(xwa+1)
 	cp a,2
-	jr nz,L4688
+	jr nz,L5148
 	ld xwa,(xsp+4)
 	ld a,(xwa+3)
 	sub a,15
 	ld xbc,(xsp+4)
 	ld (xbc+3),a
-L4688:
+L5148:
 	ld a,(xsp+1)
 	push xwa
-	call _lane_lat__31
+	call _lane_lat__33
 	lda xsp,(xsp+4)
 	ld xbc,(xsp+4)
 	ld (xbc+4),wa
@@ -23476,7 +25976,7 @@ L4688:
 	ld xbc,(xsp+4)
 	ld (xbc+10),wa
 	ld wa,1450
-	ld bc,(_car_d__31)
+	ld bc,(_car_d__33)
 	sub wa,bc
 	sll 4,wa
 	ld xbc,(xsp+4)
@@ -23488,7 +25988,7 @@ L4688:
 	ld wa,0
 	ld xbc,(xsp+4)
 	ld (xbc+8),wa
-L4668:
+L5128:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -23500,9 +26000,9 @@ _traffic_update:
 	ld wa,0
 	ld (xsp+1),a
 	ldb (xsp+0),0
-	jp L4721
-L4718:
-	ld xwa,_cars__31
+	jp L5181
+L5178:
+	ld xwa,_cars__33
 	ld c,(xsp+0)
 	extz bc
 	muls xbc,14
@@ -23511,9 +26011,9 @@ L4718:
 	ld xiz,xwa
 	ld a,(xiz)
 	cp a,0
-	jr nz,L4722
-	jp L4720
-L4722:
+	jr nz,L5182
+	jp L5180
+L5182:
 	ld wa,(xiz+6)
 	ld (xiz+12),wa
 	ld wa,(xiz+8)
@@ -23539,170 +26039,170 @@ L4722:
 	ld (xiz+8),wa
 	ld wa,(xiz+4)
 	cp wa,(xiz+10)
-	jr z,L4723
+	jr z,L5183
 	ld wa,(xiz+4)
 	cp wa,(xiz+10)
-	jr ge,L4724
+	jr ge,L5184
 	ld wa,(xiz+4)
 	add wa,8
 	ld (xiz+4),wa
 	ld wa,(xiz+4)
 	cp wa,(xiz+10)
-	jr le,L4725
+	jr le,L5185
 	ld wa,(xiz+10)
 	ld (xiz+4),wa
-L4725:
-	jr L4726
-L4724:
+L5185:
+	jr L5186
+L5184:
 	ld wa,(xiz+4)
 	sub wa,8
 	ld (xiz+4),wa
 	ld wa,(xiz+4)
 	cp wa,(xiz+10)
-	jr ge,L4727
+	jr ge,L5187
 	ld wa,(xiz+10)
 	ld (xiz+4),wa
-L4727:
-L4726:
-	jr L4728
-L4723:
-	call _rnd8__31
-	ld e,(_hard__31)
+L5187:
+L5186:
+	jr L5188
+L5183:
+	call _rnd8__33
+	ld e,(_hard__33)
 	cp e,0
-	jr z,L4730
+	jr z,L5190
 	ld bc,6
-	jr L4731
-L4730:
+	jr L5191
+L5190:
 	ld bc,2
-L4731:
+L5191:
 	cp a,c
-	jr uge,L4729
+	jr uge,L5189
 	ld wa,(xiz+4)
 	push xwa
-	call _lane_of__31
+	call _lane_of__33
 	lda xsp,(xsp+4)
 	ld (xsp+8),a
 	ld a,(xsp+8)
 	cp a,0
-	jr nz,L4732
+	jr nz,L5192
 	ldb (xsp+8),1
-	jr L4733
-L4732:
+	jr L5193
+L5192:
 	ld a,(xsp+8)
 	cp a,3
-	jr nz,L4734
+	jr nz,L5194
 	ldb (xsp+8),2
-	jr L4735
-L4734:
+	jr L5195
+L5194:
 	push xwa
-	call _rnd8__31
+	call _rnd8__33
 	ld xbc,xwa
 	pop xwa
 	extz bc
 	and bc,1
 	cp bc,0
-	jr z,L4736
+	jr z,L5196
 	ld a,(xsp+8)
 	add a,1
 	extz wa
-	jr L4737
-L4736:
+	jr L5197
+L5196:
 	ld a,(xsp+8)
 	sub a,1
 	extz wa
-L4737:
+L5197:
 	ld (xsp+8),a
-L4735:
-L4733:
+L5195:
+L5193:
 	ld a,(xsp+8)
 	push xwa
-	call _lane_lat__31
+	call _lane_lat__33
 	lda xsp,(xsp+4)
 	ld (xiz+10),wa
-L4729:
-L4728:
+L5189:
+L5188:
 	ld wa,(xiz+6)
-	ld bc,(_car_d__31)
+	ld bc,(_car_d__33)
 	neg bc
 	sll 4,bc
 	sub bc,64
 	cp wa,bc
-	jr lt,L4739
+	jr lt,L5199
 	ld wa,(xiz+6)
 	ld bc,1600
-	ld de,(_car_d__31)
+	ld de,(_car_d__33)
 	sub bc,de
 	sll 4,bc
 	cp wa,bc
-	jr le,L4738
-L4739:
+	jr le,L5198
+L5199:
 	ldb (xiz),0
-	jr L4720
-L4738:
+	jr L5180
+L5198:
 	incb 1,(xsp+1)
-L4720:
+L5180:
 	incb 1,(xsp+0)
-L4721:
+L5181:
 	ld a,(xsp+0)
 	cp a,7
-	jp ult,L4718
-L4719:
-	ld a,(_cooldown__31)
+	jp ult,L5178
+L5179:
+	ld a,(_cooldown__33)
 	cp a,0
-	jr z,L4740
-	decb 1,(_cooldown__31)
-L4740:
+	jr z,L5200
+	decb 1,(_cooldown__33)
+L5200:
 	ld a,(xsp+22)
 	cp a,0
-	jr z,L4741
+	jr z,L5201
 	ld a,(xsp+1)
-	cp a,(_target__31)
-	jr uge,L4741
-	ld a,(_cooldown__31)
+	cp a,(_target__33)
+	jr uge,L5201
+	ld a,(_cooldown__33)
 	cp a,0
-	jr nz,L4741
+	jr nz,L5201
 	ld a,(xsp+18)
 	cp a,50
-	jr ule,L4741
-	call _spawn__31
-	ld c,(_hard__31)
+	jr ule,L5201
+	call _spawn__33
+	ld c,(_hard__33)
 	cp c,0
-	jr z,L4742
+	jr z,L5202
 	ld wa,16
-	jr L4743
-L4742:
+	jr L5203
+L5202:
 	ld wa,25
-L4743:
+L5203:
 	push xwa
-	call _rnd8__31
+	call _rnd8__33
 	ld xbc,xwa
 	pop xwa
 	extz bc
 	and bc,31
 	add wa,bc
-	ld (_cooldown__31),a
-	ld a,(_dens_max__31)
-	cp a,(_dens_min__31)
-	jr ule,L4744
-	ld a,(_dens_min__31)
+	ld (_cooldown__33),a
+	ld a,(_dens_max__33)
+	cp a,(_dens_min__33)
+	jr ule,L5204
+	ld a,(_dens_min__33)
 	extz wa
 	push xwa
-	call _rnd8__31
+	call _rnd8__33
 	ld xbc,xwa
 	pop xwa
 	extz bc
 	exts xbc
-	ld e,(_dens_max__31)
-	sub e,(_dens_min__31)
+	ld e,(_dens_max__33)
+	sub e,(_dens_min__33)
 	add e,1
 	extz de
 	divs xbc,de
 	ld bc,qbc
 	add wa,bc
-	ld (_target__31),a
-L4744:
-L4741:
-L4717:
+	ld (_target__33),a
+L5204:
+L5201:
+L5177:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -23712,9 +26212,9 @@ _traffic_collide:
 	push xiz
 	lda xsp,(xsp-12)
 	ld iyl,0
-	jp L4763
-L4760:
-	ld xwa,_cars__31
+	jp L5223
+L5220:
+	ld xwa,_cars__33
 	ld c,iyl
 	extz bc
 	muls xbc,14
@@ -23723,49 +26223,49 @@ L4760:
 	ld xiz,xwa
 	ld a,(xiz)
 	cp a,0
-	jr nz,L4764
-	jr L4762
-L4764:
+	jr nz,L5224
+	jr L5222
+L5224:
 	ld bc,(xiz+12)
 	cp bc,(xiz+6)
-	jr ge,L4765
+	jr ge,L5225
 	ld wa,(xiz+12)
-	jr L4766
-L4765:
+	jr L5226
+L5225:
 	ld wa,(xiz+6)
-L4766:
+L5226:
 	ld (xsp+8),wa
 	ld bc,(xiz+12)
 	cp bc,(xiz+6)
-	jr ge,L4767
+	jr ge,L5227
 	ld wa,(xiz+6)
-	jr L4768
-L4767:
+	jr L5228
+L5227:
 	ld wa,(xiz+12)
-L4768:
+L5228:
 	ld (xsp+10),wa
 	ld wa,(xsp+8)
 	cp wa,224
-	jr gt,L4770
+	jr gt,L5230
 	ld wa,(xsp+10)
 	cp wa,65440
-	jr ge,L4769
-L4770:
-	jr L4762
-L4769:
+	jr ge,L5229
+L5230:
+	jr L5222
+L5229:
 	ld wa,(xiz+4)
 	sub wa,(xsp+20)
 	ld ix,wa
 	ld wa,ix
 	cp wa,0
-	jr ge,L4771
+	jr ge,L5231
 	ld wa,ix
 	neg wa
 	ld ix,wa
-L4771:
+L5231:
 	ld wa,ix
 	cp wa,416
-	jr ge,L4772
+	jr ge,L5232
 	ld wa,(xiz+6)
 	add wa,960
 	ld (xiz+6),wa
@@ -23775,18 +26275,18 @@ L4771:
 	add a,30
 	ld (xiz+3),a
 	ld wa,1
-	jr L4759
-L4772:
-L4762:
+	jr L5219
+L5232:
+L5222:
 	inc 1,iyl
-L4763:
+L5223:
 	ld a,iyl
 	cp a,7
-	jp ult,L4760
-L4761:
+	jp ult,L5220
+L5221:
 	ld wa,0
-	jr L4759
-L4759:
+	jr L5219
+L5219:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -23805,16 +26305,16 @@ _traffic_draw:
 	extz wa
 	ld (xsp+12),wa
 	ld izl,0
-	jr L4807
-L4804:
-	ld xwa,_cars__31
+	jr L5269
+L5266:
+	ld xwa,_cars__33
 	ld c,izl
 	extz bc
 	muls xbc,14
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L4808
+	jr z,L5270
 	ld a,izl
 	lda xbc,(xsp+0)
 	ld e,(xsp+7)
@@ -23823,17 +26323,17 @@ L4804:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L4808:
-L4806:
+L5270:
+L5268:
 	inc 1,izl
-L4807:
+L5269:
 	ld a,izl
 	cp a,7
-	jr ult,L4804
-L4805:
+	jr ult,L5266
+L5267:
 	ld izl,1
-	jp L4812
-L4809:
+	jp L5274
+L5271:
 	lda xwa,(xsp+0)
 	ld c,izl
 	extz bc
@@ -23843,8 +26343,8 @@ L4809:
 	ld (xsp+14),a
 	ld a,izl
 	ld ixl,a
-	jr L4815
-L4813:
+	jr L5277
+L5275:
 	lda xwa,(xsp+0)
 	ld c,ixl
 	sub c,1
@@ -23859,11 +26359,11 @@ L4813:
 	add xbc,xde
 	ld (xbc),a
 	dec 1,ixl
-L4815:
+L5277:
 	ld a,ixl
 	cp a,0
-	jr ule,L4816
-	ld xwa,_cars__31
+	jr ule,L5278
+	ld xwa,_cars__33
 	lda xbc,(xsp+0)
 	ld e,ixl
 	sub e,1
@@ -23875,16 +26375,16 @@ L4815:
 	muls xbc,14
 	add xwa,xbc
 	ld wa,(xwa+6)
-	ld xbc,_cars__31
+	ld xbc,_cars__33
 	ld e,(xsp+14)
 	extz de
 	muls xde,14
 	add xbc,xde
 	ld bc,(xbc+6)
 	cp wa,bc
-	jr gt,L4813
-L4816:
-L4814:
+	jr gt,L5275
+L5278:
+L5276:
 	ld a,(xsp+14)
 	lda xbc,(xsp+0)
 	ld e,ixl
@@ -23892,17 +26392,17 @@ L4814:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L4811:
+L5273:
 	inc 1,izl
-L4812:
+L5274:
 	ld a,izl
 	cp a,(xsp+7)
-	jp ult,L4809
-L4810:
+	jp ult,L5271
+L5272:
 	ld izl,0
-	jp L4820
-L4817:
-	ld xwa,_cars__31
+	jp L5282
+L5279:
+	ld xwa,_cars__33
 	lda xbc,(xsp+0)
 	ld e,izl
 	extz de
@@ -23914,7 +26414,7 @@ L4817:
 	add xwa,xbc
 	lda xwa,(xwa)
 	ld (xsp+14),xwa
-	ld wa,(_car_d__31)
+	ld wa,(_car_d__33)
 	ld xbc,(xsp+14)
 	ld bc,(xbc+6)
 	exts xbc
@@ -23923,9 +26423,9 @@ L4817:
 	ld (xsp+18),wa
 	ld wa,(xsp+18)
 	cp wa,0
-	jr ge,L4821
-	jp L4819
-L4821:
+	jr ge,L5283
+	jp L5281
+L5283:
 	push xix
 	ld wa,(xsp+22)
 	push xwa
@@ -23935,9 +26435,9 @@ L4821:
 	ld (xsp+20),a
 	ld a,(xsp+20)
 	cp a,255
-	jr nz,L4822
-	jp L4819
-L4822:
+	jr nz,L5284
+	jp L5281
+L5284:
 	push xix
 	lda xwa,(xsp+28)
 	push xwa
@@ -23948,46 +26448,46 @@ L4822:
 	pop xix
 	ld wa,(xsp+26)
 	cp wa,(xsp+12)
-	jr ge,L4823
-	jp L4819
-L4823:
+	jr ge,L5285
+	jp L5281
+L5285:
 	ld a,(xsp+28)
 	extz wa
 	sll 5,wa
 	extz xwa
-	ld c,(_half_wheel__31)
+	ld c,(_half_wheel__33)
 	extz bc
 	div xwa,bc
 	ld (xsp+22),a
 	ld a,(xsp+22)
 	cp a,28
-	jr ult,L4824
+	jr ult,L5286
 	ldb (xsp+21),0
-	jr L4825
-L4824:
+	jr L5287
+L5286:
 	ld a,(xsp+22)
 	cp a,20
-	jr ult,L4826
+	jr ult,L5288
 	ldb (xsp+21),1
-	jr L4827
-L4826:
+	jr L5289
+L5288:
 	ld a,(xsp+22)
 	cp a,13
-	jr ult,L4828
+	jr ult,L5290
 	ldb (xsp+21),2
-	jr L4829
-L4828:
+	jr L5291
+L5290:
 	ld a,(xsp+22)
 	cp a,9
-	jr ult,L4830
+	jr ult,L5292
 	ldb (xsp+21),3
-	jr L4831
-L4830:
+	jr L5293
+L5292:
 	ldb (xsp+21),4
-L4831:
-L4829:
-L4827:
-L4825:
+L5293:
+L5291:
+L5289:
+L5287:
 	ld xwa,_gfx_traffic_frames
 	ld xbc,(xsp+14)
 	ld c,(xbc+1)
@@ -24010,7 +26510,7 @@ L4825:
 	extz de
 	mul xbc,de
 	exts xbc
-	ld e,(_half_wheel__31)
+	ld e,(_half_wheel__33)
 	extz de
 	divs xbc,de
 	add wa,bc
@@ -24024,9 +26524,9 @@ L4825:
 	ld (xsp+38),wa
 	ld wa,(xsp+26)
 	cp wa,151
-	jr le,L4832
-	jp L4819
-L4832:
+	jr le,L5294
+	jp L5281
+L5294:
 	ld wa,(xsp+26)
 	add wa,1
 	ld xbc,(xsp+30)
@@ -24045,7 +26545,7 @@ L4832:
 	ld wa,0
 	exts xwa
 	ld (xsp+48),xwa
-	ld wa,(_trf_tiles__31)
+	ld wa,(_trf_tiles__33)
 	ld (xsp+52),wa
 	ld wa,(xsp+38)
 	ld (xsp+54),wa
@@ -24055,7 +26555,20 @@ L4832:
 	ld a,(xwa+2)
 	ld (xsp+57),a
 	ldb (xsp+58),0
+	ld c,(_bridge_line)
+	cp c,0
+	jr z,L5295
+	ld bc,(xsp+26)
+	ld e,(_bridge_line)
+	extz de
+	cp bc,de
+	jr ge,L5295
+	ld wa,16
+	jr L5296
+L5295:
 	ld a,(_id_spr_priority)
+	extz wa
+L5296:
 	ld (xsp+59),a
 	ld xwa,(xsp+14)
 	ld a,(xwa+2)
@@ -24073,13 +26586,13 @@ L4832:
 	pop xix
 	ld a,(xsp+61)
 	ld (xsp+10),a
-L4819:
+L5281:
 	inc 1,izl
-L4820:
+L5282:
 	ld a,izl
 	cp a,(xsp+7)
-	jp ult,L4817
-L4818:
+	jp ult,L5279
+L5280:
 	push xix
 	ld a,50
 	push xwa
@@ -24088,7 +26601,7 @@ L4818:
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
 	pop xix
-L4803:
+L5265:
 	lda xsp,(xsp+66)
 	pop xiz
 	ret
@@ -24102,13 +26615,13 @@ _traffic_ap_target:
 	ld wa,65535
 	ld (xsp+4),wa
 	ld iyl,0
-	jp L4855
-L4852:
+	jp L5319
+L5316:
 	push xix
 	push xiy
 	ld a,iyl
 	push xwa
-	call _lane_lat__31
+	call _lane_lat__33
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
@@ -24116,28 +26629,28 @@ L4852:
 	ld wa,32767
 	ld (xsp+8),wa
 	ld izl,0
-	jp L4859
-L4856:
-	ld xwa,_cars__31
+	jp L5323
+L5320:
+	ld xwa,_cars__33
 	ld c,izl
 	extz bc
 	muls xbc,14
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L4861
-	ld xwa,_cars__31
+	jr z,L5325
+	ld xwa,_cars__33
 	ld c,izl
 	extz bc
 	muls xbc,14
 	add xwa,xbc
 	ld wa,(xwa+6)
 	cp wa,65280
-	jr ge,L4860
-L4861:
-	jr L4858
-L4860:
-	ld xwa,_cars__31
+	jr ge,L5324
+L5325:
+	jr L5322
+L5324:
+	ld xwa,_cars__33
 	ld c,izl
 	extz bc
 	muls xbc,14
@@ -24147,89 +26660,89 @@ L4860:
 	ld ix,wa
 	ld wa,ix
 	cp wa,0
-	jr ge,L4862
+	jr ge,L5326
 	ld wa,ix
 	neg wa
 	ld ix,wa
-L4862:
+L5326:
 	ld wa,ix
 	cp wa,480
-	jr ge,L4863
-	ld xwa,_cars__31
+	jr ge,L5327
+	ld xwa,_cars__33
 	ld c,izl
 	extz bc
 	muls xbc,14
 	add xwa,xbc
 	ld wa,(xwa+6)
 	cp wa,(xsp+8)
-	jr ge,L4863
-	ld xwa,_cars__31
+	jr ge,L5327
+	ld xwa,_cars__33
 	ld c,izl
 	extz bc
 	muls xbc,14
 	add xwa,xbc
 	ld wa,(xwa+6)
 	ld (xsp+8),wa
-L4863:
-L4858:
+L5327:
+L5322:
 	inc 1,izl
-L4859:
+L5323:
 	ld a,izl
 	cp a,7
-	jp ult,L4856
-L4857:
+	jp ult,L5320
+L5321:
 	ld wa,(xsp+8)
 	cp wa,(xsp+4)
-	jr gt,L4865
+	jr gt,L5329
 	ld wa,(xsp+8)
 	cp wa,(xsp+4)
-	jr nz,L4864
+	jr nz,L5328
 	ld wa,(xsp+24)
 	cp wa,0
-	jr ge,L4867
+	jr ge,L5331
 	ld a,iyl
 	cp a,0
-	jr z,L4866
-L4867:
+	jr z,L5330
+L5331:
 	ld wa,(xsp+24)
 	cp wa,0
-	jr le,L4864
+	jr le,L5328
 	ld a,iyl
 	cp a,3
-	jr nz,L4864
-L4866:
-L4865:
+	jr nz,L5328
+L5330:
+L5329:
 	ld wa,(xsp+8)
 	ld (xsp+4),wa
 	ld a,iyl
 	ld (xsp+2),a
-L4864:
-L4854:
+L5328:
+L5318:
 	inc 1,iyl
-L4855:
+L5319:
 	ld a,iyl
 	cp a,4
-	jp ult,L4852
-L4853:
+	jp ult,L5316
+L5317:
 	ld wa,(xsp+4)
 	cp wa,14400
-	jr le,L4868
+	jr le,L5332
 	ld wa,(xsp+24)
 	cp wa,0
-	jr z,L4868
+	jr z,L5332
 	ld wa,(xsp+24)
-	jr L4851
-L4868:
+	jr L5315
+L5332:
 	push xix
 	push xiy
 	ld a,(xsp+10)
 	push xwa
-	call _lane_lat__31
+	call _lane_lat__33
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-	jr L4851
-L4851:
+	jr L5315
+L5315:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -25491,7 +28004,7 @@ _S0_10:
 	db 69,88,84,69,78,68,69,68,32,80,76,65,89,0
 _S0_11:
 	db 67,72,69,67,75,80,79,73,78,84,33,0
-_lv__0_L353:
+_lv__0_L355:
 	db 1,2,3,4,4,4,4,3,3,2,1,0
 _emblem_pal_slot__0:
 	db 2,3,4,5,6,8,9,10,11,12,13,14,15
@@ -25501,20 +28014,22 @@ _S0_12:
 	db 72,73,0
 _S0_13:
 	db 66,58,78,69,87,0
-_tsm__0_L585:
+_tsm__0_L587:
 	db 1,125,126,127
 _S0_14:
 	db 80,82,69,83,83,32,65,32,84,79,32,83,84,65,82,84
 	db 0
 _S0_15:
-	db 89,79,85,32,77,65,68,69,32,73,84,33,0
+	db 67,79,85,82,83,69,32,77,65,80,0
 _S0_16:
-	db 71,65,77,69,32,79,86,69,82,0
+	db 89,79,85,32,77,65,68,69,32,73,84,33,0
 _S0_17:
-	db 83,67,79,82,69,0
+	db 71,65,77,69,32,79,86,69,82,0
 _S0_18:
-	db 82,79,85,84,69,0
+	db 83,67,79,82,69,0
 _S0_19:
+	db 82,79,85,84,69,0
+_S0_20:
 	db 78,69,87,32,72,73,71,72,32,83,67,79,82,69,33,0
 	align 2
 _smoke_tiles__0:
@@ -25524,36 +28039,39 @@ _smoke_tiles__0:
 	db 0,148,0,229,64,250,144,255,144,255,149,254,80,170,0,85
 _smoke_slot__0:
 	db 1,125,126,127
-_S0_20:
-	db 80,65,85,83,69,0
+_roll_lift__0:
+	db 0,7,14,20,25,30,33,35,36,35,33,30,25,20,14,7
+	db 0
 _S0_21:
-	db 84,73,77,69,32,85,80,0
+	db 80,65,85,83,69,0
 _S0_22:
+	db 84,73,77,69,32,85,80,0
+_S0_23:
 	db 98,32,76,69,70,84,32,32,32,32,82,73,71,72,84,32
 	db 99,0
-_S0_23:
-	db 82,73,71,72,84,32,99,0
 _S0_24:
-	db 98,32,76,69,70,84,0
+	db 82,73,71,72,84,32,99,0
 _S0_25:
-	db 71,79,65,76,32,65,72,69,65,68,0
+	db 98,32,76,69,70,84,0
 _S0_26:
-	db 51,0
+	db 71,79,65,76,32,65,72,69,65,68,0
 _S0_27:
-	db 50,0
+	db 51,0
 _S0_28:
-	db 49,0
+	db 50,0
 _S0_29:
+	db 49,0
+_S0_30:
 	db 71,79,33,0
 	align 2
-_cd__0_L896:
-	dd _S0_26
+_cd__0_L1100:
 	dd _S0_27
 	dd _S0_28
 	dd _S0_29
-_S0_30:
-	db 83,84,65,82,84,0
+	dd _S0_30
 _S0_31:
+	db 83,84,65,82,84,0
+_S0_32:
 	db 70,73,78,73,83,72,0
 	align 2
 _leg0_seg__1:
@@ -25790,18 +28308,18 @@ _gfx_themes:
 	db 104,9,223,10,104,9,121,10,155,11,223,11,8,1,30,0
 	db 3,1,3,0,154,8,255,14,154,8,171,9,205,11,255,14
 	db 5,1,45,0,2,7,6,0,152,8,255,15,152,8,169,9
-	db 203,11,255,15,6,2,35,0,4,8,10,0,137,8,255,15
-	db 137,8,154,9,188,11,255,15,9,3,20,0,9,3,5,0
+	db 203,11,255,15,6,2,35,1,4,8,10,0,137,8,255,15
+	db 137,8,154,9,188,11,255,15,9,3,20,1,9,3,5,0
 	db 120,7,255,15,120,7,137,8,171,10,255,15,10,3,20,0
 	db 10,2,2,0,153,11,255,15,153,11,170,12,204,14,255,15
 	db 10,3,20,0,11,7,5,0,153,8,255,15,153,8,170,9
-	db 204,11,255,15,7,2,35,0,12,9,9,0,119,8,255,15
+	db 204,11,255,15,7,2,35,1,12,9,9,0,119,8,255,15
 	db 119,8,136,9,170,11,255,15,5,1,50,0,8,3,3,0
 	db 137,7,255,14,137,7,154,8,188,10,255,14,11,3,15,0
 	db 7,9,7,0,136,10,238,15,136,10,153,11,187,13,238,15
-	db 9,2,25,0,13,0,6,0,153,10,255,15,153,10,170,11
+	db 9,2,25,1,13,0,6,0,153,10,255,15,153,10,170,11
 	db 204,13,255,15,9,2,25,0,14,4,5,0,153,8,255,14
-	db 153,8,170,9,204,11,255,14,10,2,20,0
+	db 153,8,170,9,204,11,255,14,10,2,20,1
 	align 2
 _gfx_leg_ref_cost:
 	db 212,3,30,4,211,3,27,4,52,4
@@ -25832,16 +28350,500 @@ _gfx_particle_tiles:
 	db 0,0,0,0,192,15,160,10,160,2,0,0,0,0,0,0
 	db 224,11,248,47,248,42,168,42,160,10,64,1,0,1,64,0
 	align 2
+_gfx_bridge_tiles:
+	db 255,255,255,255,85,85,169,171,173,186,169,170,85,85,174,166
+	db 85,85,169,171,173,186,169,170,85,85,174,166,170,234,170,166
+	db 85,85,169,171,173,186,169,170,85,85,106,154,85,85,85,85
+	db 106,170,110,186,106,170,85,85,154,106,155,110,154,106,85,85
+	db 106,250,110,250,106,250,85,245,154,250,155,254,154,250,85,245
+	db 101,170,101,186,101,170,85,85,149,106,149,110,149,106,85,85
+_gfx_roll_frames:
+	db 0,12,0,12,0,12,15,12,15,0,27,16,27,16,0,43
+	db 12,43,12,1,55,15,55,15,1,70,15,70,15,1,85,12
+	db 85,12,1,97,16,97,16,1,113,15,113,15,1,128,12,128
+	db 12,1,140,15,140,15,0,155,15,155,15,0
+_gfx_roll_cells:
+	db 240,245,0,248,245,1,0,245,2,8,245,3,240,253,4,248
+	db 253,5,0,253,6,8,253,7,240,5,8,248,5,9,0,5
+	db 10,8,5,11,237,244,0,245,244,1,253,244,2,5,244,3
+	db 237,252,4,245,252,5,253,252,6,5,252,7,13,252,8,237
+	db 4,9,245,4,10,253,4,11,5,4,12,253,12,13,5,12
+	db 14,238,242,0,246,242,1,254,242,2,6,242,3,238,250,4
+	db 246,250,5,254,250,6,6,250,7,246,2,8,254,2,9,6
+	db 2,10,246,10,11,254,10,12,6,10,13,246,18,14,254,18
+	db 15,244,240,0,252,240,1,4,240,2,244,248,3,252,248,4
+	db 4,248,5,244,0,6,252,0,7,4,0,8,244,8,9,252
+	db 8,10,4,8,11,246,237,0,254,237,1,6,237,2,246,245
+	db 3,254,245,4,6,245,5,238,253,6,246,253,7,254,253,8
+	db 6,253,9,238,5,10,246,5,11,254,5,12,6,5,13,254
+	db 13,14,253,238,0,5,238,1,237,246,2,245,246,3,253,246
+	db 4,5,246,5,237,254,6,245,254,7,253,254,8,5,254,9
+	db 13,254,10,237,6,11,245,6,12,253,6,13,5,6,14,240
+	db 244,0,248,244,1,0,244,2,8,244,3,240,252,4,248,252
+	db 5,0,252,6,8,252,7,240,4,8,248,4,9,0,4,10
+	db 8,4,11,242,238,0,250,238,1,242,246,2,250,246,3,2
+	db 246,4,10,246,5,18,246,6,242,254,7,250,254,8,2,254
+	db 9,10,254,10,18,254,11,242,6,12,250,6,13,2,6,14
+	db 10,6,15,244,237,0,252,237,1,4,237,2,244,245,3,252
+	db 245,4,4,245,5,244,253,6,252,253,7,4,253,8,12,253
+	db 9,244,5,10,252,5,11,4,5,12,12,5,13,252,13,14
+	db 245,240,0,253,240,1,5,240,2,245,248,3,253,248,4,5
+	db 248,5,245,0,6,253,0,7,5,0,8,245,8,9,253,8
+	db 10,5,8,11,244,242,0,252,242,1,4,242,2,12,242,3
+	db 244,250,4,252,250,5,4,250,6,12,250,7,244,2,8,252
+	db 2,9,4,2,10,244,10,11,252,10,12,4,10,13,252,18
+	db 14,242,244,0,250,244,1,2,244,2,10,244,3,242,252,4
+	db 250,252,5,2,252,6,10,252,7,18,252,8,242,4,9,250
+	db 4,10,2,4,11,10,4,12,242,12,13,250,12,14
+	align 2
+_gfx_roll_tiles:
+	db 0,0,0,0,0,0,0,0,0,0,243,3,6,0,26,0
+	db 64,5,80,21,80,21,80,21,80,21,95,213,170,170,153,169
+	db 0,0,252,3,255,15,255,15,255,15,85,245,170,170,170,153
+	db 0,0,0,0,0,192,0,240,0,252,192,255,0,144,0,164
+	db 106,0,170,1,85,6,170,26,85,101,170,106,85,101,170,106
+	db 153,169,170,170,85,85,170,170,255,85,213,170,215,85,255,170
+	db 170,153,170,170,85,85,170,170,85,255,170,87,85,87,170,255
+	db 0,169,64,170,144,85,164,170,89,85,169,170,89,85,169,170
+	db 85,85,255,63,87,85,84,85,84,117,84,85,80,21,0,0
+	db 85,85,255,255,255,255,0,60,0,0,0,0,0,0,0,0
+	db 85,85,255,255,255,255,60,0,0,0,0,0,0,0,0,0
+	db 85,85,252,255,85,213,85,21,93,21,85,21,84,5,0,0
+	db 0,0,0,0,0,0,0,0,1,0,102,0,102,0,169,1
+	db 0,0,192,3,12,0,95,1,170,102,170,154,170,150,106,105
+	db 64,5,80,21,80,85,80,85,64,85,0,165,192,105,188,102
+	db 0,0,0,0,0,0,0,0,0,0,0,63,192,255,240,255
+	db 150,1,105,1,90,19,245,21,95,117,85,85,87,85,84,21
+	db 150,150,105,105,90,90,167,165,93,90,173,245,125,253,215,63
+	db 105,166,166,105,153,90,169,165,90,250,165,95,233,215,246,213
+	db 252,127,252,151,252,165,127,170,159,170,160,170,144,106,164,150
+	db 0,0,0,0,0,0,0,0,0,0,0,192,0,0,0,0
+	db 80,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 253,63,63,0,15,0,0,0,0,0,0,0,0,0,0,0
+	db 233,125,150,215,165,245,90,255,245,15,253,3,255,3,1,0
+	db 100,105,152,150,164,165,89,90,169,165,105,105,164,214,100,125
+	db 5,0,5,0,5,0,5,0,0,0,0,0,0,0,0,0
+	db 208,87,192,85,64,85,64,93,0,85,0,16,0,0,0,0
+	db 0,0,0,0,5,0,26,0,246,5,118,21,93,29,93,85
+	db 0,0,0,84,148,169,105,166,154,102,154,89,102,153,102,166
+	db 0,192,0,48,0,48,4,156,85,172,85,169,85,169,85,170
+	db 0,0,0,0,0,0,0,64,0,64,0,80,0,64,0,64
+	db 87,21,87,5,83,5,3,0,3,0,3,0,0,0,0,0
+	db 153,102,153,89,102,217,110,246,191,246,215,253,117,61,125,15
+	db 149,166,144,106,172,101,108,154,107,153,153,230,170,230,150,121
+	db 0,0,0,0,0,0,0,12,192,63,192,127,240,127,192,159
+	db 221,15,221,3,247,3,247,0,61,0,61,0,63,0,63,0
+	db 106,121,106,94,154,246,154,153,102,153,102,102,153,102,153,217
+	db 240,159,240,167,240,175,192,167,192,164,192,164,0,144,0,96
+	db 3,0,3,0,5,0,21,0,21,0,21,0,5,0,5,0
+	db 102,217,102,118,153,118,154,93,105,93,84,87,0,84,0,117
+	db 0,144,0,144,0,64,0,128,0,64,0,0,0,0,0,0
+	db 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,80,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 74,21,109,93,125,85,125,85,125,85,125,85,125,21,189,0
+	db 0,168,0,254,128,255,224,255,248,255,246,255,247,255,247,255
+	db 0,0,0,0,0,0,0,32,0,32,0,32,0,128,0,224
+	db 149,0,253,2,253,2,189,0,189,0,189,0,189,0,189,0
+	db 85,85,247,255,247,255,247,255,247,255,247,95,247,95,247,223
+	db 0,96,160,214,248,223,248,223,248,223,160,214,0,224,0,224
+	db 189,0,189,0,189,0,189,0,189,0,253,2,253,2,149,0
+	db 247,95,247,95,247,95,247,255,247,255,247,255,247,255,85,85
+	db 0,224,0,224,128,218,224,223,224,223,224,223,224,223,128,85
+	db 189,0,125,21,125,85,125,85,125,85,125,85,109,93,74,21
+	db 247,255,247,255,246,255,248,255,224,255,128,255,0,254,0,168
+	db 128,255,0,190,0,40,0,32,0,32,0,0,0,0,0,0
+	db 1,0,5,0,5,0,21,0,21,0,21,0,5,0,2,0
+	db 0,80,0,117,0,84,232,86,222,95,127,95,127,125,255,125
+	db 0,0,0,0,0,0,0,0,0,128,0,192,0,128,0,224
+	db 2,0,47,0,47,0,47,0,47,0,189,0,189,2,245,2
+	db 255,247,255,87,255,215,127,221,215,127,245,127,253,255,247,95
+	db 0,224,0,240,0,224,128,216,128,120,0,120,0,90,0,248
+	db 0,0,0,0,0,0,2,0,2,0,2,0,82,5,87,5
+	db 247,11,213,11,213,47,87,239,127,253,255,253,255,87,255,245
+	db 247,127,223,127,223,255,125,255,126,253,248,253,248,247,208,247
+	db 0,213,128,222,224,127,224,127,224,43,128,10,0,0,0,0
+	db 87,21,95,85,95,29,125,21,173,5,39,0,10,0,0,0
+	db 95,223,215,95,253,127,253,255,253,255,246,255,232,254,0,168
+	db 218,223,126,223,127,125,254,85,254,245,104,239,224,46,0,40
+	db 0,0,0,128,0,128,0,128,0,0,0,0,0,0,0,0
+	db 0,128,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,5,0,5,0,5,0,5,0,1,0,171,2
+	db 0,16,0,85,64,93,64,85,128,85,160,87,216,127,120,253
+	db 0,0,0,0,0,0,0,0,0,0,80,1,84,21,86,85
+	db 0,0,0,0,0,0,10,0,43,0,191,42,253,63,213,191
+	db 247,3,247,10,245,175,93,255,127,253,255,213,255,117,255,87
+	db 254,215,254,95,254,255,248,255,252,127,248,95,216,223,96,245
+	db 85,85,95,117,255,21,245,18,215,3,127,2,255,2,191,0
+	db 93,223,253,213,255,87,255,253,255,253,127,255,93,255,215,255
+	db 255,95,255,255,245,255,95,255,127,253,253,215,232,127,128,253
+	db 240,245,234,93,160,253,0,245,64,213,128,127,224,127,192,175
+	db 0,128,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 187,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 87,255,247,185,173,2,61,0,175,2,10,0,0,0,0,0
+	db 0,245,128,95,160,255,192,255,128,126,0,136,0,0,0,0
+	db 160,47,0,2,0,0,0,0,0,0,0,0,0,0,0,0
+	db 80,21,84,85,84,117,84,85,86,85,255,47,255,191,85,149
+	db 0,0,0,0,0,0,0,40,170,190,255,127,255,127,85,85
+	db 0,0,0,0,0,0,40,0,190,170,253,255,253,255,85,85
+	db 84,5,85,21,93,21,85,21,85,149,248,255,254,255,86,85
+	db 255,191,255,191,255,191,255,47,255,11,255,2,149,0,47,0
+	db 213,127,213,127,255,127,255,127,255,127,255,127,85,85,255,127
+	db 253,215,253,87,253,255,253,255,253,255,253,255,85,85,253,255
+	db 254,255,254,255,254,255,248,255,224,255,128,255,0,86,0,248
+	db 11,0,175,2,47,0,11,0,2,0,0,0,0,0,0,0
+	db 255,127,90,85,224,127,224,127,224,191,128,42,0,0,0,0
+	db 253,255,86,165,244,7,248,11,248,11,248,11,160,2,0,0
+	db 0,224,128,138,0,0,0,0,0,0,0,0,0,0,0,0
+	db 1,0,21,0,93,0,85,0,149,0,181,2,255,9,95,11
+	db 0,0,0,64,0,84,0,84,0,84,0,84,0,80,160,250
+	db 245,47,253,47,255,47,255,11,255,15,253,11,253,9,87,2
+	db 240,247,232,119,254,215,127,221,95,127,213,127,213,255,245,255
+	db 0,0,0,0,0,128,0,232,0,250,170,255,255,95,255,213
+	db 0,0,0,0,0,0,0,0,0,0,80,1,85,5,85,165
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64
+	db 215,131,221,42,95,47,87,11,245,13,255,10,255,2,174,0
+	db 253,255,255,127,255,215,127,253,95,255,245,95,255,138,159,128
+	db 125,93,213,223,245,255,223,255,223,255,127,255,127,93,255,245
+	db 85,213,87,253,213,127,225,215,240,245,96,255,224,255,128,255
+	db 0,64,0,64,0,0,0,0,0,0,0,0,0,0,0,0
+	db 42,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 23,0,189,0,191,2,254,2,254,2,168,0,0,0,0,0
+	db 127,245,219,119,160,106,0,72,160,0,0,0,0,0,0,0
+	db 128,251,0,160,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,2,0,43,0,63,0,47,0,191,0
+	db 84,0,213,5,85,1,85,185,85,127,85,223,213,215,216,247
+	db 0,0,0,0,0,0,0,64,0,64,0,64,0,0,0,0
+	db 191,0,255,0,191,0,127,34,221,34,213,46,87,191,253,181
+	db 248,253,95,253,127,253,127,215,223,127,215,255,247,255,85,255
+	db 0,0,0,128,0,128,0,128,0,128,0,224,0,232,0,248
+	db 125,159,127,63,223,191,215,47,139,46,2,2,2,0,0,0
+	db 213,255,215,127,245,127,253,223,255,215,255,247,255,253,255,125
+	db 0,254,0,126,128,127,184,95,248,215,248,247,88,253,253,245
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,85,0,85
+	db 9,0,43,0,63,0,191,0,47,0,34,0,0,0,0,0
+	db 127,127,125,223,215,215,87,213,247,146,185,2,130,0,128,0
+	db 125,95,95,127,223,255,247,255,247,255,253,255,250,187,160,2
+	db 64,85,80,85,64,87,64,213,0,165,0,128,0,0,0,0
+	db 32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,32,0,32,0,162,0,251,2,255,11
+	db 170,0,253,2,253,11,253,47,253,191,253,127,253,127,253,127
+	db 80,133,212,229,84,245,84,245,84,245,84,245,80,245,0,248
+	db 85,9,223,47,223,47,223,47,223,47,159,10,47,0,47,0
+	db 85,85,253,127,253,127,253,127,253,127,213,127,213,127,213,127
+	db 0,88,0,254,0,254,0,248,0,248,0,248,0,248,0,248
+	db 47,0,47,0,95,42,223,191,223,191,223,191,95,42,37,0
+	db 221,127,213,127,213,127,253,127,253,127,253,127,253,127,85,85
+	db 0,248,0,248,0,248,0,248,0,248,0,254,0,254,0,88
+	db 47,0,11,0,34,0,32,0,32,0,0,0,0,0,0,0
+	db 253,127,253,127,253,127,253,191,253,47,253,11,253,2,170,0
+	db 0,248,80,245,84,245,84,245,84,245,84,245,212,229,80,133
+	db 0,0,0,0,0,0,3,0,15,0,63,0,63,0,63,0
+	db 48,0,192,3,193,255,102,255,170,253,170,246,169,214,169,218
+	db 0,0,80,1,165,102,170,153,153,105,89,102,103,150,167,153
+	db 0,0,0,0,0,0,0,64,0,245,64,213,64,87,80,85
+	db 15,0,0,0,3,0,3,21,78,85,86,85,89,85,106,21
+	db 166,106,150,101,153,154,107,166,111,106,189,153,181,105,213,166
+	db 157,105,93,102,124,150,252,153,252,233,252,119,192,215,0,223
+	db 64,85,0,85,0,85,0,0,0,0,0,0,0,0,0,0
+	db 101,5,170,3,170,15,170,1,169,49,169,49,102,0,150,0
+	db 223,150,87,155,253,105,109,102,103,150,151,153,159,105,127,102
+	db 0,127,0,124,0,252,0,240,0,192,0,192,0,192,0,192
+	db 105,0,105,0,22,0,42,0,22,0,1,0,0,0,0,0
+	db 124,150,220,153,213,105,85,103,85,151,85,93,85,1,213,5
+	db 0,0,0,0,0,0,0,64,0,64,0,64,0,0,0,0
+	db 84,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,16,0,85,1,85,0,85,1
+	db 12,0,255,0,255,0,255,3,253,0,22,0,218,64,169,79
+	db 0,252,240,255,0,255,80,221,166,106,169,170,165,170,90,170
+	db 0,0,0,0,0,0,0,0,0,80,64,166,64,166,144,90
+	db 85,0,85,0,22,0,234,3,170,61,170,194,170,1,165,6
+	db 153,90,106,169,105,166,150,102,107,169,189,150,245,90,215,167
+	db 165,165,90,90,105,105,150,182,105,221,151,94,95,95,255,245
+	db 144,165,80,90,113,105,213,151,87,125,85,213,85,245,85,5
+	db 0,0,0,0,0,0,0,0,0,64,0,64,0,64,0,0
+	db 90,6,165,9,150,6,105,25,150,26,90,26,165,6,95,6
+	db 223,90,181,165,151,150,127,105,252,151,240,95,240,255,0,80
+	db 255,95,0,255,0,252,0,192,0,0,0,0,0,0,0,0
+	db 80,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 245,1,213,0,85,0,93,0,21,0,1,0,0,0,0,0
+	db 0,84,0,84,0,84,0,84,0,64,0,0,0,0,0,0
+	align 2
+_gfx_roll_pal:
+	db 0,0,4,0,46,1,221,14,0,0,17,1,46,1,133,11
+	align 2
+_gfx_map_tiles:
+	db 85,213,85,85,85,87,85,85,93,85,85,85,85,85,85,85
+	db 85,85,117,85,85,85,85,85,85,85,85,117,85,117,85,85
+	db 87,87,85,85,85,85,85,213,85,85,85,87,85,85,93,85
+	db 85,85,85,85,85,93,85,85,117,85,213,85,85,85,85,85
+	db 93,85,213,85,85,85,87,85,85,85,85,85,85,213,85,85
+	db 89,85,86,85,90,85,107,85,175,85,191,90,252,90,240,91
+	db 80,85,96,85,160,101,176,86,240,90,240,107,192,175,0,191
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 85,85,85,93,85,85,117,85,85,85,85,85,85,85,85,85
+	db 213,85,85,85,87,85,85,85,85,85,85,213,85,85,85,215
+	db 85,85,85,85,85,93,85,85,85,93,85,85,117,85,85,85
+	db 85,85,85,117,85,85,213,85,85,85,87,85,85,85,85,87
+	db 85,87,85,85,125,85,85,85,85,85,85,85,85,86,85,90
+	db 192,95,0,95,0,92,0,92,0,96,0,80,0,96,0,160
+	db 0,252,0,240,0,192,0,192,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,16
+	db 85,117,85,85,213,85,85,85,87,85,85,85,85,85,85,213
+	db 85,85,93,85,85,85,85,85,85,85,85,85,85,93,85,85
+	db 85,85,85,85,85,85,85,117,85,117,213,85,85,85,87,85
+	db 85,149,85,85,86,86,90,85,90,85,91,85,95,85,95,85
+	db 86,107,106,175,107,191,175,252,175,240,191,240,252,192,240,0
+	db 0,176,0,240,0,240,0,192,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,1,0,42,0,170,0,170,2,170,0
+	db 0,0,0,0,0,0,0,4,0,170,128,170,160,170,128,170
+	db 2,0,10,0,42,0,10,0,2,0,0,0,0,0,0,0
+	db 160,170,168,170,170,170,168,170,160,170,0,0,0,0,0,0
+	db 85,85,87,87,85,85,93,85,85,85,85,85,85,85,85,85
+	db 117,85,85,85,85,85,85,85,85,85,85,117,85,85,213,85
+	db 85,85,85,85,85,149,86,85,90,86,107,85,107,149,175,85
+	db 92,85,80,89,80,85,96,85,160,85,176,86,176,86,240,90
+	db 192,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 42,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,170,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,63,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,255,255
+	db 85,93,85,85,117,85,93,85,85,85,85,85,85,85,85,117
+	db 85,85,87,85,85,85,85,85,85,213,85,85,85,87,85,85
+	db 191,86,252,90,240,91,192,95,0,95,0,92,0,80,0,80
+	db 240,107,192,175,0,191,0,252,0,240,0,192,0,0,0,0
+	db 0,0,0,0,0,0,85,0,85,0,85,1,95,5,85,21
+	db 0,0,0,0,0,0,85,85,85,85,85,85,95,95,85,85
+	db 0,0,0,0,0,0,85,85,85,85,85,85,85,95,85,85
+	db 58,0,58,0,58,0,122,85,122,85,122,85,122,85,122,85
+	db 171,170,171,170,171,191,235,234,235,234,235,255,235,234,235,234
+	db 85,85,213,85,85,85,87,85,85,85,118,85,90,213,91,85
+	db 90,85,85,86,85,90,86,107,90,175,107,191,175,252,191,240
+	db 0,80,0,96,0,160,0,176,0,240,0,240,0,192,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,85,85
+	db 1,0,5,0,21,0,85,0,85,1,85,5,85,85,85,85
+	db 85,85,85,85,80,85,0,85,0,84,0,80,0,64,0,0
+	db 85,85,85,85,0,0,0,0,0,0,0,0,0,0,0,0
+	db 122,85,122,85,58,0,63,0,0,0,0,0,0,0,0,0
+	db 235,234,171,170,171,170,255,255,0,0,0,0,0,0,0,0
+	db 95,86,95,85,92,85,92,85,80,85,80,85,96,85,160,89
+	db 252,192,240,0,192,0,192,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,1,0,5,0
+	db 5,0,21,0,85,0,85,1,85,21,85,85,85,85,80,85
+	db 85,85,85,85,245,245,85,85,85,85,85,85,0,0,0,0
+	db 84,85,64,85,64,85,80,85,85,85,85,85,85,21,85,1
+	db 0,0,0,0,0,0,0,0,0,0,0,64,0,80,0,84
+	db 176,86,240,90,240,107,192,175,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,1,0,5,0,21,0
+	db 21,0,85,0,85,5,85,85,85,85,84,85,84,85,85,85
+	db 64,85,0,85,0,84,0,80,0,64,0,0,0,0,0,0
+	db 85,0,21,0,5,0,1,0,0,0,0,0,0,0,0,0
+	db 0,85,64,85,84,85,85,85,85,85,85,5,95,5,85,21
+	db 171,170,171,170,171,255,235,234,171,255,235,234,235,234,235,234
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,85,5
+	db 0,0,0,0,0,0,0,0,1,0,5,0,85,0,85,85
+	db 85,1,85,5,85,21,85,85,84,85,80,85,64,85,0,85
+	db 85,85,85,85,0,80,0,0,0,0,0,0,0,0,0,0
+	db 85,85,85,85,85,1,21,0,5,0,1,0,0,0,0,0
+	db 0,80,0,84,0,85,64,85,80,85,84,85,85,85,85,21
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,64,85,85
+	db 171,255,171,170,171,170,255,255,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,1,0,21,0,85,0,85,1,85,5
+	db 85,5,85,21,245,85,85,85,85,85,85,85,0,85,0,80
+	db 85,85,85,85,85,245,85,85,85,85,85,85,21,0,1,0
+	db 0,84,0,64,0,64,0,80,0,85,64,85,80,85,84,85
+	db 85,5,85,0,85,0,85,1,85,21,85,85,85,85,80,85
+	db 0,0,0,0,0,0,85,85,85,85,85,85,247,245,85,85
+	db 0,0,0,0,5,0,85,85,85,85,85,85,85,95,85,85
+	db 85,21,85,85,84,85,80,85,64,85,0,84,0,84,0,85
+	db 0,64,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 85,85,85,21,85,5,85,1,85,0,5,0,5,0,21,0
+	db 0,0,0,64,0,84,85,85,85,85,85,85,95,95,85,85
+	db 171,170,171,170,235,191,171,234,171,234,171,234,171,234,171,234
+	db 85,85,85,85,1,0,0,0,0,0,0,0,0,0,0,0
+	db 80,85,84,85,85,85,85,21,85,5,85,1,85,0,21,0
+	db 0,0,0,0,0,0,0,64,0,80,0,84,64,85,85,85
+	db 235,191,171,170,171,170,255,255,0,0,0,0,0,0,0,0
+	db 5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 85,85,85,85,245,21,85,5,85,5,85,5,0,0,0,0
+	db 85,85,85,21,85,5,85,1,85,0,5,0,1,0,0,0
+	db 171,170,171,170,171,255,235,234,235,234,235,234,235,234,235,234
+	db 85,5,85,0,21,0,5,0,5,0,5,0,0,0,0,0
+	db 0,85,64,85,84,85,85,85,85,85,85,5,95,1,85,0
+	db 171,170,171,170,235,255,171,234,171,255,171,234,171,234,171,234
+	db 0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0
+	db 0,0,4,1,170,42,170,170,170,170,170,170,170,42,0,0
+	db 0,0,0,0,0,0,0,128,0,160,0,128,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4
+	db 85,0,85,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 122,85,122,85,186,2,191,10,170,42,170,10,170,2,0,0
+	db 235,255,171,170,171,170,255,255,0,85,0,84,0,80,0,0
+	db 42,0,170,0,170,2,170,0,42,0,0,0,0,0,0,0
+	db 0,170,128,170,160,170,128,170,0,170,0,0,0,0,0,0
+	db 85,85,190,106,170,106,170,106,170,106,170,111,170,127,171,127
+	db 85,85,169,170,169,170,185,170,253,170,253,170,253,170,253,250
+	db 235,127,86,106,85,85,255,127,255,127,255,127,255,127,85,85
+	db 253,234,153,170,85,153,253,255,253,255,253,255,253,255,85,85
+	db 85,85,170,106,170,122,170,106,170,106,175,105,111,89,175,85
+	db 85,85,189,170,173,250,169,170,169,170,173,217,109,217,173,149
+	db 106,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85
+	db 105,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85
+	db 85,85,170,110,170,127,254,127,255,107,239,107,238,107,170,106
+	db 85,85,169,174,169,191,253,255,253,235,237,235,237,171,169,170
+	db 170,106,105,90,85,85,170,106,170,106,170,106,170,106,85,85
+	db 169,170,153,166,85,85,169,170,169,170,169,170,169,170,85,85
+	db 85,85,170,106,170,106,170,106,170,106,255,127,255,126,251,110
+	db 85,85,169,170,169,170,169,170,169,170,253,255,173,255,173,255
+	db 230,90,102,90,86,90,170,106,170,106,170,106,170,106,85,85
+	db 169,191,169,105,169,85,169,170,169,170,169,170,169,170,85,85
+	db 85,85,170,106,170,106,255,127,255,127,127,125,95,117,95,117
+	db 85,85,169,170,169,170,253,255,253,255,253,255,253,255,253,213
+	db 95,117,95,117,85,85,255,127,255,127,255,127,255,127,85,85
+	db 213,213,85,85,85,85,253,255,253,255,253,255,253,255,85,85
+	db 85,85,255,127,255,127,255,127,255,127,255,127,255,127,191,90
+	db 85,85,253,255,253,255,253,255,253,255,253,255,253,255,253,255
+	db 165,85,170,106,170,106,170,106,170,106,170,106,170,106,85,85
+	db 253,111,169,170,169,170,169,170,169,170,169,170,169,170,85,85
+	db 85,85,255,127,255,127,255,127,255,127,255,127,254,127,105,106
+	db 85,85,253,255,253,255,253,255,253,234,173,170,173,106,169,170
+	db 150,105,85,85,85,85,170,106,170,106,170,106,170,106,85,85
+	db 165,170,85,154,85,154,169,170,169,170,169,170,169,170,85,85
+	db 85,85,170,106,170,106,170,107,255,107,254,91,249,91,245,91
+	db 85,85,169,170,169,170,169,171,253,171,253,155,249,155,245,155
+	db 229,102,165,101,165,101,255,127,255,127,255,127,255,127,85,85
+	db 229,166,165,165,165,165,253,255,253,255,253,255,253,255,85,85
+	db 85,85,170,106,170,106,255,127,255,127,255,127,255,127,250,127
+	db 85,85,169,170,169,170,249,255,249,255,169,255,189,254,253,250
+	db 251,127,153,89,85,85,255,127,255,127,255,127,255,127,85,85
+	db 253,250,153,153,85,85,253,255,253,255,253,255,253,255,85,85
+	db 85,85,255,127,255,127,255,127,255,127,255,127,255,127,111,107
+	db 85,85,253,255,253,255,253,255,253,255,253,255,253,255,109,235
+	db 174,106,170,106,170,106,170,106,170,106,170,106,170,106,85,85
+	db 173,170,169,170,169,170,169,170,169,170,169,170,169,170,85,85
+	db 85,85,255,127,255,127,255,127,255,127,255,127,255,127,255,127
+	db 85,85,253,255,253,255,253,255,253,255,253,255,253,255,253,255
+	db 255,111,85,85,85,85,170,106,170,106,170,106,170,106,85,85
+	db 253,255,85,85,85,85,169,170,169,170,169,170,169,170,85,85
+	db 85,85,255,127,255,127,255,111,254,111,181,110,181,106,165,106
+	db 85,85,253,255,253,255,253,239,253,239,181,174,181,106,165,106
+	db 165,106,170,106,149,106,170,106,170,106,170,106,170,106,85,85
+	db 165,106,169,170,149,106,169,170,169,170,169,170,169,170,85,85
+	db 85,85,255,127,255,127,255,127,255,127,255,127,223,127,87,86
+	db 85,85,253,255,253,255,253,255,253,255,253,255,253,255,245,255
+	db 86,86,85,90,85,85,170,106,170,106,170,106,170,106,85,85
+	db 149,191,89,89,85,85,169,170,169,170,169,170,169,170,85,85
+	db 85,85,170,106,255,127,255,127,255,127,255,127,255,117,215,93
+	db 85,85,189,170,253,255,253,255,253,255,253,255,253,255,253,223
+	db 85,85,85,85,170,106,255,127,255,127,255,127,255,127,85,85
+	db 253,95,221,85,169,170,253,255,253,255,253,255,253,255,85,85
+	db 85,85,255,111,255,127,255,127,255,127,191,127,191,107,175,86
+	db 85,85,253,234,253,255,253,255,253,255,253,255,165,250,165,246
+	db 171,86,170,86,85,85,170,106,170,106,170,106,170,106,85,85
+	db 165,214,169,86,85,85,169,170,169,170,169,170,169,170,85,85
+	db 0,5,170,42,250,171,250,171,250,171,250,171,170,42,0,5
+	db 0,20,160,170,168,175,170,175,170,175,168,175,160,170,0,20
+	align 2
+_gfx_map_map:
+	db 0,0,1,0,2,0,3,0,4,0,5,0,6,0,255,255
+	db 255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
+	db 255,255,255,255,255,255,255,255,8,0,9,0,10,0,11,0
+	db 12,0,13,0,14,0,255,255,255,255,255,255,255,255,255,255
+	db 255,255,255,255,255,255,255,255,15,0,255,255,255,255,255,255
+	db 16,0,17,0,18,0,19,0,20,0,21,0,255,255,255,255
+	db 255,255,255,255,255,255,22,0,23,0,255,255,255,255,24,0
+	db 25,0,255,255,255,255,255,255,26,0,27,0,28,0,29,0
+	db 30,0,255,255,255,255,255,255,255,255,255,255,255,255,31,0
+	db 32,0,255,255,255,255,255,255,255,255,255,255,33,0,34,0
+	db 35,0,36,0,37,0,38,0,255,255,255,255,255,255,255,255
+	db 255,255,255,255,255,255,255,255,255,255,255,255,255,255,39,0
+	db 40,0,41,0,42,0,43,0,44,0,45,0,46,0,255,255
+	db 255,255,255,255,255,255,255,255,255,255,255,255,255,255,47,0
+	db 48,0,48,0,49,0,50,0,51,0,51,0,52,0,53,0
+	db 54,0,55,0,255,255,255,255,255,255,255,255,255,255,255,255
+	db 255,255,255,255,56,0,57,0,58,0,58,0,59,0,60,0
+	db 255,255,255,255,33,0,34,0,61,0,255,255,255,255,255,255
+	db 255,255,255,255,255,255,62,0,40,0,40,0,63,0,64,0
+	db 255,255,255,255,65,0,66,0,40,0,41,0,42,0,67,0
+	db 255,255,255,255,255,255,255,255,68,0,48,0,69,0,70,0
+	db 71,0,51,0,72,0,73,0,74,0,48,0,49,0,50,0
+	db 51,0,51,0,52,0,75,0,255,255,255,255,255,255,76,0
+	db 77,0,58,0,78,0,79,0,255,255,255,255,56,0,80,0
+	db 58,0,58,0,59,0,60,0,255,255,255,255,33,0,34,0
+	db 81,0,40,0,82,0,83,0,84,0,255,255,255,255,85,0
+	db 86,0,40,0,63,0,64,0,255,255,255,255,65,0,66,0
+	db 40,0,41,0,42,0,87,0,51,0,51,0,88,0,89,0
+	db 90,0,48,0,69,0,70,0,71,0,51,0,72,0,73,0
+	db 74,0,48,0,49,0,50,0,51,0,51,0,52,0,91,0
+	db 255,255,255,255,255,255,92,0,93,0,58,0,78,0,79,0
+	db 255,255,255,255,56,0,80,0,58,0,58,0,59,0,60,0
+	db 255,255,255,255,33,0,34,0,255,255,255,255,255,255,255,255
+	db 255,255,255,255,255,255,94,0,86,0,40,0,63,0,64,0
+	db 255,255,255,255,65,0,66,0,40,0,41,0,42,0,95,0
+	db 255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
+	db 51,0,51,0,72,0,73,0,74,0,48,0,49,0,50,0
+	db 51,0,51,0,52,0,75,0,255,255,255,255,255,255,255,255
+	db 255,255,255,255,255,255,255,255,255,255,255,255,255,255,96,0
+	db 58,0,58,0,59,0,60,0,255,255,255,255,33,0,34,0
+	db 255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
+	db 255,255,255,255,255,255,255,255,255,255,255,255,65,0,97,0
+	db 40,0,41,0,42,0,98,0,255,255,99,0,100,0,101,0
+	db 255,255,255,255,255,255,102,0,103,0,255,255,255,255,255,255
+	db 255,255,102,0,103,0,104,0,51,0,51,0,105,0,106,0
+	db 255,255,255,255,255,255,255,255,255,255,255,255,255,255,107,0
+	db 108,0,255,255,255,255,255,255,255,255,107,0,108,0,255,255
+	db 255,255,255,255,255,255,255,255
+_gfx_map_pal:
+	db 1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0
+	db 0,0,0,0,2,0,0,0,1,1,1,0,0,0,0,0
+	db 0,0,0,2,2,0,0,2,2,0,0,0,1,1,0,0
+	db 0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0
+	db 1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,3
+	db 3,3,3,3,1,0,0,0,0,0,0,0,0,0,0,3
+	db 3,3,3,3,3,3,3,3,0,0,0,0,0,0,0,0
+	db 0,0,3,3,3,3,3,3,0,0,0,0,0,0,0,0
+	db 0,0,0,3,3,3,3,3,0,0,3,3,3,3,3,3
+	db 0,0,0,0,3,3,3,3,3,3,3,3,3,3,3,3
+	db 3,3,3,3,0,0,0,3,3,3,3,3,0,0,3,3
+	db 3,3,3,3,0,0,0,0,3,3,3,3,3,0,0,3
+	db 3,3,3,3,0,0,3,3,3,3,3,3,3,3,3,3
+	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
+	db 0,0,0,3,3,3,3,3,0,0,3,3,3,3,3,3
+	db 0,0,0,0,0,0,0,0,0,0,0,3,3,3,3,3
+	db 0,0,3,3,3,3,3,3,0,0,0,0,0,0,0,0
+	db 3,3,3,3,3,3,3,3,3,3,3,3,0,0,0,0
+	db 0,0,0,0,0,0,0,3,3,3,3,3,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3
+	db 3,3,3,3,0,2,2,2,0,0,0,2,2,0,0,0
+	db 0,2,2,3,3,3,4,5,0,0,0,0,0,0,0,2
+	db 2,0,0,0,0,2,2,0,0,0,0,0
+	align 2
+_gfx_map_pals:
+	db 174,6,98,12,200,15,255,15,174,6,98,12,200,15,235,15
+	db 174,6,166,3,173,5,0,0,174,6,36,4,62,7,255,15
+	db 174,6,36,4,173,5,255,15,174,6,173,5,62,7,255,15
+	db 174,6,0,0,0,0,0,0,174,6,0,0,0,0,0,0
+	align 2
+_gfx_map_thumb_pals:
+	db 0,0,146,7,198,15,255,15,0,0,162,6,147,15,220,15
+	db 0,0,97,3,133,13,255,15,0,0,36,6,138,7,239,9
+	db 0,0,173,7,185,13,223,10,0,0,149,4,204,6,223,13
+	db 0,0,93,1,190,6,189,14,0,0,1,0,130,10,219,11
+	db 0,0,67,4,168,9,254,15,0,0,41,2,189,3,239,12
+	db 0,0,82,3,166,5,220,13,0,0,69,5,154,9,223,10
+	db 0,0,69,9,202,8,205,14,0,0,166,4,130,12,235,15
+	db 0,0,98,2,153,7,236,12
+	align 2
+_gfx_map_car_pal:
+	db 0,0,17,1,46,1,235,15
+	align 2
 _pano_beach_tiles:
 	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85
-	db 85,85,85,85,85,85,255,87,255,95,255,127,187,123,238,110
-	db 85,85,85,85,85,85,245,127,253,255,255,255,187,187,238,238
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,213
 	db 85,85,89,89,149,149,102,102,170,170,170,170,170,170,170,170
-	db 87,85,127,89,255,149,102,102,170,170,170,170,170,170,170,170
-	db 255,127,255,255,255,255,102,102,170,170,170,170,170,170,170,170
-	db 255,255,255,255,255,255,102,102,170,170,170,170,170,170,170,170
-	db 85,245,89,255,213,255,102,102,170,170,170,170,170,170,170,170
+	db 87,85,125,89,255,149,102,102,170,170,170,170,170,170,170,170
+	db 119,119,253,253,255,255,102,102,170,170,170,170,170,170,170,170
+	db 85,117,89,253,213,255,102,102,170,170,170,170,170,170,170,170
 	db 170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170
 	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,87,85
 	db 85,85,85,85,85,85,245,87,255,127,255,255,255,255,255,255
@@ -25853,15 +28855,15 @@ _pano_beach_tiles:
 	db 85,245,85,245,85,247,245,255,253,255,89,89,149,149,102,102
 	db 85,85,85,85,85,85,85,85,85,85,89,89,149,149,118,102
 	db 85,213,85,253,85,187,85,238,149,170,165,170,169,170,85,85
-	db 85,85,85,85,85,85,95,85,255,85,255,87,255,95,255,95
-	db 255,95,255,127,255,127,255,255,255,255,255,255,255,255,255,255
-	db 85,213,85,245,85,245,245,255,253,255,255,255,255,255,255,255
+	db 170,170,170,170,170,170,175,170,255,170,255,171,255,175,255,175
+	db 255,175,255,191,255,191,255,255,255,255,255,255,255,255,255,255
+	db 170,234,170,250,170,250,250,255,254,255,255,255,255,255,255,255
 	db 85,85,95,85,123,85,110,85,170,85,170,86,170,218,85,213
 	db 255,255,255,255,187,187,238,238,170,170,170,170,170,170,85,85
-	db 85,85,85,85,85,85,85,85,95,85,95,85,127,85,127,85
-	db 85,85,85,85,85,95,255,255,255,255,255,255,255,255,255,255
+	db 170,170,170,170,170,170,170,170,175,170,175,170,191,170,191,170
+	db 170,170,170,170,170,175,255,255,255,255,255,255,255,255,255,255
 	db 170,170,170,170,170,190,234,255,250,255,254,255,254,255,254,255
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,95,85
+	db 170,170,170,170,170,170,170,170,170,170,170,170,170,170,175,170
 	db 255,175,255,175,255,175,255,171,255,170,255,170,255,255,255,255
 	db 255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
 	db 255,255,255,255,255,255,255,255,255,255,255,255,255,255,251,191
@@ -25909,66 +28911,65 @@ _pano_beach_tiles:
 _pano_beach_map:
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0
-	db 0,0,0,0,0,0,0,0,0,1,2,3,0,0,0,0
-	db 4,4,4,4,4,4,4,4,5,6,7,8,4,4,4,4
-	db 4,4,4,4,4,4,4,4,5,6,7,8,4,4,4,4
-	db 9,9,9,10,11,11,12,9,9,9,9,9,9,9,9,9
-	db 9,9,9,10,11,11,12,9,9,9,9,9,9,9,9,9
-	db 13,13,13,14,15,16,17,13,13,13,13,13,18,13,13,13
-	db 13,13,13,14,15,16,17,13,13,13,13,13,18,13,13,13
-	db 19,9,9,9,9,9,9,9,9,9,9,20,21,22,23,24
-	db 19,9,9,9,9,9,9,9,9,9,9,20,21,22,23,24
-	db 25,26,27,9,9,9,9,9,9,9,28,29,30,31,32,9
-	db 25,26,27,9,9,9,9,9,9,9,28,29,30,31,32,9
-	db 33,34,35,36,4,4,37,38,39,4,40,41,42,43,44,45
-	db 33,34,35,36,4,4,37,38,39,4,40,41,42,43,44,45
-	db 46,47,48,49,9,9,50,51,52,9,53,30,30,30,54,55
-	db 46,47,48,49,9,9,50,51,52,9,53,30,30,30,54,55
-	db 56,56,56,57,58,59,60,61,62,9,63,64,65,56,66,9
-	db 56,56,56,57,58,59,60,61,62,9,63,64,65,56,66,9
-	db 67,68,67,68,67,68,67,69,67,70,67,68,67,68,71,72
-	db 67,68,67,68,67,68,67,69,67,70,67,68,67,68,71,72
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 1,1,1,1,1,1,1,1,2,3,3,4,1,1,1,1
+	db 1,1,1,1,1,1,1,1,2,3,3,4,1,1,1,1
+	db 5,5,5,6,7,7,8,5,5,5,5,5,5,5,5,5
+	db 5,5,5,6,7,7,8,5,5,5,5,5,5,5,5,5
+	db 9,9,9,10,11,12,13,9,9,9,9,9,14,9,9,9
+	db 9,9,9,10,11,12,13,9,9,9,9,9,14,9,9,9
+	db 15,5,5,5,5,5,5,5,5,5,5,16,17,18,19,20
+	db 15,5,5,5,5,5,5,5,5,5,5,16,17,18,19,20
+	db 21,22,23,5,5,5,5,5,5,5,24,25,26,27,28,5
+	db 21,22,23,5,5,5,5,5,5,5,24,25,26,27,28,5
+	db 29,30,31,32,1,1,33,34,35,1,36,37,38,39,40,41
+	db 29,30,31,32,1,1,33,34,35,1,36,37,38,39,40,41
+	db 42,43,44,45,5,5,46,47,48,5,49,26,26,26,50,51
+	db 42,43,44,45,5,5,46,47,48,5,49,26,26,26,50,51
+	db 52,52,52,53,54,55,56,57,58,5,59,60,61,52,62,5
+	db 52,52,52,53,54,55,56,57,58,5,59,60,61,52,62,5
+	db 63,64,63,64,63,64,63,65,63,66,63,64,63,64,67,68
+	db 63,64,63,64,63,64,63,65,63,66,63,64,63,64,67,68
 _pano_beach_map_pal:
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 0,0,0,0,0,0,0,0,0,7,7,7,0,0,0,0
-	db 0,0,0,0,0,0,0,0,0,7,7,7,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 0,0,0,4,4,4,4,0,0,0,0,0,0,0,0,0
-	db 0,0,0,4,4,4,4,0,0,0,0,0,0,0,0,0
-	db 1,1,1,1,4,1,1,1,1,1,1,1,5,1,1,1
-	db 1,1,1,1,4,1,1,1,1,1,1,1,5,1,1,1
-	db 2,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2
-	db 2,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2
-	db 2,2,5,1,1,1,1,1,1,1,2,5,4,4,5,1
-	db 2,2,5,1,1,1,1,1,1,1,2,5,4,4,5,1
-	db 6,4,4,6,6,6,6,6,6,6,6,4,4,4,6,6
-	db 6,4,4,6,6,6,6,6,6,6,6,4,4,4,6,6
-	db 4,4,4,6,6,6,6,4,6,6,6,4,4,4,6,6
-	db 4,4,4,6,6,6,6,4,6,6,6,4,4,4,6,6
-	db 4,4,4,4,7,7,4,4,6,6,6,4,4,4,6,6
-	db 4,4,4,4,7,7,4,4,6,6,6,4,4,4,6,6
-	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
-	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,3,3,3,3,0,0,0,0,0,0,0,0,0
+	db 0,0,0,3,3,3,3,0,0,0,0,0,0,0,0,0
+	db 1,1,1,1,7,1,1,1,1,1,1,1,3,1,1,1
+	db 1,1,1,1,7,1,1,1,1,1,1,1,3,1,1,1
+	db 4,1,1,1,1,1,1,1,1,1,1,3,3,3,4,4
+	db 4,1,1,1,1,1,1,1,1,1,1,3,3,3,4,4
+	db 3,3,3,1,1,1,1,1,1,1,3,3,3,4,3,1
+	db 3,3,3,1,1,1,1,1,1,1,3,3,3,4,3,1
+	db 5,4,4,5,5,5,5,5,5,5,5,4,4,4,5,5
+	db 5,4,4,5,5,5,5,5,5,5,5,4,4,4,5,5
+	db 4,4,4,5,5,5,5,4,5,5,5,3,3,3,5,5
+	db 4,4,4,5,5,5,5,4,5,5,5,3,3,3,5,5
+	db 4,4,4,6,6,6,4,4,5,5,5,6,6,4,5,5
+	db 4,4,4,6,6,6,4,4,5,5,5,6,6,4,5,5
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
 	align 2
 _pano_beach_pals:
 	db 223,11,129,14,162,15,202,14,223,11,162,15,180,15,202,14
-	db 223,11,180,15,202,14,255,15,223,11,112,11,79,10,255,15
-	db 223,11,162,15,202,14,237,15,223,11,162,15,180,15,237,15
-	db 223,11,180,15,199,15,237,15,223,11,129,14,199,15,237,15
+	db 223,11,112,11,79,10,255,15,223,11,162,15,180,15,237,15
+	db 223,11,180,15,202,14,237,15,223,11,180,15,199,15,237,15
+	db 223,11,162,5,199,15,237,15,223,11,162,15,199,15,237,15
 	align 2
 _pano_coast_tiles:
 	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85
-	db 85,85,85,85,85,85,85,85,85,85,85,85,149,149,89,89
-	db 153,153,170,170,170,170,170,170,170,170,170,170,170,170,170,170
-	db 153,153,170,170,170,170,170,170,170,170,170,170,170,170,191,170
-	db 170,170,170,170,170,170,170,170,170,170,254,171,255,175,255,255
-	db 170,170,170,170,170,170,170,171,234,175,255,191,255,255,255,255
-	db 153,153,170,170,170,170,170,191,171,255,255,255,255,255,255,255
-	db 153,153,170,170,170,170,170,250,170,254,175,255,255,255,255,255
-	db 170,170,170,170,170,170,170,170,170,170,170,250,170,254,255,255
+	db 85,85,169,169,170,170,170,170,170,170,170,170,170,170,170,170
+	db 85,85,169,169,170,170,170,170,170,170,170,170,170,170,191,170
+	db 85,85,169,169,170,170,170,170,170,170,254,171,255,175,255,255
+	db 85,85,169,169,170,170,170,171,234,175,255,191,255,255,255,255
+	db 85,85,169,169,170,170,170,191,171,255,255,255,255,255,255,255
+	db 85,85,169,169,170,170,170,250,170,254,175,255,255,255,255,255
+	db 85,85,169,169,170,170,170,170,170,170,170,250,170,254,255,255
 	db 170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170
 	db 191,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170
 	db 255,255,170,170,255,170,255,170,170,170,170,170,170,170,170,170
@@ -26063,26 +29064,26 @@ _pano_coast_tiles:
 _pano_coast_map:
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-	db 2,2,3,4,5,6,7,8,2,2,2,2,2,2,2,2
-	db 2,2,3,4,5,6,7,8,2,2,2,2,2,2,2,2
-	db 9,9,10,11,12,13,13,14,15,9,9,16,17,18,19,20
-	db 9,9,10,11,12,13,13,14,15,9,9,16,17,18,19,20
-	db 21,22,23,23,23,23,24,25,26,23,23,23,27,28,29,30
-	db 21,22,23,23,23,23,24,25,26,23,23,23,27,28,29,30
-	db 9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9
-	db 9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9
-	db 31,32,33,34,35,36,36,36,37,38,39,40,41,36,36,36
-	db 42,43,44,45,46,36,36,36,31,32,33,34,35,36,36,36
-	db 47,48,49,50,51,52,52,53,54,55,56,57,58,52,52,53
-	db 59,60,61,62,63,64,52,53,47,48,49,50,51,52,52,53
-	db 65,66,67,68,69,70,52,71,72,73,74,75,76,77,52,71
-	db 72,78,79,80,81,82,52,71,65,66,67,68,69,70,52,71
-	db 83,84,85,86,87,88,89,90,83,84,85,91,92,93,94,90
-	db 83,84,85,86,95,96,97,90,83,84,85,86,87,88,89,90
-	db 9,9,9,9,9,9,98,99,9,9,9,9,9,9,98,99
-	db 9,9,9,9,9,9,98,99,9,9,9,9,9,9,98,99
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 1,1,2,3,4,5,6,7,1,1,1,1,1,1,1,1
+	db 1,1,2,3,4,5,6,7,1,1,1,1,1,1,1,1
+	db 8,8,9,10,11,12,12,13,14,8,8,15,16,17,18,19
+	db 8,8,9,10,11,12,12,13,14,8,8,15,16,17,18,19
+	db 20,21,22,22,22,22,23,24,25,22,22,22,26,27,28,29
+	db 20,21,22,22,22,22,23,24,25,22,22,22,26,27,28,29
+	db 8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
+	db 8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
+	db 30,31,32,33,34,35,35,35,36,37,38,39,40,35,35,35
+	db 41,42,43,44,45,35,35,35,30,31,32,33,34,35,35,35
+	db 46,47,48,49,50,51,51,52,53,54,55,56,57,51,51,52
+	db 58,59,60,61,62,63,51,52,46,47,48,49,50,51,51,52
+	db 64,65,66,67,68,69,51,70,71,72,73,74,75,76,51,70
+	db 71,77,78,79,80,81,51,70,64,65,66,67,68,69,51,70
+	db 82,83,84,85,86,87,88,89,82,83,84,90,91,92,93,89
+	db 82,83,84,85,94,95,96,89,82,83,84,85,86,87,88,89
+	db 8,8,8,8,8,8,97,98,8,8,8,8,8,8,97,98
+	db 8,8,8,8,8,8,97,98,8,8,8,8,8,8,97,98
 _pano_coast_map_pal:
 	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
 	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
@@ -26115,24 +29116,15 @@ _pano_coast_pals:
 	align 2
 _pano_fields_tiles:
 	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85
-	db 85,85,85,85,85,85,85,85,85,85,85,85,87,85,95,89
-	db 85,85,85,85,85,85,85,85,85,85,85,85,127,213,255,249
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,253,217
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,89,89
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,217,95
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,127,91,255
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,245,91,253
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,89,217
-	db 191,170,255,175,255,255,255,255,170,170,170,170,170,170,170,170
-	db 255,255,255,255,255,255,255,255,170,170,170,170,170,170,170,170
-	db 254,255,255,255,255,255,255,255,170,170,170,170,170,170,170,170
-	db 149,149,102,230,234,255,234,255,170,170,170,170,170,170,170,170
-	db 149,149,102,102,170,170,170,170,170,170,170,170,170,170,170,170
-	db 149,149,255,103,255,255,255,255,170,170,170,170,170,170,170,170
-	db 251,191,255,255,255,255,255,255,170,170,170,170,170,170,170,170
-	db 175,255,255,255,255,255,255,255,170,170,170,170,170,170,170,170
-	db 149,245,102,254,255,255,255,255,170,170,170,170,170,170,170,170
-	db 149,149,102,102,170,234,170,234,170,170,170,170,170,170,170,170
+	db 119,85,253,109,255,255,255,255,170,170,170,170,170,170,170,170
+	db 187,187,254,254,255,255,255,255,170,170,170,170,170,170,170,170
+	db 186,187,254,254,255,255,255,255,170,170,170,170,170,170,170,170
+	db 85,85,101,229,234,255,234,255,170,170,170,170,170,170,170,170
+	db 85,85,101,101,170,170,170,170,170,170,170,170,170,170,170,170
+	db 85,85,253,101,255,255,255,255,170,170,170,170,170,170,170,170
+	db 171,187,254,254,255,255,255,255,170,170,170,170,170,170,170,170
+	db 85,117,101,253,255,255,255,255,170,170,170,170,170,170,170,170
+	db 85,85,101,101,170,234,170,234,170,170,170,170,170,170,170,170
 	db 170,170,175,250,191,254,255,255,255,255,255,255,255,255,170,170
 	db 170,170,170,170,170,234,170,250,234,255,254,255,254,255,170,170
 	db 170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170
@@ -26196,59 +29188,59 @@ _pano_fields_tiles:
 _pano_fields_map:
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 1,2,3,4,4,4,4,4,4,4,4,5,6,7,8,4
-	db 1,2,3,4,4,4,4,4,4,4,4,5,6,7,8,4
-	db 9,10,11,12,13,13,13,13,13,13,14,15,10,16,17,18
-	db 9,10,11,12,13,13,13,13,13,13,14,15,10,16,17,18
-	db 19,20,21,21,21,21,21,21,21,21,21,21,21,21,21,22
-	db 19,20,21,21,21,21,21,21,21,21,21,21,21,21,21,22
-	db 23,23,23,24,25,26,27,21,28,23,23,23,23,23,23,23
-	db 23,23,23,24,25,26,27,21,28,23,23,23,23,23,23,23
-	db 21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21
-	db 21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21
-	db 29,29,29,30,29,29,29,29,29,29,29,31,29,29,29,29
-	db 29,29,29,30,29,29,29,29,29,29,29,31,29,29,29,29
-	db 32,33,34,35,36,34,34,34,34,34,34,37,38,34,34,39
-	db 32,40,34,35,36,34,34,34,34,34,34,37,38,34,34,39
-	db 41,42,43,44,45,46,47,48,49,34,50,51,52,34,53,54
-	db 41,55,43,56,45,57,47,58,59,34,50,51,52,34,53,54
-	db 60,61,62,63,64,65,62,62,66,67,68,69,70,71,72,62
-	db 60,73,62,63,74,75,62,62,76,67,68,69,70,71,72,62
-	db 77,77,78,78,77,77,78,78,77,77,78,78,77,77,78,78
-	db 77,77,78,78,77,77,78,78,77,77,78,78,77,77,78,78
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 1,2,3,4,5,5,5,5,5,5,6,2,2,7,8,9
+	db 1,2,3,4,5,5,5,5,5,5,6,2,2,7,8,9
+	db 10,11,12,12,12,12,12,12,12,12,12,12,12,12,12,13
+	db 10,11,12,12,12,12,12,12,12,12,12,12,12,12,12,13
+	db 14,14,14,15,16,17,18,12,19,14,14,14,14,14,14,14
+	db 14,14,14,15,16,17,18,12,19,14,14,14,14,14,14,14
+	db 12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12
+	db 12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12
+	db 20,20,20,21,20,20,20,20,20,20,20,22,20,20,20,20
+	db 20,20,20,21,20,20,20,20,20,20,20,22,20,20,20,20
+	db 23,24,25,26,27,25,25,25,25,25,25,28,29,25,25,30
+	db 23,31,25,26,27,25,25,25,25,25,25,28,29,25,25,30
+	db 32,33,34,35,36,37,38,39,40,25,41,42,43,25,44,45
+	db 32,46,34,47,36,48,38,49,50,25,41,42,43,25,44,45
+	db 51,52,53,54,55,56,53,53,57,58,59,60,61,62,63,53
+	db 51,64,53,54,65,66,53,53,67,58,59,60,61,62,63,53
+	db 68,68,69,69,68,68,69,69,68,68,69,69,68,68,69,69
+	db 68,68,69,69,68,68,69,69,68,68,69,69,68,68,69,69
 _pano_fields_map_pal:
-	db 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
-	db 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
-	db 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
-	db 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
-	db 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
-	db 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
-	db 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
-	db 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
-	db 6,6,6,6,6,6,6,1,6,6,6,6,6,6,6,6
-	db 6,6,6,6,6,6,6,1,6,6,6,6,6,6,6,6
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2
 	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-	db 4,5,0,1,1,0,0,0,0,0,0,1,1,0,0,0
-	db 4,3,0,1,1,0,0,0,0,0,0,1,1,0,0,0
-	db 2,2,5,5,3,5,4,5,5,0,1,1,1,0,0,5
-	db 2,2,5,5,3,5,4,5,5,0,1,1,1,0,0,5
-	db 2,2,7,7,2,2,7,7,2,3,3,0,3,4,0,7
-	db 2,2,7,7,2,2,7,7,2,3,3,0,3,4,0,7
-	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
-	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
+	db 5,6,0,1,1,0,0,0,0,0,0,1,1,0,0,0
+	db 5,4,0,1,1,0,0,0,0,0,0,1,1,0,0,0
+	db 3,3,6,6,4,6,5,6,6,0,1,1,1,0,0,6
+	db 3,3,6,6,4,6,5,6,6,0,1,1,1,0,0,6
+	db 3,3,7,7,3,3,7,7,3,4,4,0,4,5,0,7
+	db 3,3,7,7,3,3,7,7,3,4,4,0,4,5,0,7
+	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
+	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
 	align 2
 _pano_fields_pals:
 	db 218,7,132,3,222,8,207,12,218,7,104,4,221,12,207,12
-	db 218,7,132,3,166,5,203,5,218,7,203,5,222,8,207,12
-	db 218,7,132,3,203,5,207,12,218,7,166,5,203,5,207,12
-	db 218,7,179,13,216,13,221,12,218,7,166,5,222,8,207,12
+	db 218,7,179,13,216,13,221,12,218,7,132,3,166,5,203,5
+	db 218,7,203,5,222,8,207,12,218,7,132,3,203,5,207,12
+	db 218,7,166,5,203,5,207,12,218,7,166,5,222,8,207,12
 	align 2
 _pano_desert_tiles:
 	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85
-	db 149,149,89,89,153,153,170,170,170,170,170,170,170,170,170,170
+	db 85,85,89,89,153,153,170,170,170,170,170,170,170,170,170,170
 	db 170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170
 	db 170,170,170,170,170,170,174,174,234,234,187,187,255,255,255,255
 	db 255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
@@ -26382,20 +29374,19 @@ _pano_desert_pals:
 	align 2
 _pano_autumn_tiles:
 	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,89,89
-	db 149,149,102,102,170,170,170,170,170,170,170,170,170,170,170,170
-	db 149,149,102,102,170,170,170,170,170,170,170,170,171,170,171,170
-	db 149,149,102,102,170,170,170,170,250,170,255,171,255,255,255,255
+	db 85,85,101,101,170,170,170,170,170,170,170,170,170,170,170,170
+	db 85,85,101,101,170,170,170,170,170,170,170,170,171,170,171,170
+	db 85,85,101,101,170,170,170,170,250,170,255,171,255,255,255,255
 	db 170,170,170,170,170,171,234,175,255,191,255,255,255,255,255,255
-	db 170,170,170,170,170,191,171,255,255,255,255,255,255,255,255,255
+	db 85,85,85,85,85,127,87,255,255,255,255,255,255,255,255,255
 	db 170,170,170,170,170,250,170,254,175,255,255,255,255,255,255,255
-	db 149,149,102,102,170,170,170,170,170,234,170,250,250,255,250,255
-	db 149,149,102,102,170,170,170,170,170,170,170,170,170,170,191,170
-	db 149,149,102,102,170,170,170,170,170,170,170,170,170,170,250,170
-	db 149,149,102,102,170,170,170,170,255,170,255,170,170,170,170,170
-	db 170,170,234,175,251,191,255,255,255,255,255,255,170,170,170,170
-	db 170,191,170,255,235,255,255,255,255,255,255,255,170,170,170,170
-	db 149,149,102,246,170,254,170,255,254,255,254,255,170,170,170,170
+	db 85,85,101,101,170,170,170,170,170,234,170,250,250,255,250,255
+	db 85,85,101,101,170,170,170,170,170,170,170,170,170,170,191,170
+	db 85,85,101,101,170,170,170,170,170,170,170,170,170,170,250,170
+	db 85,85,101,101,170,170,170,170,255,170,255,170,170,170,170,170
+	db 170,170,234,174,251,191,255,255,255,255,255,255,170,170,170,170
+	db 170,187,170,254,235,255,255,255,255,255,255,255,170,170,170,170
+	db 85,85,101,245,170,254,170,255,254,255,254,255,170,170,170,170
 	db 170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170
 	db 170,170,175,170,191,170,255,175,255,175,170,170,170,170,170,170
 	db 255,170,255,250,255,255,255,255,255,255,170,170,170,170,170,170
@@ -26481,26 +29472,26 @@ _pano_autumn_tiles:
 _pano_autumn_map:
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-	db 2,2,3,4,5,6,7,8,9,10,11,12,13,14,2,2
-	db 2,2,3,4,5,6,7,8,9,10,11,12,13,14,2,2
-	db 15,15,15,15,15,15,15,16,17,18,19,20,21,22,23,15
-	db 15,15,15,15,15,15,15,16,17,18,19,20,21,22,23,15
-	db 24,24,24,24,24,24,24,24,24,25,26,27,27,27,28,24
-	db 24,24,24,24,24,24,24,24,24,25,26,27,27,27,28,24
-	db 15,15,15,15,15,15,15,15,29,30,31,15,15,15,15,15
-	db 15,15,15,15,15,15,15,15,32,30,31,15,15,15,15,15
-	db 33,33,33,33,33,33,33,34,35,36,37,38,39,33,33,33
-	db 33,33,33,33,33,33,33,34,35,36,40,38,39,33,33,33
-	db 41,42,42,43,44,42,45,46,47,48,49,50,51,52,42,53
-	db 41,42,42,43,44,42,45,46,47,48,54,50,51,52,42,53
-	db 55,56,57,58,59,60,61,62,63,64,65,50,66,67,68,69
-	db 55,56,57,58,70,71,61,62,63,64,72,50,73,74,68,69
-	db 75,76,77,78,15,79,80,81,82,83,84,85,86,87,88,89
-	db 75,76,77,78,15,79,80,81,82,83,90,85,86,87,88,89
-	db 91,15,15,92,15,15,93,81,94,95,15,96,15,15,15,15
-	db 91,15,15,92,15,15,93,81,94,95,15,96,15,15,15,15
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 1,1,2,3,4,5,6,7,8,9,10,11,12,13,1,1
+	db 1,1,2,3,4,5,6,7,8,9,10,11,12,13,1,1
+	db 14,14,14,14,14,14,14,15,16,17,18,19,20,21,22,14
+	db 14,14,14,14,14,14,14,15,16,17,18,19,20,21,22,14
+	db 23,23,23,23,23,23,23,23,23,24,25,26,26,26,27,23
+	db 23,23,23,23,23,23,23,23,23,24,25,26,26,26,27,23
+	db 14,14,14,14,14,14,14,14,28,29,30,14,14,14,14,14
+	db 14,14,14,14,14,14,14,14,31,29,30,14,14,14,14,14
+	db 32,32,32,32,32,32,32,33,34,35,36,37,38,32,32,32
+	db 32,32,32,32,32,32,32,33,34,35,39,37,38,32,32,32
+	db 40,41,41,42,43,41,44,45,46,47,48,49,50,51,41,52
+	db 40,41,41,42,43,41,44,45,46,47,53,49,50,51,41,52
+	db 54,55,56,57,58,59,60,61,62,63,64,49,65,66,67,68
+	db 54,55,56,57,69,70,60,61,62,63,71,49,72,73,67,68
+	db 74,75,76,77,14,78,79,80,81,82,83,84,85,86,87,88
+	db 74,75,76,77,14,78,79,80,81,82,89,84,85,86,87,88
+	db 90,14,14,91,14,14,92,80,93,94,14,95,14,14,14,14
+	db 90,14,14,91,14,14,92,80,93,94,14,95,14,14,14,14
 _pano_autumn_map_pal:
 	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
 	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
@@ -26533,26 +29524,13 @@ _pano_autumn_pals:
 	align 2
 _pano_alps_tiles:
 	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,95,85
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,213
-	db 85,85,85,85,85,85,85,85,85,85,85,85,213,149,253,255
-	db 85,85,85,85,85,85,85,85,85,85,85,85,149,149,89,89
-	db 85,85,85,85,85,85,85,85,85,85,87,85,255,151,255,91
-	db 87,85,95,85,127,85,175,122,175,255,255,255,170,170,170,170
-	db 127,245,255,253,255,255,191,250,255,255,255,255,170,170,170,170
-	db 125,213,255,245,255,255,170,234,254,250,255,255,170,170,170,170
-	db 85,85,85,85,85,213,85,255,85,255,85,85,149,255,89,255
-	db 85,85,85,85,85,85,85,85,85,85,85,85,149,149,91,89
-	db 85,85,85,85,85,85,85,85,87,85,87,85,159,253,255,255
-	db 85,85,85,85,85,85,85,85,95,213,127,245,255,253,255,255
-	db 85,85,85,85,85,85,85,85,125,213,255,213,255,247,255,255
-	db 255,255,255,255,170,170,170,170,170,170,170,170,170,170,170,170
-	db 153,249,170,250,170,170,170,170,170,170,170,170,170,170,170,170
-	db 153,153,170,170,170,170,170,170,170,170,170,170,170,170,170,170
-	db 255,155,255,171,170,170,170,170,170,170,170,170,170,170,170,170
-	db 170,170,170,170,170,170,170,170,170,170,171,170,175,170,191,170
-	db 234,170,250,171,254,175,255,191,255,255,255,255,255,255,255,255
-	db 170,170,170,170,170,170,170,170,170,234,170,250,170,254,170,255
+	db 119,119,253,253,170,170,170,170,170,170,170,170,170,170,170,170
+	db 85,117,169,249,170,170,170,170,170,170,170,170,170,170,170,170
+	db 85,85,169,169,170,170,170,170,170,170,170,170,170,170,170,170
+	db 119,87,253,169,170,170,170,170,170,170,170,170,170,170,170,170
+	db 85,85,85,85,85,85,85,85,85,85,87,85,95,85,127,85
+	db 213,85,245,87,253,95,255,127,255,255,255,255,255,255,255,255
+	db 85,85,85,85,85,85,85,85,85,213,85,245,85,253,85,255
 	db 170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170
 	db 255,149,255,91,255,159,255,191,255,255,255,255,255,255,255,255
 	db 255,255,255,255,255,255,255,255,127,255,127,255,123,254,123,246
@@ -26645,62 +29623,61 @@ _pano_alps_tiles:
 	db 85,86,86,89,89,101,101,149,149,85,85,86,86,89,89,101
 	db 149,85,85,86,86,89,89,101,101,149,149,85,85,86,86,89
 _pano_alps_map:
-	db 0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0
-	db 0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0
-	db 3,4,4,4,4,5,6,7,8,9,4,4,10,11,12,13
-	db 3,4,4,4,4,5,6,7,8,9,4,4,10,11,12,13
-	db 14,15,16,16,16,16,16,16,16,16,16,16,17,14,14,14
-	db 14,15,16,16,16,16,16,16,16,16,16,16,17,14,14,14
-	db 18,19,20,21,21,21,21,21,18,19,20,21,21,21,21,21
-	db 18,19,20,21,21,21,21,21,18,19,20,21,21,21,21,21
-	db 22,23,24,25,26,27,28,29,22,23,24,25,26,27,28,29
-	db 22,30,24,25,26,27,28,29,22,23,24,25,26,27,28,29
-	db 31,32,33,34,35,36,37,38,31,39,40,34,35,41,37,38
-	db 31,42,43,34,35,44,37,38,31,32,33,34,35,36,37,38
-	db 45,46,47,48,49,50,51,52,45,53,54,55,49,56,57,52
-	db 45,58,59,60,49,61,62,52,45,46,47,48,49,50,51,52
-	db 63,64,65,66,67,68,69,70,63,64,71,72,67,73,74,70
-	db 63,64,75,76,67,77,78,70,63,64,65,66,67,68,69,70
-	db 63,64,21,79,80,21,81,70,63,64,21,79,80,21,82,70
-	db 63,64,21,79,80,21,83,70,63,64,21,79,80,21,81,70
-	db 84,85,86,87,88,89,90,91,92,93,89,94,95,89,96,97
-	db 92,85,87,94,88,98,96,91,84,85,99,100,88,101,90,91
-	db 102,103,104,105,106,107,108,104,109,110,107,103,111,109,106,102
-	db 103,104,105,106,107,108,104,109,110,107,103,111,109,106,102,103
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 1,2,3,3,3,3,3,3,3,3,3,3,4,1,1,1
+	db 1,2,3,3,3,3,3,3,3,3,3,3,4,1,1,1
+	db 5,6,7,8,8,8,8,8,5,6,7,8,8,8,8,8
+	db 5,6,7,8,8,8,8,8,5,6,7,8,8,8,8,8
+	db 9,10,11,12,13,14,15,16,9,10,11,12,13,14,15,16
+	db 9,17,11,12,13,14,15,16,9,10,11,12,13,14,15,16
+	db 18,19,20,21,22,23,24,25,18,26,27,21,22,28,24,25
+	db 18,29,30,21,22,31,24,25,18,19,20,21,22,23,24,25
+	db 32,33,34,35,36,37,38,39,32,40,41,42,36,43,44,39
+	db 32,45,46,47,36,48,49,39,32,33,34,35,36,37,38,39
+	db 50,51,52,53,54,55,56,57,50,51,58,59,54,60,61,57
+	db 50,51,62,63,54,64,65,57,50,51,52,53,54,55,56,57
+	db 50,51,8,66,67,8,68,57,50,51,8,66,67,8,69,57
+	db 50,51,8,66,67,8,70,57,50,51,8,66,67,8,68,57
+	db 71,72,73,74,75,76,77,78,79,80,76,81,82,76,83,84
+	db 79,72,74,81,75,85,83,78,71,72,86,87,75,88,77,78
+	db 89,90,91,92,93,94,95,91,96,97,94,90,98,96,93,89
+	db 90,91,92,93,94,95,91,96,97,94,90,98,96,93,89,90
 _pano_alps_map_pal:
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 0,0,0,0,0,1,2,2,2,1,0,0,0,0,0,0
-	db 0,0,0,0,0,1,2,2,2,1,0,0,0,0,0,0
-	db 1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1
-	db 1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 3,4,3,3,3,3,3,3,3,4,3,3,3,3,3,3
-	db 3,4,3,3,3,3,3,3,3,4,3,3,3,3,3,3
-	db 4,4,4,3,4,4,3,3,4,4,4,3,4,4,3,3
-	db 4,4,4,3,4,4,3,3,4,4,4,3,4,4,3,3
-	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
-	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
-	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
-	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
-	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
-	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
-	db 7,7,5,5,7,5,7,7,7,7,5,7,7,5,7,7
-	db 7,7,5,7,7,5,7,7,7,7,5,7,7,5,7,7
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0
+	db 1,1,1,0,0,0,0,0,1,1,1,0,0,0,0,0
+	db 1,2,1,1,1,1,1,1,1,2,1,1,1,1,1,1
+	db 1,2,1,1,1,1,1,1,1,2,1,1,1,1,1,1
+	db 2,2,2,1,2,2,1,1,2,2,2,1,2,2,1,1
+	db 2,2,2,1,2,2,1,1,2,2,2,1,2,2,1,1
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 3,4,5,5,3,3,3,3,3,3,3,4,3,3,3,3
+	db 4,3,5,3,3,5,3,3,3,3,5,3,3,5,3,4
 	db 5,5,5,5,6,5,5,5,5,5,5,5,5,5,5,5
 	db 5,5,5,5,6,5,5,5,5,5,5,5,6,5,5,5
 	align 2
 _pano_alps_pals:
-	db 201,8,81,12,98,13,255,15,201,8,81,12,98,13,220,15
-	db 201,8,81,12,220,15,255,15,201,8,98,13,131,14,255,15
-	db 201,8,149,11,201,14,255,15,201,8,97,3,114,4,201,14
-	db 201,8,97,3,114,4,149,11,201,8,97,3,149,11,201,14
+	db 201,8,81,12,98,13,220,15,201,8,98,13,131,14,255,15
+	db 201,8,149,11,201,14,255,15,201,8,97,3,149,11,201,14
+	db 201,8,114,4,149,11,201,14,201,8,97,3,114,4,201,14
+	db 201,8,97,3,114,4,149,11,201,8,0,0,0,0,0,0
 	align 2
 _pano_city_tiles:
 	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85
-	db 85,85,85,85,85,85,85,85,85,85,89,89,149,149,102,102
-	db 170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170
+	db 102,102,169,169,170,170,170,170,170,170,170,170,170,170,170,170
 	db 170,170,170,170,170,170,170,170,170,170,174,174,234,234,187,187
 	db 85,85,85,85,85,85,85,85,85,85,85,85,149,149,89,89
 	db 153,153,170,170,170,170,170,170,170,170,170,170,170,170,170,170
@@ -26780,26 +29757,26 @@ _pano_city_tiles:
 _pano_city_map:
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
 	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
-	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
-	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
-	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
-	db 5,5,5,5,5,5,5,6,7,8,9,5,5,5,5,5
-	db 5,5,5,5,5,5,5,6,7,8,9,5,5,5,5,5
-	db 10,11,12,10,10,10,13,14,14,14,15,16,17,10,10,10
-	db 10,11,12,10,10,10,13,14,14,14,15,16,17,10,10,10
-	db 18,19,20,21,22,23,24,25,25,25,26,27,28,29,18,30
-	db 18,19,20,21,22,23,24,25,25,25,26,27,28,29,18,30
-	db 31,32,33,34,35,0,36,37,38,39,40,41,42,43,44,45
-	db 44,46,47,48,35,49,50,51,52,53,54,55,56,43,31,32
-	db 57,58,59,60,61,0,62,63,64,65,66,67,68,43,69,59
-	db 70,59,71,72,73,74,75,76,0,77,0,67,68,78,57,58
+	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
+	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
+	db 4,4,4,4,4,4,4,5,6,7,8,4,4,4,4,4
+	db 4,4,4,4,4,4,4,5,6,7,8,4,4,4,4,4
+	db 9,10,11,9,9,9,12,13,13,13,14,15,16,9,9,9
+	db 9,10,11,9,9,9,12,13,13,13,14,15,16,9,9,9
+	db 17,18,19,20,21,22,23,24,24,24,25,26,27,28,17,29
+	db 17,18,19,20,21,22,23,24,24,24,25,26,27,28,17,29
+	db 30,31,32,33,34,0,35,36,37,38,39,40,41,42,43,44
+	db 43,45,46,47,34,48,49,50,51,52,53,54,55,42,30,31
+	db 56,57,58,59,60,0,61,62,63,64,65,66,67,42,68,58
+	db 69,58,70,71,72,73,74,75,0,76,0,66,67,77,56,57
 _pano_city_map_pal:
 	db 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
 	db 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
@@ -26832,29 +29809,24 @@ _pano_city_pals:
 	align 2
 _pano_lake_tiles:
 	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85
-	db 85,85,85,85,85,85,85,85,87,245,95,253,255,255,255,255
-	db 85,85,85,85,85,85,85,85,85,85,85,213,149,245,89,253
-	db 85,85,85,85,85,85,85,85,85,85,85,85,149,149,89,89
-	db 85,85,85,85,85,85,85,85,85,85,85,85,151,151,255,95
-	db 85,85,85,85,85,85,85,85,85,253,95,253,255,255,255,255
-	db 85,85,85,85,85,85,85,85,87,85,87,85,159,191,255,255
-	db 255,255,255,255,170,170,170,170,170,170,170,170,170,170,170,170
-	db 253,255,254,255,170,170,170,170,170,170,170,170,170,170,170,170
-	db 153,153,170,170,170,170,170,170,170,170,170,170,170,170,170,170
-	db 170,170,170,170,85,85,85,85,85,85,85,85,87,85,255,87
-	db 170,170,170,170,85,85,85,85,85,253,95,253,255,255,255,255
-	db 169,170,169,170,85,85,85,85,85,85,85,213,85,245,85,253
-	db 153,153,170,170,170,170,170,170,170,170,170,170,191,170,255,170
-	db 153,153,170,170,170,170,170,170,254,170,254,170,255,235,255,255
-	db 153,153,170,170,170,170,170,170,250,171,250,175,254,255,255,255
-	db 153,153,170,170,170,170,170,170,170,170,234,191,234,255,255,255
-	db 153,153,170,170,170,170,170,170,170,170,170,170,170,170,170,254
-	db 159,153,175,170,170,170,170,170,170,170,170,170,170,170,170,170
-	db 170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170
+	db 119,119,253,253,170,170,170,170,170,170,170,170,170,170,170,170
+	db 117,119,253,253,170,170,170,170,170,170,170,170,170,170,170,170
+	db 85,85,169,169,170,170,170,170,170,170,170,170,170,170,170,170
+	db 119,119,253,253,170,170,170,170,170,170,170,170,171,170,255,171
+	db 102,102,169,169,85,85,85,85,85,253,95,253,255,255,255,255
+	db 117,119,253,253,170,170,170,170,170,170,170,234,170,250,170,254
+	db 85,85,169,169,170,170,170,170,170,170,170,170,191,170,255,170
+	db 85,85,169,169,170,170,170,170,254,170,254,170,255,235,255,255
+	db 85,85,169,169,170,170,170,170,250,171,250,175,254,255,255,255
+	db 85,85,169,169,170,170,170,170,170,170,234,191,234,255,255,255
+	db 85,85,169,169,170,170,170,170,170,170,170,170,170,170,170,254
+	db 87,85,173,169,170,170,170,170,170,170,170,170,170,170,170,170
 	db 255,191,255,191,170,170,170,170,170,170,170,170,170,170,170,170
+	db 255,255,255,255,170,170,170,170,170,170,170,170,170,170,170,170
 	db 251,255,251,255,170,170,170,170,170,170,170,170,170,170,170,170
 	db 250,255,250,255,170,170,170,170,170,170,170,170,170,170,170,170
 	db 149,149,89,89,153,153,170,170,170,170,170,170,170,170,170,170
+	db 170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170
 	db 170,170,174,174,234,234,187,187,255,255,255,255,255,255,255,255
 	db 255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255
 	db 255,255,255,255,255,255,255,255,255,255,255,255,127,253,127,85
@@ -26889,32 +29861,32 @@ _pano_lake_tiles:
 	db 255,255,255,111,255,105,166,105,166,169,165,166,153,166,153,150
 	db 102,102,102,102,170,170,170,170,170,170,170,170,170,170,170,170
 	db 190,174,190,174,255,255,255,255,253,255,213,255,85,255,85,253
-	db 255,255,255,255,255,255,85,245,85,85,85,85,85,85,85,85
-	db 255,255,255,255,255,127,87,85,85,85,85,85,85,85,85,85
-	db 255,255,255,255,255,255,255,255,255,95,255,85,127,85,95,85
-	db 190,170,254,170,170,170,170,170,170,170,170,174,186,170,170,170
-	db 191,191,191,254,170,186,234,170,171,170,170,170,170,170,170,170
-	db 170,190,171,190,170,170,170,170,170,170,170,174,186,170,170,170
+	db 170,170,170,170,170,170,85,165,85,85,85,85,85,85,85,85
+	db 170,170,170,170,170,106,86,85,85,85,85,85,85,85,85,85
+	db 170,170,170,170,170,170,170,170,170,90,170,85,106,85,90,85
+	db 105,85,169,85,85,85,85,85,85,85,85,89,101,85,85,85
+	db 106,106,106,169,85,101,149,85,86,85,85,85,85,85,85,85
+	db 85,105,86,105,85,85,85,85,85,85,85,89,101,85,85,85
 	db 239,251,239,235,170,186,234,170,171,170,169,170,149,170,85,170
 	db 255,255,251,255,170,170,170,170,106,170,85,85,85,85,85,85
 	db 255,255,255,255,170,186,234,170,171,170,170,90,170,85,106,85
 	db 85,255,85,253,170,170,170,170,170,170,170,174,186,170,170,170
 	db 85,85,85,85,170,186,234,170,171,170,170,170,170,170,170,170
 	db 191,174,191,174,255,255,255,255,255,255,127,255,85,213,85,85
-	db 190,190,250,190,170,186,234,170,171,170,170,170,170,170,170,170
+	db 105,105,165,105,85,101,149,85,86,85,85,85,85,85,85,85
 	db 85,85,101,85,170,170,170,170,170,170,170,174,186,170,170,170
-	db 239,170,174,170,170,170,170,170,170,170,170,174,186,170,170,170
-	db 235,239,239,175,170,186,234,170,171,170,170,170,170,170,170,170
-	db 175,238,174,238,170,170,170,170,170,170,170,174,186,170,170,170
+	db 154,85,89,85,85,85,85,85,85,85,85,89,101,85,85,85
+	db 150,154,154,90,85,101,149,85,86,85,85,85,85,85,85,85
+	db 90,153,89,153,85,85,85,85,85,85,85,89,101,85,85,85
 	db 251,190,251,254,170,186,234,170,171,170,169,170,149,170,85,170
 	db 255,255,254,255,170,170,170,170,106,170,85,85,85,85,85,85
-	db 238,239,190,239,170,186,234,170,171,170,170,170,170,170,170,170
-	db 170,174,186,170,170,170,170,170,170,170,170,234,170,171,174,170
+	db 153,154,105,154,85,101,149,85,86,85,85,85,85,85,85,85
+	db 85,89,101,85,85,85,85,85,85,85,85,149,85,86,89,85
 	db 170,170,102,170,170,234,170,171,174,170,170,170,170,170,170,170
 	db 170,174,118,102,170,170,170,170,170,170,170,234,170,171,174,170
 	db 170,170,102,102,170,234,170,171,174,170,170,170,170,170,170,170
 	db 170,174,122,102,170,170,170,170,170,170,170,234,170,171,174,170
-	db 170,170,170,170,170,234,170,171,174,170,170,170,170,170,170,170
+	db 85,85,85,85,85,149,85,86,89,85,85,85,85,85,85,85
 	db 170,174,153,170,170,170,170,170,170,170,170,234,170,171,174,170
 	db 170,170,153,153,170,234,170,171,174,170,170,170,170,170,170,170
 	db 170,174,186,153,170,170,170,170,170,170,170,234,170,171,174,170
@@ -26922,60 +29894,59 @@ _pano_lake_tiles:
 _pano_lake_map:
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 1,2,3,3,3,4,5,2,3,3,3,3,3,3,3,6
-	db 1,2,3,3,3,4,5,2,3,3,3,3,3,3,3,6
-	db 7,8,9,9,9,10,11,12,13,14,15,16,17,9,18,7
-	db 7,8,9,9,9,10,11,12,13,14,15,16,17,9,18,7
-	db 19,19,19,19,19,20,7,21,7,7,7,7,22,19,19,19
-	db 19,19,19,19,19,20,7,21,7,7,7,7,22,19,19,19
-	db 23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23
-	db 23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 1,2,3,3,3,4,5,6,7,8,9,10,11,3,12,1
+	db 1,2,3,3,3,4,5,6,7,8,9,10,11,3,12,1
+	db 0,0,0,0,0,13,14,15,14,14,14,14,16,0,0,0
+	db 0,0,0,0,0,13,14,15,14,14,14,14,16,0,0,0
+	db 17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17
+	db 17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17
+	db 18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18
+	db 18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18
 	db 19,19,19,19,19,19,19,19,19,19,19,19,19,19,19,19
 	db 19,19,19,19,19,19,19,19,19,19,19,19,19,19,19,19
-	db 24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24
-	db 24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24
-	db 25,26,27,28,29,30,31,25,25,25,25,25,25,25,25,25
-	db 25,26,32,28,29,33,34,25,25,25,25,25,25,25,25,25
-	db 35,36,37,38,39,40,41,42,43,25,25,44,45,46,47,48
-	db 35,36,49,38,39,50,51,52,53,25,25,44,45,54,55,48
-	db 56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71
-	db 56,57,58,59,60,72,73,74,75,76,66,67,68,69,77,71
-	db 78,79,80,81,82,83,78,83,84,85,86,83,78,81,87,83
-	db 78,79,80,81,82,83,78,83,84,85,86,83,78,81,87,83
+	db 20,21,22,23,24,25,26,20,20,20,20,20,20,20,20,20
+	db 20,21,27,23,24,28,29,20,20,20,20,20,20,20,20,20
+	db 30,31,32,33,34,35,36,37,38,20,20,39,40,41,42,43
+	db 30,31,44,33,34,45,46,47,48,20,20,39,40,49,50,43
+	db 51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66
+	db 51,52,53,54,55,67,68,69,70,71,61,62,63,64,72,66
+	db 73,74,75,76,77,78,73,78,79,80,81,78,73,76,82,78
+	db 73,74,75,76,77,78,73,78,79,80,81,78,73,76,82,78
 _pano_lake_map_pal:
-	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 1,1,0,0,0,5,5,5,0,0,0,0,0,0,1,1
-	db 1,1,0,0,0,5,5,5,0,0,0,0,0,0,1,1
-	db 0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0
-	db 0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0
-	db 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
-	db 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
-	db 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
-	db 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
-	db 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
-	db 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
-	db 5,6,5,6,6,5,5,5,5,5,5,5,5,5,5,5
-	db 5,6,5,6,6,5,5,5,5,5,5,5,5,5,5,5
-	db 2,2,2,2,2,2,5,5,5,5,5,6,6,2,5,6
-	db 2,2,2,2,2,2,5,5,5,5,5,6,6,2,5,6
-	db 2,3,3,3,3,2,2,2,4,4,7,6,2,3,2,2
-	db 2,3,3,3,3,2,2,2,4,4,7,6,2,3,2,2
-	db 2,4,4,4,4,2,2,2,4,4,4,2,2,4,4,2
-	db 2,4,4,4,4,2,2,2,4,4,4,2,2,4,4,2
+	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
+	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
+	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
+	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
+	db 4,4,4,4,4,4,1,4,4,4,4,4,4,4,4,4
+	db 4,4,4,4,4,4,1,4,4,4,4,4,4,4,4,4
+	db 1,1,1,1,1,4,4,4,4,4,4,4,4,1,1,1
+	db 1,1,1,1,1,4,4,4,4,4,4,4,4,1,1,1
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	db 0,7,2,7,7,2,2,0,0,0,0,0,0,0,0,0
+	db 0,7,2,7,7,2,2,0,0,0,0,0,0,0,0,0
+	db 3,3,3,3,3,3,2,2,2,0,0,7,7,3,2,7
+	db 3,3,3,3,3,3,2,2,2,0,0,7,7,3,2,7
+	db 3,5,0,0,0,2,2,2,6,6,0,7,3,5,2,3
+	db 3,5,0,0,0,2,2,2,6,6,0,7,3,5,2,3
+	db 2,6,6,6,6,2,2,2,6,6,6,2,2,6,6,2
+	db 2,6,6,6,6,2,2,2,6,6,6,2,2,6,6,2
 	align 2
 _pano_lake_pals:
-	db 202,8,103,13,137,14,239,15,202,8,103,13,137,14,188,14
-	db 202,8,69,9,134,11,171,13,202,8,163,4,69,9,134,11
-	db 202,8,163,4,134,11,171,13,202,8,137,14,171,14,205,14
-	db 202,8,69,9,134,11,205,14,202,8,163,4,134,11,205,14
+	db 202,8,163,4,134,11,205,14,202,8,137,14,171,14,205,14
+	db 202,8,134,11,171,13,205,14,202,8,69,9,134,11,171,13
+	db 202,8,103,13,137,14,188,14,202,8,163,4,69,9,134,11
+	db 202,8,163,4,134,11,171,13,202,8,69,9,134,11,205,14
 	align 2
 _pano_canyon_tiles:
 	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,89,89
-	db 149,149,102,102,170,170,170,170,170,170,170,170,170,170,170,170
+	db 85,85,101,101,170,170,170,170,170,170,170,170,170,170,170,170
 	db 170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170
 	db 170,170,170,170,234,234,174,174,238,238,255,255,255,255,255,255
 	db 255,127,255,107,255,105,175,105,167,101,166,102,150,102,154,90
@@ -27060,26 +30031,26 @@ _pano_canyon_tiles:
 _pano_canyon_map:
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
 	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
 	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
 	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
-	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
-	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
-	db 5,6,6,6,6,6,7,6,8,6,6,6,6,6,7,6
-	db 9,6,6,6,6,6,7,6,5,6,6,6,6,6,7,6
-	db 10,11,12,13,14,15,16,17,18,19,20,13,14,15,16,21
-	db 22,11,23,24,14,15,16,17,10,11,12,13,14,15,16,17
-	db 25,26,27,28,29,30,31,32,33,34,35,36,29,30,31,37
-	db 38,39,40,41,29,30,42,43,25,26,27,28,29,30,31,32
-	db 44,45,46,47,48,49,50,51,52,53,54,55,56,49,50,57
-	db 58,59,60,61,62,49,50,63,44,45,46,47,48,49,50,51
-	db 64,65,66,67,68,69,70,71,64,72,73,74,75,69,70,71
-	db 64,76,77,78,79,69,70,71,64,65,66,67,68,69,70,71
-	db 80,81,81,81,82,6,6,83,80,81,81,81,82,6,6,83
-	db 80,81,81,81,82,6,6,83,80,81,81,81,82,6,6,83
+	db 4,5,5,5,5,5,6,5,7,5,5,5,5,5,6,5
+	db 8,5,5,5,5,5,6,5,4,5,5,5,5,5,6,5
+	db 9,10,11,12,13,14,15,16,17,18,19,12,13,14,15,20
+	db 21,10,22,23,13,14,15,16,9,10,11,12,13,14,15,16
+	db 24,25,26,27,28,29,30,31,32,33,34,35,28,29,30,36
+	db 37,38,39,40,28,29,41,42,24,25,26,27,28,29,30,31
+	db 43,44,45,46,47,48,49,50,51,52,53,54,55,48,49,56
+	db 57,58,59,60,61,48,49,62,43,44,45,46,47,48,49,50
+	db 63,64,65,66,67,68,69,70,63,71,72,73,74,68,69,70
+	db 63,75,76,77,78,68,69,70,63,64,65,66,67,68,69,70
+	db 79,80,80,80,81,5,5,82,79,80,80,80,81,5,5,82
+	db 79,80,80,80,81,5,5,82,79,80,80,80,81,5,5,82
 _pano_canyon_map_pal:
 	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
 	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
@@ -27112,21 +30083,14 @@ _pano_canyon_pals:
 	align 2
 _pano_caves_tiles:
 	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85
-	db 85,85,85,85,85,85,85,85,85,85,85,85,149,149,89,89
-	db 85,85,85,85,85,85,85,85,85,85,85,85,245,151,253,95
-	db 85,85,85,85,85,85,85,85,85,85,213,95,245,191,255,255
-	db 85,85,85,85,85,85,85,85,85,85,85,127,151,255,255,255
-	db 85,85,85,85,85,85,85,85,85,85,85,253,151,253,127,255
-	db 85,85,85,85,85,85,85,85,85,85,85,85,149,245,95,253
-	db 85,85,85,85,85,85,85,85,85,85,85,85,149,149,125,217
-	db 153,153,170,170,170,170,170,170,170,170,170,170,170,170,170,170
-	db 255,170,255,191,255,191,170,170,170,170,170,170,170,170,170,170
-	db 255,255,255,255,255,255,170,170,170,170,170,170,170,170,170,170
-	db 255,255,255,255,255,255,175,170,175,170,170,170,170,170,170,170
-	db 255,255,255,255,255,255,255,255,255,255,170,170,170,170,170,170
-	db 255,234,255,255,255,255,255,255,255,255,170,170,170,170,170,170
-	db 250,170,254,235,255,255,255,255,255,255,170,170,170,170,170,170
-	db 153,153,170,170,170,255,254,255,254,255,170,170,170,170,170,170
+	db 85,85,169,169,170,170,170,170,170,170,170,170,170,170,170,170
+	db 119,85,253,189,255,191,170,170,170,170,170,170,170,170,170,170
+	db 119,119,253,253,255,255,170,170,170,170,170,170,170,170,170,170
+	db 119,119,253,253,255,255,175,170,175,170,170,170,170,170,170,170
+	db 119,119,253,253,255,255,255,255,255,255,170,170,170,170,170,170
+	db 187,170,254,254,255,255,255,255,255,255,170,170,170,170,170,170
+	db 186,170,254,234,255,255,255,255,255,255,170,170,170,170,170,170
+	db 85,85,169,169,170,255,254,255,254,255,170,170,170,170,170,170
 	db 170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170
 	db 149,149,89,89,153,153,170,170,170,170,170,170,170,170,170,170
 	db 149,149,89,89,153,153,170,170,170,170,170,170,170,170,250,171
@@ -27208,35 +30172,35 @@ _pano_caves_tiles:
 _pano_caves_map:
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 1,1,1,2,3,4,5,6,7,1,1,1,1,1,1,1
-	db 1,1,1,2,3,4,5,6,7,1,1,1,1,1,1,1
-	db 8,8,9,10,10,11,12,12,13,14,15,8,8,8,8,8
-	db 8,8,9,10,10,11,12,12,13,14,15,8,8,8,8,8
-	db 16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16
-	db 16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16
-	db 17,18,17,17,17,17,17,17,17,18,17,17,17,17,17,17
-	db 17,19,17,17,17,17,17,17,17,18,17,17,17,17,17,17
-	db 20,21,22,16,16,16,16,16,20,23,24,16,16,16,16,16
-	db 20,25,26,16,16,16,16,16,20,21,22,16,16,16,16,16
-	db 27,28,29,30,16,16,31,32,27,33,34,30,16,16,31,35
-	db 27,36,37,30,16,16,31,35,27,28,29,30,16,16,31,32
-	db 38,39,40,41,42,43,44,45,38,46,47,48,42,43,44,49
-	db 38,50,51,52,42,43,44,53,38,39,40,41,42,43,44,45
-	db 54,55,56,57,58,59,60,61,54,55,62,63,64,59,60,65
-	db 54,66,67,68,69,59,60,70,54,55,56,57,58,59,60,61
-	db 71,72,73,74,75,76,77,78,71,72,73,79,80,76,77,81
-	db 71,72,73,82,83,76,77,84,71,72,73,74,75,76,77,78
-	db 71,85,86,16,87,88,89,90,71,85,86,91,92,88,89,90
-	db 71,85,86,91,93,88,89,90,71,85,86,16,87,88,89,90
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 1,1,2,3,3,4,5,5,6,7,8,1,1,1,1,1
+	db 1,1,2,3,3,4,5,5,6,7,8,1,1,1,1,1
+	db 9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9
+	db 9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9
+	db 10,11,10,10,10,10,10,10,10,11,10,10,10,10,10,10
+	db 10,12,10,10,10,10,10,10,10,11,10,10,10,10,10,10
+	db 13,14,15,9,9,9,9,9,13,16,17,9,9,9,9,9
+	db 13,18,19,9,9,9,9,9,13,14,15,9,9,9,9,9
+	db 20,21,22,23,9,9,24,25,20,26,27,23,9,9,24,28
+	db 20,29,30,23,9,9,24,28,20,21,22,23,9,9,24,25
+	db 31,32,33,34,35,36,37,38,31,39,40,41,35,36,37,42
+	db 31,43,44,45,35,36,37,46,31,32,33,34,35,36,37,38
+	db 47,48,49,50,51,52,53,54,47,48,55,56,57,52,53,58
+	db 47,59,60,61,62,52,53,63,47,48,49,50,51,52,53,54
+	db 64,65,66,67,68,69,70,71,64,65,66,72,73,69,70,74
+	db 64,65,66,75,76,69,70,77,64,65,66,67,68,69,70,71
+	db 64,78,79,9,80,81,82,83,64,78,79,84,85,81,82,83
+	db 64,78,79,84,86,81,82,83,64,78,79,9,80,81,82,83
 _pano_caves_map_pal:
-	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
-	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
-	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
-	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
-	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
-	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
-	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
-	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
 	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
 	db 4,5,4,4,4,4,4,4,4,4,4,4,4,4,4,4
 	db 1,0,6,1,1,1,1,1,1,0,6,1,1,1,1,1
@@ -27247,41 +30211,25 @@ _pano_caves_map_pal:
 	db 0,0,0,6,1,1,1,0,0,0,0,6,1,1,1,0
 	db 0,0,0,0,7,0,0,0,0,0,0,0,7,0,0,0
 	db 0,0,0,0,7,0,0,0,0,0,0,0,7,0,0,0
-	db 0,2,2,0,0,2,2,0,0,2,2,0,0,2,2,0
-	db 0,2,2,0,0,2,2,0,0,2,2,0,0,2,2,0
-	db 0,2,2,0,0,2,2,0,0,2,2,0,0,2,2,0
-	db 0,2,2,0,0,2,2,0,0,2,2,0,0,2,2,0
+	db 0,3,3,0,0,3,3,0,0,3,3,0,0,3,3,0
+	db 0,3,3,0,0,3,3,0,0,3,3,0,0,3,3,0
+	db 0,3,3,0,0,3,3,0,0,3,3,0,0,3,3,0
+	db 0,3,3,0,0,3,3,0,0,3,3,0,0,3,3,0
 	align 2
 _pano_caves_pals:
 	db 138,6,53,2,104,4,155,6,138,6,53,2,182,11,104,4
-	db 138,6,0,0,53,2,104,4,138,6,97,8,130,10,201,12
+	db 138,6,97,8,130,10,201,12,138,6,0,0,53,2,104,4
 	db 138,6,130,10,182,11,155,6,138,6,130,10,53,2,182,11
 	db 138,6,182,11,104,4,155,6,138,6,53,2,182,11,155,6
 	align 2
 _pano_snow_tiles:
-	db 85,85,85,85,85,85,85,85,85,85,95,245,127,253,255,255
-	db 85,85,85,85,85,85,85,85,85,85,85,213,127,213,255,245
 	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85
-	db 85,85,85,85,85,85,85,85,85,85,85,93,215,127,255,255
-	db 85,85,85,85,85,85,85,85,87,253,95,253,255,255,255,255
-	db 85,85,85,85,85,85,85,85,85,245,95,245,127,253,255,255
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,213,213,245
-	db 85,85,85,85,85,85,85,85,85,85,87,85,87,125,95,255
-	db 255,255,255,255,255,255,127,253,255,255,255,255,255,255,85,85
-	db 255,255,255,255,255,255,255,255,255,255,255,255,255,255,85,85
-	db 245,255,255,255,255,255,85,213,213,255,253,255,253,255,85,85
-	db 85,85,85,213,85,213,85,85,85,85,85,85,85,85,89,89
-	db 255,87,255,87,85,85,85,85,85,85,85,85,85,85,213,95
-	db 255,255,255,255,85,85,85,85,85,85,85,85,85,85,85,125
-	db 255,255,255,255,85,85,85,85,85,85,85,85,85,85,89,89
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,89,89
-	db 223,87,255,255,255,255,85,85,85,85,85,85,85,85,85,85
-	db 255,255,255,255,255,255,85,85,87,85,255,85,255,85,85,85
-	db 149,149,102,102,170,170,170,170,170,170,170,170,170,170,170,170
-	db 149,149,254,102,255,171,255,255,255,255,170,170,170,170,170,170
-	db 245,95,255,127,255,255,170,170,170,170,85,85,85,85,85,85
-	db 85,255,213,255,255,255,170,170,170,170,85,85,85,85,85,85
-	db 149,149,102,102,170,234,170,254,170,254,170,170,170,170,170,170
+	db 85,85,101,101,170,170,170,170,170,170,170,170,170,170,170,170
+	db 85,85,253,101,255,171,255,255,255,255,170,170,170,170,170,170
+	db 117,87,253,125,255,255,170,170,170,170,85,85,85,85,85,85
+	db 85,119,213,253,255,255,170,170,170,170,85,85,85,85,85,85
+	db 85,85,101,101,170,234,170,254,170,254,170,170,170,170,170,170
+	db 170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170
 	db 85,85,93,93,213,213,119,119,255,255,255,255,255,255,255,255
 	db 85,85,93,93,213,213,119,119,255,255,255,255,255,255,234,255
 	db 85,85,89,89,149,149,102,102,170,170,170,170,170,127,234,127
@@ -27335,7 +30283,6 @@ _pano_snow_tiles:
 	db 85,169,85,169,85,169,85,169,85,169,89,169,89,169,86,169
 	db 239,86,175,102,191,102,190,102,254,102,250,102,251,166,251,154
 	db 238,235,239,175,175,191,190,191,190,255,254,254,250,254,250,234
-	db 170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170
 	db 85,85,85,85,89,85,90,85,86,85,86,85,90,85,90,86
 	db 90,106,90,154,154,154,166,169,166,169,154,106,154,102,170,166
 	db 165,153,169,153,166,153,166,153,170,153,154,153,154,153,170,153
@@ -27374,82 +30321,72 @@ _pano_snow_tiles:
 	db 85,85,213,85,85,87,85,85,85,85,213,85,85,87,85,85
 	db 213,213,85,87,85,85,85,85,213,85,85,87,85,85,85,85
 _pano_snow_map:
-	db 0,1,2,2,2,3,4,5,6,2,2,2,2,2,2,7
-	db 0,1,2,2,2,3,4,5,6,2,2,2,2,2,2,7
-	db 8,9,10,11,12,13,14,14,14,15,15,15,15,15,16,17
-	db 8,9,10,11,12,13,14,14,14,15,15,15,15,15,16,17
-	db 18,18,18,19,20,21,22,18,18,18,18,18,18,18,18,18
-	db 18,18,18,19,20,21,22,18,18,18,18,18,18,18,18,18
-	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
-	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
-	db 23,23,23,23,23,23,23,23,23,23,23,23,23,23,24,25
-	db 23,23,23,23,23,23,23,23,23,23,23,23,23,23,24,25
-	db 26,27,27,27,27,27,27,27,27,27,27,28,29,30,31,32
-	db 26,27,27,27,27,27,27,27,27,27,27,28,29,30,31,33
-	db 34,35,35,35,35,35,35,35,35,35,36,37,38,39,40,41
-	db 34,35,35,35,35,35,35,35,35,35,36,37,38,39,40,42
-	db 43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58
-	db 59,60,61,62,63,48,49,64,65,52,53,54,55,56,57,66
-	db 67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82
-	db 83,84,85,86,87,72,73,88,89,76,77,78,79,80,81,90
-	db 91,92,93,94,95,96,97,98,99,100,101,102,97,103,97,104
-	db 105,106,107,108,109,96,97,110,111,100,101,102,97,103,97,104
-	db 112,113,112,113,112,113,112,113,112,113,112,113,112,113,112,113
-	db 112,113,112,113,112,113,112,113,112,113,112,113,112,113,112,113
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 1,1,1,2,3,4,5,1,1,1,1,1,1,1,1,1
+	db 1,1,1,2,3,4,5,1,1,1,1,1,1,1,1,1
+	db 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
+	db 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
+	db 7,7,7,7,7,7,7,7,7,7,7,7,7,7,8,9
+	db 7,7,7,7,7,7,7,7,7,7,7,7,7,7,8,9
+	db 10,11,11,11,11,11,11,11,11,11,11,12,13,14,15,16
+	db 10,11,11,11,11,11,11,11,11,11,11,12,13,14,15,17
+	db 18,19,19,19,19,19,19,19,19,19,20,21,22,23,24,25
+	db 18,19,19,19,19,19,19,19,19,19,20,21,22,23,24,26
+	db 27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42
+	db 43,44,45,46,47,32,33,48,49,36,37,38,39,40,41,50
+	db 51,52,53,54,55,56,57,58,59,6,60,61,62,63,64,65
+	db 66,67,68,69,70,56,57,71,72,6,60,61,62,63,64,73
+	db 74,75,76,77,78,79,80,81,82,83,84,85,80,86,80,87
+	db 88,89,90,91,92,79,80,93,94,83,84,85,80,86,80,87
+	db 95,96,95,96,95,96,95,96,95,96,95,96,95,96,95,96
+	db 95,96,95,96,95,96,95,96,95,96,95,96,95,96,95,96
 _pano_snow_map_pal:
-	db 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
-	db 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
-	db 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
-	db 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
-	db 6,6,6,6,5,5,6,6,6,6,6,6,6,6,6,6
-	db 6,6,6,6,5,5,6,6,6,6,6,6,6,6,6,6
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5
-	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5
-	db 7,0,0,0,0,0,0,0,0,0,0,7,7,0,1,1
-	db 7,0,0,0,0,0,0,0,0,0,0,7,7,0,1,1
-	db 7,7,7,7,7,7,7,7,7,7,7,7,1,1,1,1
-	db 7,7,7,7,7,7,7,7,7,7,7,7,1,1,1,1
-	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-	db 1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1
-	db 1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1
-	db 2,2,2,2,2,3,2,2,2,3,4,3,2,3,2,3
-	db 2,2,2,2,2,3,2,2,2,3,4,3,2,3,2,3
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,6,6,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,6,6,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,6
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,6
+	db 7,1,1,1,1,1,1,1,1,1,1,7,7,1,2,2
+	db 7,1,1,1,1,1,1,1,1,1,1,7,7,1,2,2
+	db 7,7,7,7,7,7,7,7,7,7,7,7,2,2,2,2
+	db 7,7,7,7,7,7,7,7,7,7,7,7,2,2,2,2
 	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
 	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2
+	db 2,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2
+	db 3,3,3,3,3,4,3,3,3,4,5,4,3,4,3,4
+	db 3,3,3,3,3,4,3,3,3,4,5,4,3,4,3,4
+	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
+	db 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3
 	align 2
 _pano_snow_pals:
-	db 238,15,183,14,169,12,218,15,238,15,169,12,237,15,255,15
-	db 238,15,66,3,237,15,255,15,238,15,66,3,169,12,237,15
-	db 238,15,66,3,169,12,255,15,238,15,183,14,218,15,255,15
-	db 238,15,149,13,183,14,255,15,238,15,169,12,218,15,237,15
+	db 238,15,149,13,183,14,220,15,238,15,183,14,169,12,218,15
+	db 238,15,169,12,237,15,255,15,238,15,66,3,237,15,255,15
+	db 238,15,66,3,169,12,237,15,238,15,66,3,169,12,255,15
+	db 238,15,183,14,218,15,255,15,238,15,169,12,218,15,237,15
 	align 2
 _pano_farm_tiles:
 	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,89,89
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,127,89
-	db 85,85,85,85,85,85,85,85,95,85,106,85,234,255,170,170
-	db 85,85,127,85,255,85,255,213,255,255,170,170,170,170,170,170
-	db 85,85,85,85,245,85,253,223,255,255,170,170,170,170,170,170
-	db 85,85,85,85,85,85,85,85,245,87,245,175,255,175,170,170
-	db 85,85,85,85,85,85,85,85,85,85,85,85,213,255,170,170
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,91,127
-	db 85,85,85,85,85,85,85,85,85,85,85,85,87,253,95,253
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,213,89,249
-	db 149,149,102,102,170,170,170,170,170,170,170,170,170,170,170,170
-	db 149,149,102,102,170,170,170,170,170,170,171,170,255,175,255,175
-	db 106,85,85,85,85,85,87,85,95,255,255,255,170,170,170,170
-	db 170,170,85,85,95,213,127,245,255,253,255,255,170,170,170,170
-	db 170,170,85,85,125,213,255,213,255,255,255,255,170,170,170,170
-	db 170,170,85,85,85,85,85,85,253,215,255,255,170,170,170,170
-	db 255,255,102,102,170,170,170,170,170,170,170,170,234,255,234,255
-	db 170,170,247,87,170,106,170,106,170,86,85,85,85,85,85,85
-	db 223,255,255,255,170,170,170,170,170,170,85,85,85,85,85,85
-	db 255,255,255,255,170,170,170,170,170,170,85,85,85,85,85,85
-	db 127,253,255,255,170,170,170,170,170,170,85,85,85,85,85,85
-	db 149,149,102,246,250,255,250,255,170,250,170,170,170,170,170,170
+	db 85,85,101,101,170,170,170,170,170,170,170,170,170,170,170,170
+	db 85,85,101,101,170,170,170,170,170,170,171,170,255,175,255,175
+	db 102,85,85,85,85,85,87,85,95,255,255,255,170,170,170,170
+	db 102,102,85,85,95,213,127,245,255,253,255,255,170,170,170,170
+	db 102,102,85,85,125,213,255,213,255,255,255,255,170,170,170,170
+	db 102,102,85,85,85,85,85,85,253,215,255,255,170,170,170,170
+	db 119,119,101,101,170,170,170,170,170,170,170,170,234,255,234,255
+	db 119,119,245,101,255,191,255,191,255,171,170,170,170,170,170,170
+	db 87,119,253,253,170,170,170,170,170,170,85,85,85,85,85,85
+	db 119,119,253,253,170,170,170,170,170,170,85,85,85,85,85,85
+	db 119,117,253,253,170,170,170,170,170,170,85,85,85,85,85,85
+	db 85,85,101,245,250,255,250,255,170,250,170,170,170,170,170,170
 	db 170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170
 	db 85,85,89,89,149,149,102,102,170,170,170,170,170,170,170,170
 	db 170,170,170,170,170,170,174,174,234,234,187,187,255,255,255,255
@@ -27461,7 +30398,7 @@ _pano_farm_tiles:
 	db 255,255,253,255,255,95,255,85,127,85,87,165,85,170,149,170
 	db 85,85,85,85,170,170,170,170,170,170,255,170,255,170,255,170
 	db 255,85,127,85,255,170,255,170,255,170,255,170,255,170,255,170
-	db 255,255,255,255,255,255,253,255,85,255,85,253,85,213,85,85
+	db 255,255,255,255,255,255,254,255,170,255,170,254,170,234,170,170
 	db 255,255,255,255,170,254,170,85,106,85,85,85,85,85,85,85
 	db 85,85,85,85,86,85,170,170,170,170,169,170,85,85,85,85
 	db 170,170,170,170,86,85,85,85,85,85,169,170,170,170,170,170
@@ -27482,80 +30419,71 @@ _pano_farm_tiles:
 _pano_farm_map:
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 1,1,1,1,1,1,2,3,4,5,6,7,8,9,10,1
-	db 1,1,1,1,1,1,2,3,4,5,6,7,8,9,10,1
-	db 11,11,11,11,11,12,13,14,15,16,17,18,19,20,21,22
-	db 11,11,11,11,11,12,13,14,15,16,17,18,19,20,21,22
-	db 23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23
-	db 23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23
-	db 24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24
-	db 24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24
-	db 23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23
-	db 23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23
-	db 25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25
-	db 25,25,25,25,25,25,25,25,25,25,25,25,25,25,25,25
-	db 26,26,26,27,28,26,26,26,26,26,26,27,28,26,26,26
-	db 26,26,26,27,28,26,26,26,26,26,26,27,28,26,26,26
-	db 29,30,31,32,33,26,34,35,29,30,31,32,33,26,34,35
-	db 29,30,31,32,33,26,34,35,29,30,31,32,33,26,34,35
-	db 36,37,38,39,40,41,42,43,36,37,38,39,40,41,42,43
-	db 36,37,38,39,40,41,42,43,36,37,38,39,40,41,42,43
-	db 44,45,46,47,48,49,50,51,44,45,46,47,48,49,50,51
-	db 44,45,46,47,48,49,50,51,44,45,46,47,48,49,50,51
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 1,1,1,1,1,2,3,4,5,6,7,8,9,10,11,12
+	db 1,1,1,1,1,2,3,4,5,6,7,8,9,10,11,12
+	db 13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13
+	db 13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13
+	db 14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14
+	db 14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14
+	db 13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13
+	db 13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13
+	db 15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15
+	db 15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15
+	db 16,16,16,17,18,16,16,16,16,16,16,17,18,16,16,16
+	db 16,16,16,17,18,16,16,16,16,16,16,17,18,16,16,16
+	db 19,20,21,22,23,16,24,25,19,20,21,22,23,16,24,25
+	db 19,20,21,22,23,16,24,25,19,20,21,22,23,16,24,25
+	db 26,27,28,29,30,31,32,33,26,27,28,29,30,31,32,33
+	db 26,27,28,29,30,31,32,33,26,27,28,29,30,31,32,33
+	db 34,35,36,37,38,39,40,41,34,35,36,37,38,39,40,41
+	db 34,35,36,37,38,39,40,41,34,35,36,37,38,39,40,41
 _pano_farm_map_pal:
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 0,0,0,0,0,0,0,1,1,1,1,1,2,1,2,0
-	db 0,0,0,0,0,0,0,1,1,1,1,1,2,1,2,0
-	db 0,0,0,0,0,0,3,3,3,3,0,3,3,3,3,0
-	db 0,0,0,0,0,0,3,3,3,3,0,3,3,3,3,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
-	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
-	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
-	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
-	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
-	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
-	db 4,4,4,6,6,4,4,4,4,4,4,6,6,4,4,4
-	db 4,4,4,6,6,4,4,4,4,4,4,6,6,4,4,4
-	db 5,5,5,6,6,4,5,5,5,5,5,6,6,4,5,5
-	db 5,5,5,6,6,4,5,5,5,5,5,6,6,4,5,5
-	db 5,5,5,7,7,5,5,5,5,5,5,7,7,5,5,5
-	db 5,5,5,7,7,5,5,5,5,5,5,7,7,5,5,5
+	db 0,0,0,0,0,0,1,1,2,1,0,0,1,1,1,0
+	db 0,0,0,0,0,0,1,1,2,1,0,0,1,1,1,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
 	db 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
+	db 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
+	db 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
+	db 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
+	db 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
+	db 4,4,4,7,7,4,4,4,4,4,4,7,7,4,4,4
+	db 4,4,4,7,7,4,4,4,4,4,4,7,7,4,4,4
+	db 6,6,6,7,7,4,4,6,6,6,6,7,7,4,4,6
+	db 6,6,6,7,7,4,4,6,6,6,6,7,7,4,4,6
+	db 6,6,6,3,4,6,6,6,6,6,6,3,4,6,6,6
+	db 6,6,6,3,4,6,6,6,6,6,6,3,4,6,6,6
+	db 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
+	db 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
 	align 2
 _pano_farm_pals:
-	db 203,6,164,14,199,14,222,10,203,6,164,14,222,10,255,14
-	db 203,6,164,14,199,14,255,14,203,6,199,14,222,10,255,14
-	db 203,6,199,14,219,13,239,12,203,6,172,3,206,4,239,12
-	db 203,6,23,1,43,2,239,12,203,6,43,2,172,3,239,12
+	db 203,6,164,14,199,14,222,10,203,6,199,14,222,10,255,14
+	db 203,6,164,14,222,10,255,14,203,6,43,2,172,3,255,15
+	db 203,6,43,2,172,3,239,12,203,6,199,14,219,13,239,12
+	db 203,6,172,3,206,4,239,12,203,6,23,1,43,2,239,12
 	align 2
 _pano_autobahn_tiles:
 	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85
-	db 85,85,85,85,85,85,85,85,85,85,85,85,95,85,127,245
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,213,85,213
-	db 85,85,85,85,85,85,87,85,170,85,170,85,85,85,86,85
-	db 95,85,95,85,127,245,255,255,170,170,170,170,255,85,170,170
-	db 125,213,255,213,255,255,255,255,170,170,170,170,255,255,170,170
-	db 85,85,85,85,213,215,253,255,170,170,170,170,255,255,170,170
-	db 85,85,85,85,85,85,85,85,213,151,245,159,255,255,170,170
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,253,165,170
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,87,85
-	db 255,255,255,255,170,170,170,170,85,85,85,85,85,85,85,85
-	db 117,245,253,255,170,170,170,170,85,85,85,85,85,85,85,85
-	db 149,149,89,89,153,153,170,170,170,170,170,170,186,170,254,170
-	db 149,149,89,89,153,153,170,170,170,170,170,170,250,171,250,175
-	db 149,149,89,89,153,153,170,170,170,170,170,170,170,170,170,175
-	db 149,149,89,89,153,153,170,170,170,170,170,170,170,170,170,170
-	db 151,149,89,89,153,153,170,170,170,170,170,170,170,170,170,170
-	db 255,255,89,89,153,153,170,170,170,170,170,170,170,170,170,170
-	db 245,255,89,89,153,153,170,170,170,170,170,170,170,170,170,170
-	db 149,149,89,89,153,153,170,170,170,170,170,170,170,170,171,191
-	db 149,149,89,89,153,153,170,170,170,170,170,170,170,254,175,254
-	db 149,149,89,89,153,153,170,170,170,170,170,170,170,170,170,234
-	db 151,149,127,89,255,159,255,175,170,170,170,170,170,170,170,170
+	db 119,119,253,253,170,170,170,170,85,85,85,85,85,85,85,85
+	db 117,117,253,253,255,255,255,255,170,170,170,170,170,170,170,170
+	db 85,85,89,89,153,153,170,170,170,170,170,170,186,170,254,170
+	db 85,85,89,89,153,153,170,170,170,170,170,170,250,171,250,175
+	db 85,85,89,89,153,153,170,170,170,170,170,170,170,170,170,175
+	db 85,85,89,89,153,153,170,170,170,170,170,170,170,170,170,170
+	db 87,85,89,89,153,153,170,170,170,170,170,170,170,170,170,170
+	db 119,119,89,89,153,153,170,170,170,170,170,170,170,170,170,170
+	db 117,119,89,89,153,153,170,170,170,170,170,170,170,170,170,170
+	db 85,85,89,89,153,153,170,170,170,170,170,170,170,170,171,191
+	db 85,85,89,89,153,153,170,170,170,170,170,170,170,254,175,254
+	db 85,85,89,89,153,153,170,170,170,170,170,170,170,170,170,234
+	db 87,85,125,89,255,159,255,175,170,170,170,170,170,170,170,170
 	db 170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170
 	db 85,85,87,85,106,85,106,85,85,85,85,85,85,85,85,85
 	db 255,87,255,255,170,170,170,170,85,85,85,85,85,85,85,85
@@ -27607,85 +30535,83 @@ _pano_autobahn_tiles:
 	db 255,170,255,170,255,170,255,170,95,169,85,149,85,85,85,85
 	db 170,254,170,254,170,254,170,254,90,253,85,213,85,85,85,85
 	db 170,126,170,126,170,126,170,126,90,125,85,213,85,85,85,85
-	db 170,170,170,170,170,170,170,170,90,169,85,149,85,85,85,85
+	db 255,255,255,255,255,255,255,255,95,253,86,229,89,149,101,85
+	db 255,255,255,255,255,255,255,255,95,253,101,213,149,85,85,86
+	db 149,85,85,86,85,89,86,101,89,149,101,85,149,85,85,86
+	db 85,89,86,101,89,149,101,85,149,85,85,86,85,89,86,101
+	db 89,149,101,85,149,85,85,86,85,89,86,101,89,149,101,85
 _pano_autobahn_map:
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 1,2,0,0,0,0,3,4,5,6,7,8,0,0,0,9
-	db 1,2,0,0,0,0,3,4,5,6,7,8,0,0,0,9
-	db 10,11,12,13,14,15,16,17,17,17,17,18,19,20,21,22
-	db 10,11,12,13,14,15,16,17,17,17,17,18,19,20,21,22
-	db 23,24,25,26,27,28,29,30,31,23,23,32,33,34,35,23
-	db 23,24,25,26,27,28,29,30,31,23,23,32,33,34,35,23
-	db 36,37,38,39,40,41,41,41,42,39,39,39,39,39,39,39
-	db 36,37,38,39,40,41,41,41,42,39,39,39,39,39,39,39
-	db 23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23
-	db 23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23
-	db 43,43,43,43,44,45,43,43,43,43,43,43,44,45,43,43
-	db 43,43,43,43,44,45,43,43,43,43,43,43,44,45,43,43
-	db 46,47,48,46,49,50,46,46,46,46,46,46,49,50,46,51
-	db 46,47,48,46,49,50,46,46,46,46,46,46,49,50,46,51
-	db 52,53,54,55,56,57,58,59,56,60,61,62,56,63,64,0
-	db 52,53,54,55,56,57,58,59,56,60,61,62,56,63,64,0
-	db 65,66,67,68,69,70,69,71,69,72,67,72,69,73,69,74
-	db 65,66,69,68,69,70,69,71,69,72,67,72,69,73,69,74
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 1,2,3,4,5,6,7,8,8,8,8,9,10,11,12,13
+	db 1,2,3,4,5,6,7,8,8,8,8,9,10,11,12,13
+	db 14,15,16,17,18,19,20,21,22,14,14,23,24,25,26,14
+	db 14,15,16,17,18,19,20,21,22,14,14,23,24,25,26,14
+	db 27,28,29,30,31,32,32,32,33,30,30,30,30,30,30,30
+	db 27,28,29,30,31,32,32,32,33,30,30,30,30,30,30,30
+	db 14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14
+	db 14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14
+	db 34,34,34,34,35,36,34,34,34,34,34,34,35,36,34,34
+	db 34,34,34,34,35,36,34,34,34,34,34,34,35,36,34,34
+	db 37,38,39,37,40,41,37,37,37,37,37,37,40,41,37,42
+	db 37,38,39,37,40,41,37,37,37,37,37,37,40,41,37,42
+	db 43,44,45,46,47,48,49,50,47,51,52,53,47,54,55,0
+	db 43,44,45,46,47,48,49,50,47,51,52,53,47,54,55,0
+	db 56,57,58,59,60,61,60,62,60,63,58,63,60,64,60,65
+	db 56,57,60,59,60,61,60,62,60,63,58,63,60,64,60,66
+	db 67,68,69,67,68,69,67,68,69,67,68,69,67,68,69,67
+	db 68,69,67,68,69,67,68,69,67,68,69,67,68,69,67,68
 _pano_autobahn_map_pal:
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 5,5,1,1,1,1,6,6,6,6,6,6,1,1,1,6
-	db 5,5,1,1,1,1,6,6,6,6,6,6,1,1,1,6
-	db 1,5,5,5,5,5,5,5,5,1,1,5,5,5,5,1
-	db 1,5,5,5,5,5,5,5,5,1,1,5,5,5,5,1
+	db 5,6,0,0,0,0,6,6,6,6,6,6,0,0,0,6
+	db 5,6,0,0,0,0,6,6,6,6,6,6,0,0,0,6
+	db 0,5,5,5,5,5,5,5,5,0,0,5,5,5,5,0
+	db 0,5,5,5,5,5,5,5,5,0,0,5,5,5,5,0
 	db 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
 	db 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
-	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
-	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
-	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
-	db 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
-	db 2,3,3,2,2,2,2,2,2,2,2,2,2,2,2,3
-	db 2,3,3,2,2,2,2,2,2,2,2,2,2,2,2,3
-	db 3,3,3,3,2,4,3,3,2,3,3,3,2,4,3,3
-	db 3,3,3,3,2,4,3,3,2,3,3,3,2,4,3,3
-	db 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
-	db 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
-	db 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
-	db 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	db 1,2,2,1,1,1,1,1,1,1,1,1,1,1,1,2
+	db 1,2,2,1,1,1,1,1,1,1,1,1,1,1,1,2
+	db 2,2,2,2,1,3,2,2,1,2,2,2,1,3,2,2
+	db 2,2,2,2,1,3,2,2,1,2,2,2,1,3,2,2
+	db 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,4
+	db 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,4
+	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
+	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
 	align 2
 _pano_autobahn_pals:
-	db 166,5,118,9,187,12,238,15,166,5,118,9,168,11,238,15
-	db 166,5,85,6,186,12,220,13,166,5,152,10,186,12,220,13
-	db 166,5,85,6,152,10,220,13,166,5,168,11,186,12,238,15
+	db 166,5,118,9,168,11,238,15,166,5,85,6,186,12,220,13
+	db 166,5,152,10,186,12,220,13,166,5,85,6,152,10,220,13
+	db 166,5,82,3,99,4,152,10,166,5,168,11,186,12,238,15
 	db 166,5,118,9,168,11,186,12,166,5,82,3,152,10,220,13
 	align 2
 _pano_seaside_tiles:
 	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85
-	db 85,85,85,85,85,85,213,85,253,215,255,255,255,255,255,255
-	db 85,85,85,85,85,85,85,85,85,85,85,85,149,255,89,255
-	db 85,85,85,85,85,85,85,85,85,85,85,85,149,149,89,89
-	db 85,85,85,85,85,85,85,85,87,85,95,85,255,127,255,127
-	db 85,85,85,85,95,85,127,213,255,253,255,255,255,255,255,255
-	db 85,85,85,85,125,213,255,213,255,255,255,255,255,255,255,255
-	db 153,153,170,170,170,170,170,170,170,170,170,170,170,170,170,170
-	db 153,153,170,170,170,170,170,170,170,170,191,170,191,170,170,170
-	db 85,85,85,85,85,85,253,87,255,95,170,170,170,170,85,85
-	db 85,85,85,87,213,95,255,127,255,255,170,171,250,175,255,127
-	db 153,153,170,191,171,255,255,255,255,255,255,255,255,255,255,255
-	db 85,85,85,245,85,253,95,255,255,255,171,254,175,255,255,255
-	db 85,85,85,85,85,85,85,245,85,253,170,234,170,250,117,253
-	db 170,85,170,85,85,85,85,85,85,85,85,85,85,85,85,85
-	db 170,170,170,170,85,85,85,85,85,85,85,85,85,85,85,85
-	db 85,149,85,149,85,85,85,85,85,85,85,85,85,85,85,85
-	db 85,85,85,85,85,85,85,85,106,85,106,85,85,85,85,85
-	db 85,85,87,85,223,127,255,255,170,170,170,170,85,85,85,85
-	db 87,253,95,253,255,255,255,255,170,170,170,170,85,85,85,85
-	db 85,213,85,245,85,253,255,255,170,170,170,170,85,85,85,85
-	db 85,85,85,85,85,85,85,85,85,165,85,165,85,85,85,85
-	db 149,149,89,89,153,153,170,170,170,170,170,170,170,170,170,170
+	db 85,85,169,169,170,170,170,170,170,170,170,170,170,170,170,170
+	db 85,85,169,169,170,170,170,170,170,170,191,170,191,170,170,170
+	db 85,85,169,169,170,170,254,171,255,175,255,255,255,255,170,170
+	db 170,170,170,170,234,175,255,191,255,255,255,255,255,255,255,191
+	db 85,85,169,189,171,255,255,255,255,255,255,255,255,255,255,255
+	db 85,85,169,249,170,254,175,255,255,255,255,255,255,255,255,255
+	db 170,170,170,170,170,170,170,250,170,254,255,255,255,255,186,254
 	db 170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170
+	db 255,85,255,85,85,85,85,85,85,85,85,85,85,85,85,85
+	db 255,255,255,255,85,85,85,85,85,85,85,85,85,85,85,85
+	db 85,213,85,213,85,85,85,85,85,85,85,85,85,85,85,85
+	db 85,85,85,85,85,85,85,85,127,85,127,85,85,85,85,85
+	db 170,170,171,170,239,191,255,255,255,255,255,255,170,170,170,170
+	db 171,254,175,254,255,255,255,255,255,255,255,255,170,170,170,170
+	db 170,234,170,250,170,254,255,255,255,255,255,255,170,170,170,170
+	db 85,85,85,85,85,85,85,85,85,245,85,245,85,85,85,85
+	db 149,149,89,89,153,153,170,170,170,170,170,170,170,170,170,170
 	db 170,170,174,174,234,234,187,187,255,255,255,255,255,255,255,255
 	db 170,170,170,170,170,170,170,170,170,170,165,170,85,170,85,165
 	db 170,170,170,170,170,170,85,170,85,85,85,85,255,127,255,127
@@ -27726,35 +30652,35 @@ _pano_seaside_tiles:
 _pano_seaside_map:
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 1,2,3,3,3,3,3,3,3,3,3,3,3,4,5,6
-	db 1,2,3,3,3,3,3,3,3,3,3,3,3,4,5,6
-	db 7,7,8,9,10,11,12,13,7,7,7,7,7,7,7,7
-	db 7,7,8,9,10,11,12,13,7,7,7,7,7,7,7,7
-	db 0,0,0,14,15,15,15,15,16,0,0,17,18,19,20,21
-	db 0,0,0,14,15,15,15,15,16,0,0,17,18,19,20,21
-	db 22,22,22,22,22,22,22,22,22,22,22,22,22,22,22,22
-	db 22,22,22,22,22,22,22,22,22,22,22,22,22,22,22,22
-	db 23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23
-	db 23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23
-	db 24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24
-	db 24,24,24,24,24,24,24,24,24,24,24,24,24,24,24,24
-	db 25,26,27,28,29,30,31,32,33,34,23,23,23,23,23,23
-	db 25,26,27,28,29,30,31,32,33,34,23,23,23,23,23,23
-	db 0,35,0,36,37,38,39,40,41,42,43,44,45,23,46,47
-	db 48,35,0,36,37,38,39,40,41,42,43,44,45,23,46,47
-	db 0,0,0,0,0,49,50,0,0,51,52,53,54,55,56,57
-	db 58,0,0,0,0,49,50,0,0,51,52,53,54,55,56,57
-	db 59,60,59,60,59,60,59,60,59,60,59,60,59,60,59,60
-	db 59,60,59,60,59,60,59,60,59,60,59,60,59,60,59,60
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 1,1,2,3,4,5,6,7,1,1,1,1,1,1,1,1
+	db 1,1,2,3,4,5,6,7,1,1,1,1,1,1,1,1
+	db 8,8,8,9,10,10,10,10,11,8,8,12,13,14,15,16
+	db 8,8,8,9,10,10,10,10,11,8,8,12,13,14,15,16
+	db 17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17
+	db 17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17
+	db 8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
+	db 8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
+	db 18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18
+	db 18,18,18,18,18,18,18,18,18,18,18,18,18,18,18,18
+	db 19,20,21,22,23,24,25,26,27,28,8,8,8,8,8,8
+	db 19,20,21,22,23,24,25,26,27,28,8,8,8,8,8,8
+	db 0,29,0,30,31,32,33,34,35,36,37,38,39,8,40,41
+	db 42,29,0,30,31,32,33,34,35,36,37,38,39,8,40,41
+	db 0,0,0,0,0,43,44,0,0,45,46,47,48,49,50,51
+	db 52,0,0,0,0,43,44,0,0,45,46,47,48,49,50,51
+	db 53,54,53,54,53,54,53,54,53,54,53,54,53,54,53,54
+	db 53,54,53,54,53,54,53,54,53,54,53,54,53,54,53,54
 _pano_seaside_map_pal:
-	db 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
-	db 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
-	db 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
-	db 7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7
-	db 7,7,7,0,0,7,0,0,7,7,7,7,7,7,7,7
-	db 7,7,7,0,0,7,0,0,7,7,7,7,7,7,7,7
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,5,5,5,5,5,5,0,0,5,0,0,0,5
+	db 0,0,0,5,5,5,5,5,5,0,0,5,0,0,0,5
 	db 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
 	db 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
 	db 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
@@ -27771,34 +30697,28 @@ _pano_seaside_map_pal:
 	db 4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4
 	align 2
 _pano_seaside_pals:
-	db 205,10,180,15,219,15,255,15,205,10,166,4,235,15,109,3
+	db 205,10,146,14,180,15,255,15,205,10,166,4,235,15,109,3
 	db 205,10,235,15,109,3,255,15,205,10,166,4,109,3,255,15
 	db 205,10,113,12,198,15,255,15,205,10,180,15,216,15,235,15
 	db 205,10,166,4,235,15,255,15,205,10,146,14,180,15,255,15
 	align 2
 _pano_ruins_tiles:
 	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,85,85
-	db 85,85,85,85,85,85,85,85,85,85,85,85,85,85,89,89
-	db 85,85,85,85,85,85,85,85,85,85,87,85,95,85,170,90
-	db 85,85,85,85,85,85,87,85,95,253,127,255,255,255,170,170
-	db 85,85,85,85,85,85,85,245,95,245,127,253,255,255,170,170
-	db 85,85,85,85,85,85,85,85,85,85,85,213,85,245,149,170
-	db 149,149,102,102,170,170,170,170,170,170,170,170,170,170,170,170
-	db 255,159,102,102,170,170,170,170,170,170,170,170,170,170,170,170
-	db 255,255,102,102,170,170,170,170,170,170,170,170,170,170,170,170
-	db 213,255,102,102,170,170,170,170,170,170,170,170,170,170,170,170
-	db 170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170
-	db 170,170,170,170,170,170,170,170,170,170,170,170,175,170,191,170
-	db 170,170,170,170,170,170,170,170,254,170,255,170,255,235,255,255
-	db 170,170,170,170,170,170,170,170,234,171,250,175,255,255,255,255
-	db 170,170,170,170,170,170,170,171,234,175,251,191,255,255,170,186
-	db 170,170,170,170,170,170,170,191,235,255,255,255,255,255,170,170
-	db 170,170,170,170,170,170,170,250,170,254,175,255,255,255,170,170
-	db 170,170,170,170,170,170,170,170,170,170,170,250,170,254,170,170
-	db 170,170,170,170,170,170,170,170,175,170,175,170,170,170,170,170
-	db 170,170,234,171,251,175,255,191,170,170,170,170,170,170,170,170
-	db 170,191,170,255,239,255,255,255,170,170,170,170,170,170,170,170
-	db 170,170,170,250,170,254,170,255,170,170,170,170,170,170,170,170
+	db 85,85,101,101,170,170,170,170,170,170,170,170,170,170,170,170
+	db 119,87,101,101,170,170,170,170,170,170,170,170,170,170,170,170
+	db 119,119,101,101,170,170,170,170,170,170,170,170,170,170,170,170
+	db 85,119,101,101,170,170,170,170,170,170,170,170,170,170,170,170
+	db 85,85,85,85,85,85,85,85,85,85,85,85,95,85,127,85
+	db 85,85,85,85,85,85,85,85,253,85,255,85,255,215,255,255
+	db 85,85,85,85,85,85,85,85,213,87,245,95,255,255,255,255
+	db 85,85,85,85,85,85,85,87,213,95,247,127,255,255,170,186
+	db 85,85,85,85,85,85,85,127,215,255,255,255,255,255,170,170
+	db 85,85,85,85,85,85,85,245,85,253,95,255,255,255,170,170
+	db 85,85,85,85,85,85,85,85,85,85,85,245,85,253,170,170
+	db 85,85,85,85,85,85,85,85,90,85,90,85,85,85,85,85
+	db 85,85,213,87,247,95,255,127,170,170,170,170,85,85,85,85
+	db 85,127,85,255,223,255,255,255,170,170,170,170,85,85,85,85
+	db 85,85,85,245,85,253,85,255,169,170,169,170,85,85,85,85
 	db 170,170,174,174,234,234,187,187,255,255,255,255,255,255,255,255
 	db 255,171,255,175,234,234,187,187,255,255,255,255,255,255,255,255
 	db 255,255,255,255,234,234,187,187,255,255,255,255,255,255,255,255
@@ -27883,71 +30803,71 @@ _pano_ruins_tiles:
 _pano_ruins_map:
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 1,1,1,1,1,2,3,4,5,1,1,1,1,1,1,1
-	db 1,1,1,1,1,2,3,4,5,1,1,1,1,1,1,1
-	db 6,6,6,6,6,7,8,8,9,6,6,6,6,6,6,6
-	db 6,6,6,6,6,7,8,8,9,6,6,6,6,6,6,6
-	db 10,11,12,13,14,15,16,17,10,10,18,19,20,21,10,10
-	db 10,11,12,13,14,15,16,17,10,10,18,19,20,21,10,10
-	db 22,23,24,24,25,26,26,26,22,22,22,22,22,22,22,22
-	db 22,23,24,24,25,26,26,26,22,22,22,22,22,22,22,22
-	db 27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27
-	db 27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27
-	db 28,28,28,29,30,28,28,28,28,28,28,28,28,28,28,28
-	db 28,28,28,29,30,28,28,28,28,28,28,28,28,28,28,28
-	db 31,32,33,34,35,27,27,27,27,36,37,38,39,40,41,42
-	db 31,32,43,34,35,27,27,27,27,36,44,38,39,40,45,46
-	db 47,48,49,50,51,52,27,27,53,54,55,56,57,58,59,60
-	db 47,48,61,62,51,63,27,27,53,54,64,65,57,58,66,67
-	db 68,69,70,71,72,73,74,75,76,77,78,71,79,80,81,82
-	db 68,69,70,71,72,73,83,75,76,77,84,71,79,80,85,86
-	db 87,88,89,90,91,92,93,94,95,96,97,90,91,98,99,100
-	db 87,88,89,90,91,92,101,94,95,96,97,90,91,98,102,100
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	db 1,1,1,1,1,2,3,3,4,1,1,1,1,1,1,1
+	db 1,1,1,1,1,2,3,3,4,1,1,1,1,1,1,1
+	db 0,5,6,7,8,9,10,11,0,0,12,13,14,15,0,0
+	db 0,5,6,7,8,9,10,11,0,0,12,13,14,15,0,0
+	db 16,17,18,18,19,20,20,20,16,16,16,16,16,16,16,16
+	db 16,17,18,18,19,20,20,20,16,16,16,16,16,16,16,16
+	db 21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21
+	db 21,21,21,21,21,21,21,21,21,21,21,21,21,21,21,21
+	db 22,22,22,23,24,22,22,22,22,22,22,22,22,22,22,22
+	db 22,22,22,23,24,22,22,22,22,22,22,22,22,22,22,22
+	db 25,26,27,28,29,21,21,21,21,30,31,32,33,34,35,36
+	db 25,26,37,28,29,21,21,21,21,30,38,32,33,34,39,40
+	db 41,42,43,44,45,46,21,21,47,48,49,50,51,52,53,54
+	db 41,42,55,56,45,57,21,21,47,48,58,59,51,52,60,61
+	db 62,63,64,65,66,67,68,69,70,71,72,65,73,74,75,76
+	db 62,63,64,65,66,67,77,69,70,71,78,65,73,74,79,80
+	db 81,82,83,84,85,86,87,88,89,90,91,84,85,92,93,94
+	db 81,82,83,84,85,86,95,88,89,90,91,84,85,92,96,94
 _pano_ruins_map_pal:
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 0,0,0,0,0,6,6,6,6,0,0,0,0,0,0,0
-	db 0,0,0,0,0,6,6,6,6,0,0,0,0,0,0,0
-	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 0,6,6,6,6,6,6,6,0,0,0,6,6,6,0,0
-	db 0,6,6,6,6,6,6,6,0,0,0,6,6,6,0,0
-	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	db 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
-	db 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5
-	db 3,3,7,5,5,1,1,1,1,3,7,3,3,1,7,3
-	db 3,3,7,5,5,1,1,1,1,3,7,5,3,1,7,3
-	db 1,1,7,4,5,3,1,1,3,1,2,4,4,4,2,2
-	db 1,1,7,4,5,7,1,1,3,1,2,4,4,4,2,2
-	db 1,1,3,4,4,7,7,3,1,1,4,4,4,4,2,2
-	db 1,1,3,4,4,7,7,3,1,1,4,4,4,4,2,2
-	db 1,1,4,4,1,1,2,1,1,1,4,4,1,4,2,1
-	db 1,1,4,4,1,1,2,1,1,1,4,4,1,4,2,1
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	db 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+	db 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
+	db 6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
+	db 4,4,7,6,6,2,2,2,2,4,7,4,4,2,7,4
+	db 4,4,7,6,6,2,2,2,2,4,7,6,4,2,7,4
+	db 2,2,7,5,6,4,2,2,4,2,3,5,5,5,3,3
+	db 2,2,7,5,6,7,2,2,4,2,3,5,5,5,3,3
+	db 2,2,4,5,5,7,7,4,2,2,5,5,5,5,3,3
+	db 2,2,4,5,5,7,7,4,2,2,5,5,5,5,3,3
+	db 2,2,5,5,2,2,3,2,2,2,5,5,2,5,3,2
+	db 2,2,5,5,2,2,3,2,2,2,5,5,2,5,3,2
 	align 2
 _pano_ruins_pals:
-	db 183,5,162,10,197,11,217,12,183,5,98,3,147,4,236,12
-	db 183,5,98,3,147,4,199,6,183,5,82,2,199,6,236,12
-	db 183,5,98,3,147,4,188,9,183,5,217,12,188,9,236,12
-	db 183,5,162,10,197,11,254,14,183,5,147,4,199,6,236,12
+	db 183,5,197,11,202,11,254,14,183,5,162,10,197,11,217,12
+	db 183,5,98,3,147,4,236,12,183,5,98,3,147,4,199,6
+	db 183,5,82,2,199,6,236,12,183,5,98,3,147,4,188,9
+	db 183,5,217,12,188,9,236,12,183,5,147,4,199,6,236,12
 	align 2
 _gfx_pano:
 	dd _pano_beach_tiles
-	db 73,0
+	db 69,0
 	dd _pano_beach_map
 	dd _pano_beach_map_pal
 	dd _pano_beach_pals
 	db 223,11
 	dd _pano_coast_tiles
-	db 100,0
+	db 99,0
 	dd _pano_coast_map
 	dd _pano_coast_map_pal
 	dd _pano_coast_pals
 	db 201,6
 	dd _pano_fields_tiles
-	db 79,0
+	db 70,0
 	dd _pano_fields_map
 	dd _pano_fields_map_pal
 	dd _pano_fields_pals
@@ -27959,67 +30879,67 @@ _gfx_pano:
 	dd _pano_desert_pals
 	db 206,10
 	dd _pano_autumn_tiles
-	db 97,0
+	db 96,0
 	dd _pano_autumn_map
 	dd _pano_autumn_map_pal
 	dd _pano_autumn_pals
 	db 172,6
 	dd _pano_alps_tiles
-	db 112,0
+	db 99,0
 	dd _pano_alps_map
 	dd _pano_alps_map_pal
 	dd _pano_alps_pals
 	db 201,8
 	dd _pano_city_tiles
-	db 79,0
+	db 78,0
 	dd _pano_city_map
 	dd _pano_city_map_pal
 	dd _pano_city_pals
 	db 155,7
 	dd _pano_lake_tiles
-	db 88,0
+	db 83,0
 	dd _pano_lake_map
 	dd _pano_lake_map_pal
 	dd _pano_lake_pals
 	db 202,8
 	dd _pano_canyon_tiles
-	db 84,0
+	db 83,0
 	dd _pano_canyon_map
 	dd _pano_canyon_map_pal
 	dd _pano_canyon_pals
 	db 156,7
 	dd _pano_caves_tiles
-	db 94,0
+	db 87,0
 	dd _pano_caves_map
 	dd _pano_caves_map_pal
 	dd _pano_caves_pals
 	db 138,6
 	dd _pano_snow_tiles
-	db 114,0
+	db 97,0
 	dd _pano_snow_map
 	dd _pano_snow_map_pal
 	dd _pano_snow_pals
 	db 238,15
 	dd _pano_farm_tiles
-	db 52,0
+	db 42,0
 	dd _pano_farm_map
 	dd _pano_farm_map_pal
 	dd _pano_farm_pals
 	db 203,6
 	dd _pano_autobahn_tiles
-	db 75,0
+	db 70,0
 	dd _pano_autobahn_map
 	dd _pano_autobahn_map_pal
 	dd _pano_autobahn_pals
 	db 166,5
 	dd _pano_seaside_tiles
-	db 61,0
+	db 55,0
 	dd _pano_seaside_map
 	dd _pano_seaside_map_pal
 	dd _pano_seaside_pals
 	db 205,10
 	dd _pano_ruins_tiles
-	db 103,0
+	db 97,0
 	dd _pano_ruins_map
 	dd _pano_ruins_map_pal
 	dd _pano_ruins_pals
@@ -29184,7 +32104,7 @@ _NOTE_TABLE:
 	db 10,9,2,9,9,8,2,8,10,7,4,7,13,6,7,6
 	db 1,6,12,5,7,5,2,5,13,4,9,4,5,4,1,4
 	db 13,3,10,3,7,3
-_song0_v0__8:
+_song0_v0__9:
 	db 244,10,240,5,29,12,34,12,38,12,41,12,255,12,41,12
 	db 39,12,38,12,36,36,33,12,36,24,29,24,38,12,34,12
 	db 31,12,34,12,255,12,38,12,39,12,41,12,43,36,41,12
@@ -29197,7 +32117,7 @@ _song0_v0__8:
 	db 41,18,39,12,34,24,31,24,33,18,36,18,41,12,39,24
 	db 36,24,34,12,38,12,41,12,46,12,45,12,41,12,38,12
 	db 41,12,46,72,255,24,0
-_song0_v1__8:
+_song0_v1__9:
 	db 244,6,240,6,2,12,14,12,2,12,14,12,2,12,14,12
 	db 2,12,14,12,9,12,21,12,9,12,21,12,9,12,21,12
 	db 9,12,21,12,11,12,23,12,11,12,23,12,11,12,23,12
@@ -29215,7 +32135,7 @@ _song0_v1__8:
 	db 9,12,21,12,2,12,14,12,2,12,14,12,2,12,14,12
 	db 2,12,14,12,2,12,14,12,2,12,14,12,2,12,14,12
 	db 2,12,14,12,0
-_song0_v2__8:
+_song0_v2__9:
 	db 244,6,240,8,26,6,30,6,33,6,26,6,33,6,30,6
 	db 26,6,30,6,33,6,26,6,33,6,30,6,26,6,33,6
 	db 30,6,26,6,33,6,37,6,40,6,33,6,40,6,37,6
@@ -29249,7 +32169,7 @@ _song0_v2__8:
 	db 30,6,26,6,26,6,30,6,33,6,26,6,33,6,30,6
 	db 26,6,30,6,33,6,26,6,33,6,30,6,26,6,33,6
 	db 30,6,26,6,0
-_song0_v3__8:
+_song0_v3__9:
 	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
 	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
 	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
@@ -29293,7 +32213,7 @@ _song0_v3__8:
 	db 240,7,6,12,244,2,240,12,5,12,244,3,240,7,6,6
 	db 6,6,6,12,6,6,6,6,6,12,244,1,240,5,3,12
 	db 244,3,240,7,6,12,6,6,6,6,6,12,0
-_song1_v0__8:
+_song1_v0__9:
 	db 244,10,240,5,39,18,39,18,42,12,46,24,44,12,42,12
 	db 42,18,39,18,35,12,39,24,42,24,37,18,37,18,42,12
 	db 46,24,44,12,42,12,44,36,41,12,37,24,255,24,39,18
@@ -29306,7 +32226,7 @@ _song1_v0__8:
 	db 41,18,42,18,44,12,37,24,41,24,42,12,41,12,39,12
 	db 34,12,39,12,42,12,46,24,38,24,41,24,46,24,44,24
 	db 0
-_song1_v1__8:
+_song1_v1__9:
 	db 244,6,240,6,12,12,12,12,12,12,12,12,12,12,19,12
 	db 24,12,12,12,8,12,8,12,8,12,8,12,8,12,15,12
 	db 20,12,8,12,3,12,3,12,3,12,3,12,3,12,10,12
@@ -29324,7 +32244,7 @@ _song1_v1__8:
 	db 22,12,10,12,12,12,12,12,12,12,12,12,12,12,19,12
 	db 24,12,12,12,7,12,7,12,7,12,7,12,7,12,14,12
 	db 19,12,7,12,0
-_song1_v2__8:
+_song1_v2__9:
 	db 244,6,240,8,27,6,30,6,34,6,27,6,34,6,30,6
 	db 27,6,30,6,34,6,27,6,34,6,30,6,27,6,34,6
 	db 30,6,27,6,23,6,27,6,30,6,23,6,30,6,27,6
@@ -29358,7 +32278,7 @@ _song1_v2__8:
 	db 30,6,27,6,22,6,26,6,29,6,22,6,29,6,26,6
 	db 22,6,26,6,29,6,22,6,29,6,26,6,22,6,29,6
 	db 26,6,22,6,0
-_song1_v3__8:
+_song1_v3__9:
 	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
 	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,3,12
 	db 244,3,240,7,6,12,244,2,240,12,5,12,244,1,240,5
@@ -29401,7 +32321,7 @@ _song1_v3__8:
 	db 244,2,240,12,5,12,244,3,240,7,6,6,6,6,6,12
 	db 6,6,6,6,6,12,244,1,240,5,3,12,244,3,240,7
 	db 6,12,6,6,6,6,6,12,0
-_song2_v0__8:
+_song2_v0__9:
 	db 244,10,240,5,32,12,37,12,41,12,44,24,41,12,44,24
 	db 42,12,39,12,36,12,39,24,32,12,36,24,41,12,37,12
 	db 34,12,37,24,41,12,46,24,46,36,44,12,42,24,37,24
@@ -29413,7 +32333,7 @@ _song2_v0__8:
 	db 46,12,49,12,46,12,42,12,46,12,49,24,44,12,48,12
 	db 51,12,48,12,44,12,48,12,51,24,49,18,48,18,46,12
 	db 44,24,41,24,37,12,41,12,44,12,49,12,255,48,0
-_song2_v1__8:
+_song2_v1__9:
 	db 244,6,240,6,8,12,8,6,8,6,15,12,8,6,8,6
 	db 20,12,8,6,8,6,15,12,8,12,3,12,3,6,3,6
 	db 10,12,3,6,3,6,15,12,3,6,3,6,10,12,3,12
@@ -29437,7 +32357,7 @@ _song2_v1__8:
 	db 8,6,8,6,20,12,8,6,8,6,15,12,8,12,8,12
 	db 8,6,8,6,15,12,8,6,8,6,20,12,8,6,8,6
 	db 15,12,8,12,0
-_song2_v2__8:
+_song2_v2__9:
 	db 244,6,240,8,27,6,31,6,34,6,27,6,34,6,31,6
 	db 27,6,31,6,34,6,27,6,34,6,31,6,27,6,34,6
 	db 31,6,27,6,22,6,26,6,29,6,22,6,29,6,26,6
@@ -29471,7 +32391,7 @@ _song2_v2__8:
 	db 31,6,27,6,27,6,31,6,34,6,27,6,34,6,31,6
 	db 27,6,31,6,34,6,27,6,34,6,31,6,27,6,34,6
 	db 31,6,27,6,0
-_song2_v3__8:
+_song2_v3__9:
 	db 244,1,240,5,3,12,244,2,240,12,5,12,244,3,240,7
 	db 6,12,244,2,240,12,5,12,244,1,240,5,3,12,244,2
 	db 240,12,5,6,244,1,240,5,3,6,244,3,240,7,6,12
@@ -29524,22 +32444,22 @@ _song2_v3__8:
 	db 244,2,240,11,5,12,244,3,240,7,6,6,6,6,6,12
 	db 6,6,6,6,6,12,244,1,240,5,3,12,244,3,240,7
 	db 6,12,6,6,6,6,6,12,0
-_song3_v0__8:
+_song3_v0__9:
 	db 255,240,0
-_song3_v1__8:
+_song3_v1__9:
 	db 255,240,0
-_song3_v2__8:
+_song3_v2__9:
 	db 255,240,0
-_song3_v3__8:
+_song3_v3__9:
 	db 255,240,0
-_song4_v0__8:
+_song4_v0__9:
 	db 244,10,240,4,37,14,42,14,46,28,44,14,42,14,37,28
 	db 39,14,42,14,47,28,46,14,42,14,39,28,41,14,44,14
 	db 49,28,47,14,44,14,41,28,42,56,37,28,42,28,46,14
 	db 42,14,39,28,42,14,46,14,51,28,47,14,46,14,44,14
 	db 42,14,39,28,42,28,44,14,41,14,37,14,41,14,44,28
 	db 47,28,46,56,42,56,0
-_song4_v1__8:
+_song4_v1__9:
 	db 244,6,240,6,6,14,18,14,6,14,18,14,6,14,18,14
 	db 6,14,18,14,11,14,23,14,11,14,23,14,11,14,23,14
 	db 11,14,23,14,1,14,13,14,1,14,13,14,1,14,13,14
@@ -29549,7 +32469,7 @@ _song4_v1__8:
 	db 11,14,23,14,1,14,13,14,1,14,13,14,1,14,13,14
 	db 1,14,13,14,6,14,18,14,6,14,18,14,6,14,18,14
 	db 6,14,18,14,0
-_song4_v2__8:
+_song4_v2__9:
 	db 244,6,240,8,18,7,22,7,25,7,18,7,25,7,22,7
 	db 18,7,22,7,25,7,18,7,25,7,22,7,18,7,25,7
 	db 22,7,18,7,23,7,27,7,30,7,23,7,30,7,27,7
@@ -29567,7 +32487,7 @@ _song4_v2__8:
 	db 29,7,25,7,18,7,22,7,25,7,18,7,25,7,22,7
 	db 18,7,22,7,25,7,18,7,25,7,22,7,18,7,25,7
 	db 22,7,18,7,0
-_song4_v3__8:
+_song4_v3__9:
 	db 244,1,240,5,3,14,244,2,240,12,5,14,244,3,240,7
 	db 6,14,244,2,240,12,5,14,244,1,240,5,3,14,3,14
 	db 244,3,240,7,6,14,244,2,240,12,5,14,244,1,240,5
@@ -29590,78 +32510,78 @@ _song4_v3__8:
 	db 240,12,5,14,244,3,240,7,6,7,6,7,6,14,6,7
 	db 6,7,6,14,244,1,240,5,3,14,244,3,240,7,6,14
 	db 6,7,6,7,6,14,0
-_song5_v0__8:
+_song5_v0__9:
 	db 244,10,240,4,34,32,33,32,32,32,31,32,30,128,255,240
 	db 255,240,255,240,255,240,255,240,255,240,255,240,255,240,255,240
 	db 255,240,255,240,255,240,0
-_song5_v1__8:
+_song5_v1__9:
 	db 244,6,240,6,3,128,3,128,255,240,255,240,255,240,255,240
 	db 255,240,255,240,255,240,255,240,255,240,255,240,255,240,255,240
 	db 0
-_song5_v2__8:
+_song5_v2__9:
 	db 244,13,240,8,18,128,15,128,255,240,255,240,255,240,255,240
 	db 255,240,255,240,255,240,255,240,255,240,255,240,255,240,255,240
 	db 0
-_song5_v3__8:
+_song5_v3__9:
 	db 244,1,240,5,3,128,255,128,255,240,255,240,255,240,255,240
 	db 255,240,255,240,255,240,255,240,255,240,255,240,255,240,255,240
 	db 0
 	align 2
 _music_songs:
-	dd _song0_v0__8
-	dd _song0_v1__8
-	dd _song0_v2__8
-	dd _song0_v3__8
+	dd _song0_v0__9
+	dd _song0_v1__9
+	dd _song0_v2__9
+	dd _song0_v3__9
 	db 1,0
-	dd _song1_v0__8
-	dd _song1_v1__8
-	dd _song1_v2__8
-	dd _song1_v3__8
+	dd _song1_v0__9
+	dd _song1_v1__9
+	dd _song1_v2__9
+	dd _song1_v3__9
 	db 1,0
-	dd _song2_v0__8
-	dd _song2_v1__8
-	dd _song2_v2__8
-	dd _song2_v3__8
+	dd _song2_v0__9
+	dd _song2_v1__9
+	dd _song2_v2__9
+	dd _song2_v3__9
 	db 1,0
-	dd _song3_v0__8
-	dd _song3_v1__8
-	dd _song3_v2__8
-	dd _song3_v3__8
+	dd _song3_v0__9
+	dd _song3_v1__9
+	dd _song3_v2__9
+	dd _song3_v3__9
 	db 1,0
-	dd _song4_v0__8
-	dd _song4_v1__8
-	dd _song4_v2__8
-	dd _song4_v3__8
+	dd _song4_v0__9
+	dd _song4_v1__9
+	dd _song4_v2__9
+	dd _song4_v3__9
 	db 1,0
-	dd _song5_v0__8
-	dd _song5_v1__8
-	dd _song5_v2__8
-	dd _song5_v3__8
+	dd _song5_v0__9
+	dd _song5_v1__9
+	dd _song5_v2__9
+	dd _song5_v3__9
 	db 0,0
-_z80drv__9:
+_z80drv__10:
 	db 195,19,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 0,0,0,243,49,0,16,58,3,0,183,40,250,71,33,4
 	db 0,126,50,1,64,50,0,64,35,126,50,1,64,50,0,64
 	db 35,126,50,1,64,50,0,64,35,16,230,175,50,3,0,24
 	db 214
-_inst_tab__9:
+_inst_tab__10:
 	db 6,4,1,15,1,15,2,15,7,3,5,3,2,9,6,4
 	db 3,8,2,12,8,3,8,3,5,5,3,6,5,5,2,12
 	db 2,12,6,4
 	align 2
-_b_edge__10:
+_b_edge__11:
 	db 49,1,68,4,18,1,16,4
 	align 2
-_b_band__10:
+_b_band__11:
 	db 179,3,255,15,45,2,82,14
 	align 2
-_b_text__10:
+_b_text__11:
 	db 255,15,46,2,255,15,255,15
 	align 2
-_b_shad__10:
+_b_shad__11:
 	db 0,0,6,0,0,0,0,0
 	align 2
-_overrev_dash_tiles__13:
+_overrev_dash_tiles__15:
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 192,3,192,3,192,3,192,3,192,3,0,0,192,3,0,0
 	db 60,15,60,15,48,12,0,0,0,0,0,0,0,0,0,0
@@ -29759,89 +32679,89 @@ _overrev_dash_tiles__13:
 	db 0,0,0,0,12,15,240,48,0,0,0,0,0,0,0,0
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	align 2
-_easy_bends__16:
+_easy_bends__18:
 	db 20,0,26,0,32,0,40,0,46,0
 	align 2
-_sharp_bends__16:
+_sharp_bends__18:
 	db 56,0,62,0,70,0
 	align 2
-_sp_sharp__16:
+_sp_sharp__18:
 	db 94,1,144,1,244,1
 	align 2
-_sp_s__16:
+_sp_s__18:
 	db 44,1,94,1,144,1
 	align 2
-_sp_gap__16:
+_sp_gap__18:
 	db 0,0,100,0,150,0
 	align 2
-_sp_straight__16:
+_sp_straight__18:
 	db 144,1,244,1,88,2,32,3
 	align 2
-_sp_bend__16:
+_sp_bend__18:
 	db 144,1,244,1,88,2,188,2,32,3
-_slopes__16:
+_slopes__18:
 	db 0,255,1,0,254,2
-_S17_0:
+_S19_0:
 	db 65,85,84,79,66,65,72,78,32,65,67,69,0
-_S17_1:
+_S19_1:
 	db 84,79,80,32,83,80,69,69,68,44,32,84,79,80,32,82
 	db 65,78,75,33,0
-_S17_2:
+_S19_2:
 	db 67,65,78,89,79,78,32,67,79,78,81,85,69,82,79,82
 	db 0
-_S17_3:
+_S19_3:
 	db 78,79,84,72,73,78,71,32,83,84,79,80,83,32,89,79
 	db 85,33,0
-_S17_4:
+_S19_4:
 	db 76,65,75,69,83,73,68,69,32,68,82,69,65,77,0
-_S17_5:
+_S19_5:
 	db 65,32,80,69,82,70,69,67,84,32,83,85,78,83,69,84
 	db 32,82,85,78,0
-_S17_6:
+_S19_6:
 	db 83,69,65,83,73,68,69,32,80,65,82,84,89,0
-_S17_7:
+_S19_7:
 	db 84,72,69,32,84,79,87,78,32,67,72,69,69,82,83,32
 	db 89,79,85,33,0
-_S17_8:
+_S19_8:
 	db 76,69,71,69,78,68,32,79,70,32,84,72,69,32,82,85
 	db 73,78,0
-_S17_9:
+_S19_9:
 	db 84,72,69,32,65,78,67,73,69,78,84,32,67,85,80,33
 	db 0
-_S17_10:
+_S19_10:
 	db 74,79,85,82,78,69,89,32,67,79,77,80,76,69,84,69
 	db 0
-_S17_11:
+_S19_11:
 	db 65,32,82,79,65,68,32,78,79,66,79,68,89,32,75,78
 	db 69,87,0
 	align 2
-_endings__17:
-	dd _S17_0
-	dd _S17_1
+_endings__19:
+	dd _S19_0
+	dd _S19_1
 	db 68,4,170,10,255,15,2,0
-	dd _S17_2
-	dd _S17_3
+	dd _S19_2
+	dd _S19_3
 	db 36,0,123,3,207,8,1,0
-	dd _S17_4
-	dd _S17_5
+	dd _S19_4
+	dd _S19_5
 	db 66,9,199,15,254,15,3,0
-	dd _S17_6
-	dd _S17_7
+	dd _S19_6
+	dd _S19_7
 	db 70,0,189,2,255,9,4,0
-	dd _S17_8
-	dd _S17_9
+	dd _S19_8
+	dd _S19_9
 	db 4,1,61,3,175,10,1,0
-	dd _S17_10
-	dd _S17_11
+	dd _S19_10
+	dd _S19_11
 	db 85,0,207,0,255,10,1,0
-_dir_x__17:
+_dir_x__19:
 	db 16,11,0,245,240,245,0,11
-_dir_y__17:
+_dir_y__19:
 	db 0,245,240,245,0,11,16,11
-_pals__17_L2066:
+_pals__19_L2518:
 	db 1,2,9,10
 	align 2
-_gfx_font_tiles__24:
+_gfx_font_tiles__26:
 	db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 	db 208,3,208,3,208,3,208,3,208,3,80,1,208,3,80,1
 	db 125,15,125,15,117,13,20,5,0,0,0,0,0,0,0,0
@@ -29911,27 +32831,27 @@ _gfx_font_tiles__24:
 	db 0,3,0,15,255,63,255,255,255,63,0,15,0,3,0,0
 	db 192,0,240,0,252,255,255,255,252,255,240,0,192,0,0,0
 	db 204,204,51,51,204,204,51,51,0,192,0,192,0,192,0,192
-_S24_0:
+_S26_0:
 	db 84,73,77,69,0
-_S24_1:
+_S26_1:
 	db 83,84,65,71,69,0
-_S24_2:
+_S26_2:
 	db 75,77,47,72,0
-_S24_3:
+_S26_3:
 	db 72,73,71,72,0
-_S24_4:
+_S26_4:
 	db 32,76,79,87,0
-_hill_rate__28:
+_hill_rate__30:
 	db 64,65,67,69,71,73,75,77,80,82,85,88,91,94,98,102
 	db 106,111,116,121,128,134,140,147,153,160,166,172,179,185,192,198
 	db 204,211,217,224,230,236,243,249,255
 	align 2
-_course_sol__28:
+_course_sol__30:
 	db 82,0,51,3,85,5,255,15,255,255,51,3,51,3,102,6
 	db 153,9
-_course_horizon__28:
+_course_horizon__30:
 	db 0
-_band_lut__28:
+_band_lut__30:
 	db 3,2,1,1,2,3,3,3,3,2,1,0,0,0,0,1
 	db 2,3,3,3,3,3,3,3,3,2,1,0,0,0,0,0
 	db 0,0,1,2,3,3,3,3,3,3,3,3,3,3,3,3
@@ -29983,8 +32903,12 @@ _band_lut__28:
 	align 2
 __DataROM_START:
 	db 46,92,119,159,224,2,0,6,80,130,0,0,0,0
+	db 255
+	db 0
 	db 64,66,15,0,64,66,15,0,64,66,15,0,64,66,15,0
 	db 15
+	db 255
+	db 255,255
 	db 255
 	db 255
 	db 0
@@ -30000,7 +32924,8 @@ __DataROM_START:
 	db 0
 	db 0
 	db 0
-	dd _buf__16
+	db 0
+	dd _buf__18
 	db 237,94
 	db 23,90
 	db 255
@@ -30023,9 +32948,9 @@ __DataROM_START:
 	db 111
 	db 40
 	db 7
-	dd _id_xy_a__28
-	dd _id_xy_b__28
-	dd _id_bandcol_a__28
+	dd _id_xy_a__30
+	dd _id_xy_b__30
+	dd _id_bandcol_a__30
 	db 2
 	db 0
 	db 255,255,255,255
@@ -30033,9 +32958,9 @@ __DataROM_START:
 	db 6
 __DataROM_END:
 __Bss_START equ 04000h
-__Bss_END equ 056AAh
-__DataRAM_START equ 056AAh
-__RAM_END equ 0570Bh
+__Bss_END equ 056DEh
+__DataRAM_START equ 056DEh
+__RAM_END equ 05745h
 _road_edge__0 equ 04000h
 _lat_limit__0 equ 04002h
 _speed__0 equ 04004h
@@ -30073,223 +32998,243 @@ _sec_acc__0 equ 040ACh
 _time_left__0 equ 040ADh
 _score__0 equ 040AEh
 _crash_timer__0 equ 040B2h
-_msg_timer__0 equ 040B3h
-_flash_step__0 equ 040B4h
-_station__0 equ 040B5h
-_last_fork_zone__0 equ 040B6h
-_goal_reached__0 equ 040B7h
-_title_frames__0 equ 040B8h
-_pano_tiles_at__0 equ 040BAh
-_trf_tiles_at__0 equ 040BCh
-_dbg_updates equ 040BEh
-_dbg_cp equ 040C0h
-_dbg_crashes equ 040C6h
-_dbg_scn equ 040C7h
-_dbg_off equ 040C8h
-_grade_tab__0 equ 040C9h
-_save_buf__0 equ 040D6h
-_save_dirty__0 equ 041D6h
-_smoke_t__0 equ 041D7h
-_eng_phase__0 equ 041D8h
-_voice__9 equ 041DAh
-_playing__9 equ 04222h
-_last_vbl__9 equ 04223h
-_want_div__9 equ 04224h
-_want_attn__9 equ 0422Ch
-_sent_div__9 equ 04230h
-_sent_attn__9 equ 04238h
-_noise_trig__9 equ 0423Ch
-_sfx_frames__9 equ 0423Dh
-_sfx_div__9 equ 04242h
-_sfx_step__9 equ 0424Ah
-_sfx_attn__9 equ 0424Eh
-_sfx_decay__9 equ 04252h
-_sfx_age__9 equ 04256h
-_eng_div__9 equ 0425Ah
-_eng_on__9 equ 0425Ch
-_b_on__10 equ 0425Dh
-_b_r0__10 equ 0425Eh
-_b_r1__10 equ 0425Fh
-_b_c0__10 equ 04260h
-_b_c1__10 equ 04261h
-_b_foot__10 equ 04262h
-_b_spr__10 equ 04263h
-_car_d__10 equ 04264h
-_s_offset__11 equ 04266h
-_s_sequence__11 equ 0426Ah
-_s_repeat_timer__12 equ 0426Eh
-_g_vb_hook__13 equ 04276h
-_s_cmd_type__15 equ 0427Ah
-_s_cmd_dst__15 equ 0428Ah
-_s_cmd_len__15 equ 042AAh
-_s_cmd_src__15 equ 042CAh
-_s_cmd_fill__15 equ 0430Ah
-_s_cmd_count__15 equ 0432Ah
-_s_drop_count__15 equ 0432Bh
-_s_lock__15 equ 0432Ch
-_buf__16 equ 0432Eh
-_track_len equ 044DEh
-_cur_stage equ 044DFh
-_cur_branch equ 044E0h
-_cur_leg equ 044E1h
-_leg_len equ 044E2h
-_fork_choice equ 044E4h
-_route_hist equ 044E5h
-_difficulty equ 044EAh
-_leg_theme equ 044EBh
-_next_leg_cost equ 044FAh
-_n_cur__16 equ 044FCh
-_n_next__16 equ 044FDh
-_rs__16 equ 044FEh
-_gp__16 equ 04500h
-_gn__16 equ 04504h
-_px__17 equ 04506h
-_py__17 equ 04522h
-_vx__17 equ 0453Eh
-_vy__17 equ 0455Ah
-_life__17 equ 04576h
-_ptile__17 equ 04584h
-_ppal__17 equ 04592h
-_fx__17 equ 045A0h
-_timer__17 equ 045A1h
-_s_done_cb__18 equ 045A2h
-_s_done_flag__18 equ 045B2h
-_s_was_active__18 equ 045B6h
-_s_rearm_enabled__18 equ 045BAh
-_s_rearm_elem__18 equ 045BEh
-_s_rearm_vector__18 equ 045C2h
-_s_rearm_count__18 equ 045C6h
-_s_rearm_dst__18 equ 045CEh
-_s_rearm_src__18 equ 045DEh
-_h_score__24 equ 045EEh
-_h_score_ok__24 equ 045F5h
-_s_dig__24 equ 045F6h
-_body__27 equ 045FEh
-_car_variant__27 equ 0461Eh
-_car_wheel_dx__27 equ 0461Fh
-_car_tile_base__27 equ 04620h
-_lean_hold__27 equ 04622h
-_lean_side__27 equ 04623h
-_lean_wait__27 equ 04624h
-_bump_phase__27 equ 04625h
-_car_last_x__27 equ 04626h
-_car_last_top__27 equ 04628h
-_art__28 equ 0462Ah
-_road_course__28 equ 04642h
-_road_grade__28 equ 04643h
-_band_pitch__28 equ 04644h
-_climb_room__28 equ 04646h
-_descent_room__28 equ 04647h
-_band_shift__28 equ 04648h
-_id_xy_a__28 equ 0464Ah
-_id_xy_b__28 equ 0477Ch
-_id_xy_done__28 equ 048AEh
-_id_xy_last__28 equ 048B2h
-_id_raster__28 equ 048B6h
-_id_shear__28 equ 048CAh
-_id_sl__28 equ 0494Ah
-_id_bandcol_a__28 equ 04A0Ah
-_id_bandcol_b__28 equ 04B3Ch
-_bc_top__28 equ 04C6Eh
-_id_bandcol_done__28 equ 04C70h
-_id_bandstream__28 equ 04C74h
-_band_phase__28 equ 04C82h
-_id_dxc__28 equ 04C84h
-_id_w_lat__28 equ 04D84h
-_id_w_curve__28 equ 04DC4h
-_id_half__28 equ 04E04h
-_id_src__28 equ 04E44h
-_band_top__28 equ 04E84h
-_band_mid__28 equ 04E88h
-_band_tree__28 equ 04E8Ch
-_band_bg_first__28 equ 04E90h
-_id_buf__28 equ 04E92h
-_pan_head__28 equ 04E94h
-_pan_lat__28 equ 04E96h
-_pan_fine__28 equ 04E98h
-_band_held__28 equ 04E99h
-_band_wait__28 equ 04E9Ah
-_id_ahead__28 equ 04E9Ch
-_id_curve_cm__28 equ 04F1Ch
-_wide_k0__28 equ 04F1Eh
-_rally_of__28 equ 04F1Fh
-_rally_src__28 equ 05120h
-_rally_used__28 equ 0531Eh
-_rally_scanned__28 equ 0531Fh
-_band_col__28 equ 05320h
-_road_dma_live__28 equ 05328h
-_road_dma_depth__28 equ 05329h
-_id_curve_dx__28 equ 0532Ah
-_scn_phase__29 equ 053AAh
-_scn_frac__29 equ 053ACh
-_scn_passed__29 equ 053AEh
-_scn_mode__29 equ 053AFh
-_pano_base__30 equ 053B0h
-_obj_base__30 equ 053B2h
-_obj_end__30 equ 053B4h
-_pano_end__30 equ 053B6h
-_objmap__30 equ 053B8h
-_kind_l__30 equ 055B8h
-_kind_r__30 equ 055B9h
-_cur_pals__30 equ 055BAh
-_cur_backdrop__30 equ 055FAh
-_cur_road__30 equ 055FCh
-_cur_band__30 equ 05604h
-_cur_spr__30 equ 0560Ch
-_next_slot__30 equ 0563Ch
-_cars__31 equ 0563Eh
-_trf_tiles__31 equ 056A0h
-_car_d__31 equ 056A2h
-_half_wheel__31 equ 056A4h
-_dens_min__31 equ 056A5h
-_dens_max__31 equ 056A6h
-_target__31 equ 056A7h
-_cooldown__31 equ 056A8h
-_hard__31 equ 056A9h
-_car_tuned__0 equ 056AAh
-_hiscore__0 equ 056B8h
-_eng_attn__9 equ 056C8h
-_s_current__11 equ 056C9h
-_s_last_slot__11 equ 056CAh
-_ngpc_pad_held equ 056CBh
-_ngpc_pad_pressed equ 056CCh
-_ngpc_pad_released equ 056CDh
-_ngpc_pad_repeat equ 056CEh
-_s_pad_prev__12 equ 056CFh
-_s_repeat_delay__12 equ 056D0h
-_s_repeat_rate__12 equ 056D1h
-_s_vbl_down__12 equ 056D2h
-_s_vbl_prev__12 equ 056D3h
-_g_vb_counter equ 056D4h
-_s_is_color__13 equ 056D5h
-_s_language__13 equ 056D6h
-_s_power_hold__14_L1730 equ 056D7h
-_track_seg equ 056D8h
-_free_seed equ 056DCh
-_seed__17 equ 056DEh
-_cur_song__20 equ 056E0h
-_h_time__24 equ 056E1h
-_h_kmh__24 equ 056E2h
-_h_gear__24 equ 056E3h
-_h_prog__24 equ 056E4h
-_h_stage__24 equ 056E5h
-_id_spr_priority equ 056E6h
-_car_at_x__27 equ 056E8h
-_car_stand__28 equ 056EAh
-_grade_hi__28 equ 056EBh
-_grade_lo__28 equ 056ECh
-_band_first__28 equ 056EDh
-_band_count__28 equ 056EEh
-_band_bg_end__28 equ 056EFh
-_road_top__28 equ 056F1h
-_road_plane0__28 equ 056F2h
-_road_bottom__28 equ 056F3h
-_road_lines__28 equ 056F4h
-_road_base_x__28 equ 056F5h
-_id_xy__28 equ 056F6h
-_id_xy_live__28 equ 056FAh
-_id_bandcol__28 equ 056FEh
-_road_band_pal__28 equ 05702h
-_bc_rest__28 equ 05704h
-_rng__31 equ 05708h
-_trf_cap__31 equ 0570Ah
+_roll_t__0 equ 040B3h
+_roll_dir__0 equ 040B4h
+_msg_timer__0 equ 040B5h
+_flash_step__0 equ 040B6h
+_station__0 equ 040B7h
+_last_fork_zone__0 equ 040B8h
+_goal_reached__0 equ 040B9h
+_title_frames__0 equ 040BAh
+_pano_tiles_at__0 equ 040BCh
+_trf_tiles_at__0 equ 040BEh
+_dbg_updates equ 040C0h
+_dbg_cp equ 040C2h
+_dbg_roll_at equ 040C8h
+_dbg_crashes equ 040CAh
+_dbg_scn equ 040CBh
+_dbg_off equ 040CCh
+_grade_tab__0 equ 040CDh
+_save_buf__0 equ 040DAh
+_save_dirty__0 equ 041DAh
+_map_px__0 equ 041DBh
+_map_py__0 equ 041E7h
+_map_n__0 equ 041F3h
+_map_seg__0 equ 041F4h
+_map_t__0 equ 041F6h
+_map_along__0 equ 041F8h
+_map_done__0 equ 041FAh
+_smoke_t__0 equ 041FCh
+_eng_phase__0 equ 041FDh
+_voice__10 equ 041FEh
+_playing__10 equ 04246h
+_last_vbl__10 equ 04247h
+_want_div__10 equ 04248h
+_want_attn__10 equ 04250h
+_sent_div__10 equ 04254h
+_sent_attn__10 equ 0425Ch
+_noise_trig__10 equ 04260h
+_sfx_frames__10 equ 04261h
+_sfx_div__10 equ 04266h
+_sfx_step__10 equ 0426Eh
+_sfx_attn__10 equ 04272h
+_sfx_decay__10 equ 04276h
+_sfx_age__10 equ 0427Ah
+_eng_div__10 equ 0427Eh
+_eng_on__10 equ 04280h
+_b_on__11 equ 04281h
+_b_r0__11 equ 04282h
+_b_r1__11 equ 04283h
+_b_c0__11 equ 04284h
+_b_c1__11 equ 04285h
+_b_foot__11 equ 04286h
+_b_spr__11 equ 04287h
+_car_d__11 equ 04288h
+_br_at__12 equ 0428Ah
+_br_n__12 equ 04292h
+_car_d__12 equ 04294h
+_bridge_line equ 04296h
+_bb_r1__12 equ 04297h
+_bb_c0__12 equ 04298h
+_bb_c1__12 equ 04299h
+_s_offset__13 equ 0429Ah
+_s_sequence__13 equ 0429Eh
+_s_repeat_timer__14 equ 042A2h
+_g_vb_hook__15 equ 042AAh
+_s_cmd_type__17 equ 042AEh
+_s_cmd_dst__17 equ 042BEh
+_s_cmd_len__17 equ 042DEh
+_s_cmd_src__17 equ 042FEh
+_s_cmd_fill__17 equ 0433Eh
+_s_cmd_count__17 equ 0435Eh
+_s_drop_count__17 equ 0435Fh
+_s_lock__17 equ 04360h
+_buf__18 equ 04362h
+_track_len equ 04512h
+_cur_stage equ 04513h
+_cur_branch equ 04514h
+_cur_leg equ 04515h
+_leg_len equ 04516h
+_fork_choice equ 04518h
+_route_hist equ 04519h
+_difficulty equ 0451Eh
+_leg_theme equ 0451Fh
+_next_leg_cost equ 0452Eh
+_n_cur__18 equ 04530h
+_n_next__18 equ 04531h
+_rs__18 equ 04532h
+_gp__18 equ 04534h
+_gn__18 equ 04538h
+_px__19 equ 0453Ah
+_py__19 equ 04556h
+_vx__19 equ 04572h
+_vy__19 equ 0458Eh
+_life__19 equ 045AAh
+_ptile__19 equ 045B8h
+_ppal__19 equ 045C6h
+_fx__19 equ 045D4h
+_timer__19 equ 045D5h
+_s_done_cb__20 equ 045D6h
+_s_done_flag__20 equ 045E6h
+_s_was_active__20 equ 045EAh
+_s_rearm_enabled__20 equ 045EEh
+_s_rearm_elem__20 equ 045F2h
+_s_rearm_vector__20 equ 045F6h
+_s_rearm_count__20 equ 045FAh
+_s_rearm_dst__20 equ 04602h
+_s_rearm_src__20 equ 04612h
+_h_score__26 equ 04622h
+_h_score_ok__26 equ 04629h
+_s_dig__26 equ 0462Ah
+_body__29 equ 04632h
+_car_variant__29 equ 04652h
+_car_wheel_dx__29 equ 04653h
+_car_tile_base__29 equ 04654h
+_lean_hold__29 equ 04656h
+_lean_side__29 equ 04657h
+_lean_wait__29 equ 04658h
+_bump_phase__29 equ 04659h
+_car_last_x__29 equ 0465Ah
+_car_last_top__29 equ 0465Ch
+_art__30 equ 0465Eh
+_road_course__30 equ 04676h
+_road_grade__30 equ 04677h
+_band_pitch__30 equ 04678h
+_climb_room__30 equ 0467Ah
+_descent_room__30 equ 0467Bh
+_band_shift__30 equ 0467Ch
+_id_xy_a__30 equ 0467Eh
+_id_xy_b__30 equ 047B0h
+_id_xy_done__30 equ 048E2h
+_id_xy_last__30 equ 048E6h
+_id_raster__30 equ 048EAh
+_id_shear__30 equ 048FEh
+_id_sl__30 equ 0497Eh
+_id_bandcol_a__30 equ 04A3Eh
+_id_bandcol_b__30 equ 04B70h
+_bc_top__30 equ 04CA2h
+_id_bandcol_done__30 equ 04CA4h
+_id_bandstream__30 equ 04CA8h
+_band_phase__30 equ 04CB6h
+_id_dxc__30 equ 04CB8h
+_id_w_lat__30 equ 04DB8h
+_id_w_curve__30 equ 04DF8h
+_id_half__30 equ 04E38h
+_id_src__30 equ 04E78h
+_band_top__30 equ 04EB8h
+_band_mid__30 equ 04EBCh
+_band_tree__30 equ 04EC0h
+_band_bg_first__30 equ 04EC4h
+_id_buf__30 equ 04EC6h
+_pan_head__30 equ 04EC8h
+_pan_lat__30 equ 04ECAh
+_pan_fine__30 equ 04ECCh
+_band_held__30 equ 04ECDh
+_band_wait__30 equ 04ECEh
+_id_ahead__30 equ 04ED0h
+_id_curve_cm__30 equ 04F50h
+_wide_k0__30 equ 04F52h
+_rally_of__30 equ 04F53h
+_rally_src__30 equ 05154h
+_rally_used__30 equ 05352h
+_rally_scanned__30 equ 05353h
+_band_col__30 equ 05354h
+_road_dma_live__30 equ 0535Ch
+_road_dma_depth__30 equ 0535Dh
+_id_curve_dx__30 equ 0535Eh
+_scn_phase__31 equ 053DEh
+_scn_frac__31 equ 053E0h
+_scn_passed__31 equ 053E2h
+_scn_mode__31 equ 053E3h
+_pano_base__32 equ 053E4h
+_obj_base__32 equ 053E6h
+_obj_end__32 equ 053E8h
+_pano_end__32 equ 053EAh
+_objmap__32 equ 053ECh
+_kind_l__32 equ 055ECh
+_kind_r__32 equ 055EDh
+_cur_pals__32 equ 055EEh
+_cur_backdrop__32 equ 0562Eh
+_cur_road__32 equ 05630h
+_cur_band__32 equ 05638h
+_cur_spr__32 equ 05640h
+_next_slot__32 equ 05670h
+_cars__33 equ 05672h
+_trf_tiles__33 equ 056D4h
+_car_d__33 equ 056D6h
+_half_wheel__33 equ 056D8h
+_dens_min__33 equ 056D9h
+_dens_max__33 equ 056DAh
+_target__33 equ 056DBh
+_cooldown__33 equ 056DCh
+_hard__33 equ 056DDh
+_car_tuned__0 equ 056DEh
+_roll_loaded__0 equ 056ECh
+_hiscore__0 equ 056EEh
+_eng_attn__10 equ 056FEh
+_bb_r0__12 equ 056FFh
+_sig_prev__12 equ 05700h
+_s_current__13 equ 05702h
+_s_last_slot__13 equ 05703h
+_ngpc_pad_held equ 05704h
+_ngpc_pad_pressed equ 05705h
+_ngpc_pad_released equ 05706h
+_ngpc_pad_repeat equ 05707h
+_s_pad_prev__14 equ 05708h
+_s_repeat_delay__14 equ 05709h
+_s_repeat_rate__14 equ 0570Ah
+_s_vbl_down__14 equ 0570Bh
+_s_vbl_prev__14 equ 0570Ch
+_g_vb_counter equ 0570Dh
+_s_is_color__15 equ 0570Eh
+_s_language__15 equ 0570Fh
+_s_power_hold__16_L2182 equ 05710h
+_track_seg equ 05712h
+_free_seed equ 05716h
+_seed__19 equ 05718h
+_cur_song__22 equ 0571Ah
+_h_time__26 equ 0571Bh
+_h_kmh__26 equ 0571Ch
+_h_gear__26 equ 0571Dh
+_h_prog__26 equ 0571Eh
+_h_stage__26 equ 0571Fh
+_id_spr_priority equ 05720h
+_car_at_x__29 equ 05722h
+_car_stand__30 equ 05724h
+_grade_hi__30 equ 05725h
+_grade_lo__30 equ 05726h
+_band_first__30 equ 05727h
+_band_count__30 equ 05728h
+_band_bg_end__30 equ 05729h
+_road_top__30 equ 0572Bh
+_road_plane0__30 equ 0572Ch
+_road_bottom__30 equ 0572Dh
+_road_lines__30 equ 0572Eh
+_road_base_x__30 equ 0572Fh
+_id_xy__30 equ 05730h
+_id_xy_live__30 equ 05734h
+_id_bandcol__30 equ 05738h
+_road_band_pal__30 equ 0573Ch
+_bc_rest__30 equ 0573Eh
+_rng__33 equ 05742h
+_trf_cap__33 equ 05744h

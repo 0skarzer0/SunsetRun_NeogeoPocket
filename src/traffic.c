@@ -301,7 +301,7 @@ void traffic_draw(void)
             jb.y = top;
             jb.n = f->n;
             jb.wm1 = 0u;
-            jb.attr = id_spr_priority;
+            jb.attr = (u8)((bridge_line != 0u && g.foot < (s16)bridge_line) ? SPR_MIDDLE : id_spr_priority);
             jb.pal = c->pal;
             jb.spr = spr;
             jb.end = SPR_TRF_END;

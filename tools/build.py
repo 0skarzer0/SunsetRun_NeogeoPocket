@@ -80,6 +80,7 @@ def main():
     run([py, os.path.join('tools', 'gen_gfx.py'), 'GraphX'])
     run([py, os.path.join('tools', 'gen_course.py'), 'GraphX'])
     run([py, os.path.join('tools', 'gen_title.py'), 'GraphX'])
+    run([py, os.path.join('tools', 'gen_map.py'), 'GraphX'])
     run([py, os.path.join('tools', 'gen_music.py'), os.path.join('src', 'audio')])
     files = [os.path.join('src', 'main.c')]
     for top in ('src', 'GraphX'):

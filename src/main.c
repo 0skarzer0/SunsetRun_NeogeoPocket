@@ -27,6 +27,7 @@
 #include "../GraphX/gfx_extra.h"
 #include "audio/music_data.h"
 #include "../GraphX/gfx_title.h"
+#include "../GraphX/gfx_map.h"
 #include "../GraphX/gfx_sprites.h"
 #include "ngpc_flash.h"
 
@@ -51,6 +52,8 @@ static const u8 stage_time[2][GFX_STAGES] = {
 #define START_CROWD     900
 #define CRASH_FRAMES     90u      /* updates (30 Hz): a crash costs ~2 s plus the restart */
 #define CRASH_SPEED     110u
+#define ROLL_SPEED      150u      /* above this (~200 km/h) the car rolls over */
+#define ROLL_TICKS       36u      /* one full roll in the air: 1.2 s */
 
 /* ---- game state ------------------------------------------------------- */
 #define ST_TITLE   0u
@@ -59,6 +62,7 @@ static const u8 stage_time[2][GFX_STAGES] = {
 #define ST_TIMEUP  3u
 #define ST_GOAL    4u
 #define ST_RESULT  5u
+#define ST_MAP     6u     /* course map with the route driven, then ST_RESULT */
 
 static s16 road_bend[ID_ROAD_LINES_MAX];
 static u16 course_pos, track_frac;
@@ -67,6 +71,7 @@ static u8 state, state_timer, sec_acc;
 static u8 time_left;
 static u32 score;
 static u8 crash_timer;
+static u8 roll_t, roll_dir, roll_loaded = 255u;
 static u8 msg_timer;
 static u8 flash_step;             /* checkpoint white-out: 1..12 */
 static u8 station;
@@ -79,7 +84,8 @@ static u16 pano_tiles_at, trf_tiles_at;
 static const char *const diff_name[DIFF_COUNT] = { "EASY", "NORMAL", "HARD", "FREE" };
 static const u8 diff_pal[DIFF_COUNT] = { 8u, 0u, 2u, 15u };    /* SCR1 text colours */
 u16 dbg_updates;
-u8 dbg_cp[6];                     /* time left at each checkpoint (tests) */
+u8 dbg_cp[6];
+u16 dbg_roll_at;                  /* frame of the first rollover (tests) */                     /* time left at each checkpoint (tests) */
 u8 dbg_crashes, dbg_scn, dbg_off;
 
 /* Same bounded projection sampler as the full engine; no per-line division. */
@@ -199,11 +205,17 @@ static void new_game(void)
     banner_style(difficulty);
     id_scenery_init(0u, 0u);
     scenery_mode(SCN_MODE_CROWD);         /* fans at the start line */
+    bridge_setup();
     time_left = leg_time();
     score = 0ul;
     hud_score_reset();
     sec_acc = 0u;
     crash_timer = 0u;
+    if (roll_t) {
+        roll_t = 0u;
+        roll_loaded = 255u;
+        id_car_restore();
+    }
     msg_timer = 0u;
     flash_step = 0u;
     last_fork_zone = 0u;
@@ -310,6 +322,7 @@ static void leg_end(void)
     course_pos = (u16)(course_pos - leg_len);
     shift = course_next_leg();
     seg_index = (u8)(seg_index - shift);
+    bridge_setup();
     {
         u16 t = (u16)time_left + leg_time();
         time_left = (u8)((t > TIME_MAX) ? TIME_MAX : t);
@@ -474,6 +487,7 @@ static u16 title_slot(u16 i)
 }
 
 typedef char title_fits[(GFX_TITLE_TILES <= GFX_PANO_MAX_TILES + 70 + 30 + 24) ? 1 : -1];
+typedef char map_fits[(GFX_MAP_TILES <= GFX_PANO_MAX_TILES + 70 + 30 + 24) ? 1 : -1];
 
 static const u8 emblem_pal_slot[13] = { 2u, 3u, 4u, 5u, 6u, 8u, 9u, 10u, 11u, 12u, 13u, 14u, 15u };
 static const u8 over_pal_slot[8] = { 4u, 5u, 6u, 10u, 11u, 12u, 13u, 14u };
@@ -524,11 +538,14 @@ static void new_seed(void)
     free_seed = s ? s : 0x5EEDu;
 }
 
+static void smoke_init(void);
+
 static void title_screen(void)
 {
     u16 i, k;
     u8 x, y;
     id_road_dma_pause();
+    bridge_hide();
     save_commit();                       /* a new record from the race just ended */
     ending_stop();
     banner_hide();
@@ -615,6 +632,137 @@ static void title_blink(u8 t, u8 row)
     }
 }
 
+/* ------------------------------------------------------------- course map */
+/* After the race: the route pyramid from above, a thumbnail of every leg's
+ * scenery (sprites 1..60, palettes 1..15) and the little red car (sprite 0)
+ * driving the forks that were taken, up to the goal or to where time ran
+ * out.  Uses the same borrowed characters as the title screen. */
+#define MAP_PTS 12u
+static u8 map_px[MAP_PTS], map_py[MAP_PTS], map_n, map_seg;
+static u16 map_t, map_along, map_done;
+
+static void map_leg_xy(u8 s, u8 b, u8 *x, u8 *y)
+{
+    *x = (u8)(MAP_X0 + s * MAP_DX);
+    *y = (u8)((s16)MAP_YC + (((s16)b * 2 - (s16)s) * (s16)MAP_DY) / 2);
+}
+
+static void map_screen(void)
+{
+    u16 i, k;
+    u8 x, y, s, b;
+    id_road_dma_pause();
+    bridge_hide();
+    banner_hide();
+    id_spr_hide_range(0u, 64u);
+    hud_clear_top();
+    clear_hud_rows(15u, 18u);
+    player_engine_off();
+    HW_SCR2_OFS_X = 0u;
+    HW_SCR2_OFS_Y = 0u;
+    for (k = 0u; k < 1024u; k++) HW_SCR2_MAP[k] = 0u;
+    ngpc_gfx_set_bg_color(GFX_MAP_BG);
+    for (i = 0u; i < (u16)GFX_MAP_TILES; i++) {
+        volatile u16 *dst = (volatile u16 *)(0xA000u + (u32)title_slot(i) * 16u);
+        const u16 *src = &gfx_map_tiles[i * 8u];
+        u8 w;
+        for (w = 0u; w < 8u; w++) dst[w] = src[w];
+    }
+    for (i = 0u; i < 8u; i++) {
+        const u16 *p = &gfx_map_pals[i * 4u];
+        ngpc_gfx_set_palette(GFX_SCR2, (u8)(8u + i), 0u, p[1], p[2], p[3]);
+    }
+    for (y = 0u; y < 19u; y++) {
+        for (x = 0u; x < 20u; x++) {
+            u16 m = gfx_map_map[(u16)y * 20u + x];
+            HW_SCR2_MAP[(u16)y * 32u + x] = (m == 0xFFFFu) ? 0u
+                : (u16)(title_slot(m) | ((u16)(8u + gfx_map_pal[(u16)y * 20u + x]) << 9));
+        }
+    }
+    ngpc_text_print(GFX_SCR1, 0u, 8u, 1u, "COURSE MAP");
+    /* the scenery thumbnails, by leg (FREE shuffles the scenes) */
+    k = 0u;
+    for (s = 0u; s < GFX_STAGES; s++) {
+        for (b = 0u; b <= s; b++) {
+            u8 t = leg_theme[k];
+            const u16 *p = &gfx_map_thumb_pals[(u16)t * 4u];
+            u8 c;
+            ngpc_gfx_set_palette((u8)GFX_SPR, (u8)(k + 1u), 0u, p[1], p[2], p[3]);
+            map_leg_xy(s, b, &x, &y);
+            for (c = 0u; c < 4u; c++) {
+                ID_SPR_PUT_PRIORITY((u8)(2u + k * 4u + c), (u8)(x + (c & 1u) * 8u), (u8)(y - 8u + (c >> 1) * 8u),
+                                    title_slot((u16)(GFX_MAP_THUMB0 + t * 4u + c)), (u8)(k + 1u), 0u, SPR_FRONT);
+            }
+            k++;
+        }
+    }
+    ngpc_gfx_set_palette((u8)GFX_SPR, 0u, 0u, gfx_map_car_pal[1], gfx_map_car_pal[2], gfx_map_car_pal[3]);
+    /* the route: in from the left, across every leg driven */
+    map_n = 0u;
+    map_leg_xy(0u, 0u, &x, &y);
+    map_px[map_n] = 0u; map_py[map_n] = y; map_n++;
+    for (s = 0u; s <= cur_stage; s++) {
+        map_leg_xy(s, route_hist[s], &x, &y);
+        map_px[map_n] = x; map_py[map_n] = y; map_n++;
+        if (s < cur_stage || goal_reached) {
+            map_px[map_n] = (u8)(x + MAP_SEG); map_py[map_n] = y; map_n++;
+        } else {
+            /* time ran out on this leg: stop where the car was */
+            u16 f = (u16)(((u32)course_pos * MAP_SEG) / (leg_len ? leg_len : 1u));
+            if (f > MAP_SEG) f = MAP_SEG;
+            map_px[map_n] = (u8)(x + f); map_py[map_n] = y; map_n++;
+        }
+    }
+    if (goal_reached) {
+        map_px[map_n - 1u] = (u8)(map_px[map_n - 1u] + 6u);    /* on to the flag */
+    }
+    map_seg = 0u;
+    map_along = 0u;
+    map_t = 0u;
+    map_done = 0u;
+}
+
+/* the car: 2 px per update along the route */
+static void map_car(void)
+{
+    u8 x = map_px[map_seg], y = map_py[map_seg];
+    if (map_seg + 1u < map_n) {
+        s16 dx = (s16)map_px[map_seg + 1u] - (s16)x;
+        s16 dy = (s16)map_py[map_seg + 1u] - (s16)y;
+        s16 len = (dx > 0 ? dx : -dx);
+        if ((dy > 0 ? dy : -dy) > len) len = (dy > 0 ? dy : -dy);
+        if (len == 0) len = 1;
+        if ((s16)map_along >= len) {
+            map_along = 0u;
+            map_seg++;
+            x = map_px[map_seg];
+            y = map_py[map_seg];
+        } else {
+            x = (u8)((s16)x + (dx * (s16)map_along) / len);
+            y = (u8)((s16)y + (dy * (s16)map_along) / len);
+        }
+    } else if (!map_done) {
+        map_done = map_t;
+        sfx(SFX_CHECKPOINT);
+    }
+    ID_SPR_PUT_PRIORITY(0u, (u8)(x - 8u), (u8)(y - 4u), title_slot(GFX_MAP_CAR), 0u, 0u, SPR_FRONT);
+    ID_SPR_PUT_PRIORITY(1u, (u8)x, (u8)(y - 4u), title_slot(GFX_MAP_CAR + 1u), 0u, 0u, SPR_FRONT);
+}
+
+/* back to the race picture for the results: road, scenery, sprites */
+static void map_leave(void)
+{
+    id_spr_hide_range(0u, 64u);
+    hud_clear_top();
+    id_road_reload_maps();
+    theme_apply(cur_leg);
+    traffic_init(trf_tiles_at);
+    id_car_restore();
+    smoke_init();
+    banner_style(difficulty);
+    id_road_dma_resume();
+}
+
 /* ------------------------------------------------------------- trophy */
 #define TROPHY_TILE  101u          /* low object pool: free on the results screen */
 static void trophy_load(void)
@@ -641,6 +789,7 @@ static void trophy_draw(void)
 static void result_screen(void)
 {
     u8 i;
+    bridge_hide();
     hud_clear_top();
     clear_hud_rows(15u, 18u);
     hud_message(2u, goal_reached ? "YOU MADE IT!" : "GAME OVER");
@@ -764,6 +913,44 @@ static void engine_sound(void)
     player_engine(div, attn);
 }
 
+/* ------------------------------------------------------------- rollover */
+/* height of the jump over the roll (px), 17 steps of a half sine */
+static const u8 roll_lift[17] = { 0u, 7u, 14u, 20u, 25u, 30u, 33u, 35u, 36u, 35u, 33u, 30u, 25u, 20u, 14u, 7u, 0u };
+
+static void roll_draw(void)
+{
+    u8 f = (u8)(((u16)(roll_t - 1u) * GFX_ROLL_FRAMES) / ROLL_TICKS);
+    const RollFrame *rf;
+    u16 base = id_car_tile_base();
+    s16 cx, cy;
+    u8 i;
+    if (f >= GFX_ROLL_FRAMES) f = (u8)(GFX_ROLL_FRAMES - 1u);
+    if (!roll_dir) f = (u8)((GFX_ROLL_FRAMES - f) % GFX_ROLL_FRAMES);   /* roll the other way */
+    rf = &gfx_roll_frames[f];
+    if (f != roll_loaded) {
+        /* this frame's characters go where the car's are */
+        u16 n = (u16)rf->tiles * 8u, k;
+        const u16 *src = &gfx_roll_tiles[(u16)rf->first_tile * 8u];
+        volatile u16 *dst = (volatile u16 *)(0xA000u + (u32)base * 16u);
+        for (k = 0u; k < n; k++) dst[k] = src[k];
+        ngpc_gfx_set_palette((u8)GFX_SPR, 0u, 0u, gfx_roll_pal[rf->under * 4u + 1u],
+                             gfx_roll_pal[rf->under * 4u + 2u], gfx_roll_pal[rf->under * 4u + 3u]);
+        roll_loaded = f;
+    }
+    cx = (s16)(id_road_centre_at(ID_CAR_WHEEL) + (s16)(car_lat >> 4));
+    cy = (s16)((s16)ID_CAR_WHEEL - 11 - (s16)roll_lift[((u16)roll_t * 16u) / ROLL_TICKS]);
+    for (i = 0u; i < rf->cells; i++) {
+        const s8 *c = &gfx_roll_cells[(u16)(rf->first_cell + i) * 3u];
+        s16 x = (s16)(cx + c[0]), y = (s16)(cy + c[1]);
+        if (x < -7 || x > 159 || y < -7 || y > 151) {
+            id_spr_hide_range(i, (u8)(i + 1u));
+            continue;
+        }
+        ID_SPR_PUT(i, (u8)x, (u8)y, (u16)(base + (u8)c[2]), 0u, 0u);
+    }
+    id_spr_hide_range(i, 24u);
+}
+
 /* Warning signs: +1 / -1 when a sharp left / right corner starts between
  * SIGN_NEAR and SIGN_FAR ahead (positive bend = left). */
 #define SIGN_NEAR  150u
@@ -835,6 +1022,17 @@ static void game_tick(u8 delta)
         }
         ngpc_pad_held = 0u;
         ngpc_pad_pressed = 0u;
+    } else if (state == ST_MAP) {
+        map_t++;
+        map_along = (u16)(map_along + 2u);
+        if (((ngpc_pad_pressed & PAD_A) && map_t > 20u) || (map_done && map_t > map_done + 75u)) {
+            map_leave();
+            state = ST_RESULT;
+            state_timer = 0u;
+            result_screen();
+        }
+        ngpc_pad_held = 0u;
+        ngpc_pad_pressed = 0u;
     } else if (state == ST_RESULT) {
         if ((ngpc_pad_pressed & PAD_A) && state_timer > 30u) {
             state = ST_TITLE;
@@ -877,10 +1075,12 @@ static void game_tick(u8 delta)
 #endif
     if (state == ST_RACE || state == ST_TIMEUP || state == ST_GOAL) {
         u8 fz;
+        u16 pos_before;
         if (state != ST_RACE || crash_timer) {
             ngpc_pad_held = 0u;
             ngpc_pad_pressed = 0u;
         }
+        pos_before = course_pos;
         drive();
         advance();
         /* score while racing */
@@ -949,7 +1149,8 @@ static void game_tick(u8 delta)
             u8 hit = traffic_collide(car_lat, speed);
 #endif
             if (!hit) {
-                if (id_scenery_hit((s16)(car_lat >> 4), ID_CAR_WHEEL)) {
+                if (id_scenery_hit((s16)(car_lat >> 4), ID_CAR_WHEEL)
+                    || bridge_hit(pos_before, course_pos, (s16)(car_lat >> 4))) {
                     if (speed > CRASH_SPEED) {
                         dbg_scn++;
                         hit = 1u;
@@ -964,12 +1165,25 @@ static void game_tick(u8 delta)
             if (hit) {
                 if (speed > CRASH_SPEED) {
                     crash_timer = CRASH_FRAMES;
+                    if (speed >= ROLL_SPEED) {
+                        roll_t = 1u;              /* tumble over, see roll_draw() */
+                        if (!dbg_roll_at) dbg_roll_at = dbg_updates;
+                        roll_dir = (u8)((car_lat > 0 || (car_lat == 0 && (g_vb_counter & 1u))) ? 1u : 0u);
+                    }
                     dbg_crashes++;
                     sfx(SFX_CRASH);
                 } else {
                     speed = (u8)(speed >> 1);
                     sfx(SFX_BUMP);
                 }
+            }
+        }
+        if (roll_t) {
+            roll_t++;
+            if (roll_t > ROLL_TICKS) {
+                roll_t = 0u;
+                roll_loaded = 255u;
+                id_car_restore();         /* the car's own characters and colours */
             }
         }
         if (crash_timer) {
@@ -985,9 +1199,9 @@ static void game_tick(u8 delta)
         if (state == ST_TIMEUP) {
             state_timer++;
             if (speed == 0u && state_timer > 60u) {
-                state = ST_RESULT;
+                state = ST_MAP;
                 state_timer = 0u;
-                result_screen();
+                map_screen();
             }
         } else if (state == ST_GOAL) {
             state_timer++;
@@ -997,9 +1211,9 @@ static void game_tick(u8 delta)
                 for (k = 0u; k < time_left; k++) hud_score_add(20000u);
             }
             if (speed == 0u && state_timer > 60u) {
-                state = ST_RESULT;
+                state = ST_MAP;
                 state_timer = 0u;
-                result_screen();
+                map_screen();
             }
         }
     }
@@ -1034,6 +1248,7 @@ void main(void)
     theme_init_tiles(pano_base, obj_base, 512u);
     smoke_init();
     banner_init();
+    bridge_init();
     /* the rumble strip still counts as road */
     road_edge = (s16)(((s16)id_road_half_at(ID_CAR_WHEEL) + (s16)(id_road_half_at(ID_CAR_WHEEL) / 9u)) * 16);
     lat_limit = (s16)((s16)id_road_half_at(ID_CAR_WHEEL) * 16 + LAT_MARGIN * 16);
@@ -1099,10 +1314,16 @@ void main(void)
             player_engine_off();
             continue;
         }
+        if (state == ST_MAP) {
+            map_car();
+            player_engine_off();
+            continue;
+        }
         render_road();
         tick_flash();
         tick_message();
         if (state != ST_TITLE && state != ST_RESULT) {
+            bridge_draw(course_pos);
             id_scenery_draw();
             traffic_draw();
         }
@@ -1124,7 +1345,9 @@ void main(void)
                      (u8)((gear == 0u && speed >= (u8)(LOW_TOP - 14) && (g_vb_counter & 8u)) ? 2u : gear),
                      prog, cur_stage);
         }
-        if (crash_timer && (crash_timer & 2u)) {
+        if (roll_t) {
+            roll_draw();
+        } else if (crash_timer && (crash_timer & 2u)) {
             id_car_draw((s16)(car_lat >> 4), (s8)((crash_timer & 4u) ? 1 : -1), 2u);
         } else {
             id_car_draw((s16)(car_lat >> 4), car_lean, (u8)((offroad && speed > 20u) ? 1u : 0u));

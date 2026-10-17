@@ -21,6 +21,7 @@ typedef struct {
     u8 pano; u8 obj_left; u8 obj_right;
     u16 asphalt; u16 line; u16 band[4];
     u8 bscale10; u8 hills; u8 pstraight;      /* road style (gen_course.py STYLE) */
+    u8 bridges;                               /* stone bridges over the road */
 } ThemeInfo;
 extern const LegInfo gfx_legs[GFX_LEG_COUNT];
 extern const ThemeInfo gfx_themes[GFX_THEME_COUNT];

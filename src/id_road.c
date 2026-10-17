@@ -16,7 +16,7 @@
 #define RALLY_PLANE0     88u
 #define RALLY_TOP        88u
 #define RALLY_LINES      (ID_PANEL_TOP - RALLY_TOP)
-#define RALLY_SKY_SPLIT  40u
+#define RALLY_SKY_SPLIT   0u      /* SUNSET RUN: one layer, no torn peaks */
 #define ROAD_TIP_HIDE     0u
 typedef struct {
     const u16 *tiles;

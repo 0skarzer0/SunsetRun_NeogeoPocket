@@ -51,6 +51,7 @@ MEDIUM_BENDS = [40, 46]          # flat out with a good line
 SHARP_BENDS = [56, 62, 70]       # lift off or brake (see driving.inc)
 SHARP_MIN = 52                   # main.c shows curve warning signs from here
 MAX_PRE_FORK = 30                # an element adds <= 4 segments: <= 35 per leg (course.c BUF_MAX)
+BRIDGES = {'fields', 'autumn', 'farm', 'lake', 'ruins'}   # scenes with old stone bridges
 THEME_ORDER = ['beach', 'coast', 'alps', 'city', 'desert', 'fields', 'autumn', 'caves', 'snow', 'farm',
                'autobahn', 'canyon', 'lake', 'seaside', 'ruins']
 
@@ -153,9 +154,9 @@ def main():
         pano_name, objs, road = THEMES[theme]
         asphalt, line, band = road
         bs, hills, pst = STYLE[theme]
-        c.append('    { PANO_%s, OBJ_%s, OBJ_%s, %s, %s, { %s }, %d, %d, %d },' % (
+        c.append('    { PANO_%s, OBJ_%s, OBJ_%s, %s, %s, { %s }, %d, %d, %d, %d },' % (
             pano_name, objs[0], objs[1], c12(asphalt), c12(line), ', '.join(c12(x) for x in band),
-            int(round(bs * 10)), hills, int(round(pst * 100))))
+            int(round(bs * 10)), hills, int(round(pst * 100)), 1 if theme in BRIDGES else 0))
     c.append('};')
     # mean cost of the fixed legs of each stage: the FREE clock scales by cost / this
     refs = [sum(v) // len(v) for v in costs]
@@ -174,6 +175,7 @@ def main():
          '    u8 pano; u8 obj_left; u8 obj_right;',
          '    u16 asphalt; u16 line; u16 band[4];',
          '    u8 bscale10; u8 hills; u8 pstraight;      /* road style (gen_course.py STYLE) */',
+         '    u8 bridges;                               /* stone bridges over the road */',
          '} ThemeInfo;',
          'extern const LegInfo gfx_legs[GFX_LEG_COUNT];',
          'extern const ThemeInfo gfx_themes[GFX_THEME_COUNT];',

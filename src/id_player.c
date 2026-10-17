@@ -374,3 +374,14 @@ u8 id_car_height(void)
 {
     return body.height;
 }
+
+/* SUNSET RUN rollover: the crash frames borrow the car's characters */
+u16 id_car_tile_base(void)
+{
+    return car_tile_base;
+}
+
+void id_car_restore(void)
+{
+    id_car_init(car_tile_base, 0u);
+}

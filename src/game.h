@@ -100,6 +100,14 @@ void banner_hide(void);
 void banner_dirty(void);
 u8   banner_active(void);
 
+/* ---- stone bridges (bridge.c) ------------------------------------ */
+extern u8 bridge_line;            /* foot line of the nearest bridge on screen, 0 = none */
+void bridge_init(void);
+void bridge_setup(void);          /* place the bridges of the current leg */
+void bridge_draw(u16 course_pos);
+void bridge_hide(void);
+u8   bridge_hit(u16 prev, u16 pos, s16 lat_px);
+
 /* ---- endings (ending.c) ------------------------------------------- */
 void ending_start(u8 which);
 void ending_tick(void);

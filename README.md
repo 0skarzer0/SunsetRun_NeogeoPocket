@@ -36,7 +36,16 @@ flashcart.
   pantalla marcan la elección. Mantente a la **izquierda o a la derecha** del carril central
   antes de llegar al final; la elección se fija unos metros antes del cruce.
 * Chocar con el tráfico o con los objetos del arcén (palmeras, rocas, señales…) a alta
-  velocidad te hace trompear; a poca velocidad solo te frena. La arena / hierba te frena.
+  velocidad te hace trompear; a poca velocidad solo te frena. Por encima de unos
+  200 km/h el coche **vuelca**: da una vuelta de campana en el aire (se ven los bajos)
+  antes de volver a la carretera. La arena / hierba te frena.
+* En el campo, el otoño, la granja, el lago y las ruinas la carretera pasa bajo una
+  serie de **puentes de piedra**. Sus pilares están fuera del asfalto, pero si vas
+  por el arcén te los comes.
+* Al terminar (en la meta o sin tiempo) aparece el **mapa del recorrido**: la pirámide
+  de tramos con una miniatura de cada paisaje y un cochecito rojo que recorre las
+  bifurcaciones que has tomado, hasta la meta o hasta donde se acabó el tiempo
+  (A lo salta). Después, la pantalla de resultados.
 * La puntuación sube con la velocidad; al llegar a la meta el tiempo sobrante da bonus.
 
 ## Modos de juego
@@ -129,6 +138,7 @@ sigue disponible si tienes ese SDK.
 | `src/traffic.c` | Tráfico: aparición, carriles, proyección y colisiones |
 | `src/theme.c` | Panorama, colores de carretera y objetos de cada tramo |
 | `src/id_scenery.c` | Objetos de arcén, señales de bifurcación y banderas |
+| `src/bridge.c` | Puentes de piedra (SCR1 en perspectiva, colisión con los pilares) |
 | `src/hud.c` | Marcadores (tiempo, etapa, barra de progreso, velocidad y cambio, arriba) |
 | `src/game_audio.c`, `src/audio/player.c` | Música y efectos (reproductor PSG ligero) |
 | `src/spr_cells_asm.asm` | Escritura de sprites en ensamblador (coche, tráfico, objetos) |
@@ -137,6 +147,7 @@ sigue disponible si tienes ese SDK.
 | `tools/gen_gfx.py` | PNG/arte → tiles, paletas y mapas NGPC (`GraphX/`) |
 | `tools/gen_course.py` | Genera los 15 tramos fijos y la tabla de paisajes (el modo FREE usa las mismas reglas en `course.c`) |
 | `tools/gen_title.py` | Pantalla de título |
+| `tools/gen_map.py` | Mapa del recorrido (fondo y miniaturas sacadas de los panoramas) |
 | `tools/gen_music.py` | Partituras originales → streams del driver de sonido |
 | `tools/objart.py` | Objetos del arcén dibujados por código (palmeras, molinos, árboles, columnas, señales) |
 | `media/` | GIF de juego, grabaciones de las tres canciones y una carrera con el motor |
@@ -194,6 +205,12 @@ sonidos de ningún juego comercial: todo se genera con los scripts de `tools/`.
   carretera hacia el sol, palmera, el rótulo SUNSET RUN inclinado y el descapotable
   levantando arena.
 * Nubes de la playa separadas y modeladas (luz arriba, sombra en la base de cada bola).
+* El fondo se desplaza en una sola capa al girar (antes la franja alta iba más lenta y
+  las cimas se separaban de la montaña); detrás de los marcadores hay una franja de
+  cielo liso.
+* Vuelco: 12 fotogramas generados girando la vista trasera del coche (girar la vista
+  trasera es justo lo que se ve en una vuelta de campana); los fotogramas boca abajo
+  muestran los bajos. Usan los caracteres del coche mientras dura.
 * Motor: una nota grave en el canal 3 del PSG que sube con las revoluciones y baja
   al pasar a HIGH. Pitidos de salida, campana de checkpoint y chirrido de neumáticos.
 

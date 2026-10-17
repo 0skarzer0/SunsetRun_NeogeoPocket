@@ -218,9 +218,19 @@ def islet(img, cx, base, w, h, col, light):
             px(img, x, y, light if (y - top < 2 and k < 0.2) else col)
 
 
+HUD_ROWS = 16         # behind the HUD: one flat sky colour
+
+
 def finish(img, backdrop):
-    """quantise to the 12-bit colour grid"""
+    """quantise to the 12-bit colour grid; the strip behind the HUD becomes
+    the plain top sky colour (dithered into the art below it)"""
+    from collections import Counter
     p = img.load()
+    top = Counter(p[x, 0] for x in range(W)).most_common(1)[0][0]
+    for y in range(HUD_ROWS + 2):
+        for x in range(W):
+            if y < HUD_ROWS or (x + y) % 2 == 0 and y == HUD_ROWS or (x + y) % 4 == 0:
+                p[x, y] = top
     for y in range(H):
         for x in range(W):
             r, g, b = p[x, y]

@@ -23,6 +23,8 @@ void id_car_select(u8 variant);
 void id_car_portrait(u8 px, u8 py, u8 spr0);
 void id_car_portrait_angle(u8 cxm, u8 py, u8 spr0, u8 angle);
 void id_car_draw_at(s16 x, u8 top);
+u16 id_car_tile_base(void);
+void id_car_restore(void);
 s16 id_car_last_x(void);     /* left edge of the car as last drawn */
 u8  id_car_last_top(void);
 u16 id_car_char_count(u8 all);

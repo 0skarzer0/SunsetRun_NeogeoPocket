@@ -220,7 +220,9 @@ void id_scenery_draw(void)
             jb.y = (u8)((u16)draw + 1u - (u16)f->h * 8u);
             jb.n = f->n;
             jb.wm1 = (u8)(f->w - 1u);
-            jb.attr = (u8)((flip ? SPR_HFLIP : 0u) | id_spr_priority);
+            /* beyond a bridge: behind its pillars (SCR1) */
+            jb.attr = (u8)((flip ? SPR_HFLIP : 0u)
+                           | ((bridge_line != 0u && draw < bridge_line) ? SPR_MIDDLE : id_spr_priority));
             jb.pal = pal;
             jb.spr = spr;
             jb.end = scn_end;

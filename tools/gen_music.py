@@ -79,7 +79,7 @@ CHORDS = {
     'Gmaj7': [7, 11, 14, 18], 'G7': [7, 11, 14, 17], 'Gm7': [7, 10, 14, 17], 'Am7': [9, 12, 16, 19],
     'A7': [9, 13, 16, 19], 'Bm7': [11, 14, 18, 21], 'Bbmaj7': [10, 14, 17, 21],
     'E': [4, 8, 11], 'B': [11, 15, 18], 'A': [9, 13, 16], 'C#m': [1, 4, 8], 'Am': [9, 12, 16],
-    'Em': [4, 7, 11], 'Dm': [2, 5, 9],
+    'Em': [4, 7, 11], 'Dm': [2, 5, 9], 'Bm': [11, 14, 18], 'F#m': [6, 9, 13],
 }
 NOTE_OF = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
@@ -163,52 +163,13 @@ def bars_of(text):
 # Chiptune racing tunes: square-wave lead with a short hook repeated and
 # answered, octave / pumping bass, fast arpeggios (heard on the menus; in a
 # race the third channel plays the engine), noise drums.  Original music.
+# The three radio songs are full-length tracks (about 3:40 to 4:15 before
+# they loop): see tools/songs.py.
+import songs as _songs
 SONGS = []
-
-# 1. "Turbo Sunset" - E major, ~150 bpm
-prog1 = ['E', 'B', 'C#m', 'A'] * 2 + ['A', 'B', 'E', 'C#m', 'A', 'B', 'E', 'E']
-mel1 = ('@10 v5 B4/2 E5/2 G#5/2 B5/2 r/2 B5/2 A5/2 G#5/2 | F#5/6 D#5/2 F#5/4 B4/4 | '
-        'G#5/2 E5/2 C#5/2 E5/2 r/2 G#5/2 A5/2 B5/2 | C#6/6 B5/2 A5/4 E5/4 | '
-        'B4/2 E5/2 G#5/2 B5/2 r/2 B5/2 C#6/2 B5/2 | D#6/6 C#6/2 B5/4 F#5/4 | '
-        'E5/2 G#5/2 B5/2 C#6/2 B5/2 G#5/2 E5/2 C#5/2 | A5/8 r/4 E5/2 F#5/2 | '
-        'A5/2 C#6/2 E6/4 C#6/2 A5/2 B5/4 | B5/2 D#6/2 F#6/4 D#6/2 B5/2 F#5/4 | '
-        'G#5/2 B5/2 E6/4 D#6/2 B5/2 G#5/4 | E5/4 G#5/4 C#6/8 | '
-        'C#6/3 B5/3 A5/2 E5/4 C#5/4 | D#5/3 F#5/3 B5/2 A5/4 F#5/4 | '
-        'E5/2 G#5/2 B5/2 E6/2 D#6/2 B5/2 G#5/2 B5/2 | E6/12 r/4')
-SONGS.append(('TURBO SUNSET', 6, mel1,
-              '@6 v6 ' + bass_line(prog1, 40, 'octave'),
-              '@6 v8 ' + montuno(prog1, 64, 'arp'),
-              drums(len(prog1), 'rock', 8)))
-
-# 2. "Neon Highway" - A minor, ~150 bpm
-prog2 = ['Am', 'F', 'C', 'G'] * 2 + ['F', 'G', 'Em', 'Am', 'F', 'G', 'Am', 'E']
-mel2 = ('@10 v5 A5/3 A5/3 C6/2 E6/4 D6/2 C6/2 | C6/3 A5/3 F5/2 A5/4 C6/4 | '
-        'G5/3 G5/3 C6/2 E6/4 D6/2 C6/2 | D6/6 B5/2 G5/4 r/4 | '
-        'A5/3 A5/3 C6/2 E6/4 G6/2 E6/2 | F6/3 E6/3 C6/2 A5/4 C6/4 | '
-        'E6/2 D6/2 C6/2 G5/2 E6/2 D6/2 C6/2 G5/2 | B5/8 D6/4 B5/4 | '
-        'A5/2 C6/2 F6/2 C6/2 A5/2 C6/2 F6/4 | B5/2 D6/2 G6/2 D6/2 B5/2 D6/2 G6/4 | '
-        'G6/3 E6/3 B5/2 E6/4 G6/4 | A6/8 E6/4 C6/4 | '
-        'F6/3 E6/3 D6/2 C6/4 A5/4 | B5/3 C6/3 D6/2 G5/4 B5/4 | '
-        'C6/2 B5/2 A5/2 E5/2 A5/2 C6/2 E6/4 | G#5/4 B5/4 E6/4 D6/4')
-SONGS.append(('NEON HIGHWAY', 6, mel2,
-              '@6 v6 ' + bass_line(prog2, 45, 'pulse'),
-              '@6 v8 ' + montuno(prog2, 60, 'arp'),
-              drums(len(prog2), 'rock', 4)))
-
-# 3. "Coastline Rush" - G major, galloping, ~150 bpm
-prog3 = ['G', 'D', 'Em', 'C'] * 2 + ['C', 'D', 'G', 'Em', 'C', 'D', 'G', 'G']
-mel3 = ('@10 v5 D5/2 G5/2 B5/2 D6/4 B5/2 D6/4 | C6/2 A5/2 F#5/2 A5/4 D5/2 F#5/4 | '
-        'B5/2 G5/2 E5/2 G5/4 B5/2 E6/4 | E6/6 D6/2 C6/4 G5/4 | '
-        'D5/2 G5/2 B5/2 D6/4 E6/2 D6/4 | F#6/6 E6/2 D6/4 A5/4 | '
-        'G6/2 F#6/2 E6/2 B5/2 G5/2 B5/2 E6/4 | D6/8 r/4 D6/2 D6/2 | '
-        'E6/3 E6/3 D6/2 C6/4 G5/4 | F#6/3 F#6/3 E6/2 D6/4 A5/4 | '
-        'G6/4 D6/4 B5/4 G5/4 | E6/6 D6/2 B5/4 G5/4 | '
-        'C6/2 E6/2 G6/2 E6/2 C6/2 E6/2 G6/4 | D6/2 F#6/2 A6/2 F#6/2 D6/2 F#6/2 A6/4 | '
-        'G6/3 F#6/3 E6/2 D6/4 B5/4 | G5/2 B5/2 D6/2 G6/2 r/8')
-SONGS.append(('COASTLINE RUSH', 6, mel3,
-              '@6 v6 ' + bass_line(prog3, 43, 'gallop'),
-              '@6 v8 ' + montuno(prog3, 62, 'arp'),
-              drums(len(prog3), 'latin', 8)))
+for _s in _songs.SONGS:
+    _lead, _bass, _harm, _dr = _songs.arrange(_s, (bass_line, montuno, drums, CHORDS))
+    SONGS.append((_s.name, _s.f16, _lead, _bass, _harm, _dr))
 
 # 4. goal fanfare (results, looped) and game over jingle
 prog4 = ['C', 'F', 'G', 'C', 'Am', 'F', 'G', 'C']

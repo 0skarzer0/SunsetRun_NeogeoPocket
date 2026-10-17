@@ -35,11 +35,12 @@ flashcart.
 * Al final de cada tramo la carretera se bifurca: las señales y el aviso en
   pantalla marcan la elección. Mantente a la **izquierda o a la derecha** del carril central
   antes de llegar al final; la elección se fija unos metros antes del cruce.
-* **Tráfico**: si tocas otro coche no chocas: te empuja hacia un lado y pierdes
-  bastante velocidad (y puedes acabar en el arcén).
+* **Tráfico**: si tocas otro coche no chocas: te empuja hacia un lado (más cuanto más
+  rápido vas), derrapas con humo, chirrían las ruedas un instante después del golpe,
+  el coche culea y pierdes bastante velocidad (y puedes acabar en el arcén).
 * **Arcén** (palmeras, rocas, señales, pilares de los puentes): a poca velocidad te frena;
-  por encima de unos 145 km/h el coche trompea; desde unos 160 km/h **vuelca de lado**
-  (vuelta de campana viendo los bajos) y desde unos 200 km/h da una **vuelta hacia
+  por encima de unos 145 km/h el coche trompea; desde 220 km/h **vuelca de lado**
+  (vuelta de campana viendo los bajos) y desde 280 km/h da una **vuelta hacia
   delante**, de morro, enseñando los bajos y las ruedas. Cuenta la velocidad con la que
   saliste del asfalto. La arena / hierba te frena.
 * En el campo, el otoño, la granja, el lago y las ruinas la carretera pasa bajo una
@@ -154,6 +155,7 @@ sigue disponible si tienes ese SDK.
 | `tools/gen_music.py` | Partituras originales → streams del driver de sonido |
 | `tools/objart.py` | Objetos del arcén dibujados por código (palmeras, molinos, árboles, columnas, señales) |
 | `media/` | GIF de juego, grabaciones de las tres canciones y una carrera con el motor |
+| `tools/songs.py` | Las tres canciones: secciones y arreglo |
 
 ### Personalizar
 
@@ -200,8 +202,11 @@ sonidos de ningún juego comercial: todo se genera con los scripts de `tools/`.
 * Carretera de 4 carriles en gris claro; el horizonte coincide con su punto de fuga.
 * Coche con la zaga de lamas y pilotos, el chico castaño a la izquierda y la chica
   rubia a la derecha; tráfico en colores vivos (morado, amarillo, rosa, verde, celeste).
-* Música: tres temas chiptune de carreras (TURBO SUNSET, NEON HIGHWAY, COASTLINE RUSH),
-  una fanfarria en la meta y la emisora SILENCIO. La música va más baja que el motor.
+* Música: tres temas chiptune completos (SUMMER OVERDRIVE en re mayor, MIDNIGHT COAST en
+  la menor y PALM BOULEVARD, funk latino en fa mayor) de 3:38 a 4:14 antes de repetirse:
+  intro, estrofa, preestribillo, estribillo pegadizo, riff instrumental, puente y dos
+  solos de arpegios (`tools/songs.py`). Además, una fanfarria en la meta y la emisora
+  SILENCIO. La música va más baja que el motor. Hay grabaciones en `media/`.
 * Salida con pancarta START y público animando; meta con pancarta FINISH, público y
   trofeo en la pantalla final.
 * Pantalla de título azul con un emblema ovalado: puesta de sol sobre el mar, una
@@ -216,9 +221,10 @@ sonidos de ningún juego comercial: todo se genera con los scripts de `tools/`.
   muestran los bajos. La vuelta hacia delante proyecta las caras del coche (trasera,
   bajos con las ruedas, frontal boca abajo y techo) para cada ángulo. Usan los
   caracteres del coche mientras dura.
-* Cuevas: paso de montaña al atardecer (cielo morado y naranja con nubes alargadas,
-  cordillera violeta al fondo, picos nevados con una cara iluminada y otra en sombra,
-  pinos y cuevas de roca).
+* Cuevas: montañas rocosas escarpadas al atardecer (agujas de roca de perfil irregular
+  con la cara al sol y la de sombra, vetas y grietas, una cordillera violeta detrás y
+  pinos al pie).
+* Playa: dos grandes torres de cúmulos sobre el mar.
 * Los panoramas usan 13 paletas (la carretera solo necesita una).
 * Motor: una nota grave en el canal 3 del PSG que sube con las revoluciones y baja
   al pasar a HIGH. Pitidos de salida, campana de checkpoint y chirrido de neumáticos.

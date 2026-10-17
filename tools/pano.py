@@ -115,7 +115,7 @@ def cumulus(img, base, top, seed, white, shade, deep=None, count=14):
                 img.putpixel((u + rep, y), c12(col))
 
 
-def cloud_field(img, seed, clouds, white, light, shade, deep):
+def cloud_field(img, seed, clouds, white, light, shade, deep, repeat=True):
     """separate cauliflower cumulus (periodic in PERIOD).
     clouds: list of (centre x, base y, width, height).  Each cloud is a dome
     of small round puffs: lit tops, a shaded rim under every puff (so the
@@ -174,7 +174,7 @@ def cloud_field(img, seed, clouds, white, light, shade, deep):
                 elif base - y < 5 and (x + y) % 2 == 0:
                     col = shade
                 px(img, x, y, col)
-                if PERIOD < W:
+                if PERIOD < W and repeat:
                     px(img, x + PERIOD, y, col)
 
 
@@ -244,8 +244,9 @@ def theme_beach():
     img = Image.new('RGB', (W, H))
     band_sky(img, ['18E', '2AF', '4BF', '7CF'], 0, 80)
     # separate towering clouds over the sea, with sky between them
-    cloud_field(img, 11, [(14, 79, 34, 30), (58, 79, 24, 19), (101, 79, 36, 40)],
-                'FFF', 'DEF', 'ACE', '9BD')
+    # two huge towers of cumulus over the sea (one per half of the panorama)
+    cloud_field(img, 11, [(70, 79, 76, 54), (196, 79, 66, 46)],
+                'FFF', 'DEF', 'ACE', '9BD', repeat=False)
     cloud_field(img, 13, [(40, 36, 22, 10), (80, 18, 18, 8), (124, 46, 14, 7)],
                 'FFF', 'DEF', 'ACE', 'ACE')
     for rep in (0, PERIOD):
@@ -437,57 +438,72 @@ def theme_canyon():
 
 
 def theme_caves():
-    """mountain pass at sunset: a purple-to-orange sky with streaky clouds, a
-    far violet range, snow-capped peaks with a lit and a shaded face, pines,
-    and rounded rock caves at the foot of the slopes"""
+    """craggy mountains at sunset: steep jagged rock spires with cliff ledges
+    and cracks, a darker rocky range behind, pines at their feet"""
     img = Image.new('RGB', (W, H))
     band_sky(img, ['535', '748', 'A57', 'E75', 'F95'], 0, 60)
-    # long thin clouds, violet lit orange from below
-    for cx, cy, ln in ((74, 17, 22), (108, 27, 24), (56, 38, 16)):
+    for cx, cy, ln in ((74, 17, 22), (108, 27, 24), (30, 33, 18)):
         for k in range(3):
             w = ln - abs(k - 1) * 6
             for x in range(cx - w // 2, cx + w // 2):
                 for rep in (0, PERIOD):
                     px(img, x + rep, cy + k, '748' if k < 2 else 'E75')
     p = img.load()
-    def ridge(peaks, lit, shade, snow, snow_d, base=88):
-        for x in range(W):
-            u = x % PERIOD
-            best, side = 999.0, 0
-            for pk, hgt, sl in peaks:
-                dx = (u - pk) % PERIOD
-                if dx > PERIOD // 2:
-                    dx -= PERIOD
-                y = hgt + abs(dx) * sl
-                if y < best:
-                    best, side = y, dx
-            top = int(best)
-            for y in range(max(0, top), base):
-                d = y - top
-                col = lit if side < 0 else shade
-                if snow and d < snow_d - abs(side) // 6 + (2 if (x // 8) % 2 else 0):
-                    col = snow
-                p[x, y] = c12(col)
-    # far violet range, then the big peaks
-    ridge(((10, 51, 0.8), (62, 49, 0.8), (122, 52, 0.8)), '86A', '86A', None, 0)
-    ridge(((30, 16, 1.7), (96, 24, 1.6)), 'A87', '654', 'EEF', 13)
-    # a few dark gullies on the shaded faces
-    for x0, y0 in ((36, 30), (102, 40)):
-        for k in range(14):
+    def crags(spires, seed):
+        """ragged spires: each side drops by a random 1..5 px per column, with
+        notches and shoulders; returns the outline and the spire per column"""
+        r = random.Random(seed)
+        best = [999] * PERIOD
+        owner = [0] * PERIOD
+        for k, (c, top, w) in enumerate(spires):
+            for sgn in (-1, 1):
+                y = top
+                for i in range(w):
+                    u = (c + sgn * i) % PERIOD
+                    if y < best[u]:
+                        best[u], owner[u] = y, (k if sgn < 0 else k + 100)
+                    step = r.choice((1, 2, 3, 3, 4, 4, 5, 6))
+                    if r.random() < 0.12:
+                        step = -2                  # a notch / a little sub-peak
+                    elif r.random() < 0.1:
+                        step = 0                   # a ledge
+                    y += step
+        return best, owner
+    back, _ = crags(((4, 36, 30), (42, 42, 28), (66, 30, 30), (106, 38, 30)), 5)
+    for x in range(W):
+        for y in range(max(0, back[x % PERIOD]), 88):
+            p[x, y] = c12('658')
+    front, owner = crags(((14, 14, 22), (34, 34, 16), (52, 22, 20), (76, 40, 14), (94, 12, 24), (116, 30, 18)), 9)
+    rf = random.Random(4)
+    streak = [rf.choice((0, 0, 0, 0, 16, 24)) for _ in range(PERIOD)]
+    cracks = [(rf.randrange(PERIOD), rf.randrange(30, 80)) for _ in range(5)]
+    for x in range(W):
+        u = x % PERIOD
+        top = front[u]
+        lit = owner[u] < 100                       # left side of a spire faces the sun
+        for y in range(max(0, top), 88):
+            d = y - top
+            col = 'B97' if lit else '754'
+            s = streak[u]
+            if d < 2:
+                col = 'DB9' if lit else '865'
+            elif lit and s and d < s:
+                col = 'DB9' if (u % 4 == 1) else '975'   # vertical rock streaks
+            elif not lit and s and d < s and u % 3 == 0:
+                col = '535'
+            p[x, y] = c12(col)
+        # fracture lines running down the slopes
+    for cx, cy in cracks:
+        for k in range(12):
             for rep in (0, PERIOD):
-                px(img, x0 + k // 4 + rep, y0 + k, '434')
-    d = ImageDraw.Draw(img)
-    # caves: rounded rock mounds with a dark grey mouth (no black holes)
-    for cx in (46, 112):
-        for rep in (0, PERIOD):
-            X = cx + rep
-            d.ellipse([X - 13, 68, X + 13, 98], fill=c12('A87'))
-            d.ellipse([X - 6, 75, X + 6, 98], fill=c12('535'))
-    # pines along the bottom (in front of the slopes, beside the caves)
-    for x0 in range(2, PERIOD, 6):
-        if any(abs(x0 - c) < 18 for c in (46, 112)):
-            continue
-        hgt = 8 + (x0 * 13) % 6
+                X = (cx + k // 2) % PERIOD + rep
+                Y = cy + k
+                if Y < 88 and front[X % PERIOD] < Y - 3:
+                    lit = owner[X % PERIOD] < 100
+                    p[X, Y] = c12('754' if lit else '535')
+    # pines along the bottom
+    for x0 in range(2, PERIOD, 5):
+        hgt = 7 + (x0 * 13) % 7
         for rep in (0, PERIOD):
             X = x0 + rep
             for k in range(hgt):

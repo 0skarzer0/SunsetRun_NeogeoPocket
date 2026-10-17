@@ -52,10 +52,11 @@ static const u8 stage_time[2][GFX_STAGES] = {
 #define START_CROWD     900
 #define CRASH_FRAMES     90u      /* updates (30 Hz): a crash costs ~2 s plus the restart */
 #define CRASH_SPEED     110u
-#define ROLL_SPEED      125u      /* above this (~160 km/h) the car rolls over the side */
+#define ROLL_SPEED      168u      /* above this (220 km/h) the car rolls over the side */
 #define ROLL_TICKS       36u      /* one full roll in the air: 1.2 s */
-#define FLIP_SPEED      155u      /* above this (~200 km/h): end over end instead */
-#define KNOCK_PUSH      (12 * 16) /* sideways shove from another car (lat units/update) */
+#define FLIP_SPEED      214u      /* above this (280 km/h): end over end instead */
+#define KNOCK_TICKS      26u      /* how long a knock from another car lasts (updates) */
+#define KNOCK_SKID_AT     5u      /* the tyres screech a moment after the bang */
 
 /* ---- game state ------------------------------------------------------- */
 #define ST_TITLE   0u
@@ -75,10 +76,12 @@ static u32 score;
 static u8 crash_timer;
 static u8 roll_t, roll_dir, roll_kind, roll_loaded = 255u;
 static s16 knock_v;
+static u8 knock_t;                  /* updates since a knock from another car, 0 = none */
 static u8 verge_spd, was_offroad;   /* speed the car left the asphalt with, fading on the sand */
 u8 dbg_bumps, dbg_rolls, dbg_flips;
 u8 dbg_cspd[16];
 u16 dbg_flip_at;
+u16 dbg_knock_at;
 static u8 msg_timer;
 static u8 flash_step;             /* checkpoint white-out: 1..12 */
 static u8 station;
@@ -219,6 +222,7 @@ static void new_game(void)
     sec_acc = 0u;
     crash_timer = 0u;
     knock_v = 0;
+    knock_t = 0u;
     verge_spd = was_offroad = 0u;
     if (roll_t) {
         roll_t = 0u;
@@ -866,7 +870,7 @@ static void smoke_init(void)
 }
 
 /* white clouds at the rear tyres while skidding, plus the screech */
-static void smoke_draw(u8 on)
+static void smoke_draw(u8 on, u8 quiet)
 {
     s16 x;
     u8 y, f, k, h;
@@ -875,7 +879,7 @@ static void smoke_draw(u8 on)
         smoke_t = 0u;
         return;
     }
-    if ((smoke_t & 7u) == 0u) {
+    if ((smoke_t & 7u) == 0u && !quiet) {
         sfx(SFX_SKID);
     }
     smoke_t++;
@@ -1182,7 +1186,14 @@ static void game_tick(u8 delta)
             u8 thit = traffic_collide(car_lat, speed);
 #endif
             if (thit) {
-                knock_v = (s16)((thit == 1u) ? KNOCK_PUSH : -KNOCK_PUSH);
+                /* the faster you go, the further it throws you aside */
+                {
+                    /* total slide ~ 8 x push / 16 px: ~20 px slow, ~70 px flat out */
+                    s16 push = (s16)(((u16)speed * 5u) >> 3) + 4;
+                    knock_v = (s16)((thit == 1u) ? push : -push);
+                }
+                knock_t = 1u;
+                if (!dbg_knock_at && speed > 100u) dbg_knock_at = dbg_updates;
                 speed = (u8)((speed * 5u) >> 3);
                 dbg_bumps++;
                 sfx(SFX_BUMP);
@@ -1217,8 +1228,12 @@ static void game_tick(u8 delta)
             car_lat = (s16)(car_lat + knock_v);
             if (car_lat > lat_limit) car_lat = lat_limit;
             if (car_lat < -lat_limit) car_lat = (s16)-lat_limit;
-            knock_v = (s16)((knock_v * 3) / 4);
-            if (knock_v > -16 && knock_v < 16) knock_v = 0;
+            knock_v = (s16)((knock_v * 7) / 8);
+            if (knock_v > -12 && knock_v < 12) knock_v = 0;
+        }
+        if (knock_t) {
+            knock_t++;
+            if (knock_t > KNOCK_TICKS) knock_t = 0u;
         }
         if (roll_t) {
             roll_t++;
@@ -1392,9 +1407,17 @@ void main(void)
         } else if (crash_timer && (crash_timer & 2u)) {
             id_car_draw((s16)(car_lat >> 4), (s8)((crash_timer & 4u) ? 1 : -1), 2u);
         } else {
-            id_car_draw((s16)(car_lat >> 4), car_lean, (u8)((offroad && speed > 20u) ? 1u : 0u));
+            if (knock_t) {
+                /* knocked by another car: the tail swings from side to side */
+                s8 wag = (s8)(((knock_t >> 2) & 1u) ? 1 : -1);
+                s16 sway = (knock_t < 18u) ? (s16)(wag * 2) : 0;
+                id_car_draw((s16)((car_lat >> 4) + sway), wag, (u8)((offroad && speed > 20u) ? 1u : 0u));
+            } else {
+                id_car_draw((s16)(car_lat >> 4), car_lean, (u8)((offroad && speed > 20u) ? 1u : 0u));
+            }
         }
-        smoke_draw((u8)(skid && crash_timer == 0u && state == ST_RACE));
+        smoke_draw((u8)((skid || (knock_t && knock_t < 20u && speed > 30u)) && crash_timer == 0u && state == ST_RACE),
+                   (u8)(knock_t && knock_t < KNOCK_SKID_AT));
         if (offroad && state == ST_RACE) dbg_off++;
         if (state == ST_RACE || state == ST_COUNT || state == ST_TIMEUP || state == ST_GOAL) {
             engine_sound();

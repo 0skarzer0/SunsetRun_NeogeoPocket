@@ -52,8 +52,10 @@ static const u8 stage_time[2][GFX_STAGES] = {
 #define START_CROWD     900
 #define CRASH_FRAMES     90u      /* updates (30 Hz): a crash costs ~2 s plus the restart */
 #define CRASH_SPEED     110u
-#define ROLL_SPEED      150u      /* above this (~200 km/h) the car rolls over */
+#define ROLL_SPEED      125u      /* above this (~160 km/h) the car rolls over the side */
 #define ROLL_TICKS       36u      /* one full roll in the air: 1.2 s */
+#define FLIP_SPEED      155u      /* above this (~200 km/h): end over end instead */
+#define KNOCK_PUSH      (12 * 16) /* sideways shove from another car (lat units/update) */
 
 /* ---- game state ------------------------------------------------------- */
 #define ST_TITLE   0u
@@ -71,7 +73,12 @@ static u8 state, state_timer, sec_acc;
 static u8 time_left;
 static u32 score;
 static u8 crash_timer;
-static u8 roll_t, roll_dir, roll_loaded = 255u;
+static u8 roll_t, roll_dir, roll_kind, roll_loaded = 255u;
+static s16 knock_v;
+static u8 verge_spd, was_offroad;   /* speed the car left the asphalt with, fading on the sand */
+u8 dbg_bumps, dbg_rolls, dbg_flips;
+u8 dbg_cspd[16];
+u16 dbg_flip_at;
 static u8 msg_timer;
 static u8 flash_step;             /* checkpoint white-out: 1..12 */
 static u8 station;
@@ -211,6 +218,8 @@ static void new_game(void)
     hud_score_reset();
     sec_acc = 0u;
     crash_timer = 0u;
+    knock_v = 0;
+    verge_spd = was_offroad = 0u;
     if (roll_t) {
         roll_t = 0u;
         roll_loaded = 255u;
@@ -390,6 +399,10 @@ static void autopilot(void)
         want = (ap_turn & 1u) ? 300 : -300;
     }
     want = traffic_ap_target(car_lat, want);
+#ifdef AP_WILD
+    if ((dbg_updates & 255u) > 200u) want = 3000;   /* tests: into the verge */
+    if (AP_WILD > 1 && speed > 200u && (dbg_updates & 255u) > 200u) car_lat = lat_limit;
+#endif
     /* steer against the drift the bend will add */
     lead = (s16)(car_lat + (s16)(bend_now * 5));
     if (lead < want - 40) held |= PAD_RIGHT;
@@ -920,12 +933,17 @@ static const u8 roll_lift[17] = { 0u, 7u, 14u, 20u, 25u, 30u, 33u, 35u, 36u, 35u
 static void roll_draw(void)
 {
     u8 f = (u8)(((u16)(roll_t - 1u) * GFX_ROLL_FRAMES) / ROLL_TICKS);
+    u8 lift;
     const RollFrame *rf;
     u16 base = id_car_tile_base();
     s16 cx, cy;
     u8 i;
     if (f >= GFX_ROLL_FRAMES) f = (u8)(GFX_ROLL_FRAMES - 1u);
-    if (!roll_dir) f = (u8)((GFX_ROLL_FRAMES - f) % GFX_ROLL_FRAMES);   /* roll the other way */
+    if (roll_kind) {
+        f = (u8)(f + GFX_FLIP_FIRST);   /* end over end, always nose first */
+    } else if (!roll_dir) {
+        f = (u8)((GFX_ROLL_FRAMES - f) % GFX_ROLL_FRAMES);   /* roll the other way */
+    }
     rf = &gfx_roll_frames[f];
     if (f != roll_loaded) {
         /* this frame's characters go where the car's are */
@@ -938,7 +956,9 @@ static void roll_draw(void)
         roll_loaded = f;
     }
     cx = (s16)(id_road_centre_at(ID_CAR_WHEEL) + (s16)(car_lat >> 4));
-    cy = (s16)((s16)ID_CAR_WHEEL - 11 - (s16)roll_lift[((u16)roll_t * 16u) / ROLL_TICKS]);
+    lift = roll_lift[((u16)roll_t * 16u) / ROLL_TICKS];
+    if (roll_kind) lift = (u8)(lift + (lift >> 1));          /* the flip goes higher */
+    cy = (s16)((s16)ID_CAR_WHEEL - 11 - (s16)lift);
     for (i = 0u; i < rf->cells; i++) {
         const s8 *c = &gfx_roll_cells[(u16)(rf->first_cell + i) * 3u];
         s16 x = (s16)(cx + c[0]), y = (s16)(cy + c[1]);
@@ -1081,7 +1101,18 @@ static void game_tick(u8 delta)
             ngpc_pad_pressed = 0u;
         }
         pos_before = course_pos;
-        drive();
+        {
+            u8 spd_before = speed;
+            drive();
+            if (offroad && !was_offroad) {
+                verge_spd = spd_before;
+            } else if (offroad) {
+                verge_spd = (verge_spd > 4u) ? (u8)(verge_spd - 4u) : 0u;
+            } else {
+                verge_spd = 0u;
+            }
+            was_offroad = offroad;
+        }
         advance();
         /* score while racing */
         if (state == ST_RACE) {
@@ -1141,42 +1172,53 @@ static void game_tick(u8 delta)
             leg_end();
         }
         id_scenery_advance(speed);
-        /* collisions */
+        /* collisions: another car knocks you aside and slows you down; the
+         * roadside (trees, rocks, signs, bridge pillars) is what crashes you:
+         * a spin, a roll over the side, or end over end at the highest speeds */
         if (state == ST_RACE && crash_timer == 0u) {
 #if AP_GHOST
-            u8 hit = 0u;
+            u8 thit = 0u;
 #else
-            u8 hit = traffic_collide(car_lat, speed);
+            u8 thit = traffic_collide(car_lat, speed);
 #endif
-            if (!hit) {
-                if (id_scenery_hit((s16)(car_lat >> 4), ID_CAR_WHEEL)
-                    || bridge_hit(pos_before, course_pos, (s16)(car_lat >> 4))) {
-                    if (speed > CRASH_SPEED) {
-                        dbg_scn++;
-                        hit = 1u;
-                    } else {
-                        u8 cost = POST_HIT, cap = (u8)(speed >> 1);
-                        if (cost > cap) cost = cap;
-                        speed = (speed > cost) ? (u8)(speed - cost) : 0u;
-                        sfx(SFX_BUMP);
-                    }
-                }
-            }
-            if (hit) {
-                if (speed > CRASH_SPEED) {
+            if (thit) {
+                knock_v = (s16)((thit == 1u) ? KNOCK_PUSH : -KNOCK_PUSH);
+                speed = (u8)((speed * 5u) >> 3);
+                dbg_bumps++;
+                sfx(SFX_BUMP);
+            } else if (id_scenery_hit((s16)(car_lat >> 4), ID_CAR_WHEEL)
+                       || bridge_hit(pos_before, course_pos, (s16)(car_lat >> 4))) {
+                /* how hard: the speed now, or the speed the car ran off the
+                 * road with (the sand has barely had time to slow it) */
+                u8 hard = (verge_spd > speed) ? verge_spd : speed;
+                if (hard > CRASH_SPEED) {
+                    dbg_cspd[dbg_scn & 15u] = hard;
+                    dbg_scn++;
                     crash_timer = CRASH_FRAMES;
-                    if (speed >= ROLL_SPEED) {
-                        roll_t = 1u;              /* tumble over, see roll_draw() */
+                    if (hard >= ROLL_SPEED) {
+                        roll_t = 1u;              /* tumble, see roll_draw() */
+                        roll_kind = (u8)((hard >= FLIP_SPEED) ? 1u : 0u);
+                        if (roll_kind) { dbg_flips++; if (!dbg_flip_at) dbg_flip_at = dbg_updates; } else dbg_rolls++;
                         if (!dbg_roll_at) dbg_roll_at = dbg_updates;
                         roll_dir = (u8)((car_lat > 0 || (car_lat == 0 && (g_vb_counter & 1u))) ? 1u : 0u);
                     }
                     dbg_crashes++;
                     sfx(SFX_CRASH);
                 } else {
-                    speed = (u8)(speed >> 1);
+                    u8 cost = POST_HIT, cap = (u8)(speed >> 1);
+                    if (cost > cap) cost = cap;
+                    speed = (speed > cost) ? (u8)(speed - cost) : 0u;
                     sfx(SFX_BUMP);
                 }
             }
+        }
+        if (knock_v != 0) {
+            /* sliding sideways after a knock from another car */
+            car_lat = (s16)(car_lat + knock_v);
+            if (car_lat > lat_limit) car_lat = lat_limit;
+            if (car_lat < -lat_limit) car_lat = (s16)-lat_limit;
+            knock_v = (s16)((knock_v * 3) / 4);
+            if (knock_v > -16 && knock_v < 16) knock_v = 0;
         }
         if (roll_t) {
             roll_t++;

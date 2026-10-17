@@ -232,7 +232,8 @@ u8 traffic_collide(s16 car_lat, u8 speed)
             c->rel = (s16)(c->rel + 60 * 16);
             c->prev = c->rel;
             c->speed = (u8)(c->speed + 30u);
-            return 1u;
+            /* 1: the other car is on the left, so we are shoved right; 2: left */
+            return (u8)((c->lat < car_lat) ? 1u : 2u);
         }
     }
     return 0u;

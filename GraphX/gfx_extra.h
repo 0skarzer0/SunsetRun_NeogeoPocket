@@ -13,8 +13,9 @@ extern const u16 gfx_particle_tiles[24];
 #define GFX_BRIDGE_TILES 6
 extern const u16 gfx_bridge_tiles[48];
 #define GFX_ROLL_FRAMES 12
-typedef struct { u8 first_cell; u8 cells; u8 first_tile; u8 tiles; u8 under; } RollFrame;
-extern const RollFrame gfx_roll_frames[GFX_ROLL_FRAMES];
+#define GFX_FLIP_FIRST 12
+typedef struct { u16 first_cell; u8 cells; u16 first_tile; u8 tiles; u8 under; } RollFrame;
+extern const RollFrame gfx_roll_frames[2 * GFX_ROLL_FRAMES];   /* side roll, then forward flip */
 extern const s8 gfx_roll_cells[];      /* x, y (from the centre), tile */
 extern const u16 gfx_roll_tiles[];
 extern const u16 gfx_roll_pal[8];

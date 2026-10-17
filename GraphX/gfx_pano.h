@@ -21,5 +21,5 @@ extern const PanoArt gfx_pano[GFX_PANO_COUNT];
 #define PANO_AUTOBAHN 12
 #define PANO_SEASIDE 13
 #define PANO_RUINS 14
-#define GFX_PANO_MAX_TILES 99
+#define GFX_PANO_MAX_TILES 111
 #endif

@@ -80,7 +80,7 @@ void traffic_set_hard(u8 on);     /* HARD: denser, slower, lane-changing traffic
 void traffic_clear(void);
 void traffic_update(u8 player_speed, u8 spawning);
 void traffic_draw(void);
-u8   traffic_collide(s16 car_lat, u8 speed);   /* returns 1 on hit */
+u8   traffic_collide(s16 car_lat, u8 speed);   /* 0, or 1/2: hit by a car on the left/right */
 void traffic_set_car_line(u8 wheel_line);
 
 /* ---- scenery (id_scenery.c) ---------------------------------------- */

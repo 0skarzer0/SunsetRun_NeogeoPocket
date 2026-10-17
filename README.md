@@ -35,10 +35,13 @@ flashcart.
 * Al final de cada tramo la carretera se bifurca: las señales y el aviso en
   pantalla marcan la elección. Mantente a la **izquierda o a la derecha** del carril central
   antes de llegar al final; la elección se fija unos metros antes del cruce.
-* Chocar con el tráfico o con los objetos del arcén (palmeras, rocas, señales…) a alta
-  velocidad te hace trompear; a poca velocidad solo te frena. Por encima de unos
-  200 km/h el coche **vuelca**: da una vuelta de campana en el aire (se ven los bajos)
-  antes de volver a la carretera. La arena / hierba te frena.
+* **Tráfico**: si tocas otro coche no chocas: te empuja hacia un lado y pierdes
+  bastante velocidad (y puedes acabar en el arcén).
+* **Arcén** (palmeras, rocas, señales, pilares de los puentes): a poca velocidad te frena;
+  por encima de unos 145 km/h el coche trompea; desde unos 160 km/h **vuelca de lado**
+  (vuelta de campana viendo los bajos) y desde unos 200 km/h da una **vuelta hacia
+  delante**, de morro, enseñando los bajos y las ruedas. Cuenta la velocidad con la que
+  saliste del asfalto. La arena / hierba te frena.
 * En el campo, el otoño, la granja, el lago y las ruinas la carretera pasa bajo una
   serie de **puentes de piedra**. Sus pilares están fuera del asfalto, pero si vas
   por el arcén te los comes.
@@ -210,7 +213,13 @@ sonidos de ningún juego comercial: todo se genera con los scripts de `tools/`.
   cielo liso.
 * Vuelco: 12 fotogramas generados girando la vista trasera del coche (girar la vista
   trasera es justo lo que se ve en una vuelta de campana); los fotogramas boca abajo
-  muestran los bajos. Usan los caracteres del coche mientras dura.
+  muestran los bajos. La vuelta hacia delante proyecta las caras del coche (trasera,
+  bajos con las ruedas, frontal boca abajo y techo) para cada ángulo. Usan los
+  caracteres del coche mientras dura.
+* Cuevas: paso de montaña al atardecer (cielo morado y naranja con nubes alargadas,
+  cordillera violeta al fondo, picos nevados con una cara iluminada y otra en sombra,
+  pinos y cuevas de roca).
+* Los panoramas usan 13 paletas (la carretera solo necesita una).
 * Motor: una nota grave en el canal 3 del PSG que sube con las revoluciones y baja
   al pasar a HIGH. Pitidos de salida, campana de checkpoint y chirrido de neumáticos.
 

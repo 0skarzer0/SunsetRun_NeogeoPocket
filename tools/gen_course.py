@@ -21,7 +21,7 @@ THEMES = {
     'city':   ('CITY',   ('COLUMN', 'COLUMN'),     ('869', 'FDA', ['869', '97A', 'B9B', 'FDB'])),
     'lake':   ('LAKE',   ('POPLAR', 'TREE'),       ('88A', 'EEF', ['88A', '99B', 'BBD', 'EEF'])),
     'canyon': ('CANYON', ('ROCK', 'ROCK'),         ('987', 'FFE', ['987', 'A98', 'CBA', 'FFE'])),
-    'caves':  ('CAVES',  ('ROCK', 'BUSH'),         ('877', 'FFF', ['877', '988', 'BAA', 'FFF'])),
+    'caves':  ('CAVES',  ('PINE', 'ROCK'),         ('877', 'FFF', ['877', '988', 'BAA', 'FFF'])),
     'snow':   ('SNOW',   ('PINE', 'PINE'),         ('99B', 'FFF', ['99B', 'AAC', 'CCE', 'FFF'])),
     'farm':   ('FARM',   ('TREE', 'BUSH'),         ('998', 'FFF', ['998', 'AA9', 'CCB', 'FFF'])),
     'autobahn': ('AUTOBAHN', ('POPLAR', 'POPLAR'), ('778', 'FFF', ['778', '889', 'AAB', 'FFF'])),

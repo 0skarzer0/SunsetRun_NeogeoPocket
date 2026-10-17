@@ -10,7 +10,10 @@ static u16 pano_base, obj_base, obj_end;
 static u16 pano_end;          /* first character after the current panorama */
 static u16 objmap[256];
 static u8 kind_l, kind_r;
-static u16 cur_pals[8 * 4];       /* SCR2 palettes 8..15 as loaded */
+#define PANO_PALS 13u
+static u16 cur_pals[PANO_PALS * 4u];  /* SCR2 palettes 8..15 and 2..6 as loaded */
+/* the road only uses SCR2 palettes 0-1 and the HUD 7: the panorama gets the rest */
+static const u8 pano_slot[PANO_PALS] = { 8u, 9u, 10u, 11u, 12u, 13u, 14u, 15u, 2u, 3u, 4u, 5u, 6u };
 static u16 cur_backdrop;
 static u16 cur_road[4];
 static u16 cur_band[4];
@@ -107,13 +110,13 @@ void theme_apply(u8 leg)
     for (i = 0u; i < P->count; i++) {
         load_tile((u16)(pano_base + i), &P->tiles[i * 8u]);
     }
-    for (i = 0u; i < 32u; i++) {
+    for (i = 0u; i < PANO_PALS * 4u; i++) {
         cur_pals[i] = P->pals[i];
     }
     for (y = 0u; y < GFX_PANO_ROWS; y++) {
         for (x = 0u; x < 32u; x++) {
             u16 k = (u16)((u16)y * 32u + x);
-            HW_SCR2_MAP[k] = (u16)(pano_base + P->map[k] + ((u16)(8u + P->map_pal[k]) << 9));
+            HW_SCR2_MAP[k] = (u16)(pano_base + P->map[k] + ((u16)pano_slot[P->map_pal[k]] << 9));
         }
     }
     pano_end = (u16)(pano_base + P->count);
@@ -174,8 +177,8 @@ void theme_flash(u8 level)
 {
     u8 p, i;
     u16 band[4];
-    for (p = 0u; p < 8u; p++) {
-        ngpc_gfx_set_palette(GFX_SCR2, (u8)(8u + p),
+    for (p = 0u; p < PANO_PALS; p++) {
+        ngpc_gfx_set_palette(GFX_SCR2, pano_slot[p],
                              to_white(cur_pals[p * 4u], level), to_white(cur_pals[p * 4u + 1u], level),
                              to_white(cur_pals[p * 4u + 2u], level), to_white(cur_pals[p * 4u + 3u], level));
     }

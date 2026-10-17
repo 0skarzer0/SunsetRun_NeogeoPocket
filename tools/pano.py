@@ -437,17 +437,64 @@ def theme_canyon():
 
 
 def theme_caves():
-    """rocky bluffs pierced by caves, teal dusk"""
+    """mountain pass at sunset: a purple-to-orange sky with streaky clouds, a
+    far violet range, snow-capped peaks with a lit and a shaded face, pines,
+    and rounded rock caves at the foot of the slopes"""
     img = Image.new('RGB', (W, H))
-    band_sky(img, ['168', '28A', '6BB', 'BDB'], 0, 70)
-    puffs(img, 13, 10, 30, 3, 'DFE', '9CC')
-    stroke_ridge(img, wave(14, 52, 10, ((64, 1.0), (32, 0.5), (16, 0.2))), '532', '864', 'B96', 88, seed=13)
+    band_sky(img, ['535', '748', 'A57', 'E75', 'F95'], 0, 60)
+    # long thin clouds, violet lit orange from below
+    for cx, cy, ln in ((74, 17, 22), (108, 27, 24), (56, 38, 16)):
+        for k in range(3):
+            w = ln - abs(k - 1) * 6
+            for x in range(cx - w // 2, cx + w // 2):
+                for rep in (0, PERIOD):
+                    px(img, x + rep, cy + k, '748' if k < 2 else 'E75')
+    p = img.load()
+    def ridge(peaks, lit, shade, snow, snow_d, base=88):
+        for x in range(W):
+            u = x % PERIOD
+            best, side = 999.0, 0
+            for pk, hgt, sl in peaks:
+                dx = (u - pk) % PERIOD
+                if dx > PERIOD // 2:
+                    dx -= PERIOD
+                y = hgt + abs(dx) * sl
+                if y < best:
+                    best, side = y, dx
+            top = int(best)
+            for y in range(max(0, top), base):
+                d = y - top
+                col = lit if side < 0 else shade
+                if snow and d < snow_d - abs(side) // 6 + (2 if (x // 8) % 2 else 0):
+                    col = snow
+                p[x, y] = c12(col)
+    # far violet range, then the big peaks
+    ridge(((10, 51, 0.8), (62, 49, 0.8), (122, 52, 0.8)), '86A', '86A', None, 0)
+    ridge(((30, 16, 1.7), (96, 24, 1.6)), 'A87', '654', 'EEF', 13)
+    # a few dark gullies on the shaded faces
+    for x0, y0 in ((36, 30), (102, 40)):
+        for k in range(14):
+            for rep in (0, PERIOD):
+                px(img, x0 + k // 4 + rep, y0 + k, '434')
     d = ImageDraw.Draw(img)
-    for cx in (14, 46):
-        for rep in range(0, W, 64):
-            d.ellipse([rep + cx - 6, 72, rep + cx + 6, 92], fill=c12('211'))
-            d.ellipse([rep + cx - 4, 75, rep + cx + 4, 92], fill=c12('000'))
-    return img, c12('A86')
+    # caves: rounded rock mounds with a dark grey mouth (no black holes)
+    for cx in (46, 112):
+        for rep in (0, PERIOD):
+            X = cx + rep
+            d.ellipse([X - 13, 68, X + 13, 98], fill=c12('A87'))
+            d.ellipse([X - 6, 75, X + 6, 98], fill=c12('535'))
+    # pines along the bottom (in front of the slopes, beside the caves)
+    for x0 in range(2, PERIOD, 6):
+        if any(abs(x0 - c) < 18 for c in (46, 112)):
+            continue
+        hgt = 8 + (x0 * 13) % 6
+        for rep in (0, PERIOD):
+            X = x0 + rep
+            for k in range(hgt):
+                w = (k * 3) // 5 + 1
+                for x in range(X - w // 2, X + w // 2 + 1):
+                    px(img, x, 88 - hgt + k, '153')
+    return img, c12('8A5')
 
 
 def theme_snow():

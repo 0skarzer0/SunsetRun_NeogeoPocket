@@ -327,7 +327,7 @@ def gen_panos():
     for name in PANO_ORDER:
         img, bd = pano.THEMES[name]()
         img = pano.finish(img, bd)
-        r = convert_plane(img, bd)
+        r = convert_plane(img, bd, max_pals=13)
         maxt = max(maxt, len(r['tiles']))
         n = 'pano_' + name
         srcs.append(carray('u16', n + '_tiles', [w for t in r['tiles'] for w in t], 8))
@@ -436,6 +436,102 @@ def gen_extra():
                     rcells.append((ox + cx * 8, oy + cy * 8, loc.index(words)))
         rtiles += loc
         rframes.append((first, len(rcells) - first, ft, len(loc), under))
+    # forward flip (end over end, nose down), seen from behind: project the
+    # rear, the underside (wheels!), the upside-down front and the roof
+    UNDER = []
+    for y in range(40):
+        row = ''
+        for x in range(32):
+            body = 2 <= x <= 29 and not ((y < 2 or y > 37) and (x < 4 or x > 27))
+            tyre = (3 <= y <= 10 or 29 <= y <= 36) and (x <= 4 or x >= 27)
+            if tyre:
+                row += '1'
+            elif not body:
+                row += '.'
+            elif x in (2, 29) or y in (0, 39) or (y in (1, 38) and (x < 5 or x > 26)):
+                row += '2'
+            elif y in (6, 7, 32, 33) or (y < 4 and x in (8, 9, 22, 23)) \
+                    or ((y in (14, 21) and 10 <= x <= 21) or (14 <= y <= 21 and x in (10, 21))):
+                row += '1'
+            else:
+                row += '3'
+        UNDER.append(row)
+    TOP = []
+    for y in range(40):
+        row = ''
+        for x in range(32):
+            body = 2 <= x <= 29 and not ((y < 3 or y > 37) and (x < 5 or x > 26))
+            tyre = (5 <= y <= 11 or 28 <= y <= 34) and (x <= 2 or x >= 29)
+            if tyre:
+                row += '1'
+            elif not body:
+                row += '.'
+            elif x in (2, 29) or y in (0, 39):
+                row += '1'
+            elif 13 <= y <= 15 and 5 <= x <= 26:
+                row += '3'                                   # windscreen
+            elif 18 <= y <= 22 and (7 <= x <= 12):
+                row += '1'                                   # his chestnut head
+            elif 18 <= y <= 23 and (19 <= x <= 25):
+                row += '3'                                   # her blonde hair
+            elif 16 <= y <= 26 and 5 <= x <= 26:
+                row += '1' if (x in (5, 26) or y in (16, 26)) else '2'
+            elif y >= 37 and (4 <= x <= 9 or 22 <= x <= 27):
+                row += '3'                                   # lamps
+            else:
+                row += '2'
+        TOP.append(row)
+    def grid_im(rows):
+        im = Image.new('L', (32, len(rows)), 0)
+        for y, r in enumerate(rows):
+            for x, ch in enumerate(r):
+                if ch != '.':
+                    im.putpixel((x, y), int(ch))
+        return im
+    rear = roll_src(0)
+    front = rear.transpose(Image.FLIP_TOP_BOTTOM)
+    under, top = grid_im(UNDER), grid_im(TOP)
+    import math
+    HR, L = GH, 40
+    for k in range(12):
+        th = math.radians(k * 30)
+        cs, sn = math.cos(th), math.sin(th)
+        canvas = Image.new('L', (32, 96), 0)
+        def put(face, y_top, y_bot):
+            # screen y grows downwards: y_top/y_bot are heights (up = +)
+            hh = int(round(y_top - y_bot))
+            if hh <= 0:
+                return
+            canvas.paste(face.resize((32, hh), Image.NEAREST), (0, int(round(48 - y_top))))
+        if cs > 0.01:
+            put(rear, L / 2 * sn + HR * cs - HR / 2, L / 2 * sn - HR / 2)
+        elif cs < -0.01:
+            put(front, -L / 2 * sn - HR / 2, -L / 2 * sn + HR * cs - HR / 2)
+        if sn > 0.01:
+            put(under, L / 2 * sn - HR / 2, -L / 2 * sn - HR / 2)
+        elif sn < -0.01:
+            put(top, HR * cs - L / 2 * sn - HR / 2, HR * cs + L / 2 * sn - HR / 2)
+        bb = canvas.getbbox()
+        im = canvas.crop(bb)
+        ox, oy = bb[0] - 16, bb[1] - 48
+        w, hh = im.size
+        px = im.load()
+        first, ft = len(rcells), len(rtiles)
+        loc = []
+        for cy in range((hh + 7) // 8):
+            for cx in range((w + 7) // 8):
+                g = [[px[x, y] if x < w and y < hh else 0 for x in range(cx * 8, cx * 8 + 8)]
+                     for y in range(cy * 8, cy * 8 + 8)]
+                if any(v for r in g for v in r):
+                    words = list(pixels_to_words(g))
+                    if words not in loc:
+                        loc.append(words)
+                    rcells.append((ox + cx * 8, oy + cy * 8, loc.index(words)))
+        assert len(rcells) - first <= 24, 'flip frame needs too many sprites'
+        rtiles += loc
+        rframes.append((first, len(rcells) - first, ft, len(loc), 1 if sn > 0.3 else 0))
+        if os.environ.get('ROLL_PREVIEW'):
+            canvas.save(os.environ['ROLL_PREVIEW'] + '_%02d.png' % k)
     rpal = [[0, c12('400'), c12('E21'), c12('DDE')], [0, c12('111'), c12('E21'), c12('58B')]]
     h = ['/* Generated by tools/gen_gfx.py -- do not edit. */', '#ifndef GFX_EXTRA_H', '#define GFX_EXTRA_H',
          '#include "ngpc_types.h"', '#define GFX_BANNER_TILES 5', '#define GFX_TROPHY_TILES %d' % len(ttiles),
@@ -444,9 +540,9 @@ def gen_extra():
          'extern const u8 gfx_trophy_cells[];', 'extern const u16 gfx_trophy_pal[4];',
          'extern const u16 gfx_particle_tiles[24];', '#define GFX_BRIDGE_TILES 6',
          'extern const u16 gfx_bridge_tiles[48];',
-         '#define GFX_ROLL_FRAMES 12',
-         'typedef struct { u8 first_cell; u8 cells; u8 first_tile; u8 tiles; u8 under; } RollFrame;',
-         'extern const RollFrame gfx_roll_frames[GFX_ROLL_FRAMES];',
+         '#define GFX_ROLL_FRAMES 12', '#define GFX_FLIP_FIRST 12',
+         'typedef struct { u16 first_cell; u8 cells; u16 first_tile; u8 tiles; u8 under; } RollFrame;',
+         'extern const RollFrame gfx_roll_frames[2 * GFX_ROLL_FRAMES];   /* side roll, then forward flip */',
          'extern const s8 gfx_roll_cells[];      /* x, y (from the centre), tile */',
          'extern const u16 gfx_roll_tiles[];', 'extern const u16 gfx_roll_pal[8];', '#endif', '']
     open(os.path.join(OUT, 'gfx_extra.h'), 'w').write('\n'.join(h))
@@ -457,7 +553,7 @@ def gen_extra():
          carray('u16', 'gfx_trophy_pal', [0, c12('640'), c12('DB2'), c12('FF9')], 4),
          carray('u16', 'gfx_particle_tiles', ptw, 8),
          carray('u16', 'gfx_bridge_tiles', btw, 8),
-         'const RollFrame gfx_roll_frames[GFX_ROLL_FRAMES] = {\n%s\n};' % '\n'.join(
+         'const RollFrame gfx_roll_frames[2 * GFX_ROLL_FRAMES] = {\n%s\n};' % '\n'.join(
              '    { %d, %d, %d, %d, %d },' % f for f in rframes),
          carray('s8', 'gfx_roll_cells', [v for c3 in rcells for v in c3], 12),
          carray('u16', 'gfx_roll_tiles', [w for t in rtiles for w in t], 8),

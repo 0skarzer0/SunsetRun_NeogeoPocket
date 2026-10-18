@@ -19,6 +19,7 @@
 #include "id_scenery.h"
 #include "id_cars.h"
 #include "game.h"
+#include "ovl.h"
 #include "driving.inc"
 #include "../GraphX/gfx_font.h"
 #include "game_audio.h"
@@ -94,6 +95,11 @@ static u16 pano_tiles_at, trf_tiles_at;
 static const char *const diff_name[DIFF_COUNT] = { "EASY", "NORMAL", "HARD", "FREE" };
 static const u8 diff_pal[DIFF_COUNT] = { 8u, 0u, 2u, 15u };    /* SCR1 text colours */
 u16 dbg_updates;
+#ifdef PERF
+u16 perf_hist[8];          /* tests: vblanks between frames drawn */
+u16 perf_done[8];          /* tests: vblanks from the frame start to its commit */
+static u8 perf_t0;
+#endif
 u8 dbg_cp[6];
 u16 dbg_roll_at;                  /* frame of the first rollover (tests) */                     /* time left at each checkpoint (tests) */
 u8 dbg_crashes, dbg_scn, dbg_off;
@@ -273,6 +279,19 @@ static u16 advance(void)
         else bend_now = target;
     }
     return step;
+}
+
+/* FRAME COMMIT: the road's raster table, the sprites and the overlay go on
+   screen together, at the second VBlank after the frame was begun -- never
+   sooner, even when the frame was quick, so every picture stays up for the
+   same time (an early one would make the motion judder) */
+static u8 frame_vb;
+static void frame_commit(void)
+{
+    while ((u8)(g_vb_counter - frame_vb) < 1u) ngpc_vsync();
+    ovl_commit();
+    id_road_ready();
+    spr_ready = 1u;
 }
 
 static void render_road(void)
@@ -566,6 +585,7 @@ static void title_screen(void)
     u16 i, k;
     u8 x, y;
     id_road_dma_pause();
+    ovl_forget();
     bridge_hide();
     save_commit();                       /* a new record from the race just ended */
     ending_stop();
@@ -673,6 +693,7 @@ static void map_screen(void)
     u16 i, k;
     u8 x, y, s, b;
     id_road_dma_pause();
+    ovl_forget();
     bridge_hide();
     banner_hide();
     id_spr_hide_range(0u, 64u);
@@ -1419,12 +1440,19 @@ void main(void)
     for (;;) {
         u8 now, elapsed, owed, t;
         while ((u8)(g_vb_counter - pace_prev) < 2u) ngpc_vsync();
+        /* the last frame must be on screen before this one is built */
+        while (spr_ready) ngpc_vsync();
+        frame_vb = g_vb_counter;
         /* REAL TIME, WHATEVER THE FRAME RATE: the game logic runs once per
            two VBlanks that have elapsed (up to 3 catch-up ticks), the picture
            is drawn once.  On a slower machine the motion is coarser, but the
            car, traffic and clock keep their true speed. */
         now = g_vb_counter;
         elapsed = (u8)(now - pace_prev);
+#ifdef PERF
+        { u8 d = (u8)(now - perf_t0); perf_hist[d > 7u ? 7u : d]++; }
+        perf_t0 = now;
+#endif
         owed = (u8)(elapsed >> 1);
         if (owed > 3u) {
             owed = 3u;
@@ -1445,11 +1473,13 @@ void main(void)
         if (state == ST_TITLE) {
             title_car(state_timer);
             player_engine_off();
+            frame_commit();
             continue;
         }
         if (state == ST_MAP) {
             map_car();
             player_engine_off();
+            frame_commit();
             continue;
         }
         render_road();
@@ -1481,7 +1511,8 @@ void main(void)
         }
         if (roll_t) {
             roll_draw();
-        } else if (crash_timer && (crash_timer & 2u)) {
+        } else if (crash_timer) {
+            /* spinning after a crash: no blinking, the car rocks */
             id_car_draw((s16)(car_lat >> 4), (s8)((crash_timer & 4u) ? 1 : -1), 2u);
         } else {
             if (knock_t) {
@@ -1501,5 +1532,11 @@ void main(void)
         } else {
             player_engine_off();
         }
+        /* FRAME COMMIT: the road's raster table and the sprites go on screen
+           together at the next VBlank */
+#ifdef PERF
+        { u8 d = (u8)(g_vb_counter - perf_t0); perf_done[d > 7u ? 7u : d]++; }
+#endif
+        frame_commit();
     }
 }

@@ -1,6 +1,9 @@
 
 #ifndef ID_PLAYER_H
 #define ID_PLAYER_H
+extern u16 spr_shadow[128];
+extern u16 spr_pal_shadow[32];
+extern volatile u8 spr_ready;   /* 1: the frame's sprites are ready for the VBlank copy */
 #include "ngpc_types.h"
 #define ID_CAR_SPR_0    0u
 #define ID_CAR_SPR_MAX  12u
@@ -12,7 +15,7 @@
 #define ID_CAR_PORTRAIT_MAX  64u
 extern u8 id_spr_priority; 
 void id_spr_put(u8 id, u8 x, u8 y, u16 tile, u8 pal, u8 flip);
-#define ID_SPR_PUT_PRIORITY(id, x, y, tile, pal, flip, priority) do {                                  u8  spr_i_ = (u8)(id);                                                      u8  spr_x_ = (u8)(x);                                                       u8  spr_y_ = (u8)(y);                                                       u16 spr_t_ = (u16)(tile);                                                   u8  spr_p_ = (u8)(pal);                                                     u8  spr_f_ = (u8)(flip);                                                    volatile u8 *spr_s_ = (volatile u8 *)(0x8800u + ((u16)spr_i_ << 2));         spr_s_[0] = (u8)(spr_t_ & 0x00FFu);                                         spr_s_[1] = (u8)(spr_f_ | (u8)(priority) | (u8)((spr_t_ >> 8) & 1u));         spr_s_[2] = spr_x_;                                                         spr_s_[3] = spr_y_;                                                         *(volatile u8 *)(0x8C00u + (u16)spr_i_) = (u8)(spr_p_ & 0x0Fu);         } while (0)
+#define ID_SPR_PUT_PRIORITY(id, x, y, tile, pal, flip, priority) do {                                  u8  spr_i_ = (u8)(id);                                                      u8  spr_x_ = (u8)(x);                                                       u8  spr_y_ = (u8)(y);                                                       u16 spr_t_ = (u16)(tile);                                                   u8  spr_p_ = (u8)(pal);                                                     u8  spr_f_ = (u8)(flip);                                                    volatile u8 *spr_s_ = (u8 *)spr_shadow + ((u16)spr_i_ << 2);         spr_s_[0] = (u8)(spr_t_ & 0x00FFu);                                         spr_s_[1] = (u8)(spr_f_ | (u8)(priority) | (u8)((spr_t_ >> 8) & 1u));         spr_s_[2] = spr_x_;                                                         spr_s_[3] = spr_y_;                                                         ((u8 *)spr_pal_shadow)[spr_i_] = (u8)(spr_p_ & 0x0Fu);         } while (0)
 #define ID_SPR_PUT(id, x, y, tile, pal, flip) \
     ID_SPR_PUT_PRIORITY(id, x, y, tile, pal, flip, id_spr_priority)
 #define ID_SPR_PUT_MIDDLE(id, x, y, tile, pal, flip) \

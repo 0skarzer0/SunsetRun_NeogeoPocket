@@ -12,6 +12,7 @@
 #include "game.h"
 #include "id_road.h"
 #include "id_player.h"
+#include "ovl.h"
 #include "../GraphX/gfx_extra.h"
 
 #define T_TOP   (u16)'#'          /* font slots that no text uses */
@@ -60,9 +61,10 @@ static void erase(void)
     }
     for (y = b_r0; y <= b_foot; y++) {
         for (x = b_c0; x <= b_c1; x++) {
-            HW_SCR1_MAP[(u16)y * 32u + x] = 0u;
+            OVL_CELL(x, y) = 0u;
         }
     }
+    ovl_mark(b_r0, b_foot, b_c0, b_c1);
     b_on = 0u;
 }
 
@@ -78,6 +80,7 @@ void banner_hide(void)
 /* force a full redraw (after text was printed over the gantry) */
 void banner_dirty(void)
 {
+    if (b_on) ovl_touch(b_r0, b_foot, b_c0, b_c1);
     b_r0 = 255u;
 }
 
@@ -127,13 +130,14 @@ void banner_show(s16 d, u8 finish, const char *text)
                 if (finish && (x == c0 || x == c1)) t = T_CHECK;
                 else if (y == r0 && r1 > r0) t = T_TOP;
                 else if (y == r1 && r1 > r0) t = T_BOT;
-                HW_SCR1_MAP[(u16)y * 32u + x] = (u16)(t | ((u16)PAL_BANNER << 9));
+                OVL_CELL(x, y) = (u16)(t | ((u16)PAL_BANNER << 9));
             }
         }
         for (y = (u8)(r1 + 1u); y <= foot; y++) {
-            if (left >= 0) HW_SCR1_MAP[(u16)y * 32u + c0] = (u16)(T_POST | ((u16)PAL_BANNER << 9));
-            if (right < 160) HW_SCR1_MAP[(u16)y * 32u + c1] = (u16)(T_POST | ((u16)PAL_BANNER << 9));
+            if (left >= 0) OVL_CELL(c0, y) = (u16)(T_POST | ((u16)PAL_BANNER << 9));
+            if (right < 160) OVL_CELL(c1, y) = (u16)(T_POST | ((u16)PAL_BANNER << 9));
         }
+        ovl_mark(r0, foot, c0, c1);
         b_on = 1u;
         b_r0 = r0; b_r1 = r1; b_c0 = c0; b_c1 = c1; b_foot = foot;
     }

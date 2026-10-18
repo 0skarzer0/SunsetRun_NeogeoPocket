@@ -623,4 +623,74 @@ cv_have:
         pop     xiz
         ret
 
+        
+; ================================================================
+; void id_road_wide_asm(RoadWide *w);   (SUNSET RUN)
+;
+; wide_rows() of id_road.c: from the bottom row up, the near rows whose plain
+; copy would wrap around the 256 px map take the copy stored VSHIFT px to
+; that side instead.  Stops at the first row outside the wide source rows.
+;
+;   XIX = &xy[scr] (descend de 2)   XIY = id_route_lim0
+;   C = scr - plane0 (descend)      B = rows left
+;   D = threshold of the negative side (0x90, 0x71 if lateral < 0)
+;   E = base_x                      W = lim of the row
+W_XY     equ 0      ; u16 *    &xy[road_bottom]
+W_LIM    equ 4      ; const u8 * id_route_lim0
+W_K      equ 8      ; u8 road_bottom - plane0
+W_N      equ 9      ; u8 rows (> 0)
+W_T      equ 10     ; u8 0x90 / 0x71
+W_BX     equ 11     ; u8 base_x
+WIDE0    equ 48
+WIDE_END equ 88
+VROWS    equ 40
+VSHIFT   equ 96
+
+        public  _id_road_wide_asm
+
+_id_road_wide_asm:
+        ld      xwa,(xsp+0x4)
+        ld      xix,(xwa+W_XY)
+        ld      xiy,(xwa+W_LIM)
+        ld      bc,(xwa+W_K)            ; C = k, B = n
+        ld      de,(xwa+W_T)            ; E = threshold, D = base_x
+        ld      a,e
+        ld      e,d
+        ld      d,a                     ; D = threshold, E = base_x
+wd_loop:
+        ld      hl,(xix)                ; H = y, L = x
+        ld      a,h
+        add     a,c                     ; j = y + scr - plane0
+        cp      a,WIDE0
+        jr      c,wd_out
+        cp      a,WIDE_END
+        jr      nc,wd_out
+        extz    wa
+        ld      a,(xiy+wa)
+        ld      w,a                     ; lim
+        ld      a,l
+        sub     a,e                     ; d = x - base_x
+        cp      a,d
+        jr      nc,wd_neg
+        cp      a,w
+        jr      c,wd_next
+        add     h,VROWS
+        sub     l,VSHIFT
+        ld      (xix),hl
+        jr      wd_next
+wd_neg:
+        neg     a                       ; |dx|
+        cp      a,w
+        jr      c,wd_next
+        add     h,2*VROWS
+        add     l,VSHIFT
+        ld      (xix),hl
+wd_next:
+        dec     0x2,xix
+        dec     0x1,c
+        dec     0x1,b
+        jr      nz,wd_loop
+wd_out:
+        ret
+
         end

@@ -2,7 +2,8 @@
  *
  * Some scenes (gfx_themes[].bridges) have a row of up to four stone bridges
  * on their longest gentle stretch.  Like the START gantry they are drawn with
- * SCR1 characters (6 stone characters in unused font slots), placed with the
+ * SCR1 characters (6 stone characters in unused font slots, drawn in the
+ * overlay, ovl.c, so they reach the screen whole, in VBlank), placed with the
  * road's own perspective: a deck spanning the road and the verges, and two
  * pillars down to the ground.  Bridges are drawn far to near, so the nearer
  * one covers the farther ones.  Sprites beyond the nearest bridge are put
@@ -13,6 +14,7 @@
 #include "game.h"
 #include "id_road.h"
 #include "id_player.h"
+#include "ovl.h"
 #include "../GraphX/gfx_extra.h"
 
 #define T_CAP   64u          /* '@' */
@@ -63,14 +65,11 @@ void bridge_init(void)
 
 static void clear_box(void)
 {
-    u8 x, y;
     if (bb_r0 == 255u) {
         return;
     }
-    for (y = bb_r0; y <= bb_r1; y++) {
-        volatile u16 *p = &HW_SCR1_MAP[(u16)y * 32u + bb_c0];
-        for (x = bb_c0; x <= bb_c1; x++) *p++ = 0u;
-    }
+    ovl_clear(bb_r0, bb_r1, bb_c0, bb_c1);
+    ovl_mark(bb_r0, bb_r1, bb_c0, bb_c1);
     bb_r0 = 255u;
 }
 
@@ -204,16 +203,16 @@ void bridge_draw(u16 course_pos)
             u16 td = (slim[k] == 2u) ? T_DTHIN : T_DMED;
             u16 tl = (slim[k] == 2u) ? T_PTL : T_PML;
             u16 tr = (slim[k] == 2u) ? T_PTR : T_PMR;
-            volatile u16 *p = &HW_SCR1_MAP[(u16)r0s[k] * 32u + l0s[k]];
+            u16 *p = &OVL_CELL(l0s[k], r0s[k]);
             for (x = l0s[k]; x <= q1s[k]; x++) *p++ = (u16)(td | ((u16)PAL_BRIDGE << 9));
             for (y = (u8)(r0s[k] + 1u); y <= fts[k]; y++) {
-                if (lv[k]) HW_SCR1_MAP[(u16)y * 32u + l0s[k]] = (u16)(tl | ((u16)PAL_BRIDGE << 9));
-                if (rv[k]) HW_SCR1_MAP[(u16)y * 32u + q1s[k]] = (u16)(tr | ((u16)PAL_BRIDGE << 9));
+                if (lv[k]) OVL_CELL(l0s[k], y) = (u16)(tl | ((u16)PAL_BRIDGE << 9));
+                if (rv[k]) OVL_CELL(q1s[k], y) = (u16)(tr | ((u16)PAL_BRIDGE << 9));
             }
         } else {
         for (y = r0s[k]; y <= r1s[k]; y++) {
             u16 t = (y == r1s[k] && r1s[k] > r0s[k]) ? T_DBOT : ((y == r0s[k]) ? T_CAP : T_DECK);
-            volatile u16 *p = &HW_SCR1_MAP[(u16)y * 32u + l0s[k]];
+            u16 *p = &OVL_CELL(l0s[k], y);
             if (r1s[k] == r0s[k]) t = T_DBOT;
             for (x = l0s[k]; x <= q1s[k]; x++) *p++ = (u16)(t | ((u16)PAL_BRIDGE << 9));
         }
@@ -221,13 +220,13 @@ void bridge_draw(u16 course_pos)
             if (lv[k]) {
                 for (x = l0s[k]; x <= l1s[k]; x++) {
                     u16 t = (x == l1s[k]) ? T_PILR : ((x == l0s[k] && l1s[k] > l0s[k]) ? T_PILL : T_PIL);
-                    HW_SCR1_MAP[(u16)y * 32u + x] = (u16)(t | ((u16)PAL_BRIDGE << 9));
+                    OVL_CELL(x, y) = (u16)(t | ((u16)PAL_BRIDGE << 9));
                 }
             }
             if (rv[k]) {
                 for (x = q0s[k]; x <= q1s[k]; x++) {
                     u16 t = (x == q0s[k]) ? T_PILL : ((x == q1s[k] && q1s[k] > q0s[k]) ? T_PILR : T_PIL);
-                    HW_SCR1_MAP[(u16)y * 32u + x] = (u16)(t | ((u16)PAL_BRIDGE << 9));
+                    OVL_CELL(x, y) = (u16)(t | ((u16)PAL_BRIDGE << 9));
                 }
             }
         }
@@ -241,6 +240,7 @@ void bridge_draw(u16 course_pos)
             if (q1s[k] > bb_c1) bb_c1 = q1s[k];
         }
     }
+    ovl_mark(bb_r0, bb_r1, bb_c0, bb_c1);
 }
 
 /* 1 if the car, crossing under a bridge between prev and pos, meets a pillar */

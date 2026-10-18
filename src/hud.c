@@ -3,6 +3,7 @@
 #include "ngpc_gfx.h"
 #include "ngpc_text.h"
 #include "game.h"
+#include "ovl.h"
 #define GFX_FONT_DATA
 #include "../GraphX/gfx_font.h"
 
@@ -65,6 +66,7 @@ void hud_reset(void)
 void hud_clear_top(void)
 {
     u8 x, y;
+    ovl_forget();
     for (y = 0u; y < 15u; y++) {
         for (x = 0u; x < 20u; x++) {
             HW_SCR1_MAP[(u16)y * 32u + x] = 0u;

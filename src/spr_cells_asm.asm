@@ -59,7 +59,7 @@ sc_noflip:
         ld      l,c
         extz    hl
         sll     0x2,hl
-        add     hl,0x8800
+        add     hl,_spr_shadow          ; RAM copy, sent to 0x8800 in VBlank
         extz    xhl
         ld      (xhl+0x2),a             ; x (low byte of sx)
         ld      a,(xix+0x1)             ; cy * 8 + y
@@ -85,7 +85,7 @@ sc_tile:
         ; palette: 0x8C00 + spr
         ld      l,c
         extz    hl
-        add     hl,0x8c00
+        add     hl,_spr_pal_shadow      ; RAM copy of 0x8C00
         extz    xhl
         ld      a,(xiz+J_PAL)
         ld      (xhl),a
@@ -96,6 +96,60 @@ sc_next:
         jp      nz,sc_loop
 sc_done:
         ld      (xiz+J_SPR),c
+        pop     xiz
+        ret
+
+        
+; ================================================================
+; void ovl_flush_asm(OvlFlush *f);   (SUNSET RUN, ovl.c, in VBlank)
+;
+; Writes to SCR1 the overlay cells of a box that differ from what is on
+; screen.  XIX = grid, XIY = prev (both 20 cells a row), XHL = SCR1 (32).
+F_GRID   equ 0
+F_PREV   equ 4
+F_VRAM   equ 8
+F_ROWS   equ 12
+F_COLS   equ 13
+
+        public  _ovl_flush_asm
+
+_ovl_flush_asm:
+        push    xiz
+        ld      xwa,(xsp+0x8)
+        ld      xix,(xwa+F_GRID)
+        ld      xiy,(xwa+F_PREV)
+        ld      xhl,(xwa+F_VRAM)
+        ld      bc,(xwa+F_ROWS)         ; C = rows, B = cols
+        push    bc
+        ld      a,b
+        extz    wa
+        add     wa,wa
+        neg     wa                      ; -2 * cols
+        ld      de,wa
+        add     de,0x28                 ; 40 - 2 cols: next row of the grids
+        extz    xde
+        ld      iz,wa
+        add     iz,0x40                 ; 64 - 2 cols: next SCR1 row
+        extz    xiz
+of_row:
+        ld      b,(xsp+0x1)
+of_col:
+        ld      wa,(xix+:2)
+        cp      wa,(xiy)
+        jr      z,of_same
+        ld      (xiy),wa
+        ld      (xhl),wa
+of_same:
+        inc     0x2,xiy
+        inc     0x2,xhl
+        dec     0x1,b
+        jr      nz,of_col
+        add     xix,xde
+        add     xiy,xde
+        add     xhl,xiz
+        dec     0x1,c
+        jr      nz,of_row
+        pop     bc
         pop     xiz
         ret
 

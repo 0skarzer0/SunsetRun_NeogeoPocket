@@ -1351,6 +1351,23 @@ L307:
 	pop xiz
 	ret
 
+; function frame_commit
+_frame_commit__0:
+	jr L326
+L324:
+	call _ngpc_vsync
+L326:
+	ld a,(_g_vb_counter)
+	sub a,(_frame_vb__0)
+	cp a,1
+	jr ult,L324
+L325:
+	call _ovl_commit
+	call _id_road_ready
+	ldb (_spr_ready),1
+L323:
+	ret
+
 ; function render_road
 _render_road__0:
 	call _profile_ahead__0
@@ -1378,7 +1395,7 @@ _render_road__0:
 	push xwa
 	call _id_road_frame_ahead
 	lda xsp,(xsp+12)
-L320:
+L328:
 	ret
 
 ; function message
@@ -1393,28 +1410,28 @@ _message__0:
 	lda xsp,(xsp+4)
 	ld xwa,(xsp+4)
 	cp xwa,0
-	jr z,L325
+	jr z,L333
 	ld xwa,(xsp+4)
 	push xwa
 	ld wa,5
 	push xwa
 	call _hud_message
 	lda xsp,(xsp+8)
-L325:
+L333:
 	ld xwa,(xsp+8)
 	cp xwa,0
-	jr z,L326
+	jr z,L334
 	ld xwa,(xsp+8)
 	push xwa
 	ld wa,7
 	push xwa
 	call _hud_message
 	lda xsp,(xsp+8)
-L326:
+L334:
 	ld a,(xsp+12)
 	ld (_msg_timer__0),a
 	call _banner_dirty
-L324:
+L332:
 	ret
 
 ; function count_message
@@ -1425,28 +1442,28 @@ _count_message__0:
 	lda xsp,(xsp+4)
 	ld xwa,(xsp+4)
 	cp xwa,0
-	jr z,L330
+	jr z,L338
 	ld xwa,(xsp+4)
 	push xwa
 	ld wa,12
 	push xwa
 	call _hud_message
 	lda xsp,(xsp+8)
-L330:
+L338:
 	ld a,(xsp+8)
 	ld (_cnt_timer__0),a
-L329:
+L337:
 	ret
 
 ; function tick_message
 _tick_message__0:
 	ld a,(_msg_timer__0)
 	cp a,0
-	jr z,L337
+	jr z,L345
 	decb 1,(_msg_timer__0)
 	ld a,(_msg_timer__0)
 	cp a,0
-	jr nz,L338
+	jr nz,L346
 	ld wa,5
 	push xwa
 	call _hud_clear_message
@@ -1456,22 +1473,22 @@ _tick_message__0:
 	call _hud_clear_message
 	lda xsp,(xsp+4)
 	call _banner_dirty
-L338:
-L337:
+L346:
+L345:
 	ld a,(_cnt_timer__0)
 	cp a,0
-	jr z,L339
+	jr z,L347
 	decb 1,(_cnt_timer__0)
 	ld a,(_cnt_timer__0)
 	cp a,0
-	jr nz,L340
+	jr nz,L348
 	ld wa,12
 	push xwa
 	call _hud_clear_message
 	lda xsp,(xsp+4)
-L340:
-L339:
-L336:
+L348:
+L347:
+L344:
 	ret
 
 ; function leg_end
@@ -1479,7 +1496,7 @@ _leg_end__0:
 	lda xsp,(xsp-4)
 	call _course_is_last_stage
 	cp a,0
-	jr z,L346
+	jr z,L354
 	ld a,(_time_left__0)
 	ld xbc,_dbg_cp
 	ld e,(_cur_stage)
@@ -1506,8 +1523,8 @@ _leg_end__0:
 	push xwa
 	call _hud_clear_message
 	lda xsp,(xsp+4)
-	jp L345
-L346:
+	jp L353
+L354:
 	ld a,(_time_left__0)
 	ld xbc,_dbg_cp
 	ld e,(_cur_stage)
@@ -1535,12 +1552,12 @@ L346:
 	ld (xsp+2),wa
 	ld bc,(xsp+2)
 	cp bc,99
-	jr ule,L347
+	jr ule,L355
 	ld wa,99
-	jr L348
-L347:
+	jr L356
+L355:
 	ld wa,(xsp+2)
-L348:
+L356:
 	ld (_time_left__0),a
 	ldb (_flash_step__0),1
 	ld wa,75
@@ -1559,7 +1576,7 @@ L348:
 	push xwa
 	call _hud_clear_message
 	lda xsp,(xsp+4)
-L345:
+L353:
 	lda xsp,(xsp+4)
 	ret
 
@@ -1567,19 +1584,19 @@ L345:
 _tick_flash__0:
 	ld a,(_flash_step__0)
 	cp a,0
-	jr nz,L356
-	jr L354
-L356:
+	jr nz,L364
+	jr L362
+L364:
 	ld a,(_flash_step__0)
 	cp a,5
-	jr nz,L357
+	jr nz,L365
 	ld a,(_cur_leg)
 	push xwa
 	call _theme_apply
 	lda xsp,(xsp+4)
 	call _stage_traffic__0
-L357:
-	ld xwa,_lv__0_L355
+L365:
+	ld xwa,_lv__0_L363
 	ld c,(_flash_step__0)
 	extz bc
 	sub bc,1
@@ -1592,10 +1609,10 @@ L357:
 	incb 1,(_flash_step__0)
 	ld a,(_flash_step__0)
 	cp a,12
-	jr ule,L358
+	jr ule,L366
 	ldb (_flash_step__0),0
-L358:
-L354:
+L366:
+L362:
 	ret
 
 ; function print_score7
@@ -1642,7 +1659,7 @@ _print_score7__0:
 	push xwa
 	call _ngpc_text_print_dec
 	lda xsp,(xsp+24)
-L360:
+L368:
 	lda xsp,(xsp+4)
 	ret
 
@@ -1654,18 +1671,18 @@ _put32__0:
 	ld iyl,a
 	ld xix,(xsp+14)
 	ld izl,0
-	jr L372
-L369:
+	jr L380
+L377:
 	ld xwa,xix
 	ld c,izl
 	extz bc
 	sll 3,bc
 	cp c,0
-	jr z,L374
-L373:
+	jr z,L382
+L381:
 	srl 1,xwa
-	djnz c,L373
-L374:
+	djnz c,L381
+L382:
 	ld xbc,_save_buf__0
 	ld e,iyl
 	add e,izl
@@ -1673,14 +1690,14 @@ L374:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L371:
+L379:
 	inc 1,izl
-L372:
+L380:
 	ld a,izl
 	cp a,4
-	jr ult,L369
-L370:
-L368:
+	jr ult,L377
+L378:
+L376:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -1733,8 +1750,8 @@ _get32__0:
 	sll 15,xbc
 	sll 9,xbc
 	or xwa,xbc
-	jr L376
-L376:
+	jr L384
+L384:
 	pop xiz
 	ret
 
@@ -1749,9 +1766,9 @@ _save_load__0:
 	call _ngpc_flash_exists
 	pop xix
 	cp a,0
-	jr nz,L388
-	jp L387
-L388:
+	jr nz,L396
+	jp L395
+L396:
 	push xix
 	ld xwa,_save_buf__0
 	push xwa
@@ -1760,24 +1777,24 @@ L388:
 	pop xix
 	ld a,(_save_buf__0+4)
 	cp a,1
-	jr z,L389
-	jp L387
-L389:
+	jr z,L397
+	jp L395
+L397:
 	ld a,(_save_buf__0+5)
 	cp a,5
-	jr uge,L390
+	jr uge,L398
 	ld a,(_save_buf__0+5)
 	ld (_station__0),a
-L390:
+L398:
 	ld a,(_save_buf__0+6)
 	cp a,4
-	jr uge,L391
+	jr uge,L399
 	ld a,(_save_buf__0+6)
 	ld (_difficulty),a
-L391:
+L399:
 	ld izl,0
-	jr L395
-L392:
+	jr L403
+L400:
 	push xix
 	ld wa,8
 	ld c,izl
@@ -1791,10 +1808,10 @@ L392:
 	ld xix,xwa
 	ld xwa,xix
 	cp xwa,0
-	jr z,L396
+	jr z,L404
 	ld xwa,xix
 	cp xwa,10000000
-	jr uge,L396
+	jr uge,L404
 	ld xwa,xix
 	ld xbc,_hiscore__0
 	ld e,izl
@@ -1803,14 +1820,14 @@ L392:
 	sll 2,xde
 	add xbc,xde
 	ld (xbc),xwa
-L396:
-L394:
+L404:
+L402:
 	inc 1,izl
-L395:
+L403:
 	ld a,izl
 	cp a,4
-	jr ult,L392
-L393:
+	jr ult,L400
+L401:
 	ld a,(_save_buf__0+24)
 	extz wa
 	ld c,(_save_buf__0+25)
@@ -1818,7 +1835,7 @@ L393:
 	sll 8,bc
 	or wa,bc
 	ld (_free_seed),wa
-L387:
+L395:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -1829,25 +1846,25 @@ _save_commit__0:
 	lda xsp,(xsp-4)
 	ld a,(_save_dirty__0)
 	cp a,0
-	jr nz,L409
-	jp L408
-L409:
+	jr nz,L417
+	jp L416
+L417:
 	ld ix,0
-	jr L413
-L410:
+	jr L421
+L418:
 	ld a,0
 	ld xbc,_save_buf__0
 	ld de,ix
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L412:
+L420:
 	inc 1,ix
-L413:
+L421:
 	ld wa,ix
 	cp wa,256
-	jr ult,L410
-L411:
+	jr ult,L418
+L419:
 	ldb (_save_buf__0),202
 	ldb (_save_buf__0+1),254
 	ldb (_save_buf__0+2),32
@@ -1858,8 +1875,8 @@ L411:
 	ld a,(_difficulty)
 	ld (_save_buf__0+6),a
 	ld izl,0
-	jr L417
-L414:
+	jr L425
+L422:
 	push xix
 	ld xwa,_hiscore__0
 	ld c,izl
@@ -1878,13 +1895,13 @@ L414:
 	call _put32__0
 	lda xsp,(xsp+8)
 	pop xix
-L416:
+L424:
 	inc 1,izl
-L417:
+L425:
 	ld a,izl
 	cp a,4
-	jr ult,L414
-L415:
+	jr ult,L422
+L423:
 	ld a,(_free_seed)
 	ld (_save_buf__0+24),a
 	ld wa,(_free_seed)
@@ -1897,10 +1914,10 @@ L415:
 	lda xsp,(xsp+4)
 	pop xix
 	cp a,0
-	jr z,L418
+	jr z,L426
 	ldb (_save_dirty__0),0
-L418:
-L408:
+L426:
+L416:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -1911,38 +1928,38 @@ _title_slot__0:
 	ld iz,(xsp+8)
 	ld wa,iz
 	cp wa,111
-	jr uge,L424
+	jr uge,L432
 	ld wa,(_pano_tiles_at__0)
 	add wa,iz
-	jr L423
-L424:
+	jr L431
+L432:
 	ld wa,iz
 	sub wa,111
 	ld iz,wa
 	ld wa,iz
 	cp wa,(_gfx_traffic_tiles_count)
-	jr uge,L425
+	jr uge,L433
 	ld wa,(_trf_tiles_at__0)
 	add wa,iz
-	jr L423
-L425:
+	jr L431
+L433:
 	ld wa,iz
 	sub wa,(_gfx_traffic_tiles_count)
 	ld iz,wa
 	ld wa,iz
 	cp wa,30
-	jr uge,L426
+	jr uge,L434
 	ld wa,2
 	add wa,iz
-	jr L423
-L426:
+	jr L431
+L434:
 	ld wa,iz
 	sub wa,30
 	ld iz,wa
 	ld wa,101
 	add wa,iz
-	jr L423
-L423:
+	jr L431
+L431:
 	pop xiz
 	ret
 
@@ -1952,10 +1969,10 @@ _title_option__0:
 	lda xsp,(xsp-2)
 	ld wa,0
 	ld izl,a
-	jr L435
-L433:
+	jr L443
+L441:
 	inc 1,izl
-L435:
+L443:
 	ld xwa,(xsp+14)
 	ld c,izl
 	extz bc
@@ -1963,12 +1980,12 @@ L435:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L436
+	jr z,L444
 	ld a,izl
 	cp a,16
-	jr ult,L433
-L436:
-L434:
+	jr ult,L441
+L444:
+L442:
 	ld wa,20
 	ld c,izl
 	extz bc
@@ -2018,7 +2035,7 @@ L434:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-L432:
+L440:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -2029,8 +2046,8 @@ _hex4__0:
 	lda xsp,(xsp-2)
 	ld xiy,(xsp+10)
 	ld izl,0
-	jr L450
-L447:
+	jr L458
+L455:
 	ld wa,(xsp+14)
 	ld bc,12
 	ld e,izl
@@ -2038,43 +2055,43 @@ L447:
 	sll 2,de
 	sub bc,de
 	cp c,0
-	jr z,L452
-L451:
+	jr z,L460
+L459:
 	srl 1,wa
-	djnz c,L451
-L452:
+	djnz c,L459
+L460:
 	and wa,15
 	ld ixl,a
 	ld c,ixl
 	cp c,10
-	jr uge,L453
+	jr uge,L461
 	ld wa,48
 	ld c,ixl
 	extz bc
 	add wa,bc
-	jr L454
-L453:
+	jr L462
+L461:
 	ld wa,65
 	ld c,ixl
 	extz bc
 	add wa,bc
 	sub wa,10
-L454:
+L462:
 	ld xbc,xiy
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L449:
+L457:
 	inc 1,izl
-L450:
+L458:
 	ld a,izl
 	cp a,4
-	jr ult,L447
-L448:
+	jr ult,L455
+L456:
 	ldb (xiy+4),0
-L446:
+L454:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -2171,7 +2188,7 @@ _title_texts__0:
 	lda xsp,(xsp+16)
 	ld a,(_difficulty)
 	cp a,3
-	jr nz,L458
+	jr nz,L466
 	ldb (xsp+0),83
 	ldb (xsp+1),69
 	ldb (xsp+2),69
@@ -2207,8 +2224,8 @@ _title_texts__0:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-L458:
-L457:
+L466:
+L465:
 	lda xsp,(xsp+16)
 	ret
 
@@ -2225,14 +2242,14 @@ _new_seed__0:
 	ld (xsp+0),wa
 	ld bc,(xsp+0)
 	cp bc,0
-	jr z,L463
+	jr z,L471
 	ld wa,(xsp+0)
-	jr L464
-L463:
+	jr L472
+L471:
 	ld wa,24301
-L464:
+L472:
 	ld (_free_seed),wa
-L462:
+L470:
 	lda xsp,(xsp+2)
 	ret
 
@@ -2242,6 +2259,9 @@ _title_screen__0:
 	lda xsp,(xsp-16)
 	push xix
 	call _id_road_dma_pause
+	pop xix
+	push xix
+	call _ovl_forget
 	pop xix
 	push xix
 	call _bridge_hide
@@ -2277,8 +2297,8 @@ _title_screen__0:
 	ldb (08034h),0
 	ldb (08035h),0
 	ldw (xsp+2),0
-	jr L510
-L507:
+	jr L518
+L515:
 	ld wa,0
 	ld xbc,38912
 	ld de,(xsp+2)
@@ -2286,13 +2306,13 @@ L507:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L509:
+L517:
 	incw 1,(xsp+2)
-L510:
+L518:
 	ld wa,(xsp+2)
 	cp wa,1024
-	jr ult,L507
-L508:
+	jr ult,L515
+L516:
 	push xix
 	ld wa,2642
 	push xwa
@@ -2300,8 +2320,8 @@ L508:
 	lda xsp,(xsp+4)
 	pop xix
 	ldw (xsp+0),0
-	jr L514
-L511:
+	jr L522
+L519:
 	ld wa,40960
 	extz xwa
 	push xwa
@@ -2325,8 +2345,8 @@ L511:
 	lda xwa,(xwa)
 	ld (xsp+10),xwa
 	ldb (xsp+14),0
-	jr L518
-L515:
+	jr L526
+L523:
 	ld xwa,(xsp+10)
 	ld c,(xsp+14)
 	extz bc
@@ -2341,23 +2361,23 @@ L515:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L517:
+L525:
 	incb 1,(xsp+14)
-L518:
+L526:
 	ld a,(xsp+14)
 	cp a,8
-	jr ult,L515
-L516:
-L513:
+	jr ult,L523
+L524:
+L521:
 	incw 1,(xsp+0)
-L514:
+L522:
 	ld wa,(xsp+0)
 	cp wa,210
-	jr ult,L511
-L512:
+	jr ult,L519
+L520:
 	ldw (xsp+0),0
-	jr L522
-L519:
+	jr L530
+L527:
 	ld xwa,_gfx_emblem_pals
 	ld bc,(xsp+0)
 	sll 2,bc
@@ -2389,16 +2409,16 @@ L519:
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
 	pop xix
-L521:
+L529:
 	incw 1,(xsp+0)
-L522:
+L530:
 	ld wa,(xsp+0)
 	cp wa,13
-	jr ult,L519
-L520:
+	jr ult,L527
+L528:
 	ldw (xsp+0),0
-	jr L526
-L523:
+	jr L534
+L531:
 	ld xwa,_gfx_over_pals
 	ld bc,(xsp+0)
 	sll 2,bc
@@ -2430,13 +2450,13 @@ L523:
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
 	pop xix
-L525:
+L533:
 	incw 1,(xsp+0)
-L526:
+L534:
 	ld wa,(xsp+0)
 	cp wa,8
-	jr ult,L523
-L524:
+	jr ult,L531
+L532:
 	push xix
 	ld wa,4039
 	push xwa
@@ -2454,11 +2474,11 @@ L524:
 	lda xsp,(xsp+24)
 	pop xix
 	ld ixl,0
-	jp L530
-L527:
+	jp L538
+L535:
 	ld izl,0
-	jp L534
-L531:
+	jp L542
+L539:
 	ld xwa,_gfx_emblem_map
 	ld c,ixl
 	extz bc
@@ -2473,10 +2493,10 @@ L531:
 	ld (xsp+6),wa
 	ld bc,(xsp+6)
 	cp bc,65535
-	jr nz,L535
+	jr nz,L543
 	ld wa,0
-	jr L536
-L535:
+	jr L544
+L543:
 	push xix
 	ld wa,(xsp+10)
 	push xwa
@@ -2503,7 +2523,7 @@ L535:
 	extz bc
 	sll 9,bc
 	or wa,bc
-L536:
+L544:
 	ld xbc,38912
 	ld e,ixl
 	extz de
@@ -2516,26 +2536,26 @@ L536:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L533:
+L541:
 	inc 1,izl
-L534:
+L542:
 	ld a,izl
 	cp a,18
-	jp ult,L531
-L532:
-L529:
+	jp ult,L539
+L540:
+L537:
 	inc 1,ixl
-L530:
+L538:
 	ld a,ixl
 	cp a,11
-	jp ult,L527
-L528:
+	jp ult,L535
+L536:
 	ld ixl,0
-	jp L540
-L537:
+	jp L548
+L545:
 	ld izl,0
-	jp L544
-L541:
+	jp L552
+L549:
 	ld xwa,_gfx_over_map
 	ld c,ixl
 	extz bc
@@ -2550,10 +2570,10 @@ L541:
 	ld (xsp+6),wa
 	ld bc,(xsp+6)
 	cp bc,65535
-	jr nz,L545
+	jr nz,L553
 	ld wa,0
-	jr L546
-L545:
+	jr L554
+L553:
 	push xix
 	ld wa,(xsp+10)
 	push xwa
@@ -2580,7 +2600,7 @@ L545:
 	extz bc
 	sll 9,bc
 	or wa,bc
-L546:
+L554:
 	ld xbc,36864
 	ld e,ixl
 	extz de
@@ -2592,24 +2612,24 @@ L546:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L543:
+L551:
 	inc 1,izl
-L544:
+L552:
 	ld a,izl
 	cp a,20
-	jp ult,L541
-L542:
-L539:
+	jp ult,L549
+L550:
+L547:
 	inc 1,ixl
-L540:
+L548:
 	ld a,ixl
 	cp a,11
-	jp ult,L537
-L538:
+	jp ult,L545
+L546:
 	push xix
 	call _title_texts__0
 	pop xix
-L506:
+L514:
 	lda xsp,(xsp+16)
 	pop xiz
 	ret
@@ -2634,8 +2654,8 @@ _title_leave__0:
 	lda xsp,(xsp+8)
 	call _id_road_reload_maps
 	ld iz,0
-	jr L556
-L553:
+	jr L564
+L561:
 	ld xwa,_gfx_traffic_tiles
 	ld bc,iz
 	extz xbc
@@ -2652,17 +2672,17 @@ L553:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L555:
+L563:
 	inc 1,iz
-L556:
+L564:
 	ld wa,iz
 	ld bc,(_gfx_traffic_tiles_count)
 	sll 3,bc
 	cp wa,bc
-	jr ult,L553
-L554:
+	jr ult,L561
+L562:
 	call _id_road_dma_resume
-L552:
+L560:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -2701,8 +2721,8 @@ _title_car__0:
 	pop xiy
 	pop xix
 	ld ixl,0
-	jp L580
-L577:
+	jp L588
+L585:
 	ld wa,24
 	ld c,ixl
 	extz bc
@@ -2711,37 +2731,37 @@ L577:
 	ld (xsp+6),a
 	ld c,ixl
 	cp c,0
-	jr nz,L581
+	jr nz,L589
 	ld wa,(xsp+2)
 	sub wa,13
 	ld c,(xsp+5)
 	extz bc
 	sub wa,bc
-	jr L582
-L581:
+	jr L590
+L589:
 	ld wa,(xsp+2)
 	add wa,29
 	ld c,(xsp+5)
 	extz bc
 	add wa,bc
-L582:
+L590:
 	ld (xsp+8),wa
 	ld izl,0
-	jp L586
-L583:
+	jp L594
+L591:
 	ld c,ixl
 	cp c,0
-	jr z,L588
+	jr z,L596
 	ld a,1
 	sub a,izl
 	extz wa
-	jr L589
-L588:
+	jr L597
+L596:
 	ld a,izl
 	extz wa
-L589:
+L597:
 	ld (xsp+11),a
-L590:
+L598:
 	ld a,(xsp+6)
 	add a,izl
 	ld (xsp+12),a
@@ -2755,7 +2775,7 @@ L590:
 	add a,15
 	sub a,(xsp+5)
 	ld (xsp+14),a
-	ld xwa,_tsm__0_L587
+	ld xwa,_tsm__0_L595
 	ld c,(xsp+5)
 	extz bc
 	ld e,ixl
@@ -2776,19 +2796,19 @@ L590:
 	ld (xsp+18),a
 	ld c,ixl
 	cp c,0
-	jr z,L593
+	jr z,L601
 	ld wa,128
-	jr L594
-L593:
+	jr L602
+L601:
 	ld wa,0
-L594:
+L602:
 	ld (xsp+19),a
-	ld wa,34816
+	ld xwa,_spr_shadow
 	ld c,(xsp+12)
 	extz bc
 	sll 2,bc
-	add wa,bc
-	extz xwa
+	extz xbc
+	add xwa,xbc
 	ld xiy,xwa
 	ld a,(xsp+16)
 	and a,255
@@ -2810,29 +2830,29 @@ L594:
 	ld (xiy+3),a
 	ld a,(xsp+18)
 	and a,15
-	ld bc,35840
+	ld xbc,_spr_pal_shadow
 	ld e,(xsp+12)
 	extz de
-	add bc,de
-	extz xbc
+	exts xde
+	add xbc,xde
 	ld (xbc),a
-L592:
-L591:
-L585:
+L600:
+L599:
+L593:
 	inc 1,izl
-L586:
+L594:
 	ld a,izl
 	cp a,2
-	jp ult,L583
-L584:
-L579:
+	jp ult,L591
+L592:
+L587:
 	inc 1,ixl
-L580:
+L588:
 	ld a,ixl
 	cp a,2
-	jp ult,L577
-L578:
-L576:
+	jp ult,L585
+L586:
+L584:
 	lda xsp,(xsp+24)
 	pop xiz
 	ret
@@ -2843,7 +2863,7 @@ _title_blink__0:
 	extz wa
 	and wa,31
 	cp wa,0
-	jr nz,L600
+	jr nz,L608
 	ld xwa,_S0_15
 	push xwa
 	ld a,(xsp+12)
@@ -2856,20 +2876,20 @@ _title_blink__0:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-	jr L601
-L600:
+	jr L609
+L608:
 	ld a,(xsp+4)
 	extz wa
 	and wa,31
 	cp wa,20
-	jr nz,L602
+	jr nz,L610
 	ld a,(xsp+8)
 	push xwa
 	call _hud_clear_message
 	lda xsp,(xsp+4)
-L602:
-L601:
-L599:
+L610:
+L609:
+L607:
 	ret
 
 ; function map_leg_xy
@@ -2894,7 +2914,7 @@ _map_leg_xy__0:
 	add wa,bc
 	ld xbc,(xsp+16)
 	ld (xbc),a
-L604:
+L612:
 	ret
 
 ; function map_screen
@@ -2902,6 +2922,7 @@ _map_screen__0:
 	push xiz
 	lda xsp,(xsp-26)
 	call _id_road_dma_pause
+	call _ovl_forget
 	call _bridge_hide
 	call _banner_hide
 	ld wa,64
@@ -2921,8 +2942,8 @@ _map_screen__0:
 	ldb (08034h),0
 	ldb (08035h),0
 	ld iz,0
-	jr L662
-L659:
+	jr L670
+L667:
 	ld wa,0
 	ld xbc,38912
 	ld de,iz
@@ -2930,20 +2951,20 @@ L659:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L661:
+L669:
 	inc 1,iz
-L662:
+L670:
 	ld wa,iz
 	cp wa,1024
-	jr ult,L659
-L660:
+	jr ult,L667
+L668:
 	ld wa,1710
 	push xwa
 	call _ngpc_gfx_set_bg_color
 	lda xsp,(xsp+4)
 	ldw (xsp+0),0
-	jr L666
-L663:
+	jr L674
+L671:
 	ld wa,40960
 	extz xwa
 	push xwa
@@ -2965,8 +2986,8 @@ L663:
 	lda xwa,(xwa)
 	ld (xsp+12),xwa
 	ldb (xsp+16),0
-	jr L670
-L667:
+	jr L678
+L675:
 	ld xwa,(xsp+12)
 	ld c,(xsp+16)
 	extz bc
@@ -2981,23 +3002,23 @@ L667:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L669:
+L677:
 	incb 1,(xsp+16)
-L670:
+L678:
 	ld a,(xsp+16)
 	cp a,8
-	jr ult,L667
-L668:
-L665:
+	jr ult,L675
+L676:
+L673:
 	incw 1,(xsp+0)
-L666:
+L674:
 	ld wa,(xsp+0)
 	cp wa,171
-	jr ult,L663
-L664:
+	jr ult,L671
+L672:
 	ldw (xsp+0),0
-	jr L674
-L671:
+	jr L682
+L679:
 	ld xwa,_gfx_map_pals
 	ld bc,(xsp+0)
 	sll 2,bc
@@ -3024,19 +3045,19 @@ L671:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-L673:
+L681:
 	incw 1,(xsp+0)
-L674:
+L682:
 	ld wa,(xsp+0)
 	cp wa,8
-	jr ult,L671
-L672:
+	jr ult,L679
+L680:
 	ldb (xsp+5),0
-	jp L678
-L675:
+	jp L686
+L683:
 	ldb (xsp+4),0
-	jp L682
-L679:
+	jp L690
+L687:
 	ld xwa,_gfx_map_map
 	ld c,(xsp+5)
 	extz bc
@@ -3051,10 +3072,10 @@ L679:
 	ld (xsp+8),wa
 	ld bc,(xsp+8)
 	cp bc,65535
-	jr nz,L683
+	jr nz,L691
 	ld wa,0
-	jr L684
-L683:
+	jr L692
+L691:
 	ld wa,(xsp+8)
 	push xwa
 	call _title_slot__0
@@ -3076,7 +3097,7 @@ L683:
 	add bc,de
 	sll 9,bc
 	or wa,bc
-L684:
+L692:
 	ld xbc,38912
 	ld e,(xsp+5)
 	extz de
@@ -3088,20 +3109,20 @@ L684:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L681:
+L689:
 	incb 1,(xsp+4)
-L682:
+L690:
 	ld a,(xsp+4)
 	cp a,20
-	jp ult,L679
-L680:
-L677:
+	jp ult,L687
+L688:
+L685:
 	incb 1,(xsp+5)
-L678:
+L686:
 	ld a,(xsp+5)
 	cp a,19
-	jp ult,L675
-L676:
+	jp ult,L683
+L684:
 	ld xwa,_S0_16
 	push xwa
 	ld wa,1
@@ -3116,11 +3137,11 @@ L676:
 	lda xsp,(xsp+20)
 	ld iz,0
 	ldb (xsp+6),0
-	jp L688
-L685:
+	jp L696
+L693:
 	ldb (xsp+7),0
-	jp L692
-L689:
+	jp L700
+L697:
 	ld xwa,_leg_theme
 	ld bc,iz
 	extz xbc
@@ -3165,9 +3186,9 @@ L689:
 	call _map_leg_xy__0
 	lda xsp,(xsp+16)
 	ldb (xsp+14),0
-	jp L696
-L693:
-L697:
+	jp L704
+L701:
+L705:
 	ld wa,2
 	ld bc,iz
 	sll 2,bc
@@ -3210,12 +3231,12 @@ L697:
 	ld (xsp+20),a
 	ld a,0
 	ld (xsp+21),a
-	ld wa,34816
+	ld xwa,_spr_shadow
 	ld c,(xsp+15)
 	extz bc
 	sll 2,bc
-	add wa,bc
-	extz xwa
+	extz xbc
+	add xwa,xbc
 	ld (xsp+22),xwa
 	ld a,(xsp+18)
 	and a,255
@@ -3239,36 +3260,36 @@ L697:
 	ld (xbc+3),a
 	ld a,(xsp+20)
 	and a,15
-	ld bc,35840
+	ld xbc,_spr_pal_shadow
 	ld e,(xsp+15)
 	extz de
-	add bc,de
-	extz xbc
+	exts xde
+	add xbc,xde
 	ld (xbc),a
-L699:
-L698:
-L695:
+L707:
+L706:
+L703:
 	incb 1,(xsp+14)
-L696:
+L704:
 	ld a,(xsp+14)
 	cp a,4
-	jp ult,L693
-L694:
+	jp ult,L701
+L702:
 	inc 1,iz
-L691:
+L699:
 	incb 1,(xsp+7)
-L692:
+L700:
 	ld a,(xsp+7)
 	cp a,(xsp+6)
-	jp ule,L689
-L690:
-L687:
+	jp ule,L697
+L698:
+L695:
 	incb 1,(xsp+6)
-L688:
+L696:
 	ld a,(xsp+6)
 	cp a,5
-	jp ult,L685
-L686:
+	jp ult,L693
+L694:
 	ld wa,(_gfx_map_car_pal+6)
 	push xwa
 	ld wa,(_gfx_map_car_pal+4)
@@ -3310,8 +3331,8 @@ L686:
 	ld (xbc),a
 	incb 1,(_map_n__0)
 	ldb (xsp+6),0
-	jp L703
-L700:
+	jp L711
+L708:
 	lda xwa,(xsp+5)
 	push xwa
 	lda xwa,(xsp+8)
@@ -3344,11 +3365,11 @@ L700:
 	incb 1,(_map_n__0)
 	ld a,(xsp+6)
 	cp a,(_cur_stage)
-	jr ult,L705
+	jr ult,L713
 	ld a,(_goal_reached__0)
 	cp a,0
-	jr z,L704
-L705:
+	jr z,L712
+L713:
 	ld a,(xsp+4)
 	add a,16
 	ld xbc,_map_px__0
@@ -3365,19 +3386,19 @@ L705:
 	add xbc,xde
 	ld (xbc),a
 	incb 1,(_map_n__0)
-	jr L706
-L704:
+	jr L714
+L712:
 	ld wa,(_course_pos__0)
 	mul xwa,16
 	push xwa
 	ld bc,(_leg_len)
 	cp bc,0
-	jr z,L707
+	jr z,L715
 	ld wa,(_leg_len)
-	jr L708
-L707:
+	jr L716
+L715:
 	ld wa,1
-L708:
+L716:
 	extz xwa
 	ld xbc,xwa
 	pop xwa
@@ -3385,9 +3406,9 @@ L708:
 	ld (xsp+8),wa
 	ld wa,(xsp+8)
 	cp wa,16
-	jr ule,L709
+	jr ule,L717
 	ldw (xsp+8),16
-L709:
+L717:
 	ld a,(xsp+4)
 	add a,(xsp+8)
 	ld xbc,_map_px__0
@@ -3404,17 +3425,17 @@ L709:
 	add xbc,xde
 	ld (xbc),a
 	incb 1,(_map_n__0)
-L706:
-L702:
+L714:
+L710:
 	incb 1,(xsp+6)
-L703:
+L711:
 	ld a,(xsp+6)
 	cp a,(_cur_stage)
-	jp ule,L700
-L701:
+	jp ule,L708
+L709:
 	ld a,(_goal_reached__0)
 	cp a,0
-	jr z,L710
+	jr z,L718
 	ld xwa,_map_px__0
 	ld c,(_map_n__0)
 	extz bc
@@ -3430,12 +3451,12 @@ L701:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L710:
+L718:
 	ldb (_map_seg__0),0
 	ldw (_map_along__0),0
 	ldw (_map_t__0),0
 	ldw (_map_done__0),0
-L658:
+L666:
 	lda xsp,(xsp+26)
 	pop xiz
 	ret
@@ -3464,7 +3485,7 @@ _map_car__0:
 	ld c,(_map_n__0)
 	extz bc
 	cp wa,bc
-	jp uge,L732
+	jp uge,L740
 	ld xwa,_map_px__0
 	ld c,(_map_seg__0)
 	extz bc
@@ -3491,44 +3512,44 @@ _map_car__0:
 	ld (xsp+4),wa
 	ld bc,(xsp+2)
 	cp bc,0
-	jr le,L733
+	jr le,L741
 	ld wa,(xsp+2)
-	jr L734
-L733:
+	jr L742
+L741:
 	ld wa,(xsp+2)
 	neg wa
-L734:
+L742:
 	ld (xsp+6),wa
 	ld bc,(xsp+4)
 	cp bc,0
-	jr le,L736
+	jr le,L744
 	ld wa,(xsp+4)
-	jr L737
-L736:
+	jr L745
+L744:
 	ld wa,(xsp+4)
 	neg wa
-L737:
+L745:
 	cp wa,(xsp+6)
-	jr le,L735
+	jr le,L743
 	ld bc,(xsp+4)
 	cp bc,0
-	jr le,L738
+	jr le,L746
 	ld wa,(xsp+4)
-	jr L739
-L738:
+	jr L747
+L746:
 	ld wa,(xsp+4)
 	neg wa
-L739:
+L747:
 	ld (xsp+6),wa
-L735:
+L743:
 	ld wa,(xsp+6)
 	cp wa,0
-	jr nz,L740
+	jr nz,L748
 	ldw (xsp+6),1
-L740:
+L748:
 	ld wa,(_map_along__0)
 	cp wa,(xsp+6)
-	jr lt,L741
+	jr lt,L749
 	ldw (_map_along__0),0
 	incb 1,(_map_seg__0)
 	ld xwa,_map_px__0
@@ -3545,8 +3566,8 @@ L740:
 	add xwa,xbc
 	ld a,(xwa)
 	ld (xsp+1),a
-	jr L742
-L741:
+	jr L750
+L749:
 	ld a,(xsp+0)
 	extz wa
 	ld bc,(xsp+2)
@@ -3565,21 +3586,21 @@ L741:
 	divs xbc,(xsp+6)
 	add wa,bc
 	ld (xsp+1),a
-L742:
-	jr L743
-L732:
+L750:
+	jr L751
+L740:
 	ld wa,(_map_done__0)
 	cp wa,0
-	jr nz,L744
+	jr nz,L752
 	ld wa,(_map_t__0)
 	ld (_map_done__0),wa
 	ld wa,2
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
-L744:
-L743:
-L745:
+L752:
+L751:
+L753:
 	ld a,0
 	ld (xsp+2),a
 	ld a,(xsp+0)
@@ -3597,12 +3618,12 @@ L745:
 	ld (xsp+8),a
 	ld a,0
 	ld (xsp+9),a
-	ld wa,34816
+	ld xwa,_spr_shadow
 	ld c,(xsp+2)
 	extz bc
 	sll 2,bc
-	add wa,bc
-	extz xwa
+	extz xbc
+	add xwa,xbc
 	ld (xsp+10),xwa
 	ld a,(xsp+6)
 	and a,255
@@ -3626,15 +3647,15 @@ L745:
 	ld (xbc+3),a
 	ld a,(xsp+8)
 	and a,15
-	ld bc,35840
+	ld xbc,_spr_pal_shadow
 	ld e,(xsp+2)
 	extz de
-	add bc,de
-	extz xbc
+	exts xde
+	add xbc,xde
 	ld (xbc),a
-L747:
-L746:
-L748:
+L755:
+L754:
+L756:
 	ld a,1
 	ld (xsp+2),a
 	ld a,(xsp+0)
@@ -3651,12 +3672,12 @@ L748:
 	ld (xsp+8),a
 	ld a,0
 	ld (xsp+9),a
-	ld wa,34816
+	ld xwa,_spr_shadow
 	ld c,(xsp+2)
 	extz bc
 	sll 2,bc
-	add wa,bc
-	extz xwa
+	extz xbc
+	add xwa,xbc
 	ld xiz,xwa
 	ld a,(xsp+6)
 	and a,255
@@ -3676,15 +3697,15 @@ L748:
 	ld (xiz+3),a
 	ld a,(xsp+8)
 	and a,15
-	ld bc,35840
+	ld xbc,_spr_pal_shadow
 	ld e,(xsp+2)
 	extz de
-	add bc,de
-	extz xbc
+	exts xde
+	add xbc,xde
 	ld (xbc),a
-L750:
-L749:
-L731:
+L758:
+L757:
+L739:
 	lda xsp,(xsp+14)
 	pop xiz
 	ret
@@ -3714,7 +3735,7 @@ _map_leave__0:
 	call _banner_style
 	lda xsp,(xsp+4)
 	call _id_road_dma_resume
-L752:
+L760:
 	ret
 
 ; function trophy_load
@@ -3722,8 +3743,8 @@ _trophy_load__0:
 	push xiz
 	lda xsp,(xsp-2)
 	ld iz,0
-	jr L762
-L759:
+	jr L770
+L767:
 	ld xwa,_gfx_trophy_tiles
 	ld bc,iz
 	extz xbc
@@ -3736,13 +3757,13 @@ L759:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L761:
+L769:
 	inc 1,iz
-L762:
+L770:
 	ld wa,iz
 	cp wa,48
-	jr ult,L759
-L760:
+	jr ult,L767
+L768:
 	ld wa,(_gfx_trophy_pal+6)
 	push xwa
 	ld wa,(_gfx_trophy_pal+4)
@@ -3757,7 +3778,7 @@ L760:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-L758:
+L766:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -3771,16 +3792,16 @@ _trophy_draw__0:
 	sra 3,bc
 	and bc,3
 	cp bc,1
-	jr nz,L774
+	jr nz,L782
 	ld wa,1
-	jr L775
-L774:
+	jr L783
+L782:
 	ld wa,0
-L775:
+L783:
 	ld (xsp+1),a
 	ld ixl,0
-	jp L779
-L776:
+	jp L787
+L784:
 	ld xwa,_gfx_trophy_cells
 	ld c,ixl
 	extz bc
@@ -3789,7 +3810,7 @@ L776:
 	add xwa,xbc
 	lda xwa,(xwa)
 	ld (xsp+2),xwa
-L780:
+L788:
 	ld a,50
 	add a,ixl
 	ld (xsp+6),a
@@ -3820,12 +3841,12 @@ L780:
 	ld (xsp+12),a
 	ld a,0
 	ld (xsp+13),a
-	ld wa,34816
+	ld xwa,_spr_shadow
 	ld c,(xsp+6)
 	extz bc
 	sll 2,bc
-	add wa,bc
-	extz xwa
+	extz xbc
+	add xwa,xbc
 	ld xiz,xwa
 	ld a,iyl
 	and a,255
@@ -3847,22 +3868,22 @@ L780:
 	ld (xiz+3),a
 	ld a,(xsp+12)
 	and a,15
-	ld bc,35840
+	ld xbc,_spr_pal_shadow
 	ld e,(xsp+6)
 	extz de
-	add bc,de
-	extz xbc
+	exts xde
+	add xbc,xde
 	ld (xbc),a
-L782:
-L781:
-L778:
+L790:
+L789:
+L786:
 	inc 1,ixl
-L779:
+L787:
 	ld a,ixl
 	cp a,6
-	jp ult,L776
-L777:
-L773:
+	jp ult,L784
+L785:
+L781:
 	lda xsp,(xsp+18)
 	pop xiz
 	ret
@@ -3881,12 +3902,12 @@ _result_screen__0:
 	lda xsp,(xsp+8)
 	ld c,(_goal_reached__0)
 	cp c,0
-	jr z,L803
+	jr z,L811
 	ld xwa,_S0_17
-	jr L804
-L803:
+	jr L812
+L811:
 	ld xwa,_S0_18
-L804:
+L812:
 	push xwa
 	ld wa,2
 	push xwa
@@ -3902,8 +3923,8 @@ L804:
 	ld (xsp+14),xwa
 	ld wa,0
 	ld (xsp+18),a
-	jr L807
-L805:
+	jr L815
+L813:
 	ld xwa,(xsp+14)
 	ld c,(xsp+18)
 	extz bc
@@ -3917,7 +3938,7 @@ L805:
 	add xbc,xde
 	ld (xbc),a
 	incb 1,(xsp+18)
-L807:
+L815:
 	ld xwa,(xsp+14)
 	ld c,(xsp+18)
 	extz bc
@@ -3925,11 +3946,11 @@ L807:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr nz,L805
-L806:
+	jr nz,L813
+L814:
 	ld a,(_difficulty)
 	cp a,3
-	jr nz,L808
+	jr nz,L816
 	ld a,32
 	lda xbc,(xsp+1)
 	ld e,(xsp+18)
@@ -3949,8 +3970,8 @@ L806:
 	push xwa
 	call _hex4__0
 	lda xsp,(xsp+8)
-	jr L809
-L808:
+	jr L817
+L816:
 	ld a,0
 	lda xbc,(xsp+1)
 	ld e,(xsp+18)
@@ -3958,7 +3979,7 @@ L808:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L809:
+L817:
 	lda xwa,(xsp+1)
 	push xwa
 	ld wa,4
@@ -3968,12 +3989,12 @@ L809:
 	extz bc
 	ld l,(_difficulty)
 	cp l,3
-	jr nz,L810
+	jr nz,L818
 	ld de,4
-	jr L811
-L810:
+	jr L819
+L818:
 	ld de,0
-L811:
+L819:
 	add bc,de
 	sub wa,bc
 	srl 1,wa
@@ -4024,8 +4045,8 @@ L811:
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
 	ld izl,0
-	jr L815
-L812:
+	jr L823
+L820:
 	ld wa,1
 	push xwa
 	ld wa,65
@@ -4052,7 +4073,7 @@ L812:
 	lda xsp,(xsp+20)
 	ld a,izl
 	cp a,(_cur_stage)
-	jr uge,L816
+	jr uge,L824
 	ld wa,0
 	push xwa
 	ld wa,45
@@ -4069,14 +4090,14 @@ L812:
 	push xwa
 	call _ngpc_gfx_put_tile
 	lda xsp,(xsp+20)
-L816:
-L814:
+L824:
+L822:
 	inc 1,izl
-L815:
+L823:
 	ld a,izl
 	cp a,(_cur_stage)
-	jr ule,L812
-L813:
+	jr ule,L820
+L821:
 	ld xwa,(_score__0)
 	ld xbc,_hiscore__0
 	ld e,(_difficulty)
@@ -4086,7 +4107,7 @@ L813:
 	add xbc,xde
 	ld xbc,(xbc)
 	cp xwa,xbc
-	jr ule,L817
+	jr ule,L825
 	ld xwa,(_score__0)
 	ld xbc,_hiscore__0
 	ld e,(_difficulty)
@@ -4102,7 +4123,7 @@ L813:
 	push xwa
 	call _hud_message
 	lda xsp,(xsp+8)
-L817:
+L825:
 	call _banner_hide
 	ld a,64
 	push xwa
@@ -4112,14 +4133,14 @@ L817:
 	lda xsp,(xsp+8)
 	ld a,(_goal_reached__0)
 	cp a,0
-	jr z,L818
+	jr z,L826
 	call _trophy_load__0
 	ld c,(_difficulty)
 	cp c,3
-	jr nz,L819
+	jr nz,L827
 	ld wa,5
-	jr L820
-L819:
+	jr L828
+L827:
 	ld xwa,_route_hist
 	ld c,(_cur_stage)
 	extz bc
@@ -4127,12 +4148,12 @@ L819:
 	add xwa,xbc
 	ld a,(xwa)
 	extz wa
-L820:
+L828:
 	push xwa
 	call _ending_start
 	lda xsp,(xsp+4)
-L818:
-L802:
+L826:
+L810:
 	lda xsp,(xsp+20)
 	pop xiz
 	ret
@@ -4144,8 +4165,8 @@ _balloons_init__0:
 	ld xwa,41920
 	ld xix,xwa
 	ld izl,0
-	jr L830
-L827:
+	jr L838
+L835:
 	ld xwa,_gfx_particle_tiles
 	ld bc,16
 	ld e,izl
@@ -4162,14 +4183,14 @@ L827:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L829:
+L837:
 	inc 1,izl
-L830:
+L838:
 	ld a,izl
 	cp a,8
-	jr ult,L827
-L828:
-L826:
+	jr ult,L835
+L836:
+L834:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -4184,7 +4205,7 @@ _balloons_reset__0:
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-L832:
+L840:
 	ret
 
 ; function balloons_launch
@@ -4192,8 +4213,8 @@ _balloons_launch__0:
 	push xiz
 	lda xsp,(xsp-2)
 	ld izl,0
-	jp L844
-L841:
+	jp L852
+L849:
 	ld a,(_g_vb_counter)
 	extz wa
 	mul xwa,37
@@ -4206,20 +4227,20 @@ L841:
 	extz bc
 	and bc,1
 	cp bc,0
-	jr z,L845
+	jr z,L853
 	ld wa,118
 	ld c,ixl
 	extz bc
 	and bc,31
 	add wa,bc
-	jr L846
-L845:
+	jr L854
+L853:
 	ld wa,6
 	ld c,ixl
 	extz bc
 	and bc,31
 	add wa,bc
-L846:
+L854:
 	ld xbc,_bal_x__0
 	ld e,izl
 	extz de
@@ -4260,16 +4281,16 @@ L846:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L843:
+L851:
 	inc 1,izl
-L844:
+L852:
 	ld a,izl
 	cp a,8
-	jp ult,L841
-L842:
+	jp ult,L849
+L850:
 	ldb (_bal_live__0),1
 	ldb (_trf_spr_end),42
-L840:
+L848:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -4282,12 +4303,12 @@ _balloons_draw__0:
 	ld (xsp+1),a
 	ld a,(_bal_live__0)
 	cp a,0
-	jr nz,L862
-	jp L861
-L862:
+	jr nz,L870
+	jp L869
+L870:
 	ld izl,0
-	jp L866
-L863:
+	jp L874
+L871:
 	ld a,42
 	add a,izl
 	ld iyl,a
@@ -4298,7 +4319,7 @@ L863:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L867
+	jr z,L875
 	ld xbc,_bal_wait__0
 	ld e,izl
 	extz de
@@ -4319,8 +4340,8 @@ L863:
 	pop xiy
 	pop xix
 	ldb (xsp+1),1
-	jp L865
-L867:
+	jp L873
+L875:
 	ld xwa,_bal_y__0
 	ld c,izl
 	extz bc
@@ -4351,7 +4372,7 @@ L867:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,65496
-	jr ge,L868
+	jr ge,L876
 	push xix
 	push xiy
 	ld a,iyl
@@ -4363,8 +4384,8 @@ L867:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-	jp L865
-L868:
+	jp L873
+L876:
 	ldb (xsp+1),1
 	ld xwa,_bal_x__0
 	ld c,izl
@@ -4381,15 +4402,15 @@ L868:
 	add de,hl
 	and de,2
 	cp de,0
-	jr z,L869
+	jr z,L877
 	ld bc,1
-	jr L870
-L869:
+	jr L878
+L877:
 	ld bc,0
-L870:
+L878:
 	add wa,bc
 	ld (xsp+4),wa
-L871:
+L879:
 	ld a,iyl
 	ld (xsp+6),a
 	ld a,(xsp+4)
@@ -4415,12 +4436,12 @@ L871:
 	ld (xsp+12),a
 	ld a,0
 	ld (xsp+13),a
-	ld wa,34816
+	ld xwa,_spr_shadow
 	ld c,(xsp+6)
 	extz bc
 	sll 2,bc
-	add wa,bc
-	extz xwa
+	extz xbc
+	add xwa,xbc
 	ld xix,xwa
 	ld a,(xsp+10)
 	and a,255
@@ -4442,28 +4463,28 @@ L871:
 	ld (xix+3),a
 	ld a,(xsp+12)
 	and a,15
-	ld bc,35840
+	ld xbc,_spr_pal_shadow
 	ld e,(xsp+6)
 	extz de
-	add bc,de
-	extz xbc
+	exts xde
+	add xbc,xde
 	ld (xbc),a
+L881:
+L880:
 L873:
-L872:
-L865:
 	inc 1,izl
-L866:
+L874:
 	ld a,izl
 	cp a,8
-	jp ult,L863
-L864:
+	jp ult,L871
+L872:
 	ld a,(xsp+1)
 	cp a,0
-	jr nz,L874
+	jr nz,L882
 	ldb (_bal_live__0),0
 	ldb (_trf_spr_end),50
-L874:
-L861:
+L882:
+L869:
 	lda xsp,(xsp+18)
 	pop xiz
 	ret
@@ -4473,11 +4494,11 @@ _smoke_init__0:
 	push xiz
 	lda xsp,(xsp-2)
 	ld ixl,0
-	jr L888
-L885:
+	jr L896
+L893:
 	ld izl,0
-	jr L892
-L889:
+	jr L900
+L897:
 	ld xwa,_smoke_tiles__0
 	ld c,ixl
 	extz bc
@@ -4507,20 +4528,20 @@ L889:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L891:
+L899:
 	inc 1,izl
-L892:
+L900:
 	ld a,izl
 	cp a,8
-	jr ult,L889
-L890:
-L887:
+	jr ult,L897
+L898:
+L895:
 	inc 1,ixl
-L888:
+L896:
 	ld a,ixl
 	cp a,4
-	jr ult,L885
-L886:
+	jr ult,L893
+L894:
 	push xix
 	ld wa,4095
 	push xwa
@@ -4537,7 +4558,7 @@ L886:
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
 	pop xix
-L884:
+L892:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -4548,7 +4569,7 @@ _smoke_draw__0:
 	lda xsp,(xsp-24)
 	ld a,(xsp+32)
 	cp a,0
-	jr nz,L916
+	jr nz,L924
 	push xix
 	push xiy
 	ld a,28
@@ -4560,16 +4581,16 @@ _smoke_draw__0:
 	pop xiy
 	pop xix
 	ldb (_smoke_t__0),0
-	jp L915
-L916:
+	jp L923
+L924:
 	ld a,(_smoke_t__0)
 	extz wa
 	and wa,7
 	cp wa,0
-	jr nz,L917
+	jr nz,L925
 	ld a,(xsp+36)
 	cp a,0
-	jr nz,L917
+	jr nz,L925
 	push xix
 	push xiy
 	ld wa,7
@@ -4578,7 +4599,7 @@ L916:
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-L917:
+L925:
 	incb 1,(_smoke_t__0)
 	push xix
 	push xiy
@@ -4600,11 +4621,11 @@ L917:
 	add wa,bc
 	ld (xsp+2),a
 	ld ixl,0
-	jp L921
-L918:
+	jp L929
+L926:
 	ld c,ixl
 	cp c,0
-	jr nz,L922
+	jr nz,L930
 	ld wa,(xsp+0)
 	sub wa,11
 	ld c,(_smoke_t__0)
@@ -4612,8 +4633,8 @@ L918:
 	sra 2,bc
 	and bc,1
 	sub wa,bc
-	jr L923
-L922:
+	jr L931
+L930:
 	ld wa,(xsp+0)
 	add wa,27
 	ld c,(_smoke_t__0)
@@ -4621,7 +4642,7 @@ L922:
 	sra 2,bc
 	and bc,1
 	add wa,bc
-L923:
+L931:
 	ld (xsp+6),wa
 	ld a,(_smoke_t__0)
 	extz wa
@@ -4632,8 +4653,8 @@ L923:
 	and wa,1
 	ld (xsp+3),a
 	ld izl,0
-	jp L927
-L924:
+	jp L935
+L932:
 	ld wa,24
 	ld c,ixl
 	extz bc
@@ -4645,15 +4666,15 @@ L924:
 	ld (xsp+8),a
 	ld c,ixl
 	cp c,0
-	jr z,L928
+	jr z,L936
 	ld a,1
 	sub a,izl
 	extz wa
-	jr L929
-L928:
+	jr L937
+L936:
 	ld a,izl
 	extz wa
-L929:
+L937:
 	ld (xsp+9),a
 	ld wa,(xsp+6)
 	ld c,izl
@@ -4663,11 +4684,11 @@ L929:
 	ld (xsp+10),wa
 	ld wa,(xsp+10)
 	cp wa,65529
-	jr lt,L931
+	jr lt,L939
 	ld wa,(xsp+10)
 	cp wa,159
-	jr le,L930
-L931:
+	jr le,L938
+L939:
 	push xix
 	push xiy
 	ld a,(xsp+16)
@@ -4679,9 +4700,9 @@ L931:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-	jp L926
-L930:
-L932:
+	jp L934
+L938:
+L940:
 	ld a,(xsp+8)
 	ld (xsp+12),a
 	ld a,(xsp+10)
@@ -4705,19 +4726,19 @@ L932:
 	ld (xsp+18),a
 	ld c,ixl
 	cp c,0
-	jr z,L935
+	jr z,L943
 	ld wa,128
-	jr L936
-L935:
+	jr L944
+L943:
 	ld wa,0
-L936:
+L944:
 	ld (xsp+19),a
-	ld wa,34816
+	ld xwa,_spr_shadow
 	ld c,(xsp+12)
 	extz bc
 	sll 2,bc
-	add wa,bc
-	extz xwa
+	extz xbc
+	add xwa,xbc
 	ld xiy,xwa
 	ld a,(xsp+16)
 	and a,255
@@ -4739,29 +4760,29 @@ L936:
 	ld (xiy+3),a
 	ld a,(xsp+18)
 	and a,15
-	ld bc,35840
+	ld xbc,_spr_pal_shadow
 	ld e,(xsp+12)
 	extz de
-	add bc,de
-	extz xbc
+	exts xde
+	add xbc,xde
 	ld (xbc),a
+L942:
+L941:
 L934:
-L933:
-L926:
 	inc 1,izl
-L927:
+L935:
 	ld a,izl
 	cp a,2
-	jp ult,L924
-L925:
-L920:
+	jp ult,L932
+L933:
+L928:
 	inc 1,ixl
-L921:
+L929:
 	ld a,ixl
 	cp a,2
-	jp ult,L918
-L919:
-L915:
+	jp ult,L926
+L927:
+L923:
 	lda xsp,(xsp+24)
 	pop xiz
 	ret
@@ -4772,12 +4793,12 @@ _engine_sound__0:
 	lda xsp,(xsp-10)
 	ld c,(_gear__0)
 	cp c,0
-	jr nz,L952
+	jr nz,L960
 	ld wa,137
-	jr L953
-L952:
+	jr L961
+L960:
 	ld wa,224
-L953:
+L961:
 	ld (xsp+0),wa
 	ld a,(_speed__0)
 	extz wa
@@ -4787,14 +4808,14 @@ L953:
 	ld ix,wa
 	ld wa,ix
 	cp wa,255
-	jr ule,L954
+	jr ule,L962
 	ld ix,255
-L954:
+L962:
 	ld a,(_crash_timer__0)
 	cp a,0
-	jr z,L955
+	jr z,L963
 	ld ix,0
-L955:
+L963:
 	ld wa,95
 	ld bc,ix
 	mul xbc,27
@@ -4811,49 +4832,49 @@ L955:
 	extz wa
 	and wa,1
 	cp wa,0
-	jr z,L956
+	jr z,L964
 	ld wa,iz
 	ld bc,iz
 	ld l,(_offroad__0)
 	cp l,0
-	jr z,L957
+	jr z,L965
 	ld l,(_speed__0)
 	cp l,20
-	jr ule,L957
+	jr ule,L965
 	ld de,3
-	jr L958
-L957:
+	jr L966
+L965:
 	ld de,5
-L958:
+L966:
 	cp e,0
-	jr z,L960
-L959:
+	jr z,L968
+L967:
 	srl 1,bc
-	djnz e,L959
-L960:
+	djnz e,L967
+L968:
 	add wa,bc
 	ld iz,wa
-L956:
+L964:
 	ld c,(_ngpc_pad_held)
 	extz bc
 	and bc,16
 	cp bc,0
-	jr z,L961
+	jr z,L969
 	ld wa,4
-	jr L962
-L961:
+	jr L970
+L969:
 	ld wa,6
-L962:
+L970:
 	ld iyl,a
 	ld a,(_state__0)
 	cp a,4
-	jr z,L964
+	jr z,L972
 	ld a,(_state__0)
 	cp a,3
-	jr nz,L963
-L964:
+	jr nz,L971
+L972:
 	ld iyl,9
-L963:
+L971:
 	push xix
 	push xiy
 	ld a,iyl
@@ -4864,7 +4885,7 @@ L963:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L951:
+L959:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -4888,20 +4909,20 @@ _roll_draw__0:
 	ld (xsp+6),wa
 	ld a,(xsp+0)
 	cp a,12
-	jr ult,L986
+	jr ult,L994
 	ldb (xsp+0),11
-L986:
+L994:
 	ld a,(_roll_kind__0)
 	cp a,0
-	jr z,L987
+	jr z,L995
 	ld a,(xsp+0)
 	add a,12
 	ld (xsp+0),a
-	jr L988
-L987:
+	jr L996
+L995:
 	ld a,(_roll_dir__0)
 	cp a,0
-	jr nz,L989
+	jr nz,L997
 	ld wa,12
 	ld c,(xsp+0)
 	extz bc
@@ -4910,8 +4931,8 @@ L987:
 	divs xwa,12
 	ld wa,qwa
 	ld (xsp+0),a
-L989:
-L988:
+L997:
+L996:
 	ld xwa,_gfx_roll_frames
 	ld c,(xsp+0)
 	extz bc
@@ -4922,7 +4943,7 @@ L988:
 	ld (xsp+2),xwa
 	ld a,(xsp+0)
 	cp a,(_roll_loaded__0)
-	jp z,L990
+	jp z,L998
 	ld xwa,(xsp+2)
 	ld a,(xwa+6)
 	extz wa
@@ -4944,8 +4965,8 @@ L988:
 	add xwa,xbc
 	ld (xsp+22),xwa
 	ldw (xsp+16),0
-	jr L994
-L991:
+	jr L1002
+L999:
 	ld xwa,(xsp+18)
 	ld bc,(xsp+16)
 	extz xbc
@@ -4958,13 +4979,13 @@ L991:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L993:
+L1001:
 	incw 1,(xsp+16)
-L994:
+L1002:
 	ld wa,(xsp+16)
 	cp wa,(xsp+14)
-	jr ult,L991
-L992:
+	jr ult,L999
+L1000:
 	push xix
 	push xiy
 	ld xwa,_gfx_roll_pal
@@ -5012,7 +5033,7 @@ L992:
 	pop xix
 	ld a,(xsp+0)
 	ld (_roll_loaded__0),a
-L990:
+L998:
 	push xix
 	push xiy
 	ld wa,147
@@ -5037,7 +5058,7 @@ L990:
 	ld (xsp+1),a
 	ld a,(_roll_kind__0)
 	cp a,0
-	jr z,L995
+	jr z,L1003
 	ld a,(xsp+1)
 	extz wa
 	ld c,(xsp+1)
@@ -5045,15 +5066,15 @@ L990:
 	sra 1,bc
 	add wa,bc
 	ld (xsp+1),a
-L995:
+L1003:
 	ld wa,136
 	ld c,(xsp+1)
 	extz bc
 	sub wa,bc
 	ld (xsp+10),wa
 	ld izl,0
-	jp L999
-L996:
+	jp L1007
+L1004:
 	ld xwa,_gfx_roll_cells
 	ld xbc,(xsp+2)
 	ld bc,(xbc)
@@ -5079,17 +5100,17 @@ L996:
 	ld iy,wa
 	ld wa,(xsp+18)
 	cp wa,65529
-	jr lt,L1001
+	jr lt,L1009
 	ld wa,(xsp+18)
 	cp wa,159
-	jr gt,L1001
+	jr gt,L1009
 	ld wa,iy
 	cp wa,65529
-	jr lt,L1001
+	jr lt,L1009
 	ld wa,iy
 	cp wa,151
-	jr le,L1000
-L1001:
+	jr le,L1008
+L1009:
 	push xix
 	push xiy
 	ld a,izl
@@ -5101,9 +5122,9 @@ L1001:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-	jp L998
-L1000:
-L1002:
+	jp L1006
+L1008:
+L1010:
 	ld a,izl
 	ld (xsp+22),a
 	ld a,(xsp+18)
@@ -5120,12 +5141,12 @@ L1002:
 	ld (xsp+28),a
 	ld a,0
 	ld (xsp+29),a
-	ld wa,34816
+	ld xwa,_spr_shadow
 	ld c,(xsp+22)
 	extz bc
 	sll 2,bc
-	add wa,bc
-	extz xwa
+	extz xbc
+	add xwa,xbc
 	ld xix,xwa
 	ld a,(xsp+26)
 	and a,255
@@ -5147,23 +5168,23 @@ L1002:
 	ld (xix+3),a
 	ld a,(xsp+28)
 	and a,15
-	ld bc,35840
+	ld xbc,_spr_pal_shadow
 	ld e,(xsp+22)
 	extz de
-	add bc,de
-	extz xbc
+	exts xde
+	add xbc,xde
 	ld (xbc),a
-L1004:
-L1003:
-L998:
+L1012:
+L1011:
+L1006:
 	inc 1,izl
-L999:
+L1007:
 	ld a,izl
 	ld xbc,(xsp+2)
 	ld c,(xbc+2)
 	cp a,c
-	jp ult,L996
-L997:
+	jp ult,L1004
+L1005:
 	push xix
 	push xiy
 	ld wa,24
@@ -5174,7 +5195,7 @@ L997:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L985:
+L993:
 	lda xsp,(xsp+34)
 	pop xiz
 	ret
@@ -5202,23 +5223,23 @@ _sharp_ahead__0:
 	ld ix,wa
 	ld wa,ix
 	cp wa,52
-	jr ge,L1021
+	jr ge,L1029
 	ld wa,ix
 	cp wa,65484
-	jr gt,L1020
-L1021:
+	jr gt,L1028
+L1029:
 	ld wa,0
-	jp L1019
-L1020:
+	jp L1027
+L1028:
 	ldb (xsp+1),0
-	jr L1025
-L1022:
+	jr L1033
+L1030:
 	inc 1,izl
 	ld a,izl
 	cp a,(_track_len)
-	jr ult,L1026
+	jr ult,L1034
 	ld izl,0
-L1026:
+L1034:
 	ld xwa,(_track_seg)
 	ld c,izl
 	extz bc
@@ -5228,27 +5249,27 @@ L1026:
 	ld ix,wa
 	ld wa,ix
 	cp wa,52
-	jr ge,L1028
+	jr ge,L1036
 	ld wa,ix
 	cp wa,65484
-	jr gt,L1027
-L1028:
+	jr gt,L1035
+L1036:
 	ld wa,iy
 	cp wa,150
-	jr uge,L1029
+	jr uge,L1037
 	ld wa,0
-	jr L1019
-L1029:
+	jr L1027
+L1037:
 	ld bc,ix
 	cp bc,0
-	jr le,L1030
+	jr le,L1038
 	ld wa,1
-	jr L1031
-L1030:
+	jr L1039
+L1038:
 	ld wa,65535
-L1031:
-	jr L1019
-L1027:
+L1039:
+	jr L1027
+L1035:
 	ld wa,iy
 	ld xbc,(_track_seg)
 	ld e,izl
@@ -5258,20 +5279,20 @@ L1027:
 	ld bc,(xbc)
 	add wa,bc
 	ld iy,wa
-L1024:
+L1032:
 	incb 1,(xsp+1)
-L1025:
+L1033:
 	ld a,(xsp+1)
 	cp a,6
-	jr uge,L1032
+	jr uge,L1040
 	ld wa,iy
 	cp wa,1300
-	jr ult,L1022
-L1032:
-L1023:
+	jr ult,L1030
+L1040:
+L1031:
 	ld wa,0
-	jr L1019
-L1019:
+	jr L1027
+L1027:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -5282,7 +5303,7 @@ _game_tick__0:
 	lda xsp,(xsp-8)
 	ld a,(_state__0)
 	cp a,0
-	jp nz,L1153
+	jp nz,L1161
 	ld wa,12
 	push xwa
 	ld a,(_state_timer__0)
@@ -5295,12 +5316,12 @@ _game_tick__0:
 	extz wa
 	and wa,12
 	cp wa,0
-	jr z,L1154
+	jr z,L1162
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,8
 	cp wa,0
-	jr z,L1155
+	jr z,L1163
 	ld a,(_station__0)
 	extz wa
 	add wa,1
@@ -5308,8 +5329,8 @@ _game_tick__0:
 	div xwa,5
 	ld wa,qwa
 	ld (_station__0),a
-	jr L1156
-L1155:
+	jr L1164
+L1163:
 	ld a,(_station__0)
 	extz wa
 	add wa,5
@@ -5318,58 +5339,58 @@ L1155:
 	div xwa,5
 	ld wa,qwa
 	ld (_station__0),a
-L1156:
+L1164:
 	ldb (_save_dirty__0),1
 	call _title_texts__0
 	ld a,(_station__0)
 	push xwa
 	call _music_play
 	lda xsp,(xsp+4)
-L1154:
+L1162:
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,3
 	cp wa,0
-	jr z,L1157
+	jr z,L1165
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,2
 	cp wa,0
-	jr z,L1158
+	jr z,L1166
 	ld a,(_difficulty)
 	extz wa
 	add wa,1
 	and wa,3
 	ld (_difficulty),a
-	jr L1159
-L1158:
+	jr L1167
+L1166:
 	ld a,(_difficulty)
 	extz wa
 	add wa,4
 	sub wa,1
 	and wa,3
 	ld (_difficulty),a
-L1159:
+L1167:
 	ld a,(_difficulty)
 	cp a,3
-	jr nz,L1160
+	jr nz,L1168
 	call _new_seed__0
-L1160:
+L1168:
 	ldb (_save_dirty__0),1
 	ld wa,0
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
 	call _title_texts__0
-L1157:
+L1165:
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,32
 	cp wa,0
-	jr z,L1161
+	jr z,L1169
 	ld a,(_difficulty)
 	cp a,3
-	jr nz,L1161
+	jr nz,L1169
 	call _new_seed__0
 	ldb (_save_dirty__0),1
 	ld wa,0
@@ -5377,24 +5398,24 @@ L1157:
 	call _sfx
 	lda xsp,(xsp+4)
 	call _title_texts__0
-L1161:
+L1169:
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,16
 	cp wa,0
-	jr z,L1162
+	jr z,L1170
 	call _title_leave__0
 	call _new_game__0
 	ldb (_state__0),1
 	ldb (_state_timer__0),0
-L1162:
+L1170:
 	ldb (_ngpc_pad_held),0
 	ldb (_ngpc_pad_pressed),0
-	jp L1163
-L1153:
+	jp L1171
+L1161:
 	ld a,(_state__0)
 	cp a,6
-	jr nz,L1164
+	jr nz,L1172
 	incw 1,(_map_t__0)
 	ld wa,(_map_along__0)
 	add wa,2
@@ -5403,40 +5424,40 @@ L1153:
 	extz wa
 	and wa,16
 	cp wa,0
-	jr z,L1167
+	jr z,L1175
 	ld wa,(_map_t__0)
 	cp wa,20
-	jr ugt,L1166
-L1167:
+	jr ugt,L1174
+L1175:
 	ld wa,(_map_done__0)
 	cp wa,0
-	jr z,L1165
+	jr z,L1173
 	ld wa,(_map_t__0)
 	ld bc,(_map_done__0)
 	add bc,75
 	cp wa,bc
-	jr ule,L1165
-L1166:
+	jr ule,L1173
+L1174:
 	call _map_leave__0
 	ldb (_state__0),5
 	ldb (_state_timer__0),0
 	call _result_screen__0
-L1165:
+L1173:
 	ldb (_ngpc_pad_held),0
 	ldb (_ngpc_pad_pressed),0
-	jp L1168
-L1164:
+	jp L1176
+L1172:
 	ld a,(_state__0)
 	cp a,5
-	jr nz,L1169
+	jr nz,L1177
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,16
 	cp wa,0
-	jr z,L1170
+	jr z,L1178
 	ld a,(_state_timer__0)
 	cp a,30
-	jr ule,L1170
+	jr ule,L1178
 	ldb (_state__0),0
 	ldb (_state_timer__0),0
 	call _new_game__0
@@ -5445,43 +5466,43 @@ L1164:
 	push xwa
 	call _music_play
 	lda xsp,(xsp+4)
-L1170:
+L1178:
 	ld a,(_state_timer__0)
 	cp a,255
-	jr uge,L1171
+	jr uge,L1179
 	incb 1,(_state_timer__0)
-L1171:
+L1179:
 	ld a,(_state_timer__0)
 	cp a,30
-	jr ule,L1172
+	jr ule,L1180
 	ld wa,13
 	push xwa
 	ld a,(_state_timer__0)
 	push xwa
 	call _title_blink__0
 	lda xsp,(xsp+8)
-L1172:
+L1180:
 	ldb (_ngpc_pad_held),0
 	ldb (_ngpc_pad_pressed),0
-	jr L1173
-L1169:
+	jr L1181
+L1177:
 	ld a,(_ngpc_pad_pressed)
 	extz wa
 	and wa,64
 	cp wa,0
-	jr z,L1174
+	jr z,L1182
 	ld c,(_paused__0)
 	cp c,0
-	jr nz,L1175
+	jr nz,L1183
 	ld wa,1
-	jr L1176
-L1175:
+	jr L1184
+L1183:
 	ld wa,0
-L1176:
+L1184:
 	ld (_paused__0),a
 	ld a,(_paused__0)
 	cp a,0
-	jr z,L1177
+	jr z,L1185
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -5491,8 +5512,8 @@ L1176:
 	push xwa
 	call _message__0
 	lda xsp,(xsp+12)
-	jr L1178
-L1177:
+	jr L1186
+L1185:
 	ld wa,1
 	push xwa
 	ld wa,0
@@ -5503,19 +5524,19 @@ L1177:
 	push xwa
 	call _message__0
 	lda xsp,(xsp+12)
-L1178:
-L1174:
-L1173:
-L1168:
-L1163:
+L1186:
+L1182:
+L1181:
+L1176:
+L1171:
 	ld a,(_paused__0)
 	cp a,0
-	jr z,L1179
-	jp L1152
-L1179:
+	jr z,L1187
+	jp L1160
+L1187:
 	ld a,(_state__0)
 	cp a,1
-	jp nz,L1180
+	jp nz,L1188
 	ld a,(_state_timer__0)
 	extz wa
 	extz xwa
@@ -5527,13 +5548,13 @@ L1179:
 	div xwa,30
 	ld wa,qwa
 	cp wa,0
-	jr nz,L1182
+	jr nz,L1190
 	ld a,(xsp+0)
 	cp a,4
-	jr uge,L1182
+	jr uge,L1190
 	ld wa,0
 	push xwa
-	ld xwa,_cd__0_L1181
+	ld xwa,_cd__0_L1189
 	ld c,(xsp+4)
 	extz bc
 	exts xbc
@@ -5547,20 +5568,20 @@ L1179:
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
-L1182:
+L1190:
 	incb 1,(_state_timer__0)
 	ld a,(_state_timer__0)
 	cp a,90
-	jr ult,L1183
+	jr ult,L1191
 	ldb (_state__0),2
 	ld a,(_cur_stage)
 	cp a,0
-	jr nz,L1184
+	jr nz,L1192
 	call _balloons_launch__0
-L1184:
+L1192:
 	ld wa,30
 	push xwa
-	ld xwa,(_cd__0_L1181+12)
+	ld xwa,(_cd__0_L1189+12)
 	push xwa
 	call _count_message__0
 	lda xsp,(xsp+8)
@@ -5568,30 +5589,30 @@ L1184:
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
-L1183:
+L1191:
 	ldb (_ngpc_pad_held),0
 	ldb (_ngpc_pad_pressed),0
-L1180:
+L1188:
 	ld a,(_state__0)
 	cp a,2
-	jr z,L1186
+	jr z,L1194
 	ld a,(_state__0)
 	cp a,3
-	jr z,L1186
+	jr z,L1194
 	ld a,(_state__0)
 	cp a,4
-	jp nz,L1185
-L1186:
+	jp nz,L1193
+L1194:
 	ld a,(_state__0)
 	cp a,2
-	jr nz,L1188
+	jr nz,L1196
 	ld a,(_crash_timer__0)
 	cp a,0
-	jr z,L1187
-L1188:
+	jr z,L1195
+L1196:
 	ldb (_ngpc_pad_held),0
 	ldb (_ngpc_pad_pressed),0
-L1187:
+L1195:
 	ld wa,(_course_pos__0)
 	ld (xsp+2),wa
 	ld a,(_speed__0)
@@ -5599,39 +5620,39 @@ L1187:
 	call _drive__0
 	ld a,(_offroad__0)
 	cp a,0
-	jr z,L1189
+	jr z,L1197
 	ld a,(_was_offroad__0)
 	cp a,0
-	jr nz,L1189
+	jr nz,L1197
 	ld a,(xsp+4)
 	ld (_verge_spd__0),a
-	jr L1190
-L1189:
+	jr L1198
+L1197:
 	ld a,(_offroad__0)
 	cp a,0
-	jr z,L1191
+	jr z,L1199
 	ld c,(_verge_spd__0)
 	cp c,4
-	jr ule,L1192
+	jr ule,L1200
 	ld a,(_verge_spd__0)
 	sub a,4
 	extz wa
-	jr L1193
-L1192:
+	jr L1201
+L1200:
 	ld wa,0
-L1193:
+L1201:
 	ld (_verge_spd__0),a
-	jr L1194
-L1191:
+	jr L1202
+L1199:
 	ldb (_verge_spd__0),0
-L1194:
-L1190:
+L1202:
+L1198:
 	ld a,(_offroad__0)
 	ld (_was_offroad__0),a
 	call _advance__0
 	ld a,(_state__0)
 	cp a,2
-	jp nz,L1195
+	jp nz,L1203
 	ld xwa,(_score__0)
 	ld c,(_speed__0)
 	extz bc
@@ -5648,35 +5669,35 @@ L1190:
 	ld a,(_sec_acc__0)
 	add a,(xsp+16)
 	ld (_sec_acc__0),a
-	jr L1198
-L1196:
+	jr L1206
+L1204:
 	ld a,(_sec_acc__0)
 	sub a,60
 	ld (_sec_acc__0),a
 	ld a,(_time_left__0)
 	cp a,0
-	jr z,L1199
+	jr z,L1207
 	decb 1,(_time_left__0)
-L1199:
+L1207:
 	ld a,(_time_left__0)
 	cp a,0
-	jr z,L1200
+	jr z,L1208
 	ld a,(_time_left__0)
 	cp a,10
-	jr ugt,L1200
+	jr ugt,L1208
 	ld wa,5
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
-L1200:
-L1198:
+L1208:
+L1206:
 	ld a,(_sec_acc__0)
 	cp a,60
-	jr uge,L1196
-L1197:
+	jr uge,L1204
+L1205:
 	ld a,(_time_left__0)
 	cp a,0
-	jr nz,L1201
+	jr nz,L1209
 	ldb (_state__0),3
 	ldb (_state_timer__0),0
 	ld wa,0
@@ -5696,8 +5717,8 @@ L1197:
 	push xwa
 	call _hud_clear_message
 	lda xsp,(xsp+4)
-L1201:
-L1195:
+L1209:
+L1203:
 	ld wa,(_course_pos__0)
 	push xwa
 	call _course_fork_zone
@@ -5705,13 +5726,13 @@ L1195:
 	ld (xsp+0),a
 	ld a,(xsp+0)
 	cp a,0
-	jp z,L1202
+	jp z,L1210
 	call _course_is_last_stage
 	cp a,0
-	jp nz,L1202
+	jp nz,L1210
 	ld a,(_last_fork_zone__0)
 	cp a,0
-	jr nz,L1203
+	jr nz,L1211
 	ld wa,1
 	push xwa
 	call _scenery_mode
@@ -5728,22 +5749,22 @@ L1195:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-L1203:
+L1211:
 	ld a,(_fork_choice)
 	cp a,0
-	jr nz,L1204
+	jr nz,L1212
 	ld wa,(_course_pos__0)
 	add wa,850
 	cp wa,(_leg_len)
-	jr ult,L1204
+	jr ult,L1212
 	ld bc,(_car_lat__0)
 	cp bc,0
-	jr le,L1205
+	jr le,L1213
 	ld wa,1
-	jr L1206
-L1205:
+	jr L1214
+L1213:
 	ld wa,0
-L1206:
+L1214:
 	push xwa
 	call _course_decide
 	lda xsp,(xsp+4)
@@ -5753,7 +5774,7 @@ L1206:
 	lda xsp,(xsp+4)
 	ld a,(_fork_choice)
 	cp a,2
-	jr nz,L1207
+	jr nz,L1215
 	ld xwa,_S0_25
 	push xwa
 	ld wa,3
@@ -5766,8 +5787,8 @@ L1206:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-	jr L1208
-L1207:
+	jr L1216
+L1215:
 	ld xwa,_S0_26
 	push xwa
 	ld wa,3
@@ -5780,19 +5801,19 @@ L1207:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-L1208:
-L1204:
-	jp L1209
-L1202:
+L1216:
+L1212:
+	jp L1217
+L1210:
 	ld a,(xsp+0)
 	cp a,0
-	jr z,L1210
+	jr z,L1218
 	call _course_is_last_stage
 	cp a,0
-	jr z,L1210
+	jr z,L1218
 	ld a,(_last_fork_zone__0)
 	cp a,0
-	jr nz,L1211
+	jr nz,L1219
 	ld xwa,_S0_27
 	push xwa
 	ld wa,3
@@ -5805,82 +5826,82 @@ L1202:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-L1211:
+L1219:
 	ld wa,5
 	push xwa
 	call _scenery_mode
 	lda xsp,(xsp+4)
-	jr L1212
-L1210:
+	jr L1220
+L1218:
 	ld a,(_cur_stage)
 	cp a,0
-	jr nz,L1213
+	jr nz,L1221
 	ld wa,(_course_pos__0)
 	cp wa,900
-	jr uge,L1213
+	jr uge,L1221
 	ld wa,5
 	push xwa
 	call _scenery_mode
 	lda xsp,(xsp+4)
-	jr L1214
-L1213:
+	jr L1222
+L1221:
 	ld wa,(_course_pos__0)
 	push xwa
 	call _course_start_zone
 	lda xsp,(xsp+4)
 	cp a,0
-	jr z,L1215
+	jr z,L1223
 	ld wa,2
 	push xwa
 	call _scenery_mode
 	lda xsp,(xsp+4)
-	jr L1216
-L1215:
+	jr L1224
+L1223:
 	call _sharp_ahead__0
 	ld (xsp+4),a
 	ld c,(xsp+4)
 	cp c,0
-	jr le,L1217
+	jr le,L1225
 	ld wa,3
-	jr L1218
-L1217:
+	jr L1226
+L1225:
 	ld c,(xsp+4)
 	cp c,0
-	jr ge,L1219
+	jr ge,L1227
 	ld wa,4
-	jr L1220
-L1219:
+	jr L1228
+L1227:
 	ld wa,0
-L1220:
-L1218:
+L1228:
+L1226:
 	push xwa
 	call _scenery_mode
 	lda xsp,(xsp+4)
-L1216:
-L1214:
-L1212:
-L1209:
+L1224:
+L1222:
+L1220:
+L1217:
 	ld a,(xsp+0)
 	ld (_last_fork_zone__0),a
 	ld a,(_goal_reached__0)
 	cp a,0
-	jr nz,L1221
+	jr nz,L1229
 	ld wa,(_course_pos__0)
 	cp wa,(_leg_len)
-	jr ult,L1221
+	jr ult,L1229
 	ldb (_last_fork_zone__0),0
 	call _leg_end__0
-L1221:
+L1229:
 	ld a,(_speed__0)
 	push xwa
 	call _id_scenery_advance
 	lda xsp,(xsp+4)
 	ld a,(_state__0)
 	cp a,2
-	jp nz,L1222
+	jp nz,L1230
 	ld a,(_crash_timer__0)
 	cp a,0
-	jp nz,L1222
+	jp nz,L1230
 	ld a,(_speed__0)
 	push xwa
 	ld wa,(_car_lat__0)
@@ -5890,7 +5911,7 @@ L1221:
 	ld (xsp+4),a
 	ld a,(xsp+4)
 	cp a,0
-	jr z,L1223
+	jr z,L1231
 	ld a,(_speed__0)
 	extz wa
 	mul xwa,15
@@ -5899,24 +5920,24 @@ L1221:
 	ld (xsp+6),wa
 	ld c,(xsp+4)
 	cp c,1
-	jr nz,L1224
+	jr nz,L1232
 	ld wa,(xsp+6)
-	jr L1225
-L1224:
+	jr L1233
+L1232:
 	ld wa,(xsp+6)
 	neg wa
-L1225:
+L1233:
 	ld (_knock_v__0),wa
 	ldb (_knock_t__0),1
 	ld wa,(_dbg_knock_at)
 	cp wa,0
-	jr nz,L1226
+	jr nz,L1234
 	ld a,(_speed__0)
 	cp a,100
-	jr ule,L1226
+	jr ule,L1234
 	ld wa,(_dbg_updates)
 	ld (_dbg_knock_at),wa
-L1226:
+L1234:
 	ld a,(_speed__0)
 	extz wa
 	mul xwa,7
@@ -5927,8 +5948,8 @@ L1226:
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
-	jp L1227
-L1223:
+	jp L1235
+L1231:
 	ld wa,147
 	push xwa
 	ld wa,(_car_lat__0)
@@ -5937,7 +5958,7 @@ L1223:
 	call _id_scenery_hit
 	lda xsp,(xsp+8)
 	cp a,0
-	jr nz,L1229
+	jr nz,L1237
 	ld wa,(_car_lat__0)
 	sra 4,wa
 	push xwa
@@ -5948,22 +5969,22 @@ L1223:
 	call _bridge_hit
 	lda xsp,(xsp+12)
 	cp a,0
-	jp z,L1228
-L1229:
+	jp z,L1236
+L1237:
 	ld c,(_verge_spd__0)
 	cp c,(_speed__0)
-	jr ule,L1230
+	jr ule,L1238
 	ld a,(_verge_spd__0)
 	extz wa
-	jr L1231
-L1230:
+	jr L1239
+L1238:
 	ld a,(_speed__0)
 	extz wa
-L1231:
+L1239:
 	ld (xsp+5),a
 	ld a,(xsp+5)
 	cp a,110
-	jp ule,L1232
+	jp ule,L1240
 	ld a,(xsp+5)
 	ld xbc,_dbg_cspd
 	ld e,(_dbg_scn)
@@ -5976,63 +5997,63 @@ L1231:
 	ldb (_crash_timer__0),90
 	ld a,(xsp+5)
 	cp a,168
-	jr ult,L1233
+	jr ult,L1241
 	ldb (_roll_t__0),1
 	ld c,(xsp+5)
 	cp c,214
-	jr ult,L1234
+	jr ult,L1242
 	ld wa,1
-	jr L1235
-L1234:
+	jr L1243
+L1242:
 	ld wa,0
-L1235:
+L1243:
 	ld (_roll_kind__0),a
 	ld a,(_roll_kind__0)
 	cp a,0
-	jr z,L1236
+	jr z,L1244
 	incb 1,(_dbg_flips)
 	ld wa,(_dbg_flip_at)
 	cp wa,0
-	jr nz,L1237
+	jr nz,L1245
 	ld wa,(_dbg_updates)
 	ld (_dbg_flip_at),wa
-L1237:
-	jr L1238
-L1236:
+L1245:
+	jr L1246
+L1244:
 	incb 1,(_dbg_rolls)
-L1238:
+L1246:
 	ld wa,(_dbg_roll_at)
 	cp wa,0
-	jr nz,L1239
+	jr nz,L1247
 	ld wa,(_dbg_updates)
 	ld (_dbg_roll_at),wa
-L1239:
+L1247:
 	ld bc,(_car_lat__0)
 	cp bc,0
-	jr gt,L1242
+	jr gt,L1250
 	ld bc,(_car_lat__0)
 	cp bc,0
-	jr nz,L1240
+	jr nz,L1248
 	ld c,(_g_vb_counter)
 	extz bc
 	and bc,1
 	cp bc,0
-	jr z,L1240
-L1242:
+	jr z,L1248
+L1250:
 	ld wa,1
-	jr L1241
-L1240:
+	jr L1249
+L1248:
 	ld wa,0
-L1241:
+L1249:
 	ld (_roll_dir__0),a
-L1233:
+L1241:
 	incb 1,(_dbg_crashes)
 	ld wa,3
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
-	jr L1243
-L1232:
+	jr L1251
+L1240:
 	ld wa,48
 	ld (xsp+6),a
 	ld a,(_speed__0)
@@ -6041,50 +6062,50 @@ L1232:
 	ld (xsp+7),a
 	ld a,(xsp+6)
 	cp a,(xsp+7)
-	jr ule,L1244
+	jr ule,L1252
 	ld a,(xsp+7)
 	ld (xsp+6),a
-L1244:
+L1252:
 	ld c,(_speed__0)
 	cp c,(xsp+6)
-	jr ule,L1245
+	jr ule,L1253
 	ld a,(_speed__0)
 	sub a,(xsp+6)
 	extz wa
-	jr L1246
-L1245:
+	jr L1254
+L1253:
 	ld wa,0
-L1246:
+L1254:
 	ld (_speed__0),a
 	ld wa,4
 	push xwa
 	call _sfx
 	lda xsp,(xsp+4)
-L1243:
-L1228:
-L1227:
-L1222:
+L1251:
+L1236:
+L1235:
+L1230:
 	ld wa,(_knock_v__0)
 	cp wa,0
-	jr z,L1247
+	jr z,L1255
 	ld wa,(_car_lat__0)
 	add wa,(_knock_v__0)
 	ld (_car_lat__0),wa
 	ld wa,(_car_lat__0)
 	cp wa,(_lat_limit__0)
-	jr le,L1248
+	jr le,L1256
 	ld wa,(_lat_limit__0)
 	ld (_car_lat__0),wa
-L1248:
+L1256:
 	ld wa,(_car_lat__0)
 	ld bc,(_lat_limit__0)
 	neg bc
 	cp wa,bc
-	jr ge,L1249
+	jr ge,L1257
 	ld wa,(_lat_limit__0)
 	neg wa
 	ld (_car_lat__0),wa
-L1249:
+L1257:
 	ld wa,(_knock_v__0)
 	mul xwa,7
 	exts xwa
@@ -6092,64 +6113,64 @@ L1249:
 	ld (_knock_v__0),wa
 	ld wa,(_knock_v__0)
 	cp wa,65524
-	jr le,L1250
+	jr le,L1258
 	ld wa,(_knock_v__0)
 	cp wa,12
-	jr ge,L1250
+	jr ge,L1258
 	ldw (_knock_v__0),0
-L1250:
-L1247:
+L1258:
+L1255:
 	ld a,(_knock_t__0)
 	cp a,0
-	jr z,L1251
+	jr z,L1259
 	incb 1,(_knock_t__0)
 	ld a,(_knock_t__0)
 	cp a,26
-	jr ule,L1252
+	jr ule,L1260
 	ldb (_knock_t__0),0
-L1252:
-L1251:
+L1260:
+L1259:
 	ld a,(_roll_t__0)
 	cp a,0
-	jr z,L1253
+	jr z,L1261
 	incb 1,(_roll_t__0)
 	ld a,(_roll_t__0)
 	cp a,36
-	jr ule,L1254
+	jr ule,L1262
 	ldb (_roll_t__0),0
 	ldb (_roll_loaded__0),255
 	call _id_car_restore
-L1254:
-L1253:
+L1262:
+L1261:
 	ld a,(_crash_timer__0)
 	cp a,0
-	jr z,L1255
+	jr z,L1263
 	decb 1,(_crash_timer__0)
 	ld c,(_speed__0)
 	cp c,12
-	jr ule,L1256
+	jr ule,L1264
 	ld a,(_speed__0)
 	sub a,12
 	extz wa
-	jr L1257
-L1256:
+	jr L1265
+L1264:
 	ld wa,0
-L1257:
+L1265:
 	ld (_speed__0),a
 	ld a,(_crash_timer__0)
 	cp a,0
-	jr nz,L1258
+	jr nz,L1266
 	ld wa,(_car_lat__0)
 	exts xwa
 	divs xwa,2
 	ld (_car_lat__0),wa
 	ldb (_speed__0),0
 	ldb (_gear__0),0
-L1258:
-L1255:
+L1266:
+L1263:
 	ld c,(_state__0)
 	cp c,2
-	jr nz,L1259
+	jr nz,L1267
 	push xwa
 	ld wa,(_course_pos__0)
 	push xwa
@@ -6158,12 +6179,12 @@ L1255:
 	ld xbc,xwa
 	pop xwa
 	cp c,0
-	jr nz,L1259
+	jr nz,L1267
 	ld wa,1
-	jr L1260
-L1259:
+	jr L1268
+L1267:
 	ld wa,0
-L1260:
+L1268:
 	push xwa
 	ld a,(_speed__0)
 	push xwa
@@ -6171,48 +6192,8 @@ L1260:
 	lda xsp,(xsp+8)
 	ld a,(_state__0)
 	cp a,3
-	jr nz,L1261
+	jr nz,L1269
 	incb 1,(_state_timer__0)
-	ld a,(_speed__0)
-	cp a,0
-	jr nz,L1262
-	ld a,(_state_timer__0)
-	cp a,60
-	jr ule,L1262
-	ldb (_state__0),6
-	ldb (_state_timer__0),0
-	call _map_screen__0
-L1262:
-	jr L1263
-L1261:
-	ld a,(_state__0)
-	cp a,4
-	jr nz,L1264
-	incb 1,(_state_timer__0)
-	ld a,(_state_timer__0)
-	cp a,1
-	jr nz,L1265
-	ld xwa,(_score__0)
-	ld c,(_time_left__0)
-	extz bc
-	muls xbc,20000
-	add xwa,xbc
-	ld (_score__0),xwa
-	ld izl,0
-	jr L1269
-L1266:
-	ld wa,20000
-	push xwa
-	call _hud_score_add
-	lda xsp,(xsp+4)
-L1268:
-	inc 1,izl
-L1269:
-	ld a,izl
-	cp a,(_time_left__0)
-	jr ult,L1266
-L1267:
-L1265:
 	ld a,(_speed__0)
 	cp a,0
 	jr nz,L1270
@@ -6223,10 +6204,50 @@ L1265:
 	ldb (_state_timer__0),0
 	call _map_screen__0
 L1270:
-L1264:
-L1263:
-L1185:
-L1152:
+	jr L1271
+L1269:
+	ld a,(_state__0)
+	cp a,4
+	jr nz,L1272
+	incb 1,(_state_timer__0)
+	ld a,(_state_timer__0)
+	cp a,1
+	jr nz,L1273
+	ld xwa,(_score__0)
+	ld c,(_time_left__0)
+	extz bc
+	muls xbc,20000
+	add xwa,xbc
+	ld (_score__0),xwa
+	ld izl,0
+	jr L1277
+L1274:
+	ld wa,20000
+	push xwa
+	call _hud_score_add
+	lda xsp,(xsp+4)
+L1276:
+	inc 1,izl
+L1277:
+	ld a,izl
+	cp a,(_time_left__0)
+	jr ult,L1274
+L1275:
+L1273:
+	ld a,(_speed__0)
+	cp a,0
+	jr nz,L1278
+	ld a,(_state_timer__0)
+	cp a,60
+	jr ule,L1278
+	ldb (_state__0),6
+	ldb (_state_timer__0),0
+	call _map_screen__0
+L1278:
+L1272:
+L1271:
+L1193:
+L1160:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -6343,19 +6364,19 @@ _main:
 	add wa,384
 	ld (_lat_limit__0),wa
 	ldw (xsp+2),65530
-	jr L1335
-L1332:
+	jr L1346
+L1343:
 	ld bc,(xsp+2)
 	cp bc,0
-	jr le,L1336
+	jr le,L1347
 	call _id_road_grade_hi
 	exts wa
-	jr L1337
-L1336:
+	jr L1348
+L1347:
 	call _id_road_grade_lo
 	exts wa
 	neg wa
-L1337:
+L1348:
 	ld (xsp+8),wa
 	ld wa,(xsp+2)
 	mul xwa,(xsp+8)
@@ -6368,13 +6389,13 @@ L1337:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1334:
+L1345:
 	incw 1,(xsp+2)
-L1335:
+L1346:
 	ld wa,(xsp+2)
 	cp wa,6
-	jr le,L1332
-L1333:
+	jr le,L1343
+L1344:
 	ld wa,147
 	push xwa
 	call _traffic_set_car_line
@@ -6391,16 +6412,26 @@ L1333:
 	ld a,(_g_vb_counter)
 	ld (_pace_prev__0),a
 	ld (_clock_prev__0),a
-L1338:
-	jr L1344
-L1342:
+L1349:
+	jr L1355
+L1353:
 	call _ngpc_vsync
-L1344:
+L1355:
 	ld a,(_g_vb_counter)
 	sub a,(_pace_prev__0)
 	cp a,2
-	jr ult,L1342
-L1343:
+	jr ult,L1353
+L1354:
+	jr L1358
+L1356:
+	call _ngpc_vsync
+L1358:
+	ld a,(_spr_ready)
+	cp a,0
+	jr nz,L1356
+L1357:
+	ld a,(_g_vb_counter)
+	ld (_frame_vb__0),a
 	ld a,(_g_vb_counter)
 	ld (xsp+8),a
 	ld a,(xsp+8)
@@ -6412,15 +6443,15 @@ L1343:
 	ld (xsp+10),a
 	ld a,(xsp+10)
 	cp a,3
-	jr ule,L1345
+	jr ule,L1359
 	ldb (xsp+10),3
 	ld a,(xsp+8)
 	ld c,(xsp+9)
 	and c,1
 	sub a,c
 	ld (_pace_prev__0),a
-	jr L1346
-L1345:
+	jr L1360
+L1359:
 	ld a,(_pace_prev__0)
 	extz wa
 	ld c,(xsp+10)
@@ -6429,57 +6460,59 @@ L1345:
 	extz bc
 	add wa,bc
 	ld (_pace_prev__0),a
-L1346:
+L1360:
 	call _ngpc_input_update
 	call _audio_update
 	incw 1,(_dbg_updates)
 	ld a,(xsp+8)
 	ld (_clock_prev__0),a
 	ld izl,0
-	jr L1350
-L1347:
+	jr L1364
+L1361:
 	ld wa,2
 	push xwa
 	call _game_tick__0
 	lda xsp,(xsp+4)
 	ld a,izl
 	cp a,0
-	jr nz,L1351
+	jr nz,L1365
 	ldb (_ngpc_pad_pressed),0
-L1351:
-L1349:
+L1365:
+L1363:
 	inc 1,izl
-L1350:
+L1364:
 	ld a,izl
 	cp a,(xsp+10)
-	jr ult,L1347
-L1348:
+	jr ult,L1361
+L1362:
 	ld a,(_state__0)
 	cp a,0
-	jr nz,L1352
+	jr nz,L1366
 	ld a,(_state_timer__0)
 	push xwa
 	call _title_car__0
 	lda xsp,(xsp+4)
 	call _player_engine_off
-	jp L1340
-L1352:
+	call _frame_commit__0
+	jp L1351
+L1366:
 	ld a,(_state__0)
 	cp a,6
-	jr nz,L1353
+	jr nz,L1367
 	call _map_car__0
 	call _player_engine_off
-	jp L1340
-L1353:
+	call _frame_commit__0
+	jp L1351
+L1367:
 	call _render_road__0
 	call _tick_flash__0
 	call _tick_message__0
 	ld a,(_state__0)
 	cp a,0
-	jr z,L1354
+	jr z,L1368
 	ld a,(_state__0)
 	cp a,5
-	jr z,L1354
+	jr z,L1368
 	ld wa,(_course_pos__0)
 	push xwa
 	call _bridge_draw
@@ -6487,20 +6520,20 @@ L1353:
 	call _id_scenery_draw
 	call _traffic_draw
 	call _balloons_draw__0
-L1354:
+L1368:
 	ld a,(_state__0)
 	cp a,1
-	jr z,L1356
+	jr z,L1370
 	ld a,(_state__0)
 	cp a,2
-	jr nz,L1355
+	jr nz,L1369
 	ld a,(_cur_stage)
 	cp a,0
-	jr nz,L1355
+	jr nz,L1369
 	ld wa,(_course_pos__0)
 	cp wa,220
-	jr uge,L1355
-L1356:
+	jr uge,L1369
+L1370:
 	ld xwa,_S0_32
 	push xwa
 	ld wa,0
@@ -6511,26 +6544,26 @@ L1356:
 	push xwa
 	call _banner_show
 	lda xsp,(xsp+12)
-	jr L1357
-L1355:
+	jr L1371
+L1369:
 	ld a,(_state__0)
 	cp a,2
-	jr z,L1359
+	jr z,L1373
 	ld a,(_state__0)
 	cp a,4
-	jr z,L1359
+	jr z,L1373
 	ld a,(_state__0)
 	cp a,3
-	jr nz,L1358
-L1359:
+	jr nz,L1372
+L1373:
 	call _course_is_last_stage
 	cp a,0
-	jr z,L1358
+	jr z,L1372
 	ld wa,(_course_pos__0)
 	ld bc,(_leg_len)
 	sub bc,1400
 	cp wa,bc
-	jr le,L1358
+	jr le,L1372
 	ld xwa,_S0_33
 	push xwa
 	ld wa,1
@@ -6541,33 +6574,33 @@ L1359:
 	push xwa
 	call _banner_show
 	lda xsp,(xsp+12)
-	jr L1360
-L1358:
+	jr L1374
+L1372:
 	call _banner_hide
-L1360:
-L1357:
+L1374:
+L1371:
 	ld a,(_state__0)
 	cp a,5
-	jr nz,L1361
+	jr nz,L1375
 	ld a,(_goal_reached__0)
 	cp a,0
-	jr z,L1361
+	jr z,L1375
 	call _trophy_draw__0
 	call _ending_tick
-L1361:
+L1375:
 	ld a,(_state__0)
 	cp a,2
-	jr z,L1363
+	jr z,L1377
 	ld a,(_state__0)
 	cp a,1
-	jr z,L1363
+	jr z,L1377
 	ld a,(_state__0)
 	cp a,3
-	jr z,L1363
+	jr z,L1377
 	ld a,(_state__0)
 	cp a,4
-	jr nz,L1362
-L1363:
+	jr nz,L1376
+L1377:
 	ld wa,(_course_pos__0)
 	extz xwa
 	ld bc,(_leg_len)
@@ -6582,21 +6615,21 @@ L1363:
 	push xwa
 	ld c,(_gear__0)
 	cp c,0
-	jr nz,L1364
+	jr nz,L1378
 	ld c,(_speed__0)
 	cp c,123
-	jr ult,L1364
+	jr ult,L1378
 	ld c,(_g_vb_counter)
 	extz bc
 	and bc,8
 	cp bc,0
-	jr z,L1364
+	jr z,L1378
 	ld wa,2
-	jr L1365
-L1364:
+	jr L1379
+L1378:
 	ld a,(_gear__0)
 	extz wa
-L1365:
+L1379:
 	push xwa
 	ld a,(_speed__0)
 	extz wa
@@ -6607,78 +6640,73 @@ L1365:
 	push xwa
 	call _hud_race
 	lda xsp,(xsp+20)
-L1362:
+L1376:
 	ld a,(_roll_t__0)
 	cp a,0
-	jr z,L1366
+	jr z,L1380
 	call _roll_draw__0
-	jp L1367
-L1366:
+	jp L1381
+L1380:
 	ld a,(_crash_timer__0)
 	cp a,0
-	jr z,L1368
-	ld a,(_crash_timer__0)
-	extz wa
-	and wa,2
-	cp wa,0
-	jr z,L1368
+	jr z,L1382
 	ld wa,2
 	push xwa
 	ld c,(_crash_timer__0)
 	extz bc
 	and bc,4
 	cp bc,0
-	jr z,L1369
+	jr z,L1383
 	ld wa,1
-	jr L1370
-L1369:
+	jr L1384
+L1383:
 	ld wa,65535
-L1370:
+L1384:
 	push xwa
 	ld wa,(_car_lat__0)
 	sra 4,wa
 	push xwa
 	call _id_car_draw
 	lda xsp,(xsp+12)
-	jp L1371
-L1368:
+	jp L1385
+L1382:
 	ld a,(_knock_t__0)
 	cp a,0
-	jr z,L1372
+	jr z,L1386
 	ld c,(_knock_t__0)
 	extz bc
 	sra 2,bc
 	and bc,1
 	cp bc,0
-	jr z,L1373
+	jr z,L1387
 	ld wa,1
-	jr L1374
-L1373:
+	jr L1388
+L1387:
 	ld wa,65535
-L1374:
+L1388:
 	ld (xsp+12),a
 	ld c,(_knock_t__0)
 	cp c,18
-	jr uge,L1375
+	jr uge,L1389
 	ld a,(xsp+12)
 	exts wa
 	sll 1,wa
-	jr L1376
-L1375:
+	jr L1390
+L1389:
 	ld wa,0
-L1376:
+L1390:
 	ld (xsp+14),wa
 	ld c,(_offroad__0)
 	cp c,0
-	jr z,L1377
+	jr z,L1391
 	ld c,(_speed__0)
 	cp c,20
-	jr ule,L1377
+	jr ule,L1391
 	ld wa,1
-	jr L1378
-L1377:
+	jr L1392
+L1391:
 	ld wa,0
-L1378:
+L1392:
 	push xwa
 	ld a,(xsp+16)
 	push xwa
@@ -6688,19 +6716,19 @@ L1378:
 	push xwa
 	call _id_car_draw
 	lda xsp,(xsp+12)
-	jr L1379
-L1372:
+	jr L1393
+L1386:
 	ld c,(_offroad__0)
 	cp c,0
-	jr z,L1380
+	jr z,L1394
 	ld c,(_speed__0)
 	cp c,20
-	jr ule,L1380
+	jr ule,L1394
 	ld wa,1
-	jr L1381
-L1380:
+	jr L1395
+L1394:
 	ld wa,0
-L1381:
+L1395:
 	push xwa
 	ld a,(_car_lean__0)
 	push xwa
@@ -6709,79 +6737,80 @@ L1381:
 	push xwa
 	call _id_car_draw
 	lda xsp,(xsp+12)
-L1379:
-L1371:
-L1367:
+L1393:
+L1385:
+L1381:
 	ld c,(_knock_t__0)
 	cp c,0
-	jr z,L1382
+	jr z,L1396
 	ld c,(_knock_t__0)
 	cp c,5
-	jr uge,L1382
+	jr uge,L1396
 	ld wa,1
-	jr L1383
-L1382:
+	jr L1397
+L1396:
 	ld wa,0
-L1383:
+L1397:
 	push xwa
 	ld c,(_skid__0)
 	cp c,0
-	jr nz,L1386
+	jr nz,L1400
 	ld c,(_knock_t__0)
 	cp c,0
-	jr z,L1384
+	jr z,L1398
 	ld c,(_knock_t__0)
 	cp c,20
-	jr uge,L1384
+	jr uge,L1398
 	ld c,(_speed__0)
 	cp c,30
-	jr ule,L1384
-L1386:
+	jr ule,L1398
+L1400:
 	ld c,(_crash_timer__0)
 	cp c,0
-	jr nz,L1384
+	jr nz,L1398
 	ld c,(_state__0)
 	cp c,2
-	jr nz,L1384
+	jr nz,L1398
 	ld wa,1
-	jr L1385
-L1384:
+	jr L1399
+L1398:
 	ld wa,0
-L1385:
+L1399:
 	push xwa
 	call _smoke_draw__0
 	lda xsp,(xsp+8)
 	ld a,(_offroad__0)
 	cp a,0
-	jr z,L1387
+	jr z,L1401
 	ld a,(_state__0)
 	cp a,2
-	jr nz,L1387
+	jr nz,L1401
 	incb 1,(_dbg_off)
-L1387:
+L1401:
 	ld a,(_state__0)
 	cp a,2
-	jr z,L1389
+	jr z,L1403
 	ld a,(_state__0)
 	cp a,1
-	jr z,L1389
+	jr z,L1403
 	ld a,(_state__0)
 	cp a,3
-	jr z,L1389
+	jr z,L1403
 	ld a,(_state__0)
 	cp a,4
-	jr nz,L1388
-L1389:
+	jr nz,L1402
+L1403:
 	call _engine_sound__0
-	jr L1390
-L1388:
+	jr L1404
+L1402:
 	call _player_engine_off
-L1390:
-L1340:
-L1341:
-	jp L1338
-L1339:
-L1331:
+L1404:
+	call _frame_commit__0
+L1351:
+L1352:
+	jp L1349
+L1350:
+L1342:
 	lda xsp,(xsp+16)
 	pop xiz
 	ret
@@ -6793,13 +6822,13 @@ _player_engine:
 	ld a,(xsp+8)
 	ld (_eng_attn__10),a
 	ldb (_eng_on__10),1
-L1392:
+L1406:
 	ret
 
 ; function player_engine_off
 _player_engine_off:
 	ldb (_eng_on__10),0
-L1394:
+L1408:
 	ret
 
 ; function player_init
@@ -6810,8 +6839,8 @@ _player_init:
 	ld xix,xwa
 	ldw (0B8h),43690
 	ld izl,0
-	jr L1408
-L1405:
+	jr L1422
+L1419:
 	ld xwa,_z80drv__10
 	ld c,izl
 	extz bc
@@ -6824,17 +6853,17 @@ L1405:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1407:
+L1421:
 	inc 1,izl
-L1408:
+L1422:
 	ld a,izl
 	cp a,65
-	jr ult,L1405
-L1406:
+	jr ult,L1419
+L1420:
 	ldw (0B8h),21845
 	ld izl,0
-	jr L1412
-L1409:
+	jr L1426
+L1423:
 	ld wa,0
 	ld xbc,_want_div__10
 	ld e,izl
@@ -6879,17 +6908,17 @@ L1409:
 	muls xde,18
 	add xbc,xde
 	ld (xbc+15),a
-L1411:
+L1425:
 	inc 1,izl
-L1412:
+L1426:
 	ld a,izl
 	cp a,4
-	jr ult,L1409
-L1410:
+	jr ult,L1423
+L1424:
 	ldb (_playing__10),0
 	ld a,(_g_vb_counter)
 	ld (_last_vbl__10),a
-L1404:
+L1418:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -6907,8 +6936,8 @@ _player_start:
 	ld xwa,(xsp+38)
 	ld (xsp+12),xwa
 	ld izl,0
-	jp L1422
-L1419:
+	jp L1436
+L1433:
 	lda xwa,(xsp+0)
 	ld c,izl
 	extz bc
@@ -6977,17 +7006,17 @@ L1419:
 	muls xde,18
 	add xbc,xde
 	ld (xbc+16),a
-L1421:
+L1435:
 	inc 1,izl
-L1422:
+L1436:
 	ld a,izl
 	cp a,4
-	jp ult,L1419
-L1420:
+	jp ult,L1433
+L1434:
 	ldb (_playing__10),1
 	ld a,(_g_vb_counter)
 	ld (_last_vbl__10),a
-L1418:
+L1432:
 	lda xsp,(xsp+18)
 	pop xiz
 	ret
@@ -6998,8 +7027,8 @@ _player_stop:
 	lda xsp,(xsp-2)
 	ldb (_playing__10),0
 	ld izl,0
-	jr L1432
-L1429:
+	jr L1446
+L1443:
 	ld a,0
 	ld xbc,_voice__10
 	ld e,izl
@@ -7007,14 +7036,14 @@ L1429:
 	muls xde,18
 	add xbc,xde
 	ld (xbc+15),a
-L1431:
+L1445:
 	inc 1,izl
-L1432:
+L1446:
 	ld a,izl
 	cp a,4
-	jr ult,L1429
-L1430:
-L1428:
+	jr ult,L1443
+L1444:
+L1442:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -7026,8 +7055,8 @@ _voice_events__10:
 	ld xiz,(xsp+10)
 	ld wa,0
 	ld (xsp+0),a
-	jp L1449
-L1447:
+	jp L1463
+L1461:
 	ld xwa,(xiz)
 	inc 1,xwa
 	ld (xiz),xwa
@@ -7037,25 +7066,25 @@ L1447:
 	incb 1,(xsp+0)
 	ld a,ixl
 	cp a,0
-	jr nz,L1450
+	jr nz,L1464
 	ld xwa,(xiz+4)
 	ld (xiz),xwa
-	jp L1449
-L1450:
+	jp L1463
+L1464:
 	ld a,ixl
 	cp a,240
-	jr nz,L1451
+	jr nz,L1465
 	ld xwa,(xiz)
 	inc 1,xwa
 	ld (xiz),xwa
 	dec 1,xwa
 	ld a,(xwa)
 	ld (xiz+13),a
-	jp L1449
-L1451:
+	jp L1463
+L1465:
 	ld a,ixl
 	cp a,244
-	jr nz,L1452
+	jr nz,L1466
 	ld xwa,(xiz)
 	inc 1,xwa
 	ld (xiz),xwa
@@ -7064,14 +7093,14 @@ L1451:
 	ld (xiz+14),a
 	ld a,(xiz+14)
 	cp a,17
-	jr ule,L1453
+	jr ule,L1467
 	ldb (xiz+14),0
-L1453:
-	jr L1449
-L1452:
+L1467:
+	jr L1463
+L1466:
 	ld a,ixl
 	cp a,255
-	jr nz,L1454
+	jr nz,L1468
 	ld xwa,(xiz)
 	inc 1,xwa
 	ld (xiz),xwa
@@ -7080,16 +7109,16 @@ L1452:
 	extz wa
 	ld (xiz+8),wa
 	ldb (xiz+15),0
-	jr L1449
-L1454:
+	jr L1463
+L1468:
 	ld a,ixl
 	cp a,240
-	jr ult,L1455
+	jr ult,L1469
 	ld xwa,(xiz)
 	inc 1,xwa
 	ld (xiz),xwa
-	jr L1449
-L1455:
+	jr L1463
+L1469:
 	ld xwa,(xiz)
 	inc 1,xwa
 	ld (xiz),xwa
@@ -7101,15 +7130,15 @@ L1455:
 	ldb (xiz+12),0
 	ld a,(xsp+14)
 	cp a,3
-	jr nz,L1456
+	jr nz,L1470
 	ld a,ixl
 	extz wa
 	sub wa,1
 	and wa,7
 	ld (xiz+10),wa
 	ldb (xiz+16),1
-	jr L1457
-L1456:
+	jr L1471
+L1470:
 	push xix
 	ld a,ixl
 	push xwa
@@ -7117,17 +7146,17 @@ L1456:
 	lda xsp,(xsp+4)
 	pop xix
 	ld (xiz+10),wa
-L1457:
-L1449:
+L1471:
+L1463:
 	ld wa,(xiz+8)
 	cp wa,0
-	jr nz,L1458
+	jr nz,L1472
 	ld a,(xsp+0)
 	cp a,32
-	jp ult,L1447
-L1458:
-L1448:
-L1446:
+	jp ult,L1461
+L1472:
+L1462:
+L1460:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -7141,9 +7170,9 @@ _note_div:
 	ld izl,a
 	ld a,izl
 	cp a,50
-	jr ule,L1462
+	jr ule,L1476
 	ld izl,50
-L1462:
+L1476:
 	ld xwa,_NOTE_TABLE
 	ld c,izl
 	extz bc
@@ -7165,8 +7194,8 @@ L1462:
 	extz bc
 	and bc,15
 	or wa,bc
-	jr L1461
-L1461:
+	jr L1475
+L1475:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -7181,12 +7210,12 @@ _flush__10:
 	ld xiy,xwa
 	ld a,(07003h)
 	cp a,0
-	jr z,L1479
-	jp L1478
-L1479:
+	jr z,L1493
+	jp L1492
+L1493:
 	ld izl,0
-	jp L1483
-L1480:
+	jp L1497
+L1494:
 	ld xwa,_want_div__10
 	ld c,izl
 	extz bc
@@ -7204,7 +7233,7 @@ L1480:
 	ld (xsp+8),a
 	ld a,izl
 	cp a,3
-	jr uge,L1484
+	jr uge,L1498
 	ld wa,ix
 	ld xbc,_sent_div__10
 	ld e,izl
@@ -7214,7 +7243,7 @@ L1480:
 	add xbc,xde
 	ld bc,(xbc)
 	cp wa,bc
-	jr nz,L1485
+	jr nz,L1499
 	ld a,(xsp+8)
 	ld xbc,_sent_attn__10
 	ld e,izl
@@ -7223,9 +7252,9 @@ L1480:
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jr nz,L1485
-	jp L1482
-L1485:
+	jr nz,L1499
+	jp L1496
+L1499:
 	ld a,128
 	ld c,izl
 	sll 5,c
@@ -7246,26 +7275,26 @@ L1485:
 	and c,15
 	or a,c
 	ld (xiy+2),a
-	jr L1486
-L1484:
+	jr L1500
+L1498:
 	ld a,(_noise_trig__10)
 	cp a,0
-	jr nz,L1487
+	jr nz,L1501
 	ld wa,ix
 	cp wa,(_sent_div__10+6)
-	jr nz,L1487
+	jr nz,L1501
 	ld a,(xsp+8)
 	cp a,(_sent_attn__10+3)
-	jr nz,L1487
-	jp L1482
-L1487:
+	jr nz,L1501
+	jp L1496
+L1501:
 	ld a,(_noise_trig__10)
 	cp a,0
-	jr nz,L1489
+	jr nz,L1503
 	ld wa,ix
 	cp wa,(_sent_div__10+6)
-	jr z,L1488
-L1489:
+	jr z,L1502
+L1503:
 	ld a,224
 	ld c,ixl
 	and c,7
@@ -7276,8 +7305,8 @@ L1489:
 	and c,7
 	or a,c
 	ld (xiy+1),a
-	jr L1490
-L1488:
+	jr L1504
+L1502:
 	ld a,240
 	ld c,(xsp+8)
 	and c,15
@@ -7288,14 +7317,14 @@ L1488:
 	and c,15
 	or a,c
 	ld (xiy+1),a
-L1490:
+L1504:
 	ld a,240
 	ld c,(xsp+8)
 	and c,15
 	or a,c
 	ld (xiy+2),a
 	ldb (_noise_trig__10),0
-L1486:
+L1500:
 	ld wa,ix
 	ld xbc,_sent_div__10
 	ld e,izl
@@ -7317,24 +7346,24 @@ L1486:
 	add xwa,xbc
 	ld xiy,xwa
 	incb 1,(xsp+0)
-L1482:
+L1496:
 	inc 1,izl
-L1483:
+L1497:
 	ld a,izl
 	cp a,4
-	jr uge,L1491
+	jr uge,L1505
 	ld a,(xsp+0)
 	cp a,5
-	jp ult,L1480
-L1491:
-L1481:
+	jp ult,L1494
+L1505:
+L1495:
 	ld a,(xsp+0)
 	cp a,0
-	jr z,L1492
+	jr z,L1506
 	ld a,(xsp+0)
 	ld (07003h),a
+L1506:
 L1492:
-L1478:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -7352,12 +7381,12 @@ _player_update:
 	ld (_last_vbl__10),a
 	ld a,iyl
 	cp a,8
-	jr ule,L1515
+	jr ule,L1529
 	ld iyl,8
-L1515:
+L1529:
 	ld izl,0
-	jp L1519
-L1516:
+	jp L1533
+L1530:
 	ld wa,15
 	ld (xsp+3),a
 	ld xwa,_want_div__10
@@ -7370,7 +7399,7 @@ L1516:
 	ld (xsp+4),wa
 	ld a,(_playing__10)
 	cp a,0
-	jp z,L1520
+	jp z,L1534
 	ld xwa,_voice__10
 	ld c,izl
 	extz bc
@@ -7382,14 +7411,14 @@ L1516:
 	ld c,iyl
 	extz bc
 	cp wa,bc
-	jr ule,L1521
+	jr ule,L1535
 	ld wa,(xix+8)
 	ld c,iyl
 	extz bc
 	sub wa,bc
 	ld (xix+8),wa
-	jr L1522
-L1521:
+	jr L1536
+L1535:
 	ldw (xix+8),0
 	push xix
 	push xiy
@@ -7401,17 +7430,17 @@ L1521:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L1522:
+L1536:
 	ld a,(xix+12)
 	cp a,250
-	jr uge,L1523
+	jr uge,L1537
 	ld a,(xix+12)
 	add a,iyl
 	ld (xix+12),a
-L1523:
+L1537:
 	ld a,(xix+15)
 	cp a,0
-	jr z,L1524
+	jr z,L1538
 	ld xwa,_inst_tab__10
 	ld c,(xix+14)
 	extz bc
@@ -7432,43 +7461,43 @@ L1523:
 	ld xbc,(xsp+10)
 	ld c,(xbc+1)
 	cp a,c
-	jr ule,L1525
+	jr ule,L1539
 	ld xwa,(xsp+10)
 	ld a,(xwa+1)
 	ld (xsp+14),a
-L1525:
+L1539:
 	ld a,(xix+13)
 	add a,(xsp+14)
 	ld (xsp+3),a
 	ld a,(xsp+3)
 	cp a,15
-	jr ule,L1526
+	jr ule,L1540
 	ldb (xsp+3),15
-L1526:
+L1540:
 	ld wa,(xix+10)
 	ld (xsp+4),wa
 	ld a,izl
 	cp a,3
-	jr nz,L1527
+	jr nz,L1541
 	ld a,(xix+16)
 	cp a,0
-	jr z,L1527
+	jr z,L1541
 	ldb (xix+16),0
 	ldb (_noise_trig__10),1
-L1527:
-L1524:
-L1520:
+L1541:
+L1538:
+L1534:
 	ld a,izl
 	cp a,2
-	jr nz,L1528
+	jr nz,L1542
 	ld a,(_eng_on__10)
 	cp a,0
-	jr z,L1528
+	jr z,L1542
 	ld wa,(_eng_div__10)
 	ld (xsp+4),wa
 	ld a,(_eng_attn__10)
 	ld (xsp+3),a
-L1528:
+L1542:
 	ld xwa,_sfx_frames__10
 	ld c,izl
 	extz bc
@@ -7476,7 +7505,7 @@ L1528:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jp z,L1529
+	jp z,L1543
 	ld xwa,_sfx_attn__10
 	ld c,izl
 	extz bc
@@ -7491,7 +7520,7 @@ L1528:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L1530
+	jr z,L1544
 	ld xwa,_sfx_age__10
 	ld c,izl
 	extz bc
@@ -7514,10 +7543,10 @@ L1528:
 	ld (xsp+6),a
 	ld a,(xsp+6)
 	cp a,15
-	jr ule,L1531
+	jr ule,L1545
 	ldb (xsp+6),15
-L1531:
-L1530:
+L1545:
+L1544:
 	ld a,(xsp+6)
 	ld (xsp+3),a
 	ld xwa,_sfx_div__10
@@ -7560,7 +7589,7 @@ L1530:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,250
-	jr uge,L1532
+	jr uge,L1546
 	ld xwa,_sfx_age__10
 	ld c,izl
 	extz bc
@@ -7574,7 +7603,7 @@ L1530:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1532:
+L1546:
 	ld xbc,_sfx_frames__10
 	ld e,izl
 	extz de
@@ -7582,7 +7611,7 @@ L1532:
 	add xbc,xde
 	ld c,(xbc)
 	cp c,iyl
-	jr ule,L1533
+	jr ule,L1547
 	ld xwa,_sfx_frames__10
 	ld c,izl
 	extz bc
@@ -7591,17 +7620,17 @@ L1532:
 	ld a,(xwa)
 	sub a,iyl
 	extz wa
-	jr L1534
-L1533:
+	jr L1548
+L1547:
 	ld wa,0
-L1534:
+L1548:
 	ld xbc,_sfx_frames__10
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1529:
+L1543:
 	ld wa,(xsp+4)
 	ld xbc,_want_div__10
 	ld e,izl
@@ -7617,19 +7646,19 @@ L1529:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1518:
+L1532:
 	inc 1,izl
-L1519:
+L1533:
 	ld a,izl
 	cp a,4
-	jp ult,L1516
-L1517:
+	jp ult,L1530
+L1531:
 	push xix
 	push xiy
 	call _flush__10
 	pop xiy
 	pop xix
-L1514:
+L1528:
 	lda xsp,(xsp+16)
 	pop xiz
 	ret
@@ -7682,7 +7711,7 @@ _player_sfx_tone:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L1536:
+L1550:
 	pop xiz
 	ret
 
@@ -7700,7 +7729,7 @@ _player_sfx_noise:
 	ld (_sfx_decay__10+3),a
 	ldb (_sfx_age__10+3),0
 	ldb (_noise_trig__10),1
-L1538:
+L1552:
 	ret
 
 ; function banner_init
@@ -7710,8 +7739,8 @@ _banner_init:
 	ld xwa,41520
 	ld xix,xwa
 	ld izl,0
-	jr L1548
-L1545:
+	jr L1562
+L1559:
 	ld xwa,_gfx_banner_tiles
 	ld c,izl
 	extz bc
@@ -7726,13 +7755,13 @@ L1545:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1547:
+L1561:
 	inc 1,izl
-L1548:
+L1562:
 	ld a,izl
 	cp a,40
-	jr ult,L1545
-L1546:
+	jr ult,L1559
+L1560:
 	push xix
 	ld wa,2
 	push xwa
@@ -7747,7 +7776,7 @@ L1546:
 	pop xix
 	ld (_car_d__11),wa
 	ldb (_b_on__11),0
-L1544:
+L1558:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -7759,9 +7788,9 @@ _banner_style:
 	ld izl,a
 	ld a,izl
 	cp a,4
-	jr ult,L1552
+	jr ult,L1566
 	ld izl,0
-L1552:
+L1566:
 	ld wa,4095
 	push xwa
 	ld xwa,_b_band__11
@@ -7814,7 +7843,7 @@ L1552:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-L1551:
+L1565:
 	pop xiz
 	ret
 
@@ -7824,22 +7853,23 @@ _erase__11:
 	lda xsp,(xsp-2)
 	ld a,(_b_on__11)
 	cp a,0
-	jr nz,L1564
-	jr L1563
-L1564:
+	jr nz,L1578
+	jr L1577
+L1578:
 	ld a,(_b_r0__11)
 	ld ixl,a
-	jr L1568
-L1565:
+	jr L1582
+L1579:
 	ld a,(_b_c0__11)
 	ld izl,a
-	jr L1572
-L1569:
+	jr L1586
+L1583:
 	ld wa,0
-	ld xbc,36864
+	ld xbc,_ovl_grid
 	ld e,ixl
+	sub e,2
 	extz de
-	sll 5,de
+	mul xde,20
 	ld l,izl
 	extz hl
 	add de,hl
@@ -7847,22 +7877,34 @@ L1569:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1571:
+L1585:
 	inc 1,izl
-L1572:
+L1586:
 	ld a,izl
 	cp a,(_b_c1__11)
-	jr ule,L1569
-L1570:
-L1567:
+	jr ule,L1583
+L1584:
+L1581:
 	inc 1,ixl
-L1568:
+L1582:
 	ld a,ixl
 	cp a,(_b_foot__11)
-	jr ule,L1565
-L1566:
+	jr ule,L1579
+L1580:
+	push xix
+	ld a,(_b_c1__11)
+	push xwa
+	ld a,(_b_c0__11)
+	push xwa
+	ld a,(_b_foot__11)
+	push xwa
+	ld a,(_b_r0__11)
+	push xwa
+	call _ovl_mark
+	lda xsp,(xsp+16)
+	pop xix
 	ldb (_b_on__11),0
-L1563:
+L1577:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -7872,7 +7914,7 @@ _banner_hide:
 	call _erase__11
 	ld a,(_b_spr__11)
 	cp a,0
-	jr z,L1576
+	jr z,L1590
 	ld a,64
 	push xwa
 	ld a,58
@@ -7880,21 +7922,35 @@ _banner_hide:
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
 	ldb (_b_spr__11),0
-L1576:
-L1575:
+L1590:
+L1589:
 	ret
 
 ; function banner_dirty
 _banner_dirty:
+	ld a,(_b_on__11)
+	cp a,0
+	jr z,L1594
+	ld a,(_b_c1__11)
+	push xwa
+	ld a,(_b_c0__11)
+	push xwa
+	ld a,(_b_foot__11)
+	push xwa
+	ld a,(_b_r0__11)
+	push xwa
+	call _ovl_touch
+	lda xsp,(xsp+16)
+L1594:
 	ldb (_b_r0__11),255
-L1578:
+L1593:
 	ret
 
 ; function banner_active
 _banner_active:
 	ld a,(_b_on__11)
-	jr L1580
-L1580:
+	jr L1596
+L1596:
 	ret
 
 ; function banner_show
@@ -7903,18 +7959,18 @@ _banner_show:
 	lda xsp,(xsp-46)
 	ld wa,(xsp+54)
 	cp wa,0
-	jr lt,L1635
+	jr lt,L1651
 	ld wa,(xsp+54)
 	cp wa,1400
-	jr le,L1634
-L1635:
+	jr le,L1650
+L1651:
 	push xix
 	push xiy
 	call _banner_hide
 	pop xiy
 	pop xix
-	jp L1633
-L1634:
+	jp L1649
+L1650:
 	push xix
 	push xiy
 	ld wa,(xsp+62)
@@ -7927,14 +7983,14 @@ L1634:
 	ld (xsp+6),a
 	ld a,(xsp+6)
 	cp a,255
-	jr nz,L1636
+	jr nz,L1652
 	push xix
 	push xiy
 	call _banner_hide
 	pop xiy
 	pop xix
-	jp L1633
-L1636:
+	jp L1649
+L1652:
 	push xix
 	push xiy
 	lda xwa,(xsp+8)
@@ -7962,18 +8018,18 @@ L1636:
 	ld (xsp+16),wa
 	ld wa,(xsp+16)
 	cp wa,16
-	jr lt,L1638
+	jr lt,L1654
 	ld wa,(xsp+18)
 	cp wa,151
-	jr le,L1637
-L1638:
+	jr le,L1653
+L1654:
 	push xix
 	push xiy
 	call _banner_hide
 	pop xiy
 	pop xix
-	jp L1633
-L1637:
+	jp L1649
+L1653:
 	ld wa,(xsp+0)
 	sub wa,(xsp+24)
 	sub wa,4
@@ -7990,73 +8046,73 @@ L1637:
 	ld iyl,a
 	ld a,iyl
 	cp a,(xsp+7)
-	jr uge,L1639
+	jr uge,L1655
 	ld a,(xsp+7)
 	ld iyl,a
-L1639:
+L1655:
 	ld wa,(xsp+2)
 	sra 3,wa
 	ld (xsp+11),a
 	ld a,(xsp+11)
 	cp a,18
-	jr ule,L1640
+	jr ule,L1656
 	ldb (xsp+11),18
-L1640:
+L1656:
 	ld bc,(xsp+20)
 	cp bc,0
-	jr ge,L1641
+	jr ge,L1657
 	ld wa,0
-	jr L1642
-L1641:
+	jr L1658
+L1657:
 	ld bc,(xsp+20)
 	sra 3,bc
 	cp bc,19
-	jr le,L1643
+	jr le,L1659
 	ld wa,19
-	jr L1644
-L1643:
+	jr L1660
+L1659:
 	ld wa,(xsp+20)
 	sra 3,wa
-L1644:
-L1642:
+L1660:
+L1658:
 	ld (xsp+9),a
 	ld bc,(xsp+22)
 	cp bc,0
-	jr ge,L1645
+	jr ge,L1661
 	ld wa,0
-	jr L1646
-L1645:
+	jr L1662
+L1661:
 	ld bc,(xsp+22)
 	sra 3,bc
 	cp bc,19
-	jr le,L1647
+	jr le,L1663
 	ld wa,19
-	jr L1648
-L1647:
+	jr L1664
+L1663:
 	ld wa,(xsp+22)
 	sra 3,wa
-L1648:
-L1646:
+L1664:
+L1662:
 	ld (xsp+10),a
 	ld a,(_b_on__11)
 	cp a,0
-	jr z,L1650
+	jr z,L1666
 	ld a,(xsp+7)
 	cp a,(_b_r0__11)
-	jr nz,L1650
+	jr nz,L1666
 	ld a,iyl
 	cp a,(_b_r1__11)
-	jr nz,L1650
+	jr nz,L1666
 	ld a,(xsp+9)
 	cp a,(_b_c0__11)
-	jr nz,L1650
+	jr nz,L1666
 	ld a,(xsp+10)
 	cp a,(_b_c1__11)
-	jr nz,L1650
+	jr nz,L1666
 	ld a,(xsp+11)
 	cp a,(_b_foot__11)
-	jp z,L1649
-L1650:
+	jp z,L1665
+L1666:
 	push xix
 	push xiy
 	call _erase__11
@@ -8064,52 +8120,53 @@ L1650:
 	pop xix
 	ld a,(xsp+7)
 	ld izl,a
-	jp L1654
-L1651:
+	jp L1670
+L1667:
 	ld a,(xsp+9)
 	ld ixl,a
-	jr L1658
-L1655:
+	jr L1674
+L1671:
 	ld wa,36
 	ld (xsp+26),wa
 	ld a,(xsp+58)
 	cp a,0
-	jr z,L1659
+	jr z,L1675
 	ld a,ixl
 	cp a,(xsp+9)
-	jr z,L1660
+	jr z,L1676
 	ld a,ixl
 	cp a,(xsp+10)
-	jr nz,L1659
-L1660:
+	jr nz,L1675
+L1676:
 	ldw (xsp+26),42
-	jr L1661
-L1659:
+	jr L1677
+L1675:
 	ld a,izl
 	cp a,(xsp+7)
-	jr nz,L1662
+	jr nz,L1678
 	ld a,iyl
 	cp a,(xsp+7)
-	jr ule,L1662
+	jr ule,L1678
 	ldw (xsp+26),35
-	jr L1663
-L1662:
+	jr L1679
+L1678:
 	ld a,izl
 	cp a,iyl
-	jr nz,L1664
+	jr nz,L1680
 	ld a,iyl
 	cp a,(xsp+7)
-	jr ule,L1664
+	jr ule,L1680
 	ldw (xsp+26),37
-L1664:
-L1663:
-L1661:
+L1680:
+L1679:
+L1677:
 	ld wa,(xsp+26)
 	or wa,5120
-	ld xbc,36864
+	ld xbc,_ovl_grid
 	ld e,izl
+	sub e,2
 	extz de
-	sll 5,de
+	mul xde,20
 	ld l,ixl
 	extz hl
 	add de,hl
@@ -8117,33 +8174,34 @@ L1661:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1657:
+L1673:
 	inc 1,ixl
-L1658:
+L1674:
 	ld a,ixl
 	cp a,(xsp+10)
-	jr ule,L1655
-L1656:
-L1653:
+	jp ule,L1671
+L1672:
+L1669:
 	inc 1,izl
-L1654:
+L1670:
 	ld a,izl
 	cp a,iyl
-	jp ule,L1651
-L1652:
+	jp ule,L1667
+L1668:
 	ld a,iyl
 	add a,1
 	ld izl,a
-	jr L1668
-L1665:
+	jr L1684
+L1681:
 	ld wa,(xsp+20)
 	cp wa,0
-	jr lt,L1669
+	jr lt,L1685
 	ld wa,5158
-	ld xbc,36864
+	ld xbc,_ovl_grid
 	ld e,izl
+	sub e,2
 	extz de
-	sll 5,de
+	mul xde,20
 	ld l,(xsp+9)
 	extz hl
 	add de,hl
@@ -8151,15 +8209,16 @@ L1665:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1669:
+L1685:
 	ld wa,(xsp+22)
 	cp wa,160
-	jr ge,L1670
+	jr ge,L1686
 	ld wa,5158
-	ld xbc,36864
+	ld xbc,_ovl_grid
 	ld e,izl
+	sub e,2
 	extz de
-	sll 5,de
+	mul xde,20
 	ld l,(xsp+10)
 	extz hl
 	add de,hl
@@ -8167,14 +8226,28 @@ L1669:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1670:
-L1667:
+L1686:
+L1683:
 	inc 1,izl
-L1668:
+L1684:
 	ld a,izl
 	cp a,(xsp+11)
-	jr ule,L1665
-L1666:
+	jr ule,L1681
+L1682:
+	push xix
+	push xiy
+	ld a,(xsp+18)
+	push xwa
+	ld a,(xsp+21)
+	push xwa
+	ld a,(xsp+27)
+	push xwa
+	ld a,(xsp+27)
+	push xwa
+	call _ovl_mark
+	lda xsp,(xsp+16)
+	pop xiy
+	pop xix
 	ldb (_b_on__11),1
 	ld a,(xsp+7)
 	ld (_b_r0__11),a
@@ -8186,12 +8259,12 @@ L1666:
 	ld (_b_c1__11),a
 	ld a,(xsp+11)
 	ld (_b_foot__11),a
-L1649:
+L1665:
 	ldb (xsp+14),0
-	jr L1673
-L1671:
+	jr L1689
+L1687:
 	incb 1,(xsp+14)
-L1673:
+L1689:
 	ld xwa,(xsp+62)
 	ld c,(xsp+14)
 	extz bc
@@ -8199,12 +8272,12 @@ L1673:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L1674
+	jr z,L1690
 	ld a,(xsp+14)
 	cp a,6
-	jr ult,L1671
-L1674:
-L1672:
+	jr ult,L1687
+L1690:
+L1688:
 	ld wa,2
 	mul xwa,(xsp+24)
 	add wa,8
@@ -8212,9 +8285,9 @@ L1672:
 	extz bc
 	sll 3,bc
 	cp wa,bc
-	jr ge,L1675
+	jr ge,L1691
 	ldb (xsp+14),0
-L1675:
+L1691:
 	ld wa,8
 	ld bc,(xsp+24)
 	sra 4,bc
@@ -8245,8 +8318,8 @@ L1675:
 	sub wa,4
 	ld (xsp+30),a
 	ldb (xsp+15),0
-	jp L1679
-L1676:
+	jp L1695
+L1692:
 	ld wa,(xsp+28)
 	ld bc,(xsp+26)
 	ld e,(xsp+15)
@@ -8259,11 +8332,11 @@ L1676:
 	ld (xsp+34),a
 	ld wa,(xsp+32)
 	cp wa,65529
-	jr lt,L1681
+	jr lt,L1697
 	ld wa,(xsp+32)
 	cp wa,159
-	jr le,L1680
-L1681:
+	jr le,L1696
+L1697:
 	push xix
 	push xiy
 	ld a,(xsp+42)
@@ -8275,9 +8348,9 @@ L1681:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-	jp L1678
-L1680:
-L1682:
+	jp L1694
+L1696:
+L1698:
 	ld a,(xsp+34)
 	ld (xsp+35),a
 	ld a,(xsp+32)
@@ -8296,12 +8369,12 @@ L1682:
 	ld (xsp+40),a
 	ld a,0
 	ld (xsp+41),a
-	ld wa,34816
+	ld xwa,_spr_shadow
 	ld c,(xsp+35)
 	extz bc
 	sll 2,bc
-	add wa,bc
-	extz xwa
+	extz xbc
+	add xwa,xbc
 	ld (xsp+42),xwa
 	ld a,(xsp+38)
 	and a,255
@@ -8327,21 +8400,21 @@ L1682:
 	ld (xbc+3),a
 	ld a,(xsp+40)
 	and a,15
-	ld bc,35840
+	ld xbc,_spr_pal_shadow
 	ld e,(xsp+35)
 	extz de
-	add bc,de
-	extz xbc
+	exts xde
+	add xbc,xde
 	ld (xbc),a
-L1684:
-L1683:
-L1678:
+L1700:
+L1699:
+L1694:
 	incb 1,(xsp+15)
-L1679:
+L1695:
 	ld a,(xsp+15)
 	cp a,(xsp+14)
-	jp ult,L1676
-L1677:
+	jp ult,L1692
+L1693:
 	push xix
 	push xiy
 	ld a,64
@@ -8354,7 +8427,7 @@ L1677:
 	pop xiy
 	pop xix
 	ldb (_b_spr__11),1
-L1633:
+L1649:
 	lda xsp,(xsp+46)
 	pop xiz
 	ret
@@ -8366,8 +8439,8 @@ _bridge_init:
 	ld xwa,41984
 	ld xiy,xwa
 	ld izl,0
-	jr L1707
-L1704:
+	jr L1723
+L1720:
 	ld xwa,_gfx_bridge_tiles
 	ld c,izl
 	extz bc
@@ -8382,18 +8455,18 @@ L1704:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1706:
+L1722:
 	inc 1,izl
-L1707:
+L1723:
 	ld a,izl
 	cp a,8
-	jr ult,L1704
-L1705:
+	jr ult,L1720
+L1721:
 	ld xwa,42416
 	ld xiy,xwa
 	ld izl,0
-	jr L1711
-L1708:
+	jr L1727
+L1724:
 	ld xwa,_gfx_bridge_tiles
 	ld bc,8
 	ld e,izl
@@ -8410,19 +8483,19 @@ L1708:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1710:
+L1726:
 	inc 1,izl
-L1711:
+L1727:
 	ld a,izl
 	cp a,40
-	jr ult,L1708
-L1709:
+	jr ult,L1724
+L1725:
 	ld ixl,0
-	jr L1716
-L1713:
+	jr L1732
+L1729:
 	ld wa,40960
 	extz xwa
-	ld xbc,_slim__12_L1712
+	ld xbc,_slim__12_L1728
 	ld e,ixl
 	extz de
 	exts xde
@@ -8433,8 +8506,8 @@ L1713:
 	add xwa,xbc
 	ld xiy,xwa
 	ld izl,0
-	jr L1720
-L1717:
+	jr L1736
+L1733:
 	ld xwa,_gfx_bridge_tiles
 	ld bc,6
 	ld e,ixl
@@ -8455,20 +8528,20 @@ L1717:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L1719:
+L1735:
 	inc 1,izl
-L1720:
+L1736:
 	ld a,izl
 	cp a,8
-	jr ult,L1717
-L1718:
-L1715:
+	jr ult,L1733
+L1734:
+L1731:
 	inc 1,ixl
-L1716:
+L1732:
 	ld a,ixl
 	cp a,6
-	jr ult,L1713
-L1714:
+	jr ult,L1729
+L1730:
 	push xix
 	push xiy
 	ld wa,147
@@ -8478,64 +8551,40 @@ L1714:
 	pop xiy
 	pop xix
 	ld (_car_d__12),wa
-L1703:
+L1719:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
 
 ; function clear_box
 _clear_box__12:
-	push xiz
-	lda xsp,(xsp-6)
 	ld a,(_bb_r0__12)
 	cp a,255
-	jr nz,L1732
-	jr L1731
-L1732:
-	ld a,(_bb_r0__12)
-	ld ixl,a
-	jr L1736
-L1733:
-	ld xwa,36864
-	ld c,ixl
-	extz bc
-	sll 5,bc
-	ld e,(_bb_c0__12)
-	extz de
-	add bc,de
-	extz xbc
-	sll 1,xbc
-	add xwa,xbc
-	lda xwa,(xwa)
-	ld xiy,xwa
-	ld a,(_bb_c0__12)
-	ld izl,a
-	jr L1740
-L1737:
-	ld wa,0
-	ld xbc,xiy
-	inc 2,xbc
-	ld xiy,xbc
-	dec 2,xbc
-	ld (xbc),wa
-L1739:
-	inc 1,izl
+	jr nz,L1740
+	jr L1739
 L1740:
-	ld a,izl
-	cp a,(_bb_c1__12)
-	jr ule,L1737
-L1738:
-L1735:
-	inc 1,ixl
-L1736:
-	ld a,ixl
-	cp a,(_bb_r1__12)
-	jr ule,L1733
-L1734:
+	ld a,(_bb_c1__12)
+	push xwa
+	ld a,(_bb_c0__12)
+	push xwa
+	ld a,(_bb_r1__12)
+	push xwa
+	ld a,(_bb_r0__12)
+	push xwa
+	call _ovl_clear
+	lda xsp,(xsp+16)
+	ld a,(_bb_c1__12)
+	push xwa
+	ld a,(_bb_c0__12)
+	push xwa
+	ld a,(_bb_r1__12)
+	push xwa
+	ld a,(_bb_r0__12)
+	push xwa
+	call _ovl_mark
+	lda xsp,(xsp+16)
 	ldb (_bb_r0__12),255
-L1731:
-	lda xsp,(xsp+6)
-	pop xiz
+L1739:
 	ret
 
 ; function bridge_hide
@@ -9264,15 +9313,16 @@ L1925:
 	ld wa,63
 L1926:
 	ld (xsp+132),wa
-	ld xwa,36864
+	ld xwa,_ovl_grid
 	lda xbc,(xsp+5)
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld c,(xbc)
+	sub c,2
 	extz bc
-	sll 5,bc
+	mul xbc,20
 	lda xde,(xsp+41)
 	ld l,izl
 	extz hl
@@ -9335,10 +9385,11 @@ L1931:
 	jr z,L1935
 	ld wa,(xsp+130)
 	or wa,5632
-	ld xbc,36864
+	ld xbc,_ovl_grid
 	ld e,(xsp+127)
+	sub e,2
 	extz de
-	sll 5,de
+	mul xde,20
 	lda xhl,(xsp+41)
 	push xde
 	ld e,izl
@@ -9364,10 +9415,11 @@ L1935:
 	jr z,L1936
 	ld wa,(xsp+132)
 	or wa,5632
-	ld xbc,36864
+	ld xbc,_ovl_grid
 	ld e,(xsp+127)
+	sub e,2
 	extz de
-	sll 5,de
+	mul xde,20
 	lda xhl,(xsp+77)
 	push xde
 	ld e,izl
@@ -9449,10 +9501,11 @@ L1944:
 L1945:
 L1943:
 	ld (xsp+128),wa
-	ld xwa,36864
+	ld xwa,_ovl_grid
 	ld c,(xsp+127)
+	sub c,2
 	extz bc
-	sll 5,bc
+	mul xbc,20
 	lda xde,(xsp+41)
 	ld l,izl
 	extz hl
@@ -9595,10 +9648,11 @@ L1961:
 	ld (xsp+128),wa
 	ld wa,(xsp+128)
 	or wa,5632
-	ld xbc,36864
+	ld xbc,_ovl_grid
 	ld e,(xsp+127)
+	sub e,2
 	extz de
-	sll 5,de
+	mul xde,20
 	ld l,ixl
 	extz hl
 	add de,hl
@@ -9681,10 +9735,11 @@ L1970:
 	ld (xsp+128),wa
 	ld wa,(xsp+128)
 	or wa,5632
-	ld xbc,36864
+	ld xbc,_ovl_grid
 	ld e,(xsp+127)
+	sub e,2
 	extz de
-	sll 5,de
+	mul xde,20
 	ld l,ixl
 	extz hl
 	add de,hl
@@ -9823,6 +9878,20 @@ L1919:
 	cp a,0
 	jp ugt,L1917
 L1918:
+	push xix
+	push xiy
+	ld a,(_bb_c1__12)
+	push xwa
+	ld a,(_bb_c0__12)
+	push xwa
+	ld a,(_bb_r1__12)
+	push xwa
+	ld a,(_bb_r0__12)
+	push xwa
+	call _ovl_mark
+	lda xsp,(xsp+16)
+	pop xiy
+	pop xix
 L1883:
 	lda xsp,(xsp+148)
 	pop xiz
@@ -11081,17 +11150,39 @@ _isr_vblank__15:
 	push xiy
 	push xiz
 	ldb (06Fh),78
+	ld a,(_spr_ready)
+	cp a,0
+	jr z,L2299
+	ld xwa,128
+	push xwa
+	ld xwa,_spr_shadow
+	push xwa
+	ld xwa,34816
+	push xwa
+	call _ngpc_memcpy_w
+	lda xsp,(xsp+12)
+	ld xwa,32
+	push xwa
+	ld xwa,_spr_pal_shadow
+	push xwa
+	ld xwa,35840
+	push xwa
+	call _ngpc_memcpy_w
+	lda xsp,(xsp+12)
+	ldb (_spr_ready),0
+L2299:
 	ld xwa,(_g_vb_hook__15)
 	cp xwa,0
-	jr z,L2298
+	jr z,L2300
 	ld xwa,(_g_vb_hook__15)
 	ld xhl,xwa
 	call (xhl)
-L2298:
+L2300:
+	call _ovl_vblank
 	call _ngpc_vramq_flush
 	incb 1,(_g_vb_counter)
 	call _ngpc_input_vblank
-L2297:
+L2298:
 	pop xiz
 	pop xiy
 	pop xix
@@ -11108,12 +11199,12 @@ _ngpc_init:
 	call _runtime_bootstrap__15
 	ld c,(06F91h)
 	cp c,0
-	jr z,L2307
+	jr z,L2309
 	ld wa,1
-	jr L2308
-L2307:
+	jr L2310
+L2309:
 	ld wa,0
-L2308:
+L2310:
 	ld (_s_is_color__15),a
 	ld a,(06F87h)
 	ld (_s_language__15),a
@@ -11167,8 +11258,8 @@ L2308:
 	ldb (08021h),0
 	andb (08012h),127
 	ldb (xsp+0),0
-	jr L2312
-L2309:
+	jr L2314
+L2311:
 	ld wa,0
 	ld xbc,40960
 	ld e,(xsp+0)
@@ -11177,30 +11268,30 @@ L2309:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2311:
+L2313:
 	incb 1,(xsp+0)
-L2312:
+L2314:
 	ld a,(xsp+0)
 	cp a,8
-	jr ult,L2309
-L2310:
+	jr ult,L2311
+L2312:
 	ei
-L2306:
+L2308:
 	lda xsp,(xsp+2)
 	ret
 
 ; function ngpc_is_color
 _ngpc_is_color:
 	ld a,(_s_is_color__15)
-	jr L2314
-L2314:
+	jr L2316
+L2316:
 	ret
 
 ; function ngpc_get_language
 _ngpc_get_language:
 	ld a,(_s_language__15)
-	jr L2316
-L2316:
+	jr L2318
+L2318:
 	ret
 
 ; function ngpc_shutdown_reason
@@ -11211,30 +11302,30 @@ _ngpc_shutdown_reason:
 	extz wa
 	and wa,32
 	cp wa,0
-	jr z,L2332
-	ld iy,15
-	jr L2333
-L2332:
-	ld a,(xsp+14)
-	extz wa
-	and wa,128
-	cp wa,0
 	jr z,L2334
-	ld iy,4095
+	ld iy,15
 	jr L2335
 L2334:
 	ld a,(xsp+14)
 	extz wa
-	and wa,64
+	and wa,128
 	cp wa,0
 	jr z,L2336
-	ld iy,240
+	ld iy,4095
 	jr L2337
 L2336:
+	ld a,(xsp+14)
+	extz wa
+	and wa,64
+	cp wa,0
+	jr z,L2338
+	ld iy,240
+	jr L2339
+L2338:
 	ld iy,3840
+L2339:
 L2337:
 L2335:
-L2333:
 	ld wa,iy
 	ld xbc,33776
 	ld (xbc),wa
@@ -11246,30 +11337,30 @@ L2333:
 	ldb (08004h),0
 	ldb (08005h),0
 	ld iz,0
-	jr L2341
-L2338:
+	jr L2343
+L2340:
 	ld a,(_g_vb_counter)
 	ld ixl,a
-	jr L2344
-L2342:
+	jr L2346
 L2344:
+L2346:
 	ld a,(_g_vb_counter)
 	cp a,ixl
-	jr z,L2342
-L2343:
-L2340:
+	jr z,L2344
+L2345:
+L2342:
 	inc 1,iz
-L2341:
+L2343:
 	ld wa,iz
 	cp wa,180
-	jr ult,L2338
-L2339:
+	jr ult,L2340
+L2341:
 	push xix
 	push xiy
 	call _ngpc_shutdown
 	pop xiy
 	pop xix
-L2331:
+L2333:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -11279,7 +11370,7 @@ _ngpc_shutdown:
 	ldb ra3, 3
 	ldb rw3, 0
 	swi 1
-L2346:
+L2348:
 	ret
 
 ; function ngpc_load_sysfont
@@ -11289,8 +11380,8 @@ _ngpc_load_sysfont:
 	ld xwa,41472
 	ld xix,xwa
 	ld iz,0
-	jr L2356
-L2353:
+	jr L2358
+L2355:
 	ld xwa,_overrev_dash_tiles__15
 	ld bc,iz
 	extz xbc
@@ -11303,14 +11394,14 @@ L2353:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2355:
+L2357:
 	inc 1,iz
-L2356:
+L2358:
 	ld wa,iz
 	cp wa,768
-	jr ult,L2353
+	jr ult,L2355
+L2356:
 L2354:
-L2352:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -11321,8 +11412,8 @@ _ngpc_memcpy:
 	ld xix,(xsp+8)
 	ld xiz,(xsp+12)
 	ld iy,(xsp+16)
-	jr L2364
-L2362:
+	jr L2366
+L2364:
 	ld xwa,xiz
 	inc 1,xwa
 	ld xiz,xwa
@@ -11333,13 +11424,13 @@ L2362:
 	ld xix,xbc
 	dec 1,xbc
 	ld (xbc),a
-L2364:
+L2366:
 	ld wa,iy
 	dec 1,iy
 	cp wa,0
-	jr nz,L2362
+	jr nz,L2364
+L2365:
 L2363:
-L2361:
 	pop xiz
 	ret
 
@@ -11350,21 +11441,21 @@ _ngpc_memset:
 	ld a,(xsp+12)
 	ld iyl,a
 	ld ix,(xsp+16)
-	jr L2372
-L2370:
+	jr L2374
+L2372:
 	ld a,iyl
 	ld xbc,xiz
 	inc 1,xbc
 	ld xiz,xbc
 	dec 1,xbc
 	ld (xbc),a
-L2372:
+L2374:
 	ld wa,ix
 	dec 1,ix
 	cp wa,0
-	jr nz,L2370
+	jr nz,L2372
+L2373:
 L2371:
-L2369:
 	pop xiz
 	ret
 
@@ -11374,22 +11465,22 @@ _ngpc_vsync:
 	lda xsp,(xsp-2)
 	ld a,(_g_vb_counter)
 	ld izl,a
-	jr L2383
-L2381:
+	jr L2385
 L2383:
+L2385:
 	ld a,(_g_vb_counter)
 	cp a,izl
-	jr z,L2381
-L2382:
+	jr z,L2383
+L2384:
 	ld a,(06F85h)
 	cp a,0
-	jr z,L2384
+	jr z,L2386
 	ld a,(06F85h)
 	push xwa
 	call _ngpc_shutdown_reason
 	lda xsp,(xsp+4)
-L2384:
-L2379:
+L2386:
+L2381:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -11400,14 +11491,14 @@ _ngpc_in_vblank:
 	extz bc
 	and bc,64
 	cp bc,0
-	jr z,L2389
+	jr z,L2391
 	ld wa,1
-	jr L2390
-L2389:
+	jr L2392
+L2391:
 	ld wa,0
+L2392:
+	jr L2390
 L2390:
-	jr L2388
-L2388:
 	ret
 
 ; function ngpc_sleep
@@ -11419,21 +11510,21 @@ _ngpc_sleep:
 	call _ngpc_cpu_speed
 	lda xsp,(xsp+4)
 	ld izl,0
-	jr L2400
-L2397:
-	call _ngpc_vsync
+	jr L2402
 L2399:
+	call _ngpc_vsync
+L2401:
 	inc 1,izl
-L2400:
+L2402:
 	ld a,izl
 	cp a,(xsp+10)
-	jr ult,L2397
-L2398:
+	jr ult,L2399
+L2400:
 	ld wa,0
 	push xwa
 	call _ngpc_cpu_speed
 	lda xsp,(xsp+4)
-L2396:
+L2398:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -11450,7 +11541,7 @@ _ngpc_cpu_speed:
 	ld xix, 0xfffe00
 	ld xix, (xix+w)
 	call xix
-L2402:
+L2404:
 	ret
 
 ; function dst_range_ok
@@ -11459,14 +11550,14 @@ _dst_range_ok__17:
 	lda xsp,(xsp-12)
 	ld xwa,(xsp+20)
 	cp xwa,0
-	jr z,L2410
+	jr z,L2412
 	ld wa,(xsp+24)
 	cp wa,0
-	jr nz,L2409
-L2410:
+	jr nz,L2411
+L2412:
 	ld wa,0
-	jr L2408
-L2409:
+	jr L2410
+L2411:
 	ld xwa,(xsp+20)
 	extz xwa
 	ld xiz,xwa
@@ -11480,19 +11571,19 @@ L2409:
 	ld (xsp+8),xwa
 	ld xwa,xiz
 	cp xwa,32768
-	jr uge,L2411
+	jr uge,L2413
 	ld wa,0
-	jr L2408
-L2411:
+	jr L2410
+L2413:
 	ld xwa,(xsp+8)
 	cp xwa,49151
-	jr ule,L2412
+	jr ule,L2414
 	ld wa,0
-	jr L2408
-L2412:
+	jr L2410
+L2414:
 	ld wa,1
-	jr L2408
-L2408:
+	jr L2410
+L2410:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -11502,7 +11593,7 @@ _ngpc_vramq_init:
 	ldb (_s_cmd_count__17),0
 	ldb (_s_drop_count__17),0
 	ldb (_s_lock__17),0
-L2414:
+L2416:
 	ret
 
 ; function ngpc_vramq_copy
@@ -11511,7 +11602,7 @@ _ngpc_vramq_copy:
 	lda xsp,(xsp-2)
 	ld xwa,(xsp+14)
 	cp xwa,0
-	jr z,L2421
+	jr z,L2423
 	ld wa,(xsp+18)
 	push xwa
 	ld xwa,(xsp+14)
@@ -11519,22 +11610,22 @@ _ngpc_vramq_copy:
 	call _dst_range_ok__17
 	lda xsp,(xsp+8)
 	cp a,0
-	jr nz,L2420
-L2421:
+	jr nz,L2422
+L2423:
 	ld wa,0
-	jp L2419
-L2420:
+	jp L2421
+L2422:
 	ldb (_s_lock__17),1
 	ld a,(_s_cmd_count__17)
 	ld izl,a
 	ld a,izl
 	cp a,16
-	jr ult,L2422
+	jr ult,L2424
 	incb 1,(_s_drop_count__17)
 	ldb (_s_lock__17),0
 	ld wa,0
-	jr L2419
-L2422:
+	jr L2421
+L2424:
 	ld xwa,(xsp+10)
 	ld xbc,_s_cmd_dst__17
 	ld e,izl
@@ -11579,8 +11670,8 @@ L2422:
 	ld (_s_cmd_count__17),a
 	ldb (_s_lock__17),0
 	ld wa,1
-	jr L2419
-L2419:
+	jr L2421
+L2421:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -11596,21 +11687,21 @@ _ngpc_vramq_fill:
 	call _dst_range_ok__17
 	lda xsp,(xsp+8)
 	cp a,0
-	jr nz,L2427
+	jr nz,L2429
 	ld wa,0
-	jp L2426
-L2427:
+	jp L2428
+L2429:
 	ldb (_s_lock__17),1
 	ld a,(_s_cmd_count__17)
 	ld izl,a
 	ld a,izl
 	cp a,16
-	jr ult,L2428
+	jr ult,L2430
 	incb 1,(_s_drop_count__17)
 	ldb (_s_lock__17),0
 	ld wa,0
-	jr L2426
-L2428:
+	jr L2428
+L2430:
 	ld xwa,(xsp+10)
 	ld xbc,_s_cmd_dst__17
 	ld e,izl
@@ -11655,8 +11746,8 @@ L2428:
 	ld (_s_cmd_count__17),a
 	ldb (_s_lock__17),0
 	ld wa,1
-	jr L2426
-L2426:
+	jr L2428
+L2428:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -11667,20 +11758,20 @@ _ngpc_vramq_flush:
 	lda xsp,(xsp-10)
 	ld a,(_s_lock__17)
 	cp a,0
-	jr z,L2443
-	jp L2442
-L2443:
+	jr z,L2445
+	jp L2444
+L2445:
 	ld a,(_s_cmd_count__17)
 	ld (xsp+1),a
 	ld a,(xsp+1)
 	cp a,0
-	jr nz,L2444
-	jp L2442
-L2444:
+	jr nz,L2446
+	jp L2444
+L2446:
 	ldb (_s_lock__17),1
 	ld izl,0
-	jp L2448
-L2445:
+	jp L2450
+L2447:
 	ld xwa,_s_cmd_dst__17
 	ld c,izl
 	extz bc
@@ -11705,7 +11796,7 @@ L2445:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,1
-	jr nz,L2449
+	jr nz,L2451
 	push xix
 	push xiy
 	ld wa,iy
@@ -11732,8 +11823,8 @@ L2445:
 	lda xsp,(xsp+12)
 	pop xiy
 	pop xix
-	jr L2450
-L2449:
+	jr L2452
+L2451:
 	ld xwa,_s_cmd_type__17
 	ld c,izl
 	extz bc
@@ -11741,7 +11832,7 @@ L2449:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,2
-	jr nz,L2451
+	jr nz,L2453
 	ld xwa,_s_cmd_fill__17
 	ld c,izl
 	extz bc
@@ -11750,32 +11841,32 @@ L2449:
 	add xwa,xbc
 	ld wa,(xwa)
 	ld (xsp+8),wa
-	jr L2454
-L2452:
+	jr L2456
+L2454:
 	ld wa,(xsp+8)
 	ld xbc,xix
 	inc 2,xbc
 	ld xix,xbc
 	dec 2,xbc
 	ld (xbc),wa
-L2454:
+L2456:
 	ld wa,iy
 	dec 1,iy
 	cp wa,0
-	jr nz,L2452
+	jr nz,L2454
+L2455:
 L2453:
-L2451:
-L2450:
-L2447:
+L2452:
+L2449:
 	inc 1,izl
-L2448:
+L2450:
 	ld a,izl
 	cp a,(xsp+1)
-	jp ult,L2445
-L2446:
+	jp ult,L2447
+L2448:
 	ldb (_s_cmd_count__17),0
 	ldb (_s_lock__17),0
-L2442:
+L2444:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -11784,31 +11875,31 @@ L2442:
 _ngpc_vramq_clear:
 	ld a,(_s_lock__17)
 	cp a,0
-	jr z,L2458
-	jr L2457
-L2458:
+	jr z,L2460
+	jr L2459
+L2460:
 	ldb (_s_cmd_count__17),0
-L2457:
+L2459:
 	ret
 
 ; function ngpc_vramq_pending
 _ngpc_vramq_pending:
 	ld a,(_s_cmd_count__17)
-	jr L2460
-L2460:
+	jr L2462
+L2462:
 	ret
 
 ; function ngpc_vramq_dropped
 _ngpc_vramq_dropped:
 	ld a,(_s_drop_count__17)
-	jr L2462
-L2462:
+	jr L2464
+L2464:
 	ret
 
 ; function ngpc_vramq_clear_dropped
 _ngpc_vramq_clear_dropped:
 	ldb (_s_drop_count__17),0
-L2464:
+L2466:
 	ret
 
 ; function rnd16
@@ -11829,8 +11920,8 @@ _rnd16__18:
 	xor wa,bc
 	ld (_rs__18),wa
 	ld wa,(_rs__18)
-	jr L2466
-L2466:
+	jr L2468
+L2468:
 	ret
 
 ; function rndn
@@ -11839,8 +11930,8 @@ _rndn__18:
 	extz xwa
 	div xwa,(xsp+4)
 	ld wa,qwa
-	jr L2468
-L2468:
+	jr L2470
+L2470:
 	ret
 
 ; function stage_of
@@ -11851,15 +11942,15 @@ _stage_of__18:
 	ld ixl,a
 	ld wa,0
 	ld izl,a
-	jr L2477
-L2475:
-	inc 1,izl
+	jr L2479
 L2477:
+	inc 1,izl
+L2479:
 	ld a,izl
 	extz wa
 	add wa,1
 	cp wa,5
-	jr uge,L2478
+	jr uge,L2480
 	ld a,izl
 	extz wa
 	add wa,1
@@ -11871,12 +11962,12 @@ L2477:
 	srl 1,wa
 	add wa,0
 	cp a,ixl
-	jr ule,L2475
+	jr ule,L2477
+L2480:
 L2478:
-L2476:
 	ld a,izl
-	jr L2474
-L2474:
+	jr L2476
+L2476:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -11905,7 +11996,7 @@ _put__18:
 	add xbc,xde
 	ld (xbc+4),a
 	incb 1,(_gn__18)
-L2480:
+L2482:
 	ret
 
 ; function slope_for
@@ -11914,7 +12005,7 @@ _slope_for__18:
 	lda xsp,(xsp-2)
 	ld a,(xsp+10)
 	cp a,0
-	jr z,L2488
+	jr z,L2490
 	ld wa,100
 	push xwa
 	call _rndn__18
@@ -11924,7 +12015,7 @@ _slope_for__18:
 	extz de
 	mul xbc,de
 	cp wa,bc
-	jr uge,L2488
+	jr uge,L2490
 	ld wa,6
 	push xwa
 	call _rndn__18
@@ -11939,33 +12030,33 @@ _slope_for__18:
 	ld izl,a
 	ld a,(xsp+0)
 	cp a,0
-	jr nz,L2489
+	jr nz,L2491
 	ld a,(xsp+10)
 	neg a
 	ld izl,a
-L2489:
+L2491:
 	ld a,(xsp+0)
 	cp a,3
-	jr nz,L2490
+	jr nz,L2492
 	ld a,(xsp+10)
 	ld izl,a
-L2490:
-	ld a,izl
-	cp a,252
-	jr ge,L2491
-	ld izl,252
-L2491:
-	ld a,izl
-	cp a,3
-	jr le,L2492
-	ld izl,3
 L2492:
 	ld a,izl
-	jr L2487
-L2488:
+	cp a,252
+	jr ge,L2493
+	ld izl,252
+L2493:
+	ld a,izl
+	cp a,3
+	jr le,L2494
+	ld izl,3
+L2494:
+	ld a,izl
+	jr L2489
+L2490:
 	ld wa,0
-	jr L2487
-L2487:
+	jr L2489
+L2489:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -12002,17 +12093,17 @@ _sharp__18:
 	ld iz,wa
 	ld wa,iz
 	cp wa,52
-	jr uge,L2497
+	jr uge,L2499
 	ld iz,52
-L2497:
+L2499:
 	ld wa,iz
 	cp wa,72
-	jr ule,L2498
+	jr ule,L2500
 	ld iz,72
-L2498:
+L2500:
 	ld wa,iz
-	jr L2496
-L2496:
+	jr L2498
+L2498:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -12068,9 +12159,9 @@ _gen_leg__18:
 	ld (_rs__18),wa
 	ld wa,(_rs__18)
 	cp wa,0
-	jr nz,L2530
+	jr nz,L2532
 	ldw (_rs__18),44257
-L2530:
+L2532:
 	call _rnd16__18
 	ld wa,0
 	push xwa
@@ -12083,25 +12174,25 @@ L2530:
 	ld xbc,(xsp+0)
 	ld c,(xbc+19)
 	cp c,0
-	jr nz,L2531
+	jr nz,L2533
 	ld wa,1
-	jr L2532
-L2531:
-	ld wa,0
-L2532:
-	ld (xsp+18),a
-	jp L2535
+	jr L2534
 L2533:
+	ld wa,0
+L2534:
+	ld (xsp+18),a
+	jp L2537
+L2535:
 	ld a,(xsp+18)
 	cp a,0
-	jp nz,L2536
+	jp nz,L2538
 	ld wa,iz
 	cp wa,4680
-	jr ult,L2536
+	jr ult,L2538
 	ldb (xsp+18),1
 	ldb (xsp+22),0
-	jr L2540
-L2537:
+	jr L2542
+L2539:
 	ld xwa,_bridge_run__18
 	ld c,(xsp+22)
 	extz bc
@@ -12135,15 +12226,15 @@ L2537:
 	ld bc,(xbc)
 	add wa,bc
 	ld iz,wa
-L2539:
+L2541:
 	incb 1,(xsp+22)
-L2540:
+L2542:
 	ld a,(xsp+22)
 	cp a,4
-	jr ult,L2537
+	jr ult,L2539
+L2540:
+	jp L2537
 L2538:
-	jp L2535
-L2536:
 	ld wa,1000
 	push xwa
 	call _rndn__18
@@ -12157,17 +12248,17 @@ L2536:
 	ld xbc,xwa
 	pop xwa
 	cp bc,600
-	jr uge,L2541
+	jr uge,L2543
 	ld wa,(xsp+16)
 	neg wa
-	jr L2542
-L2541:
+	jr L2544
+L2543:
 	ld wa,(xsp+16)
-L2542:
+L2544:
 	ld (xsp+22),wa
 	ld wa,(xsp+20)
 	cp wa,(xsp+8)
-	jp uge,L2543
+	jp uge,L2545
 	ld xwa,(xsp+0)
 	ld a,(xwa+16)
 	push xwa
@@ -12214,12 +12305,12 @@ L2542:
 	ld xbc,xwa
 	pop xwa
 	cp bc,0
-	jr z,L2544
+	jr z,L2546
 	ld wa,500
-	jr L2545
-L2544:
+	jr L2547
+L2546:
 	ld wa,400
-L2545:
+L2547:
 	ld (xsp+12),wa
 	ld xwa,(xsp+0)
 	ld a,(xwa+17)
@@ -12246,7 +12337,7 @@ L2545:
 	lda xsp,(xsp+12)
 	ld wa,(xsp+30)
 	cp wa,0
-	jr z,L2546
+	jr z,L2548
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -12255,7 +12346,7 @@ L2545:
 	push xwa
 	call _put__18
 	lda xsp,(xsp+12)
-L2546:
+L2548:
 	ld wa,0
 	push xwa
 	ld wa,(xsp+26)
@@ -12276,13 +12367,13 @@ L2546:
 	ld wa,(xsp+22)
 	neg wa
 	ld (xsp+16),wa
-	jp L2547
-L2543:
+	jp L2549
+L2545:
 	ld wa,(xsp+20)
 	ld bc,(xsp+8)
 	add bc,(xsp+6)
 	cp wa,bc
-	jp uge,L2548
+	jp uge,L2550
 	push xwa
 	ld wa,2
 	push xwa
@@ -12291,12 +12382,12 @@ L2543:
 	ld xbc,xwa
 	pop xwa
 	cp bc,0
-	jr z,L2549
+	jr z,L2551
 	ld wa,500
-	jr L2550
-L2549:
+	jr L2552
+L2551:
 	ld wa,400
-L2550:
+L2552:
 	ld (xsp+12),wa
 	ld xwa,(xsp+0)
 	ld a,(xwa+17)
@@ -12348,8 +12439,8 @@ L2550:
 	ld iz,wa
 	ld wa,(xsp+22)
 	ld (xsp+16),wa
-	jp L2551
-L2548:
+	jp L2553
+L2550:
 	ld wa,100
 	push xwa
 	call _rndn__18
@@ -12358,7 +12449,7 @@ L2548:
 	ld c,(xbc+18)
 	extz bc
 	cp wa,bc
-	jr uge,L2552
+	jr uge,L2554
 	ld xwa,_sp_straight__18
 	push xwa
 	ld wa,4
@@ -12387,8 +12478,8 @@ L2548:
 	ld wa,iz
 	add wa,(xsp+24)
 	ld iz,wa
-	jp L2553
-L2552:
+	jp L2555
+L2554:
 	ld xwa,_sp_bend__18
 	push xwa
 	ld wa,5
@@ -12406,12 +12497,12 @@ L2552:
 	push xwa
 	ld c,(xsp+8)
 	cp c,1
-	jr ult,L2554
+	jr ult,L2556
 	ld wa,5
-	jr L2555
-L2554:
+	jr L2557
+L2556:
 	ld wa,3
-L2555:
+L2557:
 	push xwa
 	call _rndn__18
 	lda xsp,(xsp+4)
@@ -12433,14 +12524,14 @@ L2555:
 	ld (xsp+26),wa
 	ld wa,(xsp+26)
 	cp wa,18
-	jr uge,L2556
+	jr uge,L2558
 	ldw (xsp+26),18
-L2556:
+L2558:
 	ld wa,(xsp+26)
 	cp wa,48
-	jr ule,L2557
+	jr ule,L2559
 	ldw (xsp+26),48
-L2557:
+L2559:
 	ld xwa,(xsp+0)
 	ld a,(xwa+17)
 	push xwa
@@ -12460,18 +12551,18 @@ L2557:
 	ld iz,wa
 	ld wa,(xsp+22)
 	ld (xsp+16),wa
+L2555:
 L2553:
-L2551:
-L2547:
-L2535:
+L2549:
+L2537:
 	ld wa,iz
 	cp wa,11700
-	jr uge,L2558
+	jr uge,L2560
 	ld a,(_gn__18)
 	cp a,30
-	jp ule,L2533
-L2558:
-L2534:
+	jp ule,L2535
+L2560:
+L2536:
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -12481,8 +12572,8 @@ L2534:
 	call _put__18
 	lda xsp,(xsp+12)
 	ld a,(_gn__18)
-	jr L2529
-L2529:
+	jr L2531
+L2531:
 	lda xsp,(xsp+32)
 	pop xiz
 	ret
@@ -12494,8 +12585,8 @@ _cost_of__18:
 	ld xwa,0
 	ld (xsp+0),xwa
 	ld ixl,0
-	jr L2573
-L2570:
+	jr L2575
+L2572:
 	ld xwa,(xsp+18)
 	ld c,ixl
 	extz bc
@@ -12507,26 +12598,26 @@ L2570:
 	ld iz,wa
 	ld wa,iy
 	cp wa,0
-	jr ge,L2574
+	jr ge,L2576
 	ld wa,iy
 	neg wa
 	ld iy,wa
-L2574:
-	jr L2577
-L2575:
-	dec 1,iz
+L2576:
+	jr L2579
 L2577:
+	dec 1,iz
+L2579:
 	ld wa,iz
 	cp wa,6
-	jr ule,L2578
+	jr ule,L2580
 	ld wa,iz
 	mul xwa,iz
 	ld bc,iy
 	mul xwa,bc
 	cp wa,6000
-	jr ugt,L2575
+	jr ugt,L2577
+L2580:
 L2578:
-L2576:
 	ld xwa,(xsp+0)
 	ld xbc,(xsp+18)
 	ld e,ixl
@@ -12550,17 +12641,17 @@ L2576:
 	pop xwa
 	add xwa,xbc
 	ld (xsp+0),xwa
-L2572:
+L2574:
 	inc 1,ixl
-L2573:
+L2575:
 	ld a,ixl
 	cp a,(xsp+22)
-	jr ult,L2570
-L2571:
+	jr ult,L2572
+L2573:
 	ld xwa,(xsp+0)
 	srl 4,xwa
-	jr L2569
-L2569:
+	jr L2571
+L2571:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -12591,7 +12682,7 @@ _put_placeholder__18:
 	muls xde,6
 	add xbc,xde
 	ld (xbc+4),a
-L2580:
+L2582:
 	pop xiz
 	ret
 
@@ -12603,7 +12694,7 @@ _copy_leg__18:
 	ld iyl,a
 	ld a,(_difficulty)
 	cp a,3
-	jr nz,L2590
+	jr nz,L2592
 	push xix
 	push xiy
 	ld xwa,_buf__18
@@ -12620,8 +12711,8 @@ _copy_leg__18:
 	pop xiy
 	pop xix
 	ld ixl,a
-	jr L2591
-L2590:
+	jr L2593
+L2592:
 	ld xwa,_gfx_legs
 	ld c,(xsp+14)
 	extz bc
@@ -12639,14 +12730,14 @@ L2590:
 	add wa,bc
 	add wa,1
 	cp wa,72
-	jr ule,L2592
+	jr ule,L2594
 	ld a,71
 	sub a,iyl
 	ld ixl,a
-L2592:
+L2594:
 	ld izl,0
-	jr L2596
-L2593:
+	jr L2598
+L2595:
 	push xwa
 	ld xwa,(xsp+6)
 	ld xwa,(xwa)
@@ -12666,14 +12757,14 @@ L2593:
 	ld bc,6
 	ldirb
 	pop xwa
-L2595:
+L2597:
 	inc 1,izl
-L2596:
+L2598:
 	ld a,izl
 	cp a,ixl
-	jr ult,L2593
-L2594:
-L2591:
+	jr ult,L2595
+L2596:
+L2593:
 	push xix
 	push xiy
 	ld a,ixl
@@ -12691,8 +12782,8 @@ L2591:
 	pop xix
 	ld (_next_leg_cost),wa
 	ld a,ixl
-	jr L2589
-L2589:
+	jr L2591
+L2591:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -12717,8 +12808,8 @@ _load_current__18:
 	ld (_track_len),a
 	ldw (_leg_len),0
 	ld izl,0
-	jr L2606
-L2603:
+	jr L2608
+L2605:
 	ld wa,(_leg_len)
 	ld xbc,_buf__18
 	ld e,izl
@@ -12728,15 +12819,15 @@ L2603:
 	ld bc,(xbc)
 	add wa,bc
 	ld (_leg_len),wa
-L2605:
+L2607:
 	inc 1,izl
-L2606:
+L2608:
 	ld a,izl
 	cp a,(_n_cur__18)
-	jr ult,L2603
-L2604:
+	jr ult,L2605
+L2606:
 	ldb (_fork_choice),0
-L2602:
+L2604:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -12749,8 +12840,8 @@ _course_start:
 	ldb (_cur_branch),0
 	ldb (_cur_leg),0
 	ld izl,0
-	jr L2627
-L2624:
+	jr L2629
+L2626:
 	ld a,0
 	ld xbc,_route_hist
 	ld e,izl
@@ -12758,16 +12849,16 @@ L2624:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2626:
+L2628:
 	inc 1,izl
-L2627:
+L2629:
 	ld a,izl
 	cp a,5
-	jr ult,L2624
-L2625:
+	jr ult,L2626
+L2627:
 	ld izl,0
-	jr L2631
-L2628:
+	jr L2633
+L2630:
 	ld xwa,_gfx_legs
 	ld c,izl
 	extz bc
@@ -12780,32 +12871,32 @@ L2628:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2630:
+L2632:
 	inc 1,izl
-L2631:
+L2633:
 	ld a,izl
 	cp a,15
-	jr ult,L2628
-L2629:
+	jr ult,L2630
+L2631:
 	ld a,(_difficulty)
 	cp a,3
-	jp nz,L2632
+	jp nz,L2634
 	ld wa,(_free_seed)
 	cp wa,0
-	jr nz,L2633
+	jr nz,L2635
 	ldw (_free_seed),24301
-L2633:
+L2635:
 	ld wa,(_free_seed)
 	xor wa,15450
 	ld (_rs__18),wa
 	ld wa,(_rs__18)
 	cp wa,0
-	jr nz,L2634
+	jr nz,L2636
 	ldw (_rs__18),44257
-L2634:
+L2636:
 	ld izl,14
-	jr L2638
-L2635:
+	jr L2640
+L2637:
 	ld a,izl
 	extz wa
 	add wa,1
@@ -12839,16 +12930,16 @@ L2635:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2637:
+L2639:
 	dec 1,izl
-L2638:
+L2640:
 	ld a,izl
 	cp a,0
-	jr ugt,L2635
-L2636:
-L2632:
+	jr ugt,L2637
+L2638:
+L2634:
 	call _load_current__18
-L2623:
+L2625:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -12859,14 +12950,14 @@ _course_is_last_stage:
 	extz bc
 	add bc,1
 	cp bc,5
-	jr ult,L2643
+	jr ult,L2645
 	ld wa,1
-	jr L2644
-L2643:
+	jr L2646
+L2645:
 	ld wa,0
+L2646:
+	jr L2644
 L2644:
-	jr L2642
-L2642:
 	ret
 
 ; function course_fork_zone
@@ -12874,31 +12965,31 @@ _course_fork_zone:
 	ld bc,(xsp+4)
 	add bc,2400
 	cp bc,(_leg_len)
-	jr ult,L2649
+	jr ult,L2651
 	ld wa,1
-	jr L2650
-L2649:
+	jr L2652
+L2651:
 	ld wa,0
+L2652:
+	jr L2650
 L2650:
-	jr L2648
-L2648:
 	ret
 
 ; function course_start_zone
 _course_start_zone:
 	ld c,(_cur_stage)
 	cp c,0
-	jr z,L2655
+	jr z,L2657
 	ld bc,(xsp+4)
 	cp bc,900
-	jr uge,L2655
+	jr uge,L2657
 	ld wa,1
-	jr L2656
-L2655:
+	jr L2658
+L2657:
 	ld wa,0
+L2658:
+	jr L2656
 L2656:
-	jr L2654
-L2654:
 	ret
 
 ; function course_decide
@@ -12907,21 +12998,21 @@ _course_decide:
 	lda xsp,(xsp-2)
 	ld a,(_fork_choice)
 	cp a,0
-	jr nz,L2669
+	jr nz,L2671
 	call _course_is_last_stage
 	cp a,0
-	jr z,L2668
-L2669:
-	jp L2667
-L2668:
+	jr z,L2670
+L2671:
+	jp L2669
+L2670:
 	ld c,(xsp+10)
 	cp c,0
-	jr z,L2670
+	jr z,L2672
 	ld wa,2
-	jr L2671
-L2670:
+	jr L2673
+L2672:
 	ld wa,1
-L2671:
+L2673:
 	ld (_fork_choice),a
 	ld a,(_cur_stage)
 	extz wa
@@ -12936,12 +13027,12 @@ L2671:
 	extz bc
 	ld l,(xsp+10)
 	cp l,0
-	jr z,L2672
+	jr z,L2674
 	ld de,1
-	jr L2673
-L2672:
+	jr L2675
+L2674:
 	ld de,0
-L2673:
+L2675:
 	add bc,de
 	add wa,bc
 	ld (xsp+0),a
@@ -12956,22 +13047,22 @@ L2673:
 	ld (_n_next__18),a
 	ld a,izl
 	cp a,0
-	jr z,L2674
+	jr z,L2676
 	ld c,(xsp+10)
 	cp c,0
-	jr z,L2675
+	jr z,L2677
 	ld wa,65486
-	jr L2676
-L2675:
+	jr L2678
+L2677:
 	ld wa,50
-L2676:
+L2678:
 	ld xbc,_buf__18
 	ld e,(_n_cur__18)
 	extz de
 	muls xde,6
 	add xbc,xde
 	ld (xbc+2),wa
-L2674:
+L2676:
 	ld a,(_n_cur__18)
 	add a,izl
 	push xwa
@@ -12981,7 +13072,7 @@ L2674:
 	add a,izl
 	add a,1
 	ld (_track_len),a
-L2667:
+L2669:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -12994,25 +13085,25 @@ _course_next_leg:
 	call _course_is_last_stage
 	pop xix
 	cp a,0
-	jr z,L2691
+	jr z,L2693
 	ld wa,0
-	jp L2690
-L2691:
+	jp L2692
+L2693:
 	ld a,(_fork_choice)
 	cp a,0
-	jr nz,L2692
+	jr nz,L2694
 	push xix
 	ld wa,0
 	push xwa
 	call _course_decide
 	lda xsp,(xsp+4)
 	pop xix
-L2692:
+L2694:
 	ld a,(_n_cur__18)
 	ld ixl,a
 	ld izl,0
-	jr L2696
-L2693:
+	jr L2698
+L2695:
 	push xwa
 	ld xwa,_buf__18
 	ld c,izl
@@ -13031,22 +13122,22 @@ L2693:
 	ld bc,6
 	ldirb
 	pop xwa
-L2695:
+L2697:
 	inc 1,izl
-L2696:
+L2698:
 	ld a,izl
 	add a,ixl
 	cp a,(_track_len)
-	jr ult,L2693
-L2694:
+	jr ult,L2695
+L2696:
 	ld a,(_track_len)
 	sub a,ixl
 	ld (_track_len),a
 	ld a,(_fork_choice)
 	cp a,2
-	jr nz,L2697
+	jr nz,L2699
 	incb 1,(_cur_branch)
-L2697:
+L2699:
 	incb 1,(_cur_stage)
 	ld a,(_cur_branch)
 	ld xbc,_route_hist
@@ -13070,15 +13161,15 @@ L2697:
 	ld (_n_cur__18),a
 	ld a,(_n_cur__18)
 	cp a,(_track_len)
-	jr ult,L2698
+	jr ult,L2700
 	ld a,(_track_len)
 	sub a,1
 	ld (_n_cur__18),a
-L2698:
+L2700:
 	ldw (_leg_len),0
 	ld izl,0
-	jr L2702
-L2699:
+	jr L2704
+L2701:
 	ld wa,(_leg_len)
 	ld xbc,_buf__18
 	ld e,izl
@@ -13088,17 +13179,17 @@ L2699:
 	ld bc,(xbc)
 	add wa,bc
 	ld (_leg_len),wa
-L2701:
+L2703:
 	inc 1,izl
-L2702:
+L2704:
 	ld a,izl
 	cp a,(_n_cur__18)
-	jr ult,L2699
-L2700:
+	jr ult,L2701
+L2702:
 	ldb (_fork_choice),0
 	ld a,ixl
-	jr L2690
-L2690:
+	jr L2692
+L2692:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -13135,7 +13226,7 @@ _course_debug_leg:
 	push xix
 	call _load_current__18
 	pop xix
-L2704:
+L2706:
 	pop xiz
 	ret
 
@@ -13147,8 +13238,8 @@ _rnd__19:
 	ld (_seed__19),wa
 	ld wa,(_seed__19)
 	srl 8,wa
-	jr L2706
-L2706:
+	jr L2708
+L2708:
 	ret
 
 ; function ending_start
@@ -13157,9 +13248,9 @@ _ending_start:
 	lda xsp,(xsp-8)
 	ld a,(xsp+16)
 	cp a,5
-	jr ule,L2718
+	jr ule,L2720
 	ldb (xsp+16),5
-L2718:
+L2720:
 	ld xwa,_endings__19
 	ld c,(xsp+16)
 	extz bc
@@ -13169,8 +13260,8 @@ L2718:
 	lda xwa,(xwa)
 	ld (xsp+0),xwa
 	ldw (xsp+4),0
-	jr L2722
-L2719:
+	jr L2724
+L2721:
 	ld xwa,_gfx_particle_tiles
 	ld bc,(xsp+4)
 	extz xbc
@@ -13183,13 +13274,13 @@ L2719:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2721:
+L2723:
 	incw 1,(xsp+4)
-L2722:
+L2724:
 	ld wa,(xsp+4)
 	cp wa,24
-	jr ult,L2719
-L2720:
+	jr ult,L2721
+L2722:
 	ld xwa,(xsp+0)
 	lda xwa,(xwa+8)
 	ld wa,(xwa+4)
@@ -13289,8 +13380,8 @@ L2720:
 	ld (_fx__19),a
 	ldb (_timer__19),0
 	ld izl,0
-	jr L2726
-L2723:
+	jr L2728
+L2725:
 	ld a,0
 	ld xbc,_life__19
 	ld e,izl
@@ -13324,29 +13415,29 @@ L2723:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2725:
+L2727:
 	inc 1,izl
-L2726:
+L2728:
 	ld a,izl
 	cp a,14
-	jr ult,L2723
-L2724:
-L2717:
+	jr ult,L2725
+L2726:
+L2719:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
 
 ; function pal_of
 _pal_of__19:
-	ld xwa,_pals__19_L2730
+	ld xwa,_pals__19_L2732
 	ld c,(xsp+4)
 	extz bc
 	and bc,3
 	extz xbc
 	add xwa,xbc
 	ld a,(xwa)
-	jr L2729
-L2729:
+	jr L2731
+L2731:
 	ret
 
 ; function ending_tick
@@ -13356,14 +13447,14 @@ _ending_tick:
 	incb 1,(_timer__19)
 	ld a,(_fx__19)
 	cp a,1
-	jp nz,L2768
+	jp nz,L2770
 	ld a,(_timer__19)
 	extz wa
 	extz xwa
 	div xwa,40
 	ld wa,qwa
 	cp wa,1
-	jp nz,L2768
+	jp nz,L2770
 	ld wa,24
 	push xwa
 	call _rnd__19
@@ -13394,19 +13485,19 @@ _ending_tick:
 	lda xsp,(xsp+4)
 	ld (xsp+6),a
 	ld izl,0
-	jp L2772
-L2769:
+	jp L2774
+L2771:
 	ld a,izl
 	and a,7
 	ld (xsp+7),a
 	ld c,izl
 	cp c,8
-	jr uge,L2773
+	jr uge,L2775
 	ld wa,2
-	jr L2774
-L2773:
+	jr L2776
+L2775:
 	ld wa,1
-L2774:
+L2776:
 	ld (xsp+8),wa
 	ld wa,(xsp+2)
 	ld xbc,_px__19
@@ -13475,32 +13566,32 @@ L2774:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2771:
+L2773:
 	inc 1,izl
-L2772:
+L2774:
 	ld a,izl
 	cp a,14
-	jp ult,L2769
+	jp ult,L2771
+L2772:
 L2770:
-L2768:
 	ld izl,0
-	jp L2778
-L2775:
+	jp L2780
+L2777:
 	ld a,56
 	add a,izl
 	ld (xsp+1),a
 	ld a,(_fx__19)
 	extz wa
 	cp wa,1
-	jr z,L2780
+	jr z,L2782
 	cp wa,2
-	jp z,L2781
-	cp wa,3
-	jp z,L2782
-	cp wa,4
 	jp z,L2783
-	jp L2784
-L2780:
+	cp wa,3
+	jp z,L2784
+	cp wa,4
+	jp z,L2785
+	jp L2786
+L2782:
 	ld xwa,_life__19
 	ld c,izl
 	extz bc
@@ -13508,7 +13599,7 @@ L2780:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jp z,L2785
+	jp z,L2787
 	ld xbc,_life__19
 	ld e,izl
 	extz de
@@ -13576,9 +13667,9 @@ L2780:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L2785:
-	jp L2779
-L2781:
+L2787:
+	jp L2781
+L2783:
 	ld xwa,_life__19
 	ld c,izl
 	extz bc
@@ -13586,7 +13677,7 @@ L2781:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L2787
+	jr z,L2789
 	ld xwa,_py__19
 	ld c,izl
 	extz bc
@@ -13595,8 +13686,8 @@ L2781:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,2400
-	jp le,L2786
-L2787:
+	jp le,L2788
+L2789:
 	call _rnd__19
 	extz wa
 	extz xwa
@@ -13661,7 +13752,7 @@ L2787:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2786:
+L2788:
 	ld xwa,_py__19
 	ld c,izl
 	extz bc
@@ -13699,12 +13790,12 @@ L2786:
 	add de,hl
 	and de,32
 	cp de,0
-	jr z,L2788
+	jr z,L2790
 	ld bc,6
-	jr L2789
-L2788:
+	jr L2791
+L2790:
 	ld bc,65530
-L2789:
+L2791:
 	add wa,bc
 	ld xbc,_px__19
 	ld e,izl
@@ -13713,8 +13804,8 @@ L2789:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	jp L2779
-L2782:
+	jp L2781
+L2784:
 	ld xwa,_life__19
 	ld c,izl
 	extz bc
@@ -13722,7 +13813,7 @@ L2782:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L2791
+	jr z,L2793
 	ld xwa,_py__19
 	ld c,izl
 	extz bc
@@ -13731,8 +13822,8 @@ L2782:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,65408
-	jp ge,L2790
-L2791:
+	jp ge,L2792
+L2793:
 	ld wa,8
 	push xwa
 	call _rnd__19
@@ -13807,7 +13898,7 @@ L2791:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L2790:
+L2792:
 	ld xwa,_py__19
 	ld c,izl
 	extz bc
@@ -13845,12 +13936,12 @@ L2790:
 	add de,hl
 	and de,64
 	cp de,0
-	jr z,L2792
+	jr z,L2794
 	ld bc,3
-	jr L2793
-L2792:
+	jr L2795
+L2794:
 	ld bc,65533
-L2793:
+L2795:
 	add wa,bc
 	ld xbc,_px__19
 	ld e,izl
@@ -13859,8 +13950,8 @@ L2793:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	jp L2779
-L2783:
+	jp L2781
+L2785:
 	ld xwa,_life__19
 	ld c,izl
 	extz bc
@@ -13868,7 +13959,7 @@ L2783:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jp nz,L2794
+	jp nz,L2796
 	call _rnd__19
 	extz wa
 	extz xwa
@@ -13913,12 +14004,12 @@ L2783:
 	extz bc
 	and bc,1
 	cp bc,0
-	jr z,L2795
+	jr z,L2797
 	ld wa,2
-	jr L2796
-L2795:
+	jr L2798
+L2797:
 	ld wa,9
-L2796:
+L2798:
 	ld xbc,_ppal__19
 	ld e,izl
 	extz de
@@ -13932,8 +14023,8 @@ L2796:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-	jr L2797
-L2794:
+	jr L2799
+L2796:
 	ld xbc,_life__19
 	ld e,izl
 	extz de
@@ -13942,11 +14033,11 @@ L2794:
 	ld a,(xbc)
 	dec 1,a
 	ld (xbc),a
-L2797:
-	jr L2779
-L2784:
-	jr L2779
-L2779:
+L2799:
+	jr L2781
+L2786:
+	jr L2781
+L2781:
 	ld xwa,_life__19
 	ld c,izl
 	extz bc
@@ -13954,7 +14045,7 @@ L2779:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jp z,L2799
+	jp z,L2801
 	ld xwa,_px__19
 	ld c,izl
 	extz bc
@@ -13963,7 +14054,7 @@ L2779:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,65424
-	jr lt,L2799
+	jr lt,L2801
 	ld xwa,_px__19
 	ld c,izl
 	extz bc
@@ -13972,7 +14063,7 @@ L2779:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,2544
-	jr gt,L2799
+	jr gt,L2801
 	ld xwa,_py__19
 	ld c,izl
 	extz bc
@@ -13981,7 +14072,7 @@ L2779:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,65424
-	jr lt,L2799
+	jr lt,L2801
 	ld xwa,_py__19
 	ld c,izl
 	extz bc
@@ -13990,10 +14081,10 @@ L2779:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,2416
-	jr gt,L2799
+	jr gt,L2801
 	ld a,(_fx__19)
 	cp a,4
-	jr nz,L2798
+	jr nz,L2800
 	ld xwa,_life__19
 	ld c,izl
 	extz bc
@@ -14003,8 +14094,8 @@ L2779:
 	extz wa
 	and wa,4
 	cp wa,0
-	jr z,L2798
-L2799:
+	jr z,L2800
+L2801:
 	ld a,(xsp+1)
 	add a,1
 	push xwa
@@ -14012,9 +14103,9 @@ L2799:
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-	jp L2777
-L2798:
+	jp L2779
 L2800:
+L2802:
 	ld a,(xsp+1)
 	ld (xsp+2),a
 	ld xwa,_px__19
@@ -14054,12 +14145,12 @@ L2800:
 	ld (xsp+8),a
 	ld a,0
 	ld (xsp+9),a
-	ld wa,34816
+	ld xwa,_spr_shadow
 	ld c,(xsp+2)
 	extz bc
 	sll 2,bc
-	add wa,bc
-	extz xwa
+	extz xbc
+	add xwa,xbc
 	ld (xsp+10),xwa
 	ld a,(xsp+6)
 	and a,255
@@ -14085,22 +14176,22 @@ L2800:
 	ld (xbc+3),a
 	ld a,(xsp+8)
 	and a,15
-	ld bc,35840
+	ld xbc,_spr_pal_shadow
 	ld e,(xsp+2)
 	extz de
-	add bc,de
-	extz xbc
+	exts xde
+	add xbc,xde
 	ld (xbc),a
-L2802:
-L2801:
-L2777:
+L2804:
+L2803:
+L2779:
 	inc 1,izl
-L2778:
+L2780:
 	ld a,izl
 	cp a,14
-	jp ult,L2775
-L2776:
-L2767:
+	jp ult,L2777
+L2778:
+L2769:
 	lda xsp,(xsp+14)
 	pop xiz
 	ret
@@ -14114,7 +14205,7 @@ _ending_stop:
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
 	ldb (_fx__19),0
-L2804:
+L2806:
 	ret
 
 ; function dma0_program
@@ -14127,7 +14218,7 @@ _dma0_program__20:
 	push xwa
 	call _dma0_program_asm
 	lda xsp,(xsp+12)
-L2806:
+L2808:
 	ret
 
 ; function dma1_program
@@ -14140,7 +14231,7 @@ _dma1_program__20:
 	push xwa
 	call _dma1_program_asm
 	lda xsp,(xsp+12)
-L2808:
+L2810:
 	ret
 
 ; function dma2_program
@@ -14153,7 +14244,7 @@ _dma2_program__20:
 	push xwa
 	call _dma2_program_asm
 	lda xsp,(xsp+12)
-L2810:
+L2812:
 	ret
 
 ; function dma3_program
@@ -14166,7 +14257,7 @@ _dma3_program__20:
 	push xwa
 	call _dma3_program_asm
 	lda xsp,(xsp+12)
-L2812:
+L2814:
 	ret
 
 ; function dma0_program_u16
@@ -14179,7 +14270,7 @@ _dma0_program_u16__20:
 	push xwa
 	call _dma0_program_u16_asm
 	lda xsp,(xsp+12)
-L2814:
+L2816:
 	ret
 
 ; function dma1_program_u16
@@ -14192,7 +14283,7 @@ _dma1_program_u16__20:
 	push xwa
 	call _dma1_program_u16_asm
 	lda xsp,(xsp+12)
-L2816:
+L2818:
 	ret
 
 ; function dma2_program_u16
@@ -14205,7 +14296,7 @@ _dma2_program_u16__20:
 	push xwa
 	call _dma2_program_u16_asm
 	lda xsp,(xsp+12)
-L2818:
+L2820:
 	ret
 
 ; function dma3_program_u16
@@ -14218,7 +14309,7 @@ _dma3_program_u16__20:
 	push xwa
 	call _dma3_program_u16_asm
 	lda xsp,(xsp+12)
-L2820:
+L2822:
 	ret
 
 ; function dma0_program_u32
@@ -14231,7 +14322,7 @@ _dma0_program_u32__20:
 	push xwa
 	call _dma0_program_u32_asm
 	lda xsp,(xsp+12)
-L2822:
+L2824:
 	ret
 
 ; function dma1_program_u32
@@ -14244,7 +14335,7 @@ _dma1_program_u32__20:
 	push xwa
 	call _dma1_program_u32_asm
 	lda xsp,(xsp+12)
-L2824:
+L2826:
 	ret
 
 ; function dma2_program_u32
@@ -14257,7 +14348,7 @@ _dma2_program_u32__20:
 	push xwa
 	call _dma2_program_u32_asm
 	lda xsp,(xsp+12)
-L2826:
+L2828:
 	ret
 
 ; function dma3_program_u32
@@ -14270,7 +14361,7 @@ _dma3_program_u32__20:
 	push xwa
 	call _dma3_program_u32_asm
 	lda xsp,(xsp+12)
-L2828:
+L2830:
 	ret
 
 ; function dma0_clear
@@ -14279,7 +14370,7 @@ _dma0_clear__20:
 	ldc dmac0,wa
 	ld a,0
 	ldc dmam0,a
-L2830:
+L2832:
 	ret
 
 ; function dma1_clear
@@ -14288,7 +14379,7 @@ _dma1_clear__20:
 	ldc dmac1,wa
 	ld a,0
 	ldc dmam1,a
-L2832:
+L2834:
 	ret
 
 ; function dma2_clear
@@ -14297,7 +14388,7 @@ _dma2_clear__20:
 	ldc dmac2,wa
 	ld a,0
 	ldc dmam2,a
-L2834:
+L2836:
 	ret
 
 ; function dma3_clear
@@ -14306,7 +14397,7 @@ _dma3_clear__20:
 	ldc dmac3,wa
 	ld a,0
 	ldc dmam3,a
-L2836:
+L2838:
 	ret
 
 ; function dma_set_start_vector
@@ -14317,32 +14408,32 @@ _dma_set_start_vector__20:
 	ld a,(xsp+8)
 	extz wa
 	cp wa,0
-	jr z,L2845
-	cp wa,1
-	jr z,L2846
-	cp wa,2
 	jr z,L2847
-	cp wa,3
+	cp wa,1
 	jr z,L2848
-	jr L2844
-L2845:
-	ld a,izl
-	ld (07Ch),a
-	jr L2844
-L2846:
-	ld a,izl
-	ld (07Dh),a
-	jr L2844
+	cp wa,2
+	jr z,L2849
+	cp wa,3
+	jr z,L2850
+	jr L2846
 L2847:
 	ld a,izl
-	ld (07Eh),a
-	jr L2844
+	ld (07Ch),a
+	jr L2846
 L2848:
 	ld a,izl
+	ld (07Dh),a
+	jr L2846
+L2849:
+	ld a,izl
+	ld (07Eh),a
+	jr L2846
+L2850:
+	ld a,izl
 	ld (07Fh),a
-	jr L2844
-L2844:
-L2843:
+	jr L2846
+L2846:
+L2845:
 	pop xiz
 	ret
 
@@ -14351,14 +14442,14 @@ _dma_rearm_in_isr__20:
 	push xiz
 	ld a,(xsp+8)
 	ld izl,a
-	jr L2874
-	jp L2873
-L2874:
+	jr L2876
+	jp L2875
+L2876:
 	ld a,izl
 	cp a,3
-	jr ule,L2875
-	jp L2873
-L2875:
+	jr ule,L2877
+	jp L2875
+L2877:
 	ld xwa,_s_rearm_enabled__20
 	ld c,izl
 	extz bc
@@ -14366,9 +14457,9 @@ L2875:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr nz,L2876
-	jp L2873
-L2876:
+	jr nz,L2878
+	jp L2875
+L2878:
 	ld wa,0
 	push xwa
 	ld a,izl
@@ -14383,81 +14474,25 @@ L2876:
 	ld a,(xwa)
 	extz wa
 	cp wa,0
-	jr z,L2879
+	jr z,L2881
 	cp wa,1
-	jp z,L2880
+	jp z,L2882
 	cp wa,2
-	jp z,L2881
-	jr L2878
-L2878:
-L2879:
+	jp z,L2883
+	jr L2880
+L2880:
+L2881:
 	ld a,izl
 	extz wa
 	cp wa,0
-	jr z,L2883
+	jr z,L2885
 	cp wa,1
-	jr z,L2884
+	jr z,L2886
 	cp wa,2
-	jp z,L2885
+	jp z,L2887
 	cp wa,3
-	jp z,L2886
-	jp L2882
-L2883:
-	ld xwa,_s_rearm_count__20
-	ld c,izl
-	extz bc
-	exts xbc
-	sll 1,xbc
-	add xwa,xbc
-	ld wa,(xwa)
-	push xwa
-	ld xwa,_s_rearm_dst__20
-	ld c,izl
-	extz bc
-	exts xbc
-	sll 2,xbc
-	add xwa,xbc
-	ld xwa,(xwa)
-	push xwa
-	ld xwa,_s_rearm_src__20
-	ld c,izl
-	extz bc
-	exts xbc
-	sll 2,xbc
-	add xwa,xbc
-	ld xwa,(xwa)
-	push xwa
-	call _dma0_program__20
-	lda xsp,(xsp+12)
-	jp L2882
-L2884:
-	ld xwa,_s_rearm_count__20
-	ld c,izl
-	extz bc
-	exts xbc
-	sll 1,xbc
-	add xwa,xbc
-	ld wa,(xwa)
-	push xwa
-	ld xwa,_s_rearm_dst__20
-	ld c,izl
-	extz bc
-	exts xbc
-	sll 2,xbc
-	add xwa,xbc
-	ld xwa,(xwa)
-	push xwa
-	ld xwa,_s_rearm_src__20
-	ld c,izl
-	extz bc
-	exts xbc
-	sll 2,xbc
-	add xwa,xbc
-	ld xwa,(xwa)
-	push xwa
-	call _dma1_program__20
-	lda xsp,(xsp+12)
-	jp L2882
+	jp z,L2888
+	jp L2884
 L2885:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
@@ -14483,9 +14518,9 @@ L2885:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	call _dma2_program__20
+	call _dma0_program__20
 	lda xsp,(xsp+12)
-	jr L2882
+	jp L2884
 L2886:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
@@ -14511,23 +14546,37 @@ L2886:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	call _dma3_program__20
+	call _dma1_program__20
 	lda xsp,(xsp+12)
-	jr L2882
-L2882:
-	jp L2877
-L2880:
-	ld a,izl
-	extz wa
-	cp wa,0
-	jr z,L2888
-	cp wa,1
-	jr z,L2889
-	cp wa,2
-	jp z,L2890
-	cp wa,3
-	jp z,L2891
-	jp L2887
+	jp L2884
+L2887:
+	ld xwa,_s_rearm_count__20
+	ld c,izl
+	extz bc
+	exts xbc
+	sll 1,xbc
+	add xwa,xbc
+	ld wa,(xwa)
+	push xwa
+	ld xwa,_s_rearm_dst__20
+	ld c,izl
+	extz bc
+	exts xbc
+	sll 2,xbc
+	add xwa,xbc
+	ld xwa,(xwa)
+	push xwa
+	ld xwa,_s_rearm_src__20
+	ld c,izl
+	extz bc
+	exts xbc
+	sll 2,xbc
+	add xwa,xbc
+	ld xwa,(xwa)
+	push xwa
+	call _dma2_program__20
+	lda xsp,(xsp+12)
+	jr L2884
 L2888:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
@@ -14553,37 +14602,23 @@ L2888:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	call _dma0_program_u16__20
+	call _dma3_program__20
 	lda xsp,(xsp+12)
-	jp L2887
-L2889:
-	ld xwa,_s_rearm_count__20
-	ld c,izl
-	extz bc
-	exts xbc
-	sll 1,xbc
-	add xwa,xbc
-	ld wa,(xwa)
-	push xwa
-	ld xwa,_s_rearm_dst__20
-	ld c,izl
-	extz bc
-	exts xbc
-	sll 2,xbc
-	add xwa,xbc
-	ld xwa,(xwa)
-	push xwa
-	ld xwa,_s_rearm_src__20
-	ld c,izl
-	extz bc
-	exts xbc
-	sll 2,xbc
-	add xwa,xbc
-	ld xwa,(xwa)
-	push xwa
-	call _dma1_program_u16__20
-	lda xsp,(xsp+12)
-	jp L2887
+	jr L2884
+L2884:
+	jp L2879
+L2882:
+	ld a,izl
+	extz wa
+	cp wa,0
+	jr z,L2890
+	cp wa,1
+	jr z,L2891
+	cp wa,2
+	jp z,L2892
+	cp wa,3
+	jp z,L2893
+	jp L2889
 L2890:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
@@ -14609,9 +14644,9 @@ L2890:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	call _dma2_program_u16__20
+	call _dma0_program_u16__20
 	lda xsp,(xsp+12)
-	jr L2887
+	jp L2889
 L2891:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
@@ -14637,23 +14672,37 @@ L2891:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	call _dma3_program_u16__20
+	call _dma1_program_u16__20
 	lda xsp,(xsp+12)
-	jr L2887
-L2887:
-	jp L2877
-L2881:
-	ld a,izl
-	extz wa
-	cp wa,0
-	jr z,L2893
-	cp wa,1
-	jr z,L2894
-	cp wa,2
-	jp z,L2895
-	cp wa,3
-	jp z,L2896
-	jp L2892
+	jp L2889
+L2892:
+	ld xwa,_s_rearm_count__20
+	ld c,izl
+	extz bc
+	exts xbc
+	sll 1,xbc
+	add xwa,xbc
+	ld wa,(xwa)
+	push xwa
+	ld xwa,_s_rearm_dst__20
+	ld c,izl
+	extz bc
+	exts xbc
+	sll 2,xbc
+	add xwa,xbc
+	ld xwa,(xwa)
+	push xwa
+	ld xwa,_s_rearm_src__20
+	ld c,izl
+	extz bc
+	exts xbc
+	sll 2,xbc
+	add xwa,xbc
+	ld xwa,(xwa)
+	push xwa
+	call _dma2_program_u16__20
+	lda xsp,(xsp+12)
+	jr L2889
 L2893:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
@@ -14679,37 +14728,23 @@ L2893:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
-	call _dma0_program_u32__20
+	call _dma3_program_u16__20
 	lda xsp,(xsp+12)
-	jp L2892
-L2894:
-	ld xwa,_s_rearm_count__20
-	ld c,izl
-	extz bc
-	exts xbc
-	sll 1,xbc
-	add xwa,xbc
-	ld wa,(xwa)
-	push xwa
-	ld xwa,_s_rearm_dst__20
-	ld c,izl
-	extz bc
-	exts xbc
-	sll 2,xbc
-	add xwa,xbc
-	ld xwa,(xwa)
-	push xwa
-	ld xwa,_s_rearm_src__20
-	ld c,izl
-	extz bc
-	exts xbc
-	sll 2,xbc
-	add xwa,xbc
-	ld xwa,(xwa)
-	push xwa
-	call _dma1_program_u32__20
-	lda xsp,(xsp+12)
-	jp L2892
+	jr L2889
+L2889:
+	jp L2879
+L2883:
+	ld a,izl
+	extz wa
+	cp wa,0
+	jr z,L2895
+	cp wa,1
+	jr z,L2896
+	cp wa,2
+	jp z,L2897
+	cp wa,3
+	jp z,L2898
+	jp L2894
 L2895:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
@@ -14735,10 +14770,66 @@ L2895:
 	add xwa,xbc
 	ld xwa,(xwa)
 	push xwa
+	call _dma0_program_u32__20
+	lda xsp,(xsp+12)
+	jp L2894
+L2896:
+	ld xwa,_s_rearm_count__20
+	ld c,izl
+	extz bc
+	exts xbc
+	sll 1,xbc
+	add xwa,xbc
+	ld wa,(xwa)
+	push xwa
+	ld xwa,_s_rearm_dst__20
+	ld c,izl
+	extz bc
+	exts xbc
+	sll 2,xbc
+	add xwa,xbc
+	ld xwa,(xwa)
+	push xwa
+	ld xwa,_s_rearm_src__20
+	ld c,izl
+	extz bc
+	exts xbc
+	sll 2,xbc
+	add xwa,xbc
+	ld xwa,(xwa)
+	push xwa
+	call _dma1_program_u32__20
+	lda xsp,(xsp+12)
+	jp L2894
+L2897:
+	ld xwa,_s_rearm_count__20
+	ld c,izl
+	extz bc
+	exts xbc
+	sll 1,xbc
+	add xwa,xbc
+	ld wa,(xwa)
+	push xwa
+	ld xwa,_s_rearm_dst__20
+	ld c,izl
+	extz bc
+	exts xbc
+	sll 2,xbc
+	add xwa,xbc
+	ld xwa,(xwa)
+	push xwa
+	ld xwa,_s_rearm_src__20
+	ld c,izl
+	extz bc
+	exts xbc
+	sll 2,xbc
+	add xwa,xbc
+	ld xwa,(xwa)
+	push xwa
 	call _dma2_program_u32__20
 	lda xsp,(xsp+12)
-	jr L2892
-L2896:
+	jr L2894
+L2898:
 	ld xwa,_s_rearm_count__20
 	ld c,izl
 	extz bc
@@ -14765,10 +14856,10 @@ L2896:
 	push xwa
 	call _dma3_program_u32__20
 	lda xsp,(xsp+12)
-	jr L2892
-L2892:
-	jr L2877
-L2877:
+	jr L2894
+L2894:
+	jr L2879
+L2879:
 	ld xwa,_s_rearm_vector__20
 	ld c,izl
 	extz bc
@@ -14780,7 +14871,7 @@ L2877:
 	push xwa
 	call _dma_set_start_vector__20
 	lda xsp,(xsp+8)
-L2873:
+L2875:
 	pop xiz
 	ret
 
@@ -14793,23 +14884,23 @@ _isr_dma0_inttc__20:
 	push xix
 	push xiy
 	push xiz
-	jr L2902
+	jr L2904
 	ldb (_s_done_flag__20),1
-L2902:
+L2904:
 	ld wa,0
 	push xwa
 	call _dma_rearm_in_isr__20
 	lda xsp,(xsp+4)
-	jr L2903
+	jr L2905
 	ld xwa,(_s_done_cb__20)
 	cp xwa,0
-	jr z,L2904
+	jr z,L2906
 	ld xwa,(_s_done_cb__20)
 	ld xhl,xwa
 	call (xhl)
-L2904:
+L2906:
+L2905:
 L2903:
-L2901:
 	pop xiz
 	pop xiy
 	pop xix
@@ -14828,23 +14919,23 @@ _isr_dma1_inttc__20:
 	push xix
 	push xiy
 	push xiz
-	jr L2910
+	jr L2912
 	ldb (_s_done_flag__20+1),1
-L2910:
+L2912:
 	ld wa,1
 	push xwa
 	call _dma_rearm_in_isr__20
 	lda xsp,(xsp+4)
-	jr L2911
+	jr L2913
 	ld xwa,(_s_done_cb__20+4)
 	cp xwa,0
-	jr z,L2912
+	jr z,L2914
 	ld xwa,(_s_done_cb__20+4)
 	ld xhl,xwa
 	call (xhl)
-L2912:
+L2914:
+L2913:
 L2911:
-L2909:
 	pop xiz
 	pop xiy
 	pop xix
@@ -14863,23 +14954,23 @@ _isr_dma2_inttc__20:
 	push xix
 	push xiy
 	push xiz
-	jr L2918
+	jr L2920
 	ldb (_s_done_flag__20+2),1
-L2918:
+L2920:
 	ld wa,2
 	push xwa
 	call _dma_rearm_in_isr__20
 	lda xsp,(xsp+4)
-	jr L2919
+	jr L2921
 	ld xwa,(_s_done_cb__20+8)
 	cp xwa,0
-	jr z,L2920
+	jr z,L2922
 	ld xwa,(_s_done_cb__20+8)
 	ld xhl,xwa
 	call (xhl)
-L2920:
+L2922:
+L2921:
 L2919:
-L2917:
 	pop xiz
 	pop xiy
 	pop xix
@@ -14898,23 +14989,23 @@ _isr_dma3_inttc__20:
 	push xix
 	push xiy
 	push xiz
-	jr L2926
+	jr L2928
 	ldb (_s_done_flag__20+3),1
-L2926:
+L2928:
 	ld wa,3
 	push xwa
 	call _dma_rearm_in_isr__20
 	lda xsp,(xsp+4)
-	jr L2927
+	jr L2929
 	ld xwa,(_s_done_cb__20+12)
 	cp xwa,0
-	jr z,L2928
+	jr z,L2930
 	ld xwa,(_s_done_cb__20+12)
 	ld xhl,xwa
 	call (xhl)
-L2928:
+L2930:
+L2929:
 L2927:
-L2925:
 	pop xiz
 	pop xiy
 	pop xix
@@ -14930,28 +15021,28 @@ _dma_start_common__20:
 	ld iz,(xsp+20)
 	ld a,(xsp+8)
 	cp a,3
-	jr ule,L2955
-	jp L2954
-L2955:
+	jr ule,L2957
+	jp L2956
+L2957:
 	ld xwa,(xsp+12)
 	cp xwa,0
-	jr z,L2957
+	jr z,L2959
 	ld xwa,(xsp+16)
 	cp xwa,0
-	jr nz,L2956
-L2957:
-	jp L2954
-L2956:
+	jr nz,L2958
+L2959:
+	jp L2956
+L2958:
 	ld wa,iz
 	cp wa,0
-	jr nz,L2958
-	jp L2954
-L2958:
+	jr nz,L2960
+	jp L2956
+L2960:
 	ld a,(xsp+24)
 	cp a,11
-	jr nz,L2959
-	jp L2954
-L2959:
+	jr nz,L2961
+	jp L2956
+L2961:
 	ld a,0
 	ld xbc,_s_done_flag__20
 	ld e,(xsp+8)
@@ -14974,25 +15065,25 @@ L2959:
 	lda xsp,(xsp+8)
 	ld wa,(xsp+28)
 	cp wa,0
-	jr z,L2961
+	jr z,L2963
 	cp wa,1
-	jr z,L2962
+	jr z,L2964
 	cp wa,2
-	jp z,L2963
-	jp L2960
-L2961:
+	jp z,L2965
+	jp L2962
+L2963:
 	ld a,(xsp+8)
 	extz wa
 	cp wa,0
-	jr z,L2965
-	cp wa,1
-	jr z,L2966
-	cp wa,2
 	jr z,L2967
-	cp wa,3
+	cp wa,1
 	jr z,L2968
-	jr L2964
-L2965:
+	cp wa,2
+	jr z,L2969
+	cp wa,3
+	jr z,L2970
+	jr L2966
+L2967:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -15001,8 +15092,8 @@ L2965:
 	push xwa
 	call _dma0_program__20
 	lda xsp,(xsp+12)
-	jr L2964
-L2966:
+	jr L2966
+L2968:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -15011,8 +15102,8 @@ L2966:
 	push xwa
 	call _dma1_program__20
 	lda xsp,(xsp+12)
-	jr L2964
-L2967:
+	jr L2966
+L2969:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -15021,8 +15112,8 @@ L2967:
 	push xwa
 	call _dma2_program__20
 	lda xsp,(xsp+12)
-	jr L2964
-L2968:
+	jr L2966
+L2970:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -15031,22 +15122,22 @@ L2968:
 	push xwa
 	call _dma3_program__20
 	lda xsp,(xsp+12)
-	jr L2964
+	jr L2966
+L2966:
+	jp L2962
 L2964:
-	jp L2960
-L2962:
 	ld a,(xsp+8)
 	extz wa
 	cp wa,0
-	jr z,L2970
-	cp wa,1
-	jr z,L2971
-	cp wa,2
 	jr z,L2972
-	cp wa,3
+	cp wa,1
 	jr z,L2973
-	jr L2969
-L2970:
+	cp wa,2
+	jr z,L2974
+	cp wa,3
+	jr z,L2975
+	jr L2971
+L2972:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -15055,8 +15146,8 @@ L2970:
 	push xwa
 	call _dma0_program_u16__20
 	lda xsp,(xsp+12)
-	jr L2969
-L2971:
+	jr L2971
+L2973:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -15065,8 +15156,8 @@ L2971:
 	push xwa
 	call _dma1_program_u16__20
 	lda xsp,(xsp+12)
-	jr L2969
-L2972:
+	jr L2971
+L2974:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -15075,8 +15166,8 @@ L2972:
 	push xwa
 	call _dma2_program_u16__20
 	lda xsp,(xsp+12)
-	jr L2969
-L2973:
+	jr L2971
+L2975:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -15085,22 +15176,22 @@ L2973:
 	push xwa
 	call _dma3_program_u16__20
 	lda xsp,(xsp+12)
-	jr L2969
-L2969:
-	jr L2960
-L2963:
+	jr L2971
+L2971:
+	jr L2962
+L2965:
 	ld a,(xsp+8)
 	extz wa
 	cp wa,0
-	jr z,L2975
-	cp wa,1
-	jr z,L2976
-	cp wa,2
 	jr z,L2977
-	cp wa,3
+	cp wa,1
 	jr z,L2978
-	jr L2974
-L2975:
+	cp wa,2
+	jr z,L2979
+	cp wa,3
+	jr z,L2980
+	jr L2976
+L2977:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -15109,8 +15200,8 @@ L2975:
 	push xwa
 	call _dma0_program_u32__20
 	lda xsp,(xsp+12)
-	jr L2974
-L2976:
+	jr L2976
+L2978:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -15119,8 +15210,8 @@ L2976:
 	push xwa
 	call _dma1_program_u32__20
 	lda xsp,(xsp+12)
-	jr L2974
-L2977:
+	jr L2976
+L2979:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -15129,8 +15220,8 @@ L2977:
 	push xwa
 	call _dma2_program_u32__20
 	lda xsp,(xsp+12)
-	jr L2974
-L2978:
+	jr L2976
+L2980:
 	ld wa,iz
 	push xwa
 	ld xwa,(xsp+16)
@@ -15139,17 +15230,17 @@ L2978:
 	push xwa
 	call _dma3_program_u32__20
 	lda xsp,(xsp+12)
-	jr L2974
-L2974:
-	jr L2960
-L2960:
+	jr L2976
+L2976:
+	jr L2962
+L2962:
 	ld a,(xsp+24)
 	push xwa
 	ld a,(xsp+12)
 	push xwa
 	call _dma_set_start_vector__20
 	lda xsp,(xsp+8)
-L2954:
+L2956:
 	pop xiz
 	ret
 
@@ -15158,8 +15249,8 @@ _ngpc_dma_init:
 	push xiz
 	lda xsp,(xsp-2)
 	ld izl,0
-	jp L2989
-L2986:
+	jp L2991
+L2988:
 	ld xwa,0
 	ld xbc,_s_done_cb__20
 	ld e,izl
@@ -15227,13 +15318,13 @@ L2986:
 	sll 2,xde
 	add xbc,xde
 	ld (xbc),xwa
-L2988:
+L2990:
 	inc 1,izl
-L2989:
+L2991:
 	ld a,izl
 	cp a,4
-	jp ult,L2986
-L2987:
+	jp ult,L2988
+L2989:
 	ld xwa,_isr_dma0_inttc__20
 	ld (06FF0h),xwa
 	ld xwa,_isr_dma1_inttc__20
@@ -15244,8 +15335,8 @@ L2987:
 	ld (06FFCh),xwa
 	ldb (079h),153
 	ldb (07Ah),153
-L2990:
-L2985:
+L2992:
+L2987:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -15266,7 +15357,7 @@ _ngpc_dma_start_table_u8:
 	push xwa
 	call _dma_start_common__20
 	lda xsp,(xsp+24)
-L2992:
+L2994:
 	ret
 
 ; function ngpc_dma_start_table_u16
@@ -15285,7 +15376,7 @@ _ngpc_dma_start_table_u16:
 	push xwa
 	call _dma_start_common__20
 	lda xsp,(xsp+24)
-L2994:
+L2996:
 	ret
 
 ; function ngpc_dma_start_table_u32
@@ -15304,7 +15395,7 @@ _ngpc_dma_start_table_u32:
 	push xwa
 	call _dma_start_common__20
 	lda xsp,(xsp+24)
-L2996:
+L2998:
 	ret
 
 ; function ngpc_dma_link_hblank
@@ -15321,7 +15412,7 @@ _ngpc_dma_link_hblank:
 	push xwa
 	call _ngpc_dma_start_table_u8
 	lda xsp,(xsp+20)
-L2998:
+L3000:
 	ret
 
 ; function ngpc_dma_link_vblank
@@ -15338,7 +15429,7 @@ _ngpc_dma_link_vblank:
 	push xwa
 	call _ngpc_dma_start_table_u8
 	lda xsp,(xsp+20)
-L3000:
+L3002:
 	ret
 
 ; function ngpc_dma_link_hblank_u16
@@ -15355,7 +15446,7 @@ _ngpc_dma_link_hblank_u16:
 	push xwa
 	call _ngpc_dma_start_table_u16
 	lda xsp,(xsp+20)
-L3002:
+L3004:
 	ret
 
 ; function ngpc_dma_link_hblank_u32
@@ -15372,7 +15463,7 @@ _ngpc_dma_link_hblank_u32:
 	push xwa
 	call _ngpc_dma_start_table_u32
 	lda xsp,(xsp+20)
-L3004:
+L3006:
 	ret
 
 ; function ngpc_dma_timer0_hblank_enable
@@ -15381,7 +15472,7 @@ _ngpc_dma_timer0_hblank_enable:
 	push xwa
 	call _ngpc_dma_timer0_hblank_enable_treg0
 	lda xsp,(xsp+4)
-L3006:
+L3008:
 	ret
 
 ; function ngpc_dma_timer0_hblank_enable_treg0
@@ -15390,13 +15481,13 @@ _ngpc_dma_timer0_hblank_enable_treg0:
 	ld a,(xsp+4)
 	ld (022h),a
 	orb (020h),1
-L3008:
+L3010:
 	ret
 
 ; function ngpc_dma_timer0_hblank_disable
 _ngpc_dma_timer0_hblank_disable:
 	andb (020h),254
-L3010:
+L3012:
 	ret
 
 ; function ngpc_dma_timer01_hblank_enable
@@ -15405,13 +15496,13 @@ _ngpc_dma_timer01_hblank_enable:
 	ldb (022h),1
 	ldb (023h),1
 	orb (020h),3
-L3012:
+L3014:
 	ret
 
 ; function ngpc_dma_timer01_hblank_disable
 _ngpc_dma_timer01_hblank_disable:
 	andb (020h),252
-L3014:
+L3016:
 	ret
 
 ; function ngpc_dma_timer1_from_timer0_enable
@@ -15420,7 +15511,7 @@ _ngpc_dma_timer1_from_timer0_enable:
 	push xwa
 	call _ngpc_dma_timer1_from_timer0_enable_treg1
 	lda xsp,(xsp+4)
-L3016:
+L3018:
 	ret
 
 ; function ngpc_dma_timer1_from_timer0_enable_treg1
@@ -15429,13 +15520,13 @@ _ngpc_dma_timer1_from_timer0_enable_treg1:
 	ld a,(xsp+4)
 	ld (023h),a
 	orb (020h),2
-L3018:
+L3020:
 	ret
 
 ; function ngpc_dma_timer1_disable
 _ngpc_dma_timer1_disable:
 	andb (020h),253
-L3020:
+L3022:
 	ret
 
 ; function ngpc_dma_hblank_stream_begin
@@ -15444,9 +15535,9 @@ _ngpc_dma_hblank_stream_begin:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3024
-	jr L3023
-L3024:
+	jr nz,L3026
+	jr L3025
+L3026:
 	ld a,(xsp+12)
 	ld (xiz),a
 	ld xwa,(xsp+16)
@@ -15455,7 +15546,7 @@ L3024:
 	ld (xiz+6),xwa
 	ld wa,(xsp+24)
 	ld (xiz+10),wa
-L3023:
+L3025:
 	pop xiz
 	ret
 
@@ -15465,9 +15556,9 @@ _ngpc_dma_hblank_stream_rearm:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3028
-	jr L3027
-L3028:
+	jr nz,L3030
+	jr L3029
+L3030:
 	ld wa,16
 	push xwa
 	ld wa,(xiz+10)
@@ -15480,7 +15571,7 @@ L3028:
 	push xwa
 	call _ngpc_dma_start_table_u8
 	lda xsp,(xsp+20)
-L3027:
+L3029:
 	pop xiz
 	ret
 
@@ -15488,15 +15579,15 @@ L3027:
 _ngpc_dma_hblank_stream_end:
 	ld xwa,(xsp+4)
 	cp xwa,0
-	jr nz,L3032
-	jr L3031
-L3032:
+	jr nz,L3034
+	jr L3033
+L3034:
 	ld xwa,(xsp+4)
 	ld a,(xwa)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
-L3031:
+L3033:
 	ret
 
 ; function ngpc_dma_stream_begin_u8
@@ -15505,9 +15596,9 @@ _ngpc_dma_stream_begin_u8:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3036
-	jr L3035
-L3036:
+	jr nz,L3038
+	jr L3037
+L3038:
 	ld a,(xsp+12)
 	ld (xiz),a
 	ld xwa,(xsp+16)
@@ -15518,7 +15609,7 @@ L3036:
 	ld (xiz+10),wa
 	ld a,(xsp+28)
 	ld (xiz+12),a
-L3035:
+L3037:
 	pop xiz
 	ret
 
@@ -15528,9 +15619,9 @@ _ngpc_dma_stream_rearm_u8:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3040
-	jr L3039
-L3040:
+	jr nz,L3042
+	jr L3041
+L3042:
 	ld a,(xiz+12)
 	push xwa
 	ld wa,(xiz+10)
@@ -15543,7 +15634,7 @@ L3040:
 	push xwa
 	call _ngpc_dma_start_table_u8
 	lda xsp,(xsp+20)
-L3039:
+L3041:
 	pop xiz
 	ret
 
@@ -15551,15 +15642,15 @@ L3039:
 _ngpc_dma_stream_end_u8:
 	ld xwa,(xsp+4)
 	cp xwa,0
-	jr nz,L3044
-	jr L3043
-L3044:
+	jr nz,L3046
+	jr L3045
+L3046:
 	ld xwa,(xsp+4)
 	ld a,(xwa)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
-L3043:
+L3045:
 	ret
 
 ; function ngpc_dma_stream_begin_u16
@@ -15568,9 +15659,9 @@ _ngpc_dma_stream_begin_u16:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3048
-	jr L3047
-L3048:
+	jr nz,L3050
+	jr L3049
+L3050:
 	ld a,(xsp+12)
 	ld (xiz),a
 	ld xwa,(xsp+16)
@@ -15581,7 +15672,7 @@ L3048:
 	ld (xiz+10),wa
 	ld a,(xsp+28)
 	ld (xiz+12),a
-L3047:
+L3049:
 	pop xiz
 	ret
 
@@ -15591,9 +15682,9 @@ _ngpc_dma_stream_rearm_u16:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3052
-	jr L3051
-L3052:
+	jr nz,L3054
+	jr L3053
+L3054:
 	ld a,(xiz+12)
 	push xwa
 	ld wa,(xiz+10)
@@ -15606,7 +15697,7 @@ L3052:
 	push xwa
 	call _ngpc_dma_start_table_u16
 	lda xsp,(xsp+20)
-L3051:
+L3053:
 	pop xiz
 	ret
 
@@ -15614,15 +15705,15 @@ L3051:
 _ngpc_dma_stream_end_u16:
 	ld xwa,(xsp+4)
 	cp xwa,0
-	jr nz,L3056
-	jr L3055
-L3056:
+	jr nz,L3058
+	jr L3057
+L3058:
 	ld xwa,(xsp+4)
 	ld a,(xwa)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
-L3055:
+L3057:
 	ret
 
 ; function ngpc_dma_stream_begin_u32
@@ -15631,9 +15722,9 @@ _ngpc_dma_stream_begin_u32:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3060
-	jr L3059
-L3060:
+	jr nz,L3062
+	jr L3061
+L3062:
 	ld a,(xsp+12)
 	ld (xiz),a
 	ld xwa,(xsp+16)
@@ -15644,7 +15735,7 @@ L3060:
 	ld (xiz+10),wa
 	ld a,(xsp+28)
 	ld (xiz+12),a
-L3059:
+L3061:
 	pop xiz
 	ret
 
@@ -15654,9 +15745,9 @@ _ngpc_dma_stream_rearm_u32:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3064
-	jr L3063
-L3064:
+	jr nz,L3066
+	jr L3065
+L3066:
 	ld a,(xiz+12)
 	push xwa
 	ld wa,(xiz+10)
@@ -15669,7 +15760,7 @@ L3064:
 	push xwa
 	call _ngpc_dma_start_table_u32
 	lda xsp,(xsp+20)
-L3063:
+L3065:
 	pop xiz
 	ret
 
@@ -15677,15 +15768,15 @@ L3063:
 _ngpc_dma_stream_end_u32:
 	ld xwa,(xsp+4)
 	cp xwa,0
-	jr nz,L3068
-	jr L3067
-L3068:
+	jr nz,L3070
+	jr L3069
+L3070:
 	ld xwa,(xsp+4)
 	ld a,(xwa)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
-L3067:
+L3069:
 	ret
 
 ; function ngpc_dma_stop
@@ -15695,9 +15786,9 @@ _ngpc_dma_stop:
 	ld izl,a
 	ld a,izl
 	cp a,3
-	jr ule,L3077
-	jr L3076
-L3077:
+	jr ule,L3079
+	jr L3078
+L3079:
 	ld wa,0
 	push xwa
 	ld a,izl
@@ -15721,28 +15812,28 @@ L3077:
 	ld a,izl
 	extz wa
 	cp wa,0
-	jr z,L3079
-	cp wa,1
-	jr z,L3080
-	cp wa,2
 	jr z,L3081
-	cp wa,3
+	cp wa,1
 	jr z,L3082
-	jr L3078
-L3079:
-	call _dma0_clear__20
-	jr L3078
-L3080:
-	call _dma1_clear__20
-	jr L3078
+	cp wa,2
+	jr z,L3083
+	cp wa,3
+	jr z,L3084
+	jr L3080
 L3081:
-	call _dma2_clear__20
-	jr L3078
+	call _dma0_clear__20
+	jr L3080
 L3082:
+	call _dma1_clear__20
+	jr L3080
+L3083:
+	call _dma2_clear__20
+	jr L3080
+L3084:
 	call _dma3_clear__20
-	jr L3078
+	jr L3080
+L3080:
 L3078:
-L3076:
 	pop xiz
 	ret
 
@@ -15751,31 +15842,31 @@ _ngpc_dma_remaining:
 	ld a,(xsp+4)
 	extz wa
 	cp wa,0
-	jr z,L3092
-	cp wa,1
-	jr z,L3093
-	cp wa,2
 	jr z,L3094
-	cp wa,3
+	cp wa,1
 	jr z,L3095
-	jr L3096
-L3092:
-	ldc wa,dmac0
-	jr L3090
-L3093:
-	ldc wa,dmac1
-	jr L3090
+	cp wa,2
+	jr z,L3096
+	cp wa,3
+	jr z,L3097
+	jr L3098
 L3094:
-	ldc wa,dmac2
-	jr L3090
+	ldc wa,dmac0
+	jr L3092
 L3095:
-	ldc wa,dmac3
-	jr L3090
+	ldc wa,dmac1
+	jr L3092
 L3096:
+	ldc wa,dmac2
+	jr L3092
+L3097:
+	ldc wa,dmac3
+	jr L3092
+L3098:
 	ld wa,0
-	jr L3090
-L3091:
-L3090:
+	jr L3092
+L3093:
+L3092:
 	ret
 
 ; function ngpc_dma_active
@@ -15788,23 +15879,23 @@ _ngpc_dma_active:
 	ld xbc,xwa
 	pop xwa
 	cp bc,0
-	jr z,L3101
+	jr z,L3103
 	ld wa,1
-	jr L3102
-L3101:
+	jr L3104
+L3103:
 	ld wa,0
+L3104:
+	jr L3102
 L3102:
-	jr L3100
-L3100:
 	ret
 
 ; function ngpc_dma_set_done_handler
 _ngpc_dma_set_done_handler:
 	ld a,(xsp+4)
 	cp a,3
-	jr ule,L3106
-	jr L3105
-L3106:
+	jr ule,L3108
+	jr L3107
+L3108:
 	ld xwa,(xsp+8)
 	ld xbc,_s_done_cb__20
 	ld e,(xsp+4)
@@ -15813,7 +15904,7 @@ L3106:
 	sll 2,xde
 	add xbc,xde
 	ld (xbc),xwa
-L3105:
+L3107:
 	ret
 
 ; function ngpc_dma_poll_done
@@ -15824,10 +15915,10 @@ _ngpc_dma_poll_done:
 	ld izl,a
 	ld a,izl
 	cp a,3
-	jr ule,L3112
+	jr ule,L3114
 	ld wa,0
-	jr L3111
-L3112:
+	jr L3113
+L3114:
 	ld xwa,_s_done_flag__20
 	ld c,izl
 	extz bc
@@ -15837,7 +15928,7 @@ L3112:
 	ld (xsp+0),a
 	ld a,(xsp+0)
 	cp a,0
-	jr z,L3113
+	jr z,L3115
 	ld a,0
 	ld xbc,_s_done_flag__20
 	ld e,izl
@@ -15853,8 +15944,8 @@ L3112:
 	add xbc,xde
 	ld (xbc),a
 	ld wa,1
-	jr L3111
-L3113:
+	jr L3113
+L3115:
 	ld xwa,_s_was_active__20
 	ld c,izl
 	extz bc
@@ -15862,13 +15953,13 @@ L3113:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L3114
+	jr z,L3116
 	ld a,izl
 	push xwa
 	call _ngpc_dma_remaining
 	lda xsp,(xsp+4)
 	cp wa,0
-	jr nz,L3114
+	jr nz,L3116
 	ld a,0
 	ld xbc,_s_was_active__20
 	ld e,izl
@@ -15877,11 +15968,11 @@ L3113:
 	add xbc,xde
 	ld (xbc),a
 	ld wa,1
-	jr L3111
-L3114:
+	jr L3113
+L3116:
 	ld wa,0
-	jr L3111
-L3111:
+	jr L3113
+L3113:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -15892,15 +15983,15 @@ _ngpc_dma_pp_init:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3118
-	jr L3117
-L3118:
+	jr nz,L3120
+	jr L3119
+L3120:
 	ld xwa,(xsp+12)
 	ld (xiz),xwa
 	ld wa,(xsp+16)
 	ld (xiz+4),wa
 	ldw (xiz+6),0
-L3117:
+L3119:
 	pop xiz
 	ret
 
@@ -15910,20 +16001,20 @@ _ngpc_dma_pp_front:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr z,L3124
+	jr z,L3126
 	ld xwa,(xiz)
 	cp xwa,0
-	jr nz,L3123
-L3124:
+	jr nz,L3125
+L3126:
 	ld xwa,0
-	jr L3122
-L3123:
+	jr L3124
+L3125:
 	ld xwa,(xiz)
 	ld bc,(xiz+6)
 	extz xbc
 	add xwa,xbc
-	jr L3122
-L3122:
+	jr L3124
+L3124:
 	pop xiz
 	ret
 
@@ -15933,21 +16024,21 @@ _ngpc_dma_pp_back:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr z,L3130
+	jr z,L3132
 	ld xwa,(xiz)
 	cp xwa,0
-	jr nz,L3129
-L3130:
+	jr nz,L3131
+L3132:
 	ld xwa,0
-	jr L3128
-L3129:
+	jr L3130
+L3131:
 	ld xwa,(xiz)
 	ld bc,(xiz+6)
 	xor bc,(xiz+4)
 	extz xbc
 	add xwa,xbc
-	jr L3128
-L3128:
+	jr L3130
+L3130:
 	pop xiz
 	ret
 
@@ -15957,13 +16048,13 @@ _ngpc_dma_pp_swap:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3134
-	jr L3133
-L3134:
+	jr nz,L3136
+	jr L3135
+L3136:
 	ld wa,(xiz+6)
 	xor wa,(xiz+4)
 	ld (xiz+6),wa
-L3133:
+L3135:
 	pop xiz
 	ret
 
@@ -15974,9 +16065,9 @@ _ngpc_dma_autorearm_begin_u8:
 	ld izl,a
 	ld a,izl
 	cp a,3
-	jr ule,L3138
-	jr L3137
-L3138:
+	jr ule,L3140
+	jr L3139
+L3140:
 	ld a,0
 	ld xbc,_s_rearm_elem__20
 	ld e,izl
@@ -16015,7 +16106,7 @@ L3138:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L3137:
+L3139:
 	pop xiz
 	ret
 
@@ -16026,9 +16117,9 @@ _ngpc_dma_autorearm_begin_u16:
 	ld izl,a
 	ld a,izl
 	cp a,3
-	jr ule,L3142
-	jr L3141
-L3142:
+	jr ule,L3144
+	jr L3143
+L3144:
 	ld a,1
 	ld xbc,_s_rearm_elem__20
 	ld e,izl
@@ -16067,7 +16158,7 @@ L3142:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L3141:
+L3143:
 	pop xiz
 	ret
 
@@ -16078,9 +16169,9 @@ _ngpc_dma_autorearm_begin_u32:
 	ld izl,a
 	ld a,izl
 	cp a,3
-	jr ule,L3146
-	jr L3145
-L3146:
+	jr ule,L3148
+	jr L3147
+L3148:
 	ld a,2
 	ld xbc,_s_rearm_elem__20
 	ld e,izl
@@ -16119,7 +16210,7 @@ L3146:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L3145:
+L3147:
 	pop xiz
 	ret
 
@@ -16127,9 +16218,9 @@ L3145:
 _ngpc_dma_autorearm_set_src_u8:
 	ld a,(xsp+4)
 	cp a,3
-	jr ule,L3150
-	jr L3149
-L3150:
+	jr ule,L3152
+	jr L3151
+L3152:
 	ld xwa,(xsp+8)
 	ld xbc,_s_rearm_src__20
 	ld e,(xsp+4)
@@ -16138,16 +16229,16 @@ L3150:
 	sll 2,xde
 	add xbc,xde
 	ld (xbc),xwa
-L3149:
+L3151:
 	ret
 
 ; function ngpc_dma_autorearm_set_src_u16
 _ngpc_dma_autorearm_set_src_u16:
 	ld a,(xsp+4)
 	cp a,3
-	jr ule,L3154
-	jr L3153
-L3154:
+	jr ule,L3156
+	jr L3155
+L3156:
 	ld xwa,(xsp+8)
 	ld xbc,_s_rearm_src__20
 	ld e,(xsp+4)
@@ -16156,16 +16247,16 @@ L3154:
 	sll 2,xde
 	add xbc,xde
 	ld (xbc),xwa
-L3153:
+L3155:
 	ret
 
 ; function ngpc_dma_autorearm_set_src_u32
 _ngpc_dma_autorearm_set_src_u32:
 	ld a,(xsp+4)
 	cp a,3
-	jr ule,L3158
-	jr L3157
-L3158:
+	jr ule,L3160
+	jr L3159
+L3160:
 	ld xwa,(xsp+8)
 	ld xbc,_s_rearm_src__20
 	ld e,(xsp+4)
@@ -16174,7 +16265,7 @@ L3158:
 	sll 2,xde
 	add xbc,xde
 	ld (xbc),xwa
-L3157:
+L3159:
 	ret
 
 ; function ngpc_dma_autorearm_enable
@@ -16184,12 +16275,12 @@ _ngpc_dma_autorearm_enable:
 	ld izl,a
 	ld a,izl
 	cp a,3
-	jr ule,L3168
-	jp L3167
-L3168:
-	jr L3169
-	jp L3167
-L3169:
+	jr ule,L3170
+	jp L3169
+L3170:
+	jr L3171
+	jp L3169
+L3171:
 	ld a,1
 	ld xbc,_s_rearm_enabled__20
 	ld e,izl
@@ -16205,14 +16296,14 @@ L3169:
 	ld a,(xwa)
 	extz wa
 	cp wa,0
-	jr z,L3172
+	jr z,L3174
 	cp wa,1
-	jr z,L3173
+	jr z,L3175
 	cp wa,2
-	jp z,L3174
-	jr L3171
-L3171:
-L3172:
+	jp z,L3176
+	jr L3173
+L3173:
+L3174:
 	ld xwa,_s_rearm_vector__20
 	ld c,izl
 	extz bc
@@ -16248,8 +16339,8 @@ L3172:
 	push xwa
 	call _ngpc_dma_start_table_u8
 	lda xsp,(xsp+20)
-	jp L3170
-L3173:
+	jp L3172
+L3175:
 	ld xwa,_s_rearm_vector__20
 	ld c,izl
 	extz bc
@@ -16285,8 +16376,8 @@ L3173:
 	push xwa
 	call _ngpc_dma_start_table_u16
 	lda xsp,(xsp+20)
-	jr L3170
-L3174:
+	jr L3172
+L3176:
 	ld xwa,_s_rearm_vector__20
 	ld c,izl
 	extz bc
@@ -16322,9 +16413,9 @@ L3174:
 	push xwa
 	call _ngpc_dma_start_table_u32
 	lda xsp,(xsp+20)
-	jr L3170
-L3170:
-L3167:
+	jr L3172
+L3172:
+L3169:
 	pop xiz
 	ret
 
@@ -16332,9 +16423,9 @@ L3167:
 _ngpc_dma_autorearm_disable:
 	ld a,(xsp+4)
 	cp a,3
-	jr ule,L3178
-	jr L3177
-L3178:
+	jr ule,L3180
+	jr L3179
+L3180:
 	ld a,0
 	ld xbc,_s_rearm_enabled__20
 	ld e,(xsp+4)
@@ -16342,33 +16433,33 @@ L3178:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L3177:
+L3179:
 	ret
 
 ; function plane_reg_x
 _plane_reg_x__21:
 	ld a,(xsp+4)
 	cp a,1
-	jr nz,L3182
+	jr nz,L3184
 	ld xwa,08034h
-	jr L3181
-L3182:
+	jr L3183
+L3184:
 	ld xwa,08032h
-	jr L3181
-L3181:
+	jr L3183
+L3183:
 	ret
 
 ; function plane_reg_y
 _plane_reg_y__21:
 	ld a,(xsp+4)
 	cp a,1
-	jr nz,L3186
+	jr nz,L3188
 	ld xwa,08035h
-	jr L3185
-L3186:
+	jr L3187
+L3188:
 	ld xwa,08033h
-	jr L3185
-L3185:
+	jr L3187
+L3187:
 	ret
 
 ; function ngpc_dma_raster_begin
@@ -16387,7 +16478,7 @@ _ngpc_dma_raster_begin:
 	push xwa
 	call _ngpc_dma_raster_begin_ex
 	lda xsp,(xsp+24)
-L3188:
+L3190:
 	ret
 
 ; function ngpc_dma_raster_begin_ex
@@ -16397,9 +16488,9 @@ _ngpc_dma_raster_begin_ex:
 	ld xiz,(xsp+16)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3198
-	jp L3197
-L3198:
+	jr nz,L3200
+	jp L3199
+L3200:
 	ld a,(xsp+20)
 	ld (xiz),a
 	ldb (xiz+1),0
@@ -16419,7 +16510,7 @@ L3198:
 	ld (xsp+4),xwa
 	ld xwa,(xsp+28)
 	cp xwa,0
-	jr z,L3199
+	jr z,L3201
 	ld wa,16
 	push xwa
 	ld wa,152
@@ -16434,11 +16525,11 @@ L3198:
 	push xwa
 	call _ngpc_dma_stream_begin_u8
 	lda xsp,(xsp+24)
-	jr L3200
-L3199:
+	jr L3202
+L3201:
 	ld xwa,(xsp+36)
 	cp xwa,0
-	jr z,L3201
+	jr z,L3203
 	ld wa,16
 	push xwa
 	ld wa,152
@@ -16453,8 +16544,8 @@ L3199:
 	push xwa
 	call _ngpc_dma_stream_begin_u8
 	lda xsp,(xsp+24)
-	jr L3202
-L3201:
+	jr L3204
+L3203:
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -16469,14 +16560,14 @@ L3201:
 	push xwa
 	call _ngpc_dma_stream_begin_u8
 	lda xsp,(xsp+24)
+L3204:
 L3202:
-L3200:
 	ld xwa,(xsp+28)
 	cp xwa,0
-	jr z,L3203
+	jr z,L3205
 	ld xwa,(xsp+36)
 	cp xwa,0
-	jr z,L3203
+	jr z,L3205
 	ld wa,17
 	push xwa
 	ld wa,152
@@ -16491,8 +16582,8 @@ L3200:
 	push xwa
 	call _ngpc_dma_stream_begin_u8
 	lda xsp,(xsp+24)
-	jr L3204
-L3203:
+	jr L3206
+L3205:
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -16507,8 +16598,8 @@ L3203:
 	push xwa
 	call _ngpc_dma_stream_begin_u8
 	lda xsp,(xsp+24)
-L3204:
-L3197:
+L3206:
+L3199:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -16519,31 +16610,31 @@ _ngpc_dma_raster_enable:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3211
-	jr L3210
-L3211:
+	jr nz,L3213
+	jr L3212
+L3213:
 	ldb (xiz+1),0
 	ld xwa,(xiz+2)
 	cp xwa,0
-	jr nz,L3212
+	jr nz,L3214
 	ld xwa,(xiz+6)
 	cp xwa,0
-	jr nz,L3212
-	jr L3210
-L3212:
+	jr nz,L3214
+	jr L3212
+L3214:
 	ld xwa,(xiz+2)
 	cp xwa,0
-	jr z,L3213
+	jr z,L3215
 	ld xwa,(xiz+6)
 	cp xwa,0
-	jr z,L3213
+	jr z,L3215
 	call _ngpc_dma_timer01_hblank_enable
-	jr L3214
-L3213:
+	jr L3216
+L3215:
 	call _ngpc_dma_timer0_hblank_enable
-L3214:
+L3216:
 	ldb (xiz+1),1
-L3210:
+L3212:
 	pop xiz
 	ret
 
@@ -16553,41 +16644,41 @@ _ngpc_dma_raster_rearm:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3223
-	jr L3222
-L3223:
+	jr nz,L3225
+	jr L3224
+L3225:
 	ld a,(xiz+1)
 	cp a,0
-	jr nz,L3224
-	jr L3222
-L3224:
+	jr nz,L3226
+	jr L3224
+L3226:
 	ld xwa,(xiz+2)
 	cp xwa,0
-	jr z,L3225
+	jr z,L3227
 	lda xwa,(xiz+10)
 	push xwa
 	call _ngpc_dma_stream_rearm_u8
 	lda xsp,(xsp+4)
 	ld xwa,(xiz+6)
 	cp xwa,0
-	jr z,L3226
+	jr z,L3228
 	lda xwa,(xiz+24)
 	push xwa
 	call _ngpc_dma_stream_rearm_u8
 	lda xsp,(xsp+4)
-L3226:
-	jr L3227
-L3225:
+L3228:
+	jr L3229
+L3227:
 	ld xwa,(xiz+6)
 	cp xwa,0
-	jr z,L3228
+	jr z,L3230
 	lda xwa,(xiz+10)
 	push xwa
 	call _ngpc_dma_stream_rearm_u8
 	lda xsp,(xsp+4)
-L3228:
-L3227:
-L3222:
+L3230:
+L3229:
+L3224:
 	pop xiz
 	ret
 
@@ -16597,34 +16688,34 @@ _ngpc_dma_raster_disable:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3235
-	jr L3234
-L3235:
+	jr nz,L3237
+	jr L3236
+L3237:
 	ld a,(xiz+1)
 	cp a,0
-	jr z,L3236
+	jr z,L3238
 	ld a,(xiz+10)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
 	ld xwa,(xiz+2)
 	cp xwa,0
-	jr z,L3237
+	jr z,L3239
 	ld xwa,(xiz+6)
 	cp xwa,0
-	jr z,L3237
+	jr z,L3239
 	ld a,(xiz+24)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
 	call _ngpc_dma_timer01_hblank_disable
-	jr L3238
-L3237:
+	jr L3240
+L3239:
 	call _ngpc_dma_timer0_hblank_disable
+L3240:
 L3238:
-L3236:
 	ldb (xiz+1),0
-L3234:
+L3236:
 	pop xiz
 	ret
 
@@ -16635,19 +16726,19 @@ _ngpc_dma_raster_build_parallax_table:
 	ld xiy,(xsp+18)
 	ld xwa,(xsp+14)
 	cp xwa,0
-	jr nz,L3258
-	jp L3257
-L3258:
+	jr nz,L3260
+	jp L3259
+L3260:
 	ld xwa,xiy
 	cp xwa,0
-	jr z,L3260
+	jr z,L3262
 	ld a,(xsp+22)
 	cp a,0
-	jr nz,L3259
-L3260:
+	jr nz,L3261
+L3262:
 	ld izl,0
-	jr L3264
-L3261:
+	jr L3266
+L3263:
 	ld a,0
 	ld xbc,(xsp+14)
 	ld e,izl
@@ -16655,18 +16746,18 @@ L3261:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L3263:
+L3265:
 	inc 1,izl
-L3264:
+L3266:
 	ld a,izl
 	cp a,152
-	jr ult,L3261
-L3262:
-	jp L3257
-L3259:
+	jr ult,L3263
+L3264:
+	jp L3259
+L3261:
 	ld ixl,0
-	jp L3268
-L3265:
+	jp L3270
+L3267:
 	ld xwa,xiy
 	ld c,ixl
 	extz bc
@@ -16681,7 +16772,7 @@ L3265:
 	ld e,(xsp+22)
 	extz de
 	cp bc,de
-	jr ge,L3269
+	jr ge,L3271
 	ld xwa,xiy
 	ld c,ixl
 	extz bc
@@ -16691,11 +16782,11 @@ L3265:
 	add xwa,xbc
 	ld a,(xwa)
 	extz wa
-	jr L3270
-L3269:
+	jr L3272
+L3271:
 	ld a,152
 	extz wa
-L3270:
+L3272:
 	ld (xsp+3),a
 	ld wa,(xsp+26)
 	ld xbc,xiy
@@ -16710,8 +16801,8 @@ L3270:
 	ld (xsp+4),a
 	ld a,(xsp+2)
 	ld izl,a
-	jr L3274
-L3271:
+	jr L3276
+L3273:
 	ld a,(xsp+4)
 	ld xbc,(xsp+14)
 	ld e,izl
@@ -16719,21 +16810,21 @@ L3271:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L3273:
+L3275:
 	inc 1,izl
-L3274:
+L3276:
 	ld a,izl
 	cp a,(xsp+3)
-	jr ult,L3271
-L3272:
-L3267:
+	jr ult,L3273
+L3274:
+L3269:
 	inc 1,ixl
-L3268:
+L3270:
 	ld a,ixl
 	cp a,(xsp+22)
-	jp ult,L3265
-L3266:
-L3257:
+	jp ult,L3267
+L3268:
+L3259:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -16750,7 +16841,7 @@ _ngpc_dma_raster_xy_begin:
 	push xwa
 	call _ngpc_dma_raster_xy_begin_ex
 	lda xsp,(xsp+16)
-L3276:
+L3278:
 	ret
 
 ; function ngpc_dma_raster_xy_begin_ex
@@ -16760,9 +16851,9 @@ _ngpc_dma_raster_xy_begin_ex:
 	ld xiz,(xsp+12)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3282
-	jr L3281
-L3282:
+	jr nz,L3284
+	jr L3283
+L3284:
 	ld a,(xsp+16)
 	ld (xiz),a
 	ldb (xiz+1),0
@@ -16775,7 +16866,7 @@ L3282:
 	ld (xsp+0),xwa
 	ld xwa,(xsp+24)
 	cp xwa,0
-	jr z,L3283
+	jr z,L3285
 	ld wa,16
 	push xwa
 	ld wa,152
@@ -16790,8 +16881,8 @@ L3282:
 	push xwa
 	call _ngpc_dma_stream_begin_u16
 	lda xsp,(xsp+24)
-	jr L3284
-L3283:
+	jr L3286
+L3285:
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -16806,8 +16897,8 @@ L3283:
 	push xwa
 	call _ngpc_dma_stream_begin_u16
 	lda xsp,(xsp+24)
-L3284:
-L3281:
+L3286:
+L3283:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -16818,18 +16909,18 @@ _ngpc_dma_raster_xy_enable:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3289
-	jr L3288
-L3289:
+	jr nz,L3291
+	jr L3290
+L3291:
 	ldb (xiz+1),0
 	ld xwa,(xiz+2)
 	cp xwa,0
-	jr nz,L3290
-	jr L3288
-L3290:
+	jr nz,L3292
+	jr L3290
+L3292:
 	call _ngpc_dma_timer0_hblank_enable
 	ldb (xiz+1),1
-L3288:
+L3290:
 	pop xiz
 	ret
 
@@ -16839,19 +16930,19 @@ _ngpc_dma_raster_xy_rearm:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3295
-	jr L3294
-L3295:
+	jr nz,L3297
+	jr L3296
+L3297:
 	ld a,(xiz+1)
 	cp a,0
-	jr nz,L3296
-	jr L3294
-L3296:
+	jr nz,L3298
+	jr L3296
+L3298:
 	lda xwa,(xiz+6)
 	push xwa
 	call _ngpc_dma_stream_rearm_u16
 	lda xsp,(xsp+4)
-L3294:
+L3296:
 	pop xiz
 	ret
 
@@ -16861,20 +16952,20 @@ _ngpc_dma_raster_xy_disable:
 	ld xiz,(xsp+8)
 	ld xwa,xiz
 	cp xwa,0
-	jr nz,L3301
-	jr L3300
-L3301:
+	jr nz,L3303
+	jr L3302
+L3303:
 	ld a,(xiz+1)
 	cp a,0
-	jr z,L3302
+	jr z,L3304
 	ld a,(xiz+6)
 	push xwa
 	call _ngpc_dma_stop
 	lda xsp,(xsp+4)
 	call _ngpc_dma_timer0_hblank_disable
-L3302:
+L3304:
 	ldb (xiz+1),0
-L3300:
+L3302:
 	pop xiz
 	ret
 
@@ -16885,19 +16976,19 @@ _ngpc_dma_raster_build_parallax_table_xy:
 	ld xiy,(xsp+20)
 	ld xwa,(xsp+16)
 	cp xwa,0
-	jr nz,L3322
-	jp L3321
-L3322:
+	jr nz,L3324
+	jp L3323
+L3324:
 	ld xwa,xiy
 	cp xwa,0
-	jr z,L3324
+	jr z,L3326
 	ld a,(xsp+24)
 	cp a,0
-	jr nz,L3323
-L3324:
+	jr nz,L3325
+L3326:
 	ld izl,0
-	jr L3328
-L3325:
+	jr L3330
+L3327:
 	ld a,(xsp+32)
 	extz wa
 	sll 8,wa
@@ -16909,18 +17000,18 @@ L3325:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3327:
+L3329:
 	inc 1,izl
-L3328:
+L3330:
 	ld a,izl
 	cp a,152
-	jr ult,L3325
-L3326:
-	jp L3321
-L3323:
+	jr ult,L3327
+L3328:
+	jp L3323
+L3325:
 	ld ixl,0
-	jp L3332
-L3329:
+	jp L3334
+L3331:
 	ld xwa,xiy
 	ld c,ixl
 	extz bc
@@ -16935,7 +17026,7 @@ L3329:
 	ld e,(xsp+24)
 	extz de
 	cp bc,de
-	jr ge,L3333
+	jr ge,L3335
 	ld xwa,xiy
 	ld c,ixl
 	extz bc
@@ -16945,11 +17036,11 @@ L3329:
 	add xwa,xbc
 	ld a,(xwa)
 	extz wa
-	jr L3334
-L3333:
+	jr L3336
+L3335:
 	ld a,152
 	extz wa
-L3334:
+L3336:
 	ld (xsp+3),a
 	ld wa,(xsp+28)
 	ld xbc,xiy
@@ -16971,8 +17062,8 @@ L3334:
 	ld (xsp+6),wa
 	ld a,(xsp+2)
 	ld izl,a
-	jr L3338
-L3335:
+	jr L3340
+L3337:
 	ld wa,(xsp+6)
 	ld xbc,(xsp+16)
 	ld e,izl
@@ -16981,21 +17072,21 @@ L3335:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3337:
+L3339:
 	inc 1,izl
-L3338:
+L3340:
 	ld a,izl
 	cp a,(xsp+3)
-	jr ult,L3335
-L3336:
-L3331:
+	jr ult,L3337
+L3338:
+L3333:
 	inc 1,ixl
-L3332:
+L3334:
 	ld a,ixl
 	cp a,(xsp+24)
-	jp ult,L3329
-L3330:
-L3321:
+	jp ult,L3331
+L3332:
+L3323:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -17003,13 +17094,13 @@ L3321:
 ; function audio_init
 _audio_init:
 	call _player_init
-L3340:
+L3342:
 	ret
 
 ; function audio_update
 _audio_update:
 	call _player_update
-L3342:
+L3344:
 	ret
 
 ; function music_play
@@ -17018,10 +17109,10 @@ _music_play:
 	lda xsp,(xsp-4)
 	ld a,(xsp+12)
 	cp a,7
-	jr ult,L3346
+	jr ult,L3348
 	call _music_stop
-	jr L3345
-L3346:
+	jr L3347
+L3348:
 	ld xwa,_music_songs
 	ld c,(xsp+12)
 	extz bc
@@ -17041,7 +17132,7 @@ L3346:
 	push xwa
 	call _player_start
 	lda xsp,(xsp+16)
-L3345:
+L3347:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -17050,20 +17141,20 @@ L3345:
 _music_stop:
 	call _player_stop
 	ldb (_cur_song__22),255
-L3348:
+L3350:
 	ret
 
 ; function music_fade
 _music_fade:
 	call _player_stop
-L3350:
+L3352:
 	ret
 
 ; function music_current
 _music_current:
 	ld a,(_cur_song__22)
-	jr L3352
-L3352:
+	jr L3354
+L3354:
 	ret
 
 ; function sfx
@@ -17071,23 +17162,23 @@ _sfx:
 	ld a,(xsp+4)
 	extz wa
 	cp wa,0
-	jr z,L3366
-	cp wa,1
-	jr z,L3367
-	cp wa,2
 	jr z,L3368
+	cp wa,1
+	jr z,L3369
+	cp wa,2
+	jr z,L3370
 	cp wa,3
-	jp z,L3369
-	cp wa,4
-	jp z,L3370
-	cp wa,5
 	jp z,L3371
-	cp wa,7
+	cp wa,4
 	jp z,L3372
-	cp wa,6
+	cp wa,5
 	jp z,L3373
-	jp L3374
-L3366:
+	cp wa,7
+	jp z,L3374
+	cp wa,6
+	jp z,L3375
+	jp L3376
+L3368:
 	ld wa,0
 	push xwa
 	ld wa,12
@@ -17102,8 +17193,8 @@ L3366:
 	push xwa
 	call _player_sfx_tone
 	lda xsp,(xsp+24)
-	jp L3365
-L3367:
+	jp L3367
+L3369:
 	ld wa,6
 	push xwa
 	ld wa,45
@@ -17118,8 +17209,8 @@ L3367:
 	push xwa
 	call _player_sfx_tone
 	lda xsp,(xsp+24)
-	jp L3365
-L3368:
+	jp L3367
+L3370:
 	ld wa,5
 	push xwa
 	ld wa,70
@@ -17148,8 +17239,8 @@ L3368:
 	push xwa
 	call _player_sfx_tone
 	lda xsp,(xsp+24)
-	jp L3365
-L3369:
+	jp L3367
+L3371:
 	ld wa,4
 	push xwa
 	ld wa,60
@@ -17160,8 +17251,8 @@ L3369:
 	push xwa
 	call _player_sfx_noise
 	lda xsp,(xsp+16)
-	jr L3365
-L3370:
+	jr L3367
+L3372:
 	ld wa,1
 	push xwa
 	ld wa,10
@@ -17172,8 +17263,8 @@ L3370:
 	push xwa
 	call _player_sfx_noise
 	lda xsp,(xsp+16)
-	jr L3365
-L3371:
+	jr L3367
+L3373:
 	ld wa,0
 	push xwa
 	ld wa,5
@@ -17188,8 +17279,8 @@ L3371:
 	push xwa
 	call _player_sfx_tone
 	lda xsp,(xsp+24)
-	jr L3365
-L3372:
+	jr L3367
+L3374:
 	ld wa,0
 	push xwa
 	ld wa,8
@@ -17204,8 +17295,8 @@ L3372:
 	push xwa
 	call _player_sfx_tone
 	lda xsp,(xsp+24)
-	jr L3365
-L3373:
+	jr L3367
+L3375:
 	ld wa,1
 	push xwa
 	ld wa,6
@@ -17220,44 +17311,44 @@ L3373:
 	push xwa
 	call _player_sfx_tone
 	lda xsp,(xsp+24)
-	jr L3365
-L3374:
-	jr L3365
-L3365:
-L3364:
+	jr L3367
+L3376:
+	jr L3367
+L3367:
+L3366:
 	ret
 
 ; function scr_map
 _scr_map__23:
 	ld c,(xsp+4)
 	cp c,0
-	jr nz,L3379
+	jr nz,L3381
 	ld xwa,36864
-	jr L3380
-L3379:
+	jr L3382
+L3381:
 	ld xwa,38912
+L3382:
+	jr L3380
 L3380:
-	jr L3378
-L3378:
 	ret
 
 ; function pal_base
 _pal_base__23:
 	ld a,(xsp+4)
 	cp a,2
-	jr nz,L3385
+	jr nz,L3387
 	ld xwa,33280
-	jr L3384
-L3385:
+	jr L3386
+L3387:
 	ld a,(xsp+4)
 	cp a,0
-	jr nz,L3386
+	jr nz,L3388
 	ld xwa,33408
-	jr L3384
-L3386:
+	jr L3386
+L3388:
 	ld xwa,33536
-	jr L3384
-L3384:
+	jr L3386
+L3386:
 	ret
 
 ; function ngpc_gfx_load_tiles
@@ -17267,8 +17358,8 @@ _ngpc_gfx_load_tiles:
 	ld xwa,40960
 	ld xiy,xwa
 	ld iz,0
-	jr L3396
-L3393:
+	jr L3398
+L3395:
 	ld xwa,(xsp+16)
 	ld bc,iz
 	extz xbc
@@ -17294,14 +17385,14 @@ L3393:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L3395:
+L3397:
 	inc 1,iz
-L3396:
+L3398:
 	ld wa,iz
 	cp wa,(xsp+20)
-	jr ult,L3393
+	jr ult,L3395
+L3396:
 L3394:
-L3392:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -17318,8 +17409,8 @@ _ngpc_gfx_load_tiles_at:
 	add xwa,xbc
 	ld xiy,xwa
 	ld iz,0
-	jr L3406
-L3403:
+	jr L3408
+L3405:
 	ld xwa,(xsp+16)
 	ld bc,iz
 	extz xbc
@@ -17345,14 +17436,14 @@ L3403:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L3405:
+L3407:
 	inc 1,iz
-L3406:
+L3408:
 	ld wa,iz
 	cp wa,(xsp+20)
-	jr ult,L3403
+	jr ult,L3405
+L3406:
 L3404:
-L3402:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -17367,8 +17458,8 @@ _ngpc_gfx_load_tiles_u8:
 	sll 4,wa
 	ld ix,wa
 	ld iz,0
-	jr L3416
-L3413:
+	jr L3418
+L3415:
 	ld xwa,(xsp+16)
 	ld bc,iz
 	extz xbc
@@ -17379,14 +17470,14 @@ L3413:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L3415:
+L3417:
 	inc 1,iz
-L3416:
+L3418:
 	ld wa,iz
 	cp wa,ix
-	jr ult,L3413
+	jr ult,L3415
+L3416:
 L3414:
-L3412:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -17405,8 +17496,8 @@ _ngpc_gfx_load_tiles_u8_at:
 	sll 4,wa
 	ld ix,wa
 	ld iz,0
-	jr L3426
-L3423:
+	jr L3428
+L3425:
 	ld xwa,(xsp+16)
 	ld bc,iz
 	extz xbc
@@ -17417,14 +17508,14 @@ L3423:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L3425:
+L3427:
 	inc 1,iz
-L3426:
+L3428:
 	ld wa,iz
 	cp wa,ix
-	jr ult,L3423
+	jr ult,L3425
+L3426:
 L3424:
-L3422:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -17453,8 +17544,8 @@ _make_entry__23:
 	and bc,1
 	sll 14,bc
 	or wa,bc
-	jr L3428
-L3428:
+	jr L3430
+L3430:
 	ret
 
 ; function ngpc_gfx_put_tile
@@ -17486,7 +17577,7 @@ _ngpc_gfx_put_tile:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3430:
+L3432:
 	lda xsp,(xsp+4)
 	ret
 
@@ -17519,7 +17610,7 @@ _ngpc_gfx_put_tile_ex:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3432:
+L3434:
 	lda xsp,(xsp+4)
 	ret
 
@@ -17558,7 +17649,7 @@ _ngpc_gfx_get_tile:
 	and wa,15
 	ld xbc,(xsp+30)
 	ld (xbc),a
-L3434:
+L3436:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -17575,8 +17666,8 @@ _ngpc_gfx_clear:
 	pop xix
 	ld xix,xwa
 	ld iz,0
-	jr L3444
-L3441:
+	jr L3446
+L3443:
 	ld wa,0
 	ld xbc,xix
 	ld de,iz
@@ -17584,14 +17675,14 @@ L3441:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3443:
+L3445:
 	inc 1,iz
-L3444:
+L3446:
 	ld wa,iz
 	cp wa,1024
-	jr ult,L3441
+	jr ult,L3443
+L3444:
 L3442:
-L3440:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -17625,8 +17716,8 @@ _ngpc_gfx_fill:
 	pop xix
 	ld ix,wa
 	ld iz,0
-	jr L3454
-L3451:
+	jr L3456
+L3453:
 	ld wa,ix
 	ld xbc,xiy
 	ld de,iz
@@ -17634,14 +17725,14 @@ L3451:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3453:
+L3455:
 	inc 1,iz
-L3454:
+L3456:
 	ld wa,iz
 	cp wa,1024
-	jr ult,L3451
+	jr ult,L3453
+L3454:
 L3452:
-L3450:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -17675,8 +17766,8 @@ _ngpc_gfx_fill_rect:
 	pop xix
 	ld (xsp+4),wa
 	ld ixl,0
-	jr L3468
-L3465:
+	jr L3470
+L3467:
 	ld a,(xsp+28)
 	add a,ixl
 	and a,31
@@ -17686,8 +17777,8 @@ L3465:
 	sll 5,wa
 	ld (xsp+10),wa
 	ld izl,0
-	jr L3472
-L3469:
+	jr L3474
+L3471:
 	ld a,(xsp+24)
 	add a,izl
 	and a,31
@@ -17702,21 +17793,21 @@ L3469:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3471:
+L3473:
 	inc 1,izl
-L3472:
+L3474:
 	ld a,izl
 	cp a,(xsp+32)
-	jr ult,L3469
-L3470:
-L3467:
+	jr ult,L3471
+L3472:
+L3469:
 	inc 1,ixl
-L3468:
+L3470:
 	ld a,ixl
 	cp a,(xsp+36)
-	jr ult,L3465
+	jr ult,L3467
+L3468:
 L3466:
-L3464:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -17740,8 +17831,8 @@ _ngpc_gfx_set_rect_pal:
 	sll 9,wa
 	ld (xsp+4),wa
 	ldb (xsp+6),0
-	jr L3486
-L3483:
+	jr L3488
+L3485:
 	ld a,(xsp+30)
 	add a,(xsp+6)
 	and a,31
@@ -17751,8 +17842,8 @@ L3483:
 	sll 5,wa
 	ld (xsp+10),wa
 	ld ixl,0
-	jr L3490
-L3487:
+	jr L3492
+L3489:
 	ld a,(xsp+26)
 	add a,ixl
 	and a,31
@@ -17781,21 +17872,21 @@ L3487:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3489:
+L3491:
 	inc 1,ixl
-L3490:
+L3492:
 	ld a,ixl
 	cp a,(xsp+34)
-	jr ult,L3487
-L3488:
-L3485:
+	jr ult,L3489
+L3490:
+L3487:
 	incb 1,(xsp+6)
-L3486:
+L3488:
 	ld a,(xsp+6)
 	cp a,(xsp+38)
-	jr ult,L3483
+	jr ult,L3485
+L3486:
 L3484:
-L3482:
 	lda xsp,(xsp+14)
 	pop xiz
 	ret
@@ -17847,7 +17938,7 @@ _ngpc_gfx_set_palette:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3492:
+L3494:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -17858,26 +17949,26 @@ _ngpc_gfx_set_bg_color:
 	ld xbc,33760
 	ld (xbc),wa
 	ldb (08118h),128
-L3494:
+L3496:
 	ret
 
 ; function ngpc_gfx_scroll
 _ngpc_gfx_scroll:
 	ld a,(xsp+4)
 	cp a,0
-	jr nz,L3499
+	jr nz,L3501
 	ld a,(xsp+8)
 	ld (08032h),a
 	ld a,(xsp+12)
 	ld (08033h),a
-	jr L3500
-L3499:
+	jr L3502
+L3501:
 	ld a,(xsp+8)
 	ld (08034h),a
 	ld a,(xsp+12)
 	ld (08035h),a
+L3502:
 L3500:
-L3498:
 	ret
 
 ; function ngpc_gfx_scroll_parallax
@@ -17889,22 +17980,12 @@ _ngpc_gfx_scroll_parallax:
 	ld izl,a
 	ld a,ixl
 	cp a,255
-	jr nz,L3515
+	jr nz,L3517
 	ldb (08032h),0
 	ldb (08033h),0
-	jr L3516
-L3515:
-	ld a,(xsp+8)
-	extz wa
-	ld c,ixl
-	cp c,0
-	jr z,L3518
+	jr L3518
 L3517:
-	sra 1,wa
-	djnz c,L3517
-L3518:
-	ld (08032h),a
-	ld a,(xsp+12)
+	ld a,(xsp+8)
 	extz wa
 	ld c,ixl
 	cp c,0
@@ -17913,26 +17994,26 @@ L3519:
 	sra 1,wa
 	djnz c,L3519
 L3520:
+	ld (08032h),a
+	ld a,(xsp+12)
+	extz wa
+	ld c,ixl
+	cp c,0
+	jr z,L3522
+L3521:
+	sra 1,wa
+	djnz c,L3521
+L3522:
 	ld (08033h),a
-L3516:
+L3518:
 	ld a,izl
 	cp a,255
-	jr nz,L3521
+	jr nz,L3523
 	ldb (08034h),0
 	ldb (08035h),0
-	jr L3522
-L3521:
-	ld a,(xsp+8)
-	extz wa
-	ld c,izl
-	cp c,0
-	jr z,L3524
+	jr L3524
 L3523:
-	sra 1,wa
-	djnz c,L3523
-L3524:
-	ld (08034h),a
-	ld a,(xsp+12)
+	ld a,(xsp+8)
 	extz wa
 	ld c,izl
 	cp c,0
@@ -17941,16 +18022,26 @@ L3525:
 	sra 1,wa
 	djnz c,L3525
 L3526:
+	ld (08034h),a
+	ld a,(xsp+12)
+	extz wa
+	ld c,izl
+	cp c,0
+	jr z,L3528
+L3527:
+	sra 1,wa
+	djnz c,L3527
+L3528:
 	ld (08035h),a
-L3522:
-L3514:
+L3524:
+L3516:
 	pop xiz
 	ret
 
 ; function ngpc_gfx_swap_planes
 _ngpc_gfx_swap_planes:
 	xorb (08030h),128
-L3528:
+L3530:
 	ret
 
 ; function ngpc_gfx_set_viewport
@@ -17963,7 +18054,7 @@ _ngpc_gfx_set_viewport:
 	ld (08004h),a
 	ld a,(xsp+16)
 	ld (08005h),a
-L3530:
+L3532:
 	ret
 
 ; function ngpc_gfx_sprite_offset
@@ -17972,20 +18063,20 @@ _ngpc_gfx_sprite_offset:
 	ld (08020h),a
 	ld a,(xsp+8)
 	ld (08021h),a
-L3532:
+L3534:
 	ret
 
 ; function ngpc_gfx_lcd_invert
 _ngpc_gfx_lcd_invert:
 	ld a,(xsp+4)
 	cp a,0
-	jr z,L3537
+	jr z,L3539
 	orb (08012h),128
-	jr L3538
-L3537:
+	jr L3540
+L3539:
 	andb (08012h),127
+L3540:
 L3538:
-L3536:
 	ret
 
 ; function ngpc_gfx_set_outside_color
@@ -17996,7 +18087,7 @@ _ngpc_gfx_set_outside_color:
 	and c,7
 	or a,c
 	ld (08012h),a
-L3540:
+L3542:
 	ret
 
 ; function ngpc_gfx_char_over
@@ -18005,14 +18096,14 @@ _ngpc_gfx_char_over:
 	extz bc
 	and bc,128
 	cp bc,0
-	jr z,L3545
+	jr z,L3547
 	ld wa,1
-	jr L3546
-L3545:
+	jr L3548
+L3547:
 	ld wa,0
+L3548:
+	jr L3546
 L3546:
-	jr L3544
-L3544:
 	ret
 
 ; function ngpc_gfx_set_color_direct
@@ -18035,7 +18126,7 @@ _ngpc_gfx_set_color_direct:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3548:
+L3550:
 	lda xsp,(xsp+4)
 	ret
 
@@ -18044,12 +18135,12 @@ _ngpc_tile_rotate90:
 	push xiz
 	lda xsp,(xsp-6)
 	ld ixl,0
-	jr L3566
-L3563:
+	jr L3568
+L3565:
 	ld iy,0
 	ld izl,0
-	jr L3570
-L3567:
+	jr L3572
+L3569:
 	ld xwa,(xsp+14)
 	ld bc,7
 	ld e,izl
@@ -18065,11 +18156,11 @@ L3567:
 	sll 1,de
 	sub bc,de
 	cp c,0
-	jr z,L3572
-L3571:
+	jr z,L3574
+L3573:
 	srl 1,wa
-	djnz c,L3571
-L3572:
+	djnz c,L3573
+L3574:
 	and wa,3
 	ld (xsp+4),a
 	ld wa,iy
@@ -18081,20 +18172,20 @@ L3572:
 	sll 1,hl
 	sub de,hl
 	cp e,0
-	jr z,L3574
-L3573:
+	jr z,L3576
+L3575:
 	sll 1,bc
-	djnz e,L3573
-L3574:
+	djnz e,L3575
+L3576:
 	or wa,bc
 	ld iy,wa
-L3569:
+L3571:
 	inc 1,izl
-L3570:
+L3572:
 	ld a,izl
 	cp a,8
-	jr ult,L3567
-L3568:
+	jr ult,L3569
+L3570:
 	ld wa,iy
 	ld xbc,(xsp+18)
 	ld e,ixl
@@ -18103,14 +18194,14 @@ L3568:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3565:
+L3567:
 	inc 1,ixl
-L3566:
+L3568:
 	ld a,ixl
 	cp a,8
-	jp ult,L3563
+	jp ult,L3565
+L3566:
 L3564:
-L3562:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -18120,12 +18211,12 @@ _ngpc_tile_rotate270:
 	push xiz
 	lda xsp,(xsp-6)
 	ld ixl,0
-	jr L3592
-L3589:
+	jr L3594
+L3591:
 	ld iy,0
 	ld izl,0
-	jr L3596
-L3593:
+	jr L3598
+L3595:
 	ld xwa,(xsp+14)
 	ld c,izl
 	extz bc
@@ -18141,11 +18232,11 @@ L3593:
 	sll 1,de
 	sub bc,de
 	cp c,0
-	jr z,L3598
-L3597:
+	jr z,L3600
+L3599:
 	srl 1,wa
-	djnz c,L3597
-L3598:
+	djnz c,L3599
+L3600:
 	and wa,3
 	ld (xsp+4),a
 	ld wa,iy
@@ -18157,20 +18248,20 @@ L3598:
 	sll 1,hl
 	sub de,hl
 	cp e,0
-	jr z,L3600
-L3599:
+	jr z,L3602
+L3601:
 	sll 1,bc
-	djnz e,L3599
-L3600:
+	djnz e,L3601
+L3602:
 	or wa,bc
 	ld iy,wa
-L3595:
+L3597:
 	inc 1,izl
-L3596:
+L3598:
 	ld a,izl
 	cp a,8
-	jr ult,L3593
-L3594:
+	jr ult,L3595
+L3596:
 	ld wa,iy
 	ld xbc,(xsp+18)
 	ld e,ixl
@@ -18179,14 +18270,14 @@ L3594:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3591:
+L3593:
 	inc 1,ixl
-L3592:
+L3594:
 	ld a,ixl
 	cp a,8
-	jp ult,L3589
+	jp ult,L3591
+L3592:
 L3590:
-L3588:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -18208,7 +18299,7 @@ _ngpc_tile_rotate90_to:
 	push xwa
 	call _ngpc_gfx_load_tiles_at
 	lda xsp,(xsp+12)
-L3602:
+L3604:
 	lda xsp,(xsp+16)
 	ret
 
@@ -18229,7 +18320,7 @@ _ngpc_tile_rotate270_to:
 	push xwa
 	call _ngpc_gfx_load_tiles_at
 	lda xsp,(xsp+12)
-L3604:
+L3606:
 	lda xsp,(xsp+16)
 	ret
 
@@ -18268,7 +18359,7 @@ _ngpc_sprite_set:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L3606:
+L3608:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -18289,7 +18380,7 @@ _ngpc_sprite_move:
 	ld a,(xsp+16)
 	ld xbc,(xsp+0)
 	ld (xbc+3),a
-L3608:
+L3610:
 	lda xsp,(xsp+4)
 	ret
 
@@ -18305,7 +18396,7 @@ _ngpc_sprite_hide:
 	ld (xsp+0),xwa
 	ld xbc,(xsp+0)
 	andb (xbc+1),231
-L3610:
+L3612:
 	lda xsp,(xsp+4)
 	ret
 
@@ -18314,20 +18405,20 @@ _ngpc_sprite_hide_all:
 	push xiz
 	lda xsp,(xsp-2)
 	ld izl,0
-	jr L3620
-L3617:
+	jr L3622
+L3619:
 	ld a,izl
 	push xwa
 	call _ngpc_sprite_hide
 	lda xsp,(xsp+4)
-L3619:
+L3621:
 	inc 1,izl
-L3620:
+L3622:
 	ld a,izl
 	cp a,64
-	jr ult,L3617
+	jr ult,L3619
+L3620:
 L3618:
-L3616:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -18348,7 +18439,7 @@ _ngpc_sprite_set_flags:
 	or a,(xsp+12)
 	ld xbc,(xsp+0)
 	ld (xbc+1),a
-L3622:
+L3624:
 	lda xsp,(xsp+4)
 	ret
 
@@ -18376,7 +18467,7 @@ _ngpc_sprite_set_tile:
 	extz bc
 	or wa,bc
 	ld (xiz+1),a
-L3624:
+L3626:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -18391,8 +18482,8 @@ _ngpc_sprite_get_pal:
 	ld a,(xwa)
 	extz wa
 	and wa,15
-	jr L3626
-L3626:
+	jr L3628
+L3628:
 	ret
 
 ; function ngpc_text_print
@@ -18402,16 +18493,16 @@ _ngpc_text_print:
 	ld xiz,(xsp+26)
 	ld a,(xsp+18)
 	ld iyl,a
-	jr L3636
-L3634:
+	jr L3638
+L3636:
 	ld a,(xiz)
 	ld ixl,a
 	ld a,ixl
 	cp a,32
-	jr ult,L3637
+	jr ult,L3639
 	ld a,ixl
 	cp a,128
-	jr uge,L3637
+	jr uge,L3639
 	push xix
 	push xiy
 	ld a,(xsp+22)
@@ -18429,22 +18520,22 @@ L3634:
 	lda xsp,(xsp+20)
 	pop xiy
 	pop xix
-L3637:
+L3639:
 	inc 1,iyl
 	ld a,iyl
 	cp a,20
-	jr ult,L3638
-	jr L3635
-L3638:
+	jr ult,L3640
+	jr L3637
+L3640:
 	ld xwa,xiz
 	inc 1,xwa
 	ld xiz,xwa
-L3636:
+L3638:
 	ld a,(xiz)
 	cp a,0
-	jr nz,L3634
+	jr nz,L3636
+L3637:
 L3635:
-L3633:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -18456,8 +18547,8 @@ _ngpc_text_print_dec:
 	ld wa,(xsp+34)
 	ld (xsp+6),wa
 	ld izl,0
-	jr L3652
-L3649:
+	jr L3654
+L3651:
 	ld wa,(xsp+6)
 	extz xwa
 	div xwa,10
@@ -18474,18 +18565,18 @@ L3649:
 	extz xwa
 	div xwa,10
 	ld (xsp+6),wa
-L3651:
+L3653:
 	inc 1,izl
-L3652:
+L3654:
 	ld a,izl
 	cp a,5
-	jr ult,L3649
-L3650:
+	jr ult,L3651
+L3652:
 	ld a,5
 	sub a,(xsp+38)
 	ld izl,a
-	jr L3656
-L3653:
+	jr L3658
+L3655:
 	lda xwa,(xsp+0)
 	ld c,izl
 	extz bc
@@ -18508,14 +18599,14 @@ L3653:
 	call _ngpc_gfx_put_tile
 	lda xsp,(xsp+20)
 	incb 1,(xsp+26)
-L3655:
+L3657:
 	inc 1,izl
-L3656:
+L3658:
 	ld a,izl
 	cp a,5
-	jr ult,L3653
-L3654:
-L3648:
+	jr ult,L3655
+L3656:
+L3650:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -18525,8 +18616,8 @@ _ngpc_text_print_hex:
 	push xiz
 	lda xsp,(xsp-8)
 	ld izl,0
-	jr L3670
-L3667:
+	jr L3672
+L3669:
 	ld a,(xsp+36)
 	extz wa
 	sub wa,1
@@ -18538,28 +18629,28 @@ L3667:
 	ld wa,(xsp+32)
 	ld bc,(xsp+2)
 	cp c,0
-	jr z,L3672
-L3671:
+	jr z,L3674
+L3673:
 	srl 1,wa
-	djnz c,L3671
-L3672:
+	djnz c,L3673
+L3674:
 	and wa,15
 	ld ixl,a
 	ld a,ixl
 	cp a,10
-	jr uge,L3673
+	jr uge,L3675
 	ld a,ixl
 	extz wa
 	add wa,48
 	ld iy,wa
-	jr L3674
-L3673:
+	jr L3676
+L3675:
 	ld a,ixl
 	extz wa
 	sub wa,10
 	add wa,65
 	ld iy,wa
-L3674:
+L3676:
 	push xix
 	push xiy
 	ld a,(xsp+28)
@@ -18580,14 +18671,14 @@ L3674:
 	lda xsp,(xsp+20)
 	pop xiy
 	pop xix
-L3669:
+L3671:
 	inc 1,izl
-L3670:
+L3672:
 	ld a,izl
 	cp a,(xsp+36)
-	jp ult,L3667
+	jp ult,L3669
+L3670:
 L3668:
-L3666:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -18601,8 +18692,8 @@ _ngpc_text_print_num:
 	ld wa,1
 	ld (xsp+8),a
 	ld izl,0
-	jr L3690
-L3687:
+	jr L3692
+L3689:
 	ld wa,(xsp+6)
 	extz xwa
 	div xwa,10
@@ -18619,21 +18710,21 @@ L3687:
 	extz xwa
 	div xwa,10
 	ld (xsp+6),wa
-L3689:
+L3691:
 	inc 1,izl
-L3690:
+L3692:
 	ld a,izl
 	cp a,5
-	jr ult,L3687
-L3688:
+	jr ult,L3689
+L3690:
 	ld a,5
 	sub a,(xsp+40)
 	ld izl,a
-	jr L3694
-L3691:
+	jr L3696
+L3693:
 	ld a,(xsp+8)
 	cp a,0
-	jr z,L3695
+	jr z,L3697
 	lda xwa,(xsp+0)
 	ld c,izl
 	extz bc
@@ -18641,13 +18732,13 @@ L3691:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr nz,L3695
+	jr nz,L3697
 	ld a,izl
 	cp a,4
-	jr uge,L3695
+	jr uge,L3697
 	ld ix,32
-	jr L3696
-L3695:
+	jr L3698
+L3697:
 	ldb (xsp+8),0
 	lda xwa,(xsp+0)
 	ld c,izl
@@ -18658,7 +18749,7 @@ L3695:
 	extz wa
 	add wa,48
 	ld ix,wa
-L3696:
+L3698:
 	push xix
 	ld a,(xsp+28)
 	push xwa
@@ -18674,14 +18765,14 @@ L3696:
 	lda xsp,(xsp+20)
 	pop xix
 	incb 1,(xsp+28)
-L3693:
+L3695:
 	inc 1,izl
-L3694:
+L3696:
 	ld a,izl
 	cp a,5
-	jr ult,L3691
-L3692:
-L3686:
+	jr ult,L3693
+L3694:
+L3688:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -18721,7 +18812,7 @@ _ngpc_text_print_hex32:
 	push xwa
 	call _ngpc_text_print_hex
 	lda xsp,(xsp+24)
-L3698:
+L3700:
 	ret
 
 ; function ngpc_text_tile_screen
@@ -18731,11 +18822,11 @@ _ngpc_text_tile_screen:
 	ld wa,0
 	ld (xsp+2),wa
 	ld ixl,0
-	jr L3712
-L3709:
+	jr L3714
+L3711:
 	ld izl,0
-	jr L3716
-L3713:
+	jr L3718
+L3715:
 	push xix
 	ld a,(xsp+20)
 	push xwa
@@ -18756,21 +18847,21 @@ L3713:
 	lda xsp,(xsp+20)
 	pop xix
 	incw 1,(xsp+2)
-L3715:
+L3717:
 	inc 1,izl
-L3716:
+L3718:
 	ld a,izl
 	cp a,20
-	jr ult,L3713
-L3714:
-L3711:
+	jr ult,L3715
+L3716:
+L3713:
 	inc 1,ixl
-L3712:
+L3714:
 	ld a,ixl
 	cp a,19
-	jr ult,L3709
+	jr ult,L3711
+L3712:
 L3710:
-L3708:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -18780,8 +18871,8 @@ _hud_score_reset:
 	push xiz
 	lda xsp,(xsp-2)
 	ld izl,0
-	jr L3726
-L3723:
+	jr L3728
+L3725:
 	ld a,0
 	ld xbc,_s_dig__26
 	ld e,izl
@@ -18789,14 +18880,14 @@ L3723:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L3725:
+L3727:
 	inc 1,izl
-L3726:
+L3728:
 	ld a,izl
 	cp a,7
-	jr ult,L3723
+	jr ult,L3725
+L3726:
 L3724:
-L3722:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -18809,8 +18900,8 @@ _hud_score_add:
 	ld iy,wa
 	ld wa,7
 	ld izl,a
-	jr L3735
-L3733:
+	jr L3737
+L3735:
 	dec 1,izl
 	ld xwa,_s_dig__26
 	ld c,izl
@@ -18835,16 +18926,16 @@ L3733:
 	extz xwa
 	div xwa,10
 	ld iy,wa
-L3735:
+L3737:
 	ld wa,iy
 	cp wa,0
-	jr z,L3736
+	jr z,L3738
 	ld a,izl
 	cp a,0
-	jr ugt,L3733
+	jr ugt,L3735
+L3738:
 L3736:
 L3734:
-L3732:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -18856,8 +18947,8 @@ _hud_init:
 	ld xwa,41472
 	ld (xsp+2),xwa
 	ld iz,0
-	jr L3746
-L3743:
+	jr L3748
+L3745:
 	ld xwa,_gfx_font_tiles__26
 	ld bc,iz
 	extz xbc
@@ -18870,13 +18961,13 @@ L3743:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3745:
+L3747:
 	inc 1,iz
-L3746:
+L3748:
 	ld wa,iz
 	cp wa,552
-	jr ult,L3743
-L3744:
+	jr ult,L3745
+L3746:
 	ld wa,4095
 	push xwa
 	ld wa,2184
@@ -18975,7 +19066,7 @@ L3744:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-L3742:
+L3744:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -18989,19 +19080,22 @@ _hud_reset:
 	ld (_h_kmh__26),a
 	ld (_h_time__26),a
 	ldb (_h_score_ok__26),0
-L3748:
+L3750:
 	ret
 
 ; function hud_clear_top
 _hud_clear_top:
 	push xiz
 	lda xsp,(xsp-2)
+	push xix
+	call _ovl_forget
+	pop xix
 	ld ixl,0
-	jr L3762
-L3759:
+	jr L3764
+L3761:
 	ld izl,0
-	jr L3766
-L3763:
+	jr L3768
+L3765:
 	ld wa,0
 	ld xbc,36864
 	ld e,ixl
@@ -19014,21 +19108,21 @@ L3763:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3765:
+L3767:
 	inc 1,izl
-L3766:
+L3768:
 	ld a,izl
 	cp a,20
-	jr ult,L3763
-L3764:
-L3761:
+	jr ult,L3765
+L3766:
+L3763:
 	inc 1,ixl
-L3762:
+L3764:
 	ld a,ixl
 	cp a,15
-	jr ult,L3759
+	jr ult,L3761
+L3762:
 L3760:
-L3758:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -19040,10 +19134,10 @@ _hud_message:
 	ld xix,(xsp+14)
 	ld wa,0
 	ld izl,a
-	jr L3774
-L3772:
-	inc 1,izl
+	jr L3776
 L3774:
+	inc 1,izl
+L3776:
 	ld xwa,xix
 	ld c,izl
 	extz bc
@@ -19051,8 +19145,8 @@ L3774:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr nz,L3772
-L3773:
+	jr nz,L3774
+L3775:
 	push xix
 	ld a,(xsp+14)
 	push xwa
@@ -19077,7 +19171,7 @@ L3773:
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
 	pop xix
-L3771:
+L3773:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -19089,8 +19183,8 @@ _hud_clear_message:
 	ld a,(xsp+10)
 	ld ixl,a
 	ld izl,0
-	jr L3784
-L3781:
+	jr L3786
+L3783:
 	ld wa,0
 	ld xbc,36864
 	ld e,ixl
@@ -19103,14 +19197,14 @@ L3781:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L3783:
+L3785:
 	inc 1,izl
-L3784:
+L3786:
 	ld a,izl
 	cp a,20
-	jr ult,L3781
+	jr ult,L3783
+L3784:
 L3782:
-L3780:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -19132,7 +19226,7 @@ _put_digit__26:
 	push xwa
 	call _ngpc_gfx_put_tile
 	lda xsp,(xsp+20)
-L3786:
+L3788:
 	ret
 
 ; function hud_race
@@ -19141,10 +19235,10 @@ _hud_race:
 	lda xsp,(xsp-4)
 	ld a,(xsp+12)
 	cp a,(_h_time__26)
-	jr z,L3812
+	jr z,L3814
 	ld a,(_h_time__26)
 	cp a,255
-	jr nz,L3813
+	jr nz,L3815
 	ld xwa,_S26_0
 	push xwa
 	ld wa,0
@@ -19157,15 +19251,15 @@ _hud_race:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-L3813:
+L3815:
 	ld c,(xsp+12)
 	cp c,10
-	jr uge,L3814
+	jr uge,L3816
 	ld wa,2
-	jr L3815
-L3814:
+	jr L3817
+L3816:
 	ld wa,1
-L3815:
+L3817:
 	push xwa
 	ld a,(xsp+16)
 	extz wa
@@ -19180,12 +19274,12 @@ L3815:
 	lda xsp,(xsp+16)
 	ld c,(xsp+12)
 	cp c,10
-	jr uge,L3816
+	jr uge,L3818
 	ld wa,2
-	jr L3817
-L3816:
+	jr L3819
+L3818:
 	ld wa,1
-L3817:
+L3819:
 	push xwa
 	ld a,(xsp+16)
 	extz wa
@@ -19201,10 +19295,10 @@ L3817:
 	lda xsp,(xsp+16)
 	ld a,(xsp+12)
 	ld (_h_time__26),a
-L3812:
+L3814:
 	ld a,(xsp+28)
 	cp a,(_h_stage__26)
-	jr z,L3818
+	jr z,L3820
 	ld xwa,_S26_1
 	push xwa
 	ld wa,0
@@ -19231,7 +19325,7 @@ L3812:
 	ld a,(xsp+28)
 	ld (_h_stage__26),a
 	ldb (_h_prog__26),255
-L3818:
+L3820:
 	ld wa,(xsp+24)
 	mul xwa,3
 	add wa,9
@@ -19240,20 +19334,20 @@ L3818:
 	ld (xsp+1),a
 	ld a,(xsp+1)
 	cp a,(_h_prog__26)
-	jr z,L3819
+	jr z,L3821
 	ld izl,0
-	jr L3823
-L3820:
+	jr L3825
+L3822:
 	ld wa,0
 	push xwa
 	ld c,izl
 	cp c,(xsp+5)
-	jr uge,L3824
+	jr uge,L3826
 	ld wa,97
-	jr L3825
-L3824:
+	jr L3827
+L3826:
 	ld wa,96
-L3825:
+L3827:
 	push xwa
 	ld wa,0
 	push xwa
@@ -19264,13 +19358,13 @@ L3825:
 	push xwa
 	call _ngpc_gfx_put_tile
 	lda xsp,(xsp+20)
-L3822:
+L3824:
 	inc 1,izl
-L3823:
+L3825:
 	ld a,izl
 	cp a,3
-	jr ult,L3820
-L3821:
+	jr ult,L3822
+L3823:
 	ld wa,1
 	push xwa
 	ld wa,100
@@ -19285,17 +19379,17 @@ L3821:
 	lda xsp,(xsp+20)
 	ld a,(xsp+1)
 	ld (_h_prog__26),a
-L3819:
+L3821:
 	ld a,(xsp+16)
 	cp a,(_h_kmh__26)
-	jp z,L3826
+	jp z,L3828
 	ld a,(xsp+16)
 	extz wa
 	sll 1,wa
 	ld (xsp+2),wa
 	ld a,(_h_kmh__26)
 	cp a,255
-	jr nz,L3827
+	jr nz,L3829
 	ld xwa,_S26_2
 	push xwa
 	ld wa,1
@@ -19308,7 +19402,7 @@ L3819:
 	push xwa
 	call _ngpc_text_print
 	lda xsp,(xsp+20)
-L3827:
+L3829:
 	ld wa,1
 	push xwa
 	ld wa,(xsp+6)
@@ -19351,18 +19445,18 @@ L3827:
 	lda xsp,(xsp+16)
 	ld a,(xsp+16)
 	ld (_h_kmh__26),a
-L3826:
+L3828:
 	ld a,(xsp+20)
 	cp a,(_h_gear__26)
-	jr z,L3828
+	jr z,L3830
 	ld c,(xsp+20)
 	cp c,1
-	jr nz,L3829
+	jr nz,L3831
 	ld xwa,_S26_3
-	jr L3830
-L3829:
+	jr L3832
+L3831:
 	ld xwa,_S26_4
-L3830:
+L3832:
 	push xwa
 	ld wa,1
 	push xwa
@@ -19370,19 +19464,19 @@ L3830:
 	push xwa
 	ld c,(xsp+32)
 	cp c,1
-	jr nz,L3831
-	ld wa,1
-	jr L3832
-L3831:
-	ld c,(xsp+32)
-	cp c,2
 	jr nz,L3833
-	ld wa,2
+	ld wa,1
 	jr L3834
 L3833:
+	ld c,(xsp+32)
+	cp c,2
+	jr nz,L3835
+	ld wa,2
+	jr L3836
+L3835:
 	ld wa,0
+L3836:
 L3834:
-L3832:
 	push xwa
 	ld wa,0
 	push xwa
@@ -19390,8 +19484,8 @@ L3832:
 	lda xsp,(xsp+20)
 	ld a,(xsp+20)
 	ld (_h_gear__26),a
-L3828:
-L3811:
+L3830:
+L3813:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -19404,28 +19498,28 @@ _id_cars_steering:
 	ld izl,a
 	ld c,izl
 	cp c,96
-	jr uge,L3839
+	jr uge,L3841
 	ld a,izl
 	extz wa
 	mul xwa,7
 	extz xwa
 	div xwa,6
-	jr L3840
-L3839:
+	jr L3842
+L3841:
 	ld wa,112
 	ld c,izl
 	extz bc
 	sub bc,96
 	srl 3,bc
 	sub wa,bc
-L3840:
+L3842:
 	ld (xsp+0),wa
 	ld a,(xsp+14)
 	extz wa
 	mul xwa,(xsp+0)
 	srl 7,wa
-	jr L3838
-L3838:
+	jr L3840
+L3840:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -19453,7 +19547,7 @@ _id_fleet_body:
 	ldb (xiz+29),3
 	ldb (xiz+31),1
 	ldb (xiz+30),24
-L3842:
+L3844:
 	pop xiz
 	ret
 
@@ -19462,12 +19556,12 @@ _id_spr_put:
 	push xiz
 	lda xsp,(xsp-4)
 	ld ix,(xsp+24)
-	ld wa,34816
+	ld xwa,_spr_shadow
 	ld c,(xsp+12)
 	extz bc
 	sll 2,bc
-	add wa,bc
-	extz xwa
+	extz xbc
+	add xwa,xbc
 	ld xiz,xwa
 	ld a,ixl
 	and a,255
@@ -19489,13 +19583,13 @@ _id_spr_put:
 	ld (xiz+3),a
 	ld a,(xsp+28)
 	and a,15
-	ld bc,35840
+	ld xbc,_spr_pal_shadow
 	ld e,(xsp+12)
 	extz de
-	add bc,de
-	extz xbc
+	exts xde
+	add xbc,xde
 	ld (xbc),a
-L3844:
+L3846:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -19508,35 +19602,33 @@ _id_spr_hide_range:
 	ld iyl,a
 	ld a,iyl
 	cp a,(xsp+18)
-	jr ult,L3851
-	jr L3850
-L3851:
-	ld wa,34817
+	jr ult,L3853
+	jr L3852
+L3853:
+	ld xwa,_spr_shadow+1
 	ld c,iyl
 	extz bc
 	sll 2,bc
-	add wa,bc
-	extz xwa
+	extz xbc
+	add xwa,xbc
 	ld xiz,xwa
 	ld a,(xsp+18)
 	sub a,iyl
 	ld ixl,a
-L3852:
-	ld a,(xiz)
-	and a,231
-	ld (xiz),a
+L3854:
+	ldb (xiz),0
 	ld bc,4
 	exts xbc
 	ld xwa,xiz
 	add xwa,xbc
 	ld xiz,xwa
-L3854:
+L3856:
 	dec 1,ixl
 	ld a,ixl
 	cp a,0
-	jr nz,L3852
-L3853:
-L3850:
+	jr nz,L3854
+L3855:
+L3852:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -19554,8 +19646,8 @@ _mesure_roues__29:
 	ld wa,0
 	ld (xsp+5),a
 	ldb (xsp+0),0
-	jp L3886
-L3883:
+	jp L3888
+L3885:
 	ld a,(xsp+0)
 	extz wa
 	ld c,(_body__29+29)
@@ -19577,8 +19669,8 @@ L3883:
 	ld a,(xwa)
 	ld (xsp+8),a
 	ldb (xsp+1),0
-	jp L3890
-L3887:
+	jp L3892
+L3889:
 	ld xwa,(_body__29+22)
 	ld c,(xsp+7)
 	add c,(xsp+1)
@@ -19605,8 +19697,8 @@ L3887:
 	extz wa
 	ld (xsp+12),wa
 	ld ixl,0
-	jp L3894
-L3891:
+	jp L3896
+L3893:
 	ld xwa,(_body__29)
 	ld bc,(xsp+12)
 	sll 3,bc
@@ -19619,8 +19711,8 @@ L3891:
 	ld wa,(xwa)
 	ld (xsp+16),wa
 	ld izl,0
-	jp L3898
-L3895:
+	jp L3900
+L3897:
 	ld wa,(xsp+16)
 	ld bc,14
 	ld de,2
@@ -19629,16 +19721,16 @@ L3895:
 	mul xde,hl
 	sub bc,de
 	cp c,0
-	jr z,L3901
-L3900:
+	jr z,L3903
+L3902:
 	srl 1,wa
-	djnz c,L3900
-L3901:
+	djnz c,L3902
+L3903:
 	and wa,3
 	cp wa,0
-	jr nz,L3899
-	jp L3897
-L3899:
+	jr nz,L3901
+	jp L3899
+L3901:
 	ld a,(xsp+10)
 	extz wa
 	sll 3,wa
@@ -19646,7 +19738,7 @@ L3899:
 	extz bc
 	add wa,bc
 	cp a,(xsp+2)
-	jr ule,L3902
+	jr ule,L3904
 	ld a,(xsp+10)
 	extz wa
 	sll 3,wa
@@ -19655,7 +19747,7 @@ L3899:
 	add wa,bc
 	ld (xsp+2),a
 	ldb (xsp+5),0
-L3902:
+L3904:
 	ld a,(xsp+10)
 	extz wa
 	sll 3,wa
@@ -19663,7 +19755,7 @@ L3902:
 	extz bc
 	add wa,bc
 	cp a,(xsp+2)
-	jr nz,L3903
+	jr nz,L3905
 	ld a,iyl
 	extz wa
 	sll 3,wa
@@ -19671,7 +19763,7 @@ L3902:
 	extz bc
 	add wa,bc
 	cp a,(xsp+5)
-	jr ule,L3903
+	jr ule,L3905
 	ld a,iyl
 	extz wa
 	sll 3,wa
@@ -19679,7 +19771,7 @@ L3902:
 	extz bc
 	add wa,bc
 	ld (xsp+5),a
-L3903:
+L3905:
 	ld a,iyl
 	extz wa
 	sll 3,wa
@@ -19687,7 +19779,7 @@ L3903:
 	extz bc
 	add wa,bc
 	cp a,(xsp+3)
-	jr ule,L3904
+	jr ule,L3906
 	ld a,iyl
 	extz wa
 	sll 3,wa
@@ -19695,7 +19787,7 @@ L3903:
 	extz bc
 	add wa,bc
 	ld (xsp+3),a
-L3904:
+L3906:
 	ld a,iyl
 	extz wa
 	sll 3,wa
@@ -19703,7 +19795,7 @@ L3904:
 	extz bc
 	add wa,bc
 	cp a,(xsp+4)
-	jr uge,L3905
+	jr uge,L3907
 	ld a,iyl
 	extz wa
 	sll 3,wa
@@ -19711,45 +19803,45 @@ L3904:
 	extz bc
 	add wa,bc
 	ld (xsp+4),a
-L3905:
-L3897:
+L3907:
+L3899:
 	inc 1,izl
-L3898:
+L3900:
 	ld a,izl
 	cp a,8
-	jp ult,L3895
-L3896:
-L3893:
+	jp ult,L3897
+L3898:
+L3895:
 	inc 1,ixl
-L3894:
+L3896:
 	ld a,ixl
 	cp a,8
-	jp ult,L3891
-L3892:
-L3889:
+	jp ult,L3893
+L3894:
+L3891:
 	incb 1,(xsp+1)
-L3890:
+L3892:
 	ld a,(xsp+1)
 	cp a,(xsp+8)
-	jp ult,L3887
-L3888:
-L3885:
+	jp ult,L3889
+L3890:
+L3887:
 	incb 1,(xsp+0)
-L3886:
+L3888:
 	ld a,(xsp+0)
 	cp a,(_body__29+28)
-	jp ult,L3883
-L3884:
+	jp ult,L3885
+L3886:
 	ld a,(xsp+4)
 	cp a,(xsp+3)
-	jr ule,L3906
+	jr ule,L3908
 	ld xwa,(_body__29+18)
 	ld a,(xwa)
 	extz wa
 	sll 2,wa
 	ld (_car_wheel_dx__29),a
-	jr L3882
-L3906:
+	jr L3884
+L3908:
 	ld wa,2
 	ld c,(xsp+5)
 	extz bc
@@ -19764,17 +19856,17 @@ L3906:
 	ld (xsp+8),wa
 	ld bc,(xsp+6)
 	cp bc,(xsp+8)
-	jr ule,L3907
+	jr ule,L3909
 	ld wa,(xsp+6)
 	sub wa,(xsp+8)
 	srl 1,wa
 	extz wa
-	jr L3908
-L3907:
+	jr L3910
+L3909:
 	ld wa,0
-L3908:
+L3910:
 	ld (_car_wheel_dx__29),a
-L3882:
+L3884:
 	lda xsp,(xsp+20)
 	pop xiz
 	ret
@@ -19783,14 +19875,14 @@ L3882:
 _id_car_select:
 	ld c,(xsp+4)
 	cp c,1
-	jr uge,L3913
+	jr uge,L3915
 	ld a,(xsp+4)
 	extz wa
-	jr L3914
-L3913:
+	jr L3916
+L3915:
 	ld a,0
 	extz wa
-L3914:
+L3916:
 	ld (_car_variant__29),a
 	ld xwa,_body__29
 	push xwa
@@ -19799,22 +19891,22 @@ L3914:
 	call _id_fleet_body
 	lda xsp,(xsp+8)
 	call _mesure_roues__29
-L3912:
+L3914:
 	ret
 
 ; function id_car_char_count
 _id_car_char_count:
 	ld c,(xsp+4)
 	cp c,0
-	jr z,L3919
+	jr z,L3921
 	ld wa,(_body__29+4)
-	jr L3920
-L3919:
+	jr L3922
+L3921:
 	ld wa,(_body__29+26)
-L3920:
+L3922:
 	srl 3,wa
-	jr L3918
-L3918:
+	jr L3920
+L3920:
 	ret
 
 ; function id_car_half_width
@@ -19823,15 +19915,15 @@ _id_car_half_width:
 	ld a,(xwa)
 	extz wa
 	sll 2,wa
-	jr L3922
-L3922:
+	jr L3924
+L3924:
 	ret
 
 ; function id_car_wheel_dx
 _id_car_wheel_dx:
 	ld a,(_car_wheel_dx__29)
-	jr L3924
-L3924:
+	jr L3926
+L3926:
 	ret
 
 ; function id_car_init
@@ -19852,8 +19944,8 @@ _id_car_init:
 	ld wa,(xsp+24)
 	ld (_car_tile_base__29),wa
 	ld ix,0
-	jr L3940
-L3937:
+	jr L3942
+L3939:
 	ld wa,40960
 	extz xwa
 	ld bc,(xsp+24)
@@ -19862,8 +19954,8 @@ L3937:
 	add xwa,xbc
 	ld (xsp+8),xwa
 	ld iz,0
-	jr L3944
-L3941:
+	jr L3946
+L3943:
 	ld xwa,(xsp+4)
 	ld bc,ix
 	sll 3,bc
@@ -19891,20 +19983,20 @@ L3941:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L3943:
+L3945:
 	inc 1,iz
-L3944:
+L3946:
 	ld wa,iz
 	cp wa,8
-	jr ult,L3941
-L3942:
-L3939:
+	jr ult,L3943
+L3944:
+L3941:
 	inc 1,ix
-L3940:
+L3942:
 	ld wa,ix
 	cp wa,(xsp+2)
-	jr ult,L3937
-L3938:
+	jr ult,L3939
+L3940:
 	push xix
 	push xiy
 	ld xwa,(_body__29+6)
@@ -19929,7 +20021,7 @@ L3938:
 	pop xix
 	ld a,(_body__29+28)
 	cp a,1
-	jr ule,L3945
+	jr ule,L3947
 	push xix
 	push xiy
 	ld xwa,(_body__29+6)
@@ -19952,8 +20044,8 @@ L3938:
 	lda xsp,(xsp+24)
 	pop xiy
 	pop xix
-	jr L3946
-L3945:
+	jr L3948
+L3947:
 	push xix
 	push xiy
 	ld xwa,(_body__29+6)
@@ -19976,7 +20068,7 @@ L3945:
 	lda xsp,(xsp+24)
 	pop xiy
 	pop xix
-L3946:
+L3948:
 	push xix
 	push xiy
 	ld a,24
@@ -19987,7 +20079,7 @@ L3946:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L3936:
+L3938:
 	lda xsp,(xsp+16)
 	pop xiz
 	ret
@@ -20006,7 +20098,7 @@ _id_car_portrait_angle:
 	ld (xsp+3),a
 	ld a,(_body__29+29)
 	cp a,2
-	jr uge,L3979
+	jr uge,L3981
 	push xix
 	push xiy
 	ld a,(xsp+54)
@@ -20030,8 +20122,8 @@ _id_car_portrait_angle:
 	lda xsp,(xsp+12)
 	pop xiy
 	pop xix
-	jp L3978
-L3979:
+	jp L3980
+L3981:
 	ld a,(xsp+50)
 	extz wa
 	exts xwa
@@ -20042,17 +20134,17 @@ L3979:
 	ld (xsp+50),a
 	ld a,(xsp+50)
 	cp a,(_body__29+29)
-	jr uge,L3980
+	jr uge,L3982
 	ld a,(xsp+50)
 	ld (xsp+4),a
 	ldb (xsp+5),0
-	jr L3981
-L3980:
+	jr L3983
+L3982:
 	ld a,(xsp+3)
 	sub a,(xsp+50)
 	ld (xsp+4),a
 	ldb (xsp+5),1
-L3981:
+L3983:
 	ld xwa,(_body__29+14)
 	ld c,(xsp+4)
 	extz bc
@@ -20077,8 +20169,8 @@ L3981:
 	ldb (xsp+6),255
 	ldb (xsp+7),0
 	ld izl,0
-	jr L3985
-L3982:
+	jr L3987
+L3984:
 	ld xwa,(_body__29+22)
 	ld c,(xsp+9)
 	add c,izl
@@ -20089,42 +20181,42 @@ L3982:
 	ld (xsp+12),a
 	ld c,(xsp+5)
 	cp c,0
-	jr z,L3986
+	jr z,L3988
 	ld a,(xsp+11)
 	sub a,1
 	sub a,(xsp+12)
 	extz wa
-	jr L3987
-L3986:
+	jr L3989
+L3988:
 	ld a,(xsp+12)
 	extz wa
-L3987:
+L3989:
 	ld (xsp+13),a
 	ld a,(xsp+13)
 	cp a,(xsp+6)
-	jr uge,L3988
+	jr uge,L3990
 	ld a,(xsp+13)
 	ld (xsp+6),a
-L3988:
+L3990:
 	ld a,(xsp+13)
 	cp a,(xsp+7)
-	jr ule,L3989
+	jr ule,L3991
 	ld a,(xsp+13)
 	ld (xsp+7),a
-L3989:
-L3984:
+L3991:
+L3986:
 	inc 1,izl
-L3985:
+L3987:
 	ld a,izl
 	cp a,(xsp+10)
-	jr ult,L3982
-L3983:
+	jr ult,L3984
+L3985:
 	ld a,(xsp+6)
 	cp a,(xsp+7)
-	jr ule,L3990
+	jr ule,L3992
 	ldb (xsp+6),0
 	ldb (xsp+7),0
-L3990:
+L3992:
 	ld a,(xsp+38)
 	extz wa
 	ld c,(xsp+7)
@@ -20144,8 +20236,8 @@ L3990:
 	sub wa,bc
 	ld (xsp+8),a
 	ldb (xsp+1),0
-	jp L3994
-L3991:
+	jp L3996
+L3993:
 	ld a,(_body__29+28)
 	sub a,1
 	sub a,(xsp+1)
@@ -20194,16 +20286,16 @@ L3991:
 	ld (xsp+12),a
 	ld c,(xsp+9)
 	cp c,0
-	jr nz,L3995
+	jr nz,L3997
 	ld wa,0
-	jr L3996
-L3995:
+	jr L3998
+L3997:
 	ld wa,5
-L3996:
+L3998:
 	ld (xsp+13),a
 	ld izl,0
-	jp L4000
-L3997:
+	jp L4002
+L3999:
 	ld xwa,(_body__29+22)
 	ld c,(xsp+10)
 	add c,izl
@@ -20214,18 +20306,18 @@ L3997:
 	ld xiy,xwa
 	ld c,(xsp+5)
 	cp c,0
-	jr z,L4001
+	jr z,L4003
 	ld a,(xsp+12)
 	sub a,1
 	sub a,(xiy)
 	extz wa
-	jr L4002
-L4001:
+	jr L4004
+L4003:
 	ld a,(xiy)
 	extz wa
-L4002:
+L4004:
 	ld (xsp+18),a
-L4003:
+L4005:
 	ld a,(xsp+2)
 	ld (xsp+19),a
 	ld a,(xsp+8)
@@ -20251,19 +20343,19 @@ L4003:
 	ld (xsp+24),a
 	ld c,(xsp+5)
 	cp c,0
-	jr z,L4006
+	jr z,L4008
 	ld wa,128
-	jr L4007
-L4006:
+	jr L4009
+L4008:
 	ld wa,0
-L4007:
+L4009:
 	ld (xsp+25),a
-	ld wa,34816
+	ld xwa,_spr_shadow
 	ld c,(xsp+19)
 	extz bc
 	sll 2,bc
-	add wa,bc
-	extz xwa
+	extz xbc
+	add xwa,xbc
 	ld xix,xwa
 	ld a,(xsp+22)
 	and a,255
@@ -20285,33 +20377,33 @@ L4007:
 	ld (xix+3),a
 	ld a,(xsp+24)
 	and a,15
-	ld bc,35840
+	ld xbc,_spr_pal_shadow
 	ld e,(xsp+19)
 	extz de
-	add bc,de
-	extz xbc
+	exts xde
+	add xbc,xde
 	ld (xbc),a
-L4005:
-L4004:
+L4007:
+L4006:
 	incb 1,(xsp+2)
-L3999:
+L4001:
 	inc 1,izl
-L4000:
+L4002:
 	ld a,izl
 	cp a,(xsp+11)
-	jr uge,L4008
+	jr uge,L4010
 	ld a,(xsp+2)
 	cp a,64
-	jp ult,L3997
-L4008:
-L3998:
-L3993:
+	jp ult,L3999
+L4010:
+L4000:
+L3995:
 	incb 1,(xsp+1)
-L3994:
+L3996:
 	ld a,(xsp+1)
 	cp a,(_body__29+28)
-	jp ult,L3991
-L3992:
+	jp ult,L3993
+L3994:
 	push xix
 	push xiy
 	ld a,64
@@ -20322,7 +20414,7 @@ L3992:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L3978:
+L3980:
 	lda xsp,(xsp+30)
 	pop xiz
 	ret
@@ -20334,8 +20426,8 @@ _id_car_portrait:
 	ld a,(xsp+40)
 	ld (xsp+2),a
 	ldb (xsp+1),0
-	jp L4028
-L4025:
+	jp L4030
+L4027:
 	ld a,(_body__29+28)
 	sub a,1
 	sub a,(xsp+1)
@@ -20362,16 +20454,16 @@ L4025:
 	ld (xsp+5),a
 	ld c,(xsp+3)
 	cp c,0
-	jr nz,L4029
+	jr nz,L4031
 	ld wa,0
-	jr L4030
-L4029:
+	jr L4032
+L4031:
 	ld wa,5
-L4030:
+L4032:
 	ld (xsp+6),a
 	ldb (xsp+0),0
-	jp L4034
-L4031:
+	jp L4036
+L4033:
 	ld xwa,(_body__29+22)
 	ld c,(xsp+4)
 	add c,(xsp+0)
@@ -20380,7 +20472,7 @@ L4031:
 	add xwa,xbc
 	lda xwa,(xwa)
 	ld xiy,xwa
-L4035:
+L4037:
 	ld a,(xsp+2)
 	ld (xsp+12),a
 	ld a,(xsp+32)
@@ -20406,12 +20498,12 @@ L4035:
 	ld (xsp+18),a
 	ld a,0
 	ld (xsp+19),a
-	ld wa,34816
+	ld xwa,_spr_shadow
 	ld c,(xsp+12)
 	extz bc
 	sll 2,bc
-	add wa,bc
-	extz xwa
+	extz xbc
+	add xwa,xbc
 	ld xiz,xwa
 	ld a,ixl
 	and a,255
@@ -20433,33 +20525,33 @@ L4035:
 	ld (xiz+3),a
 	ld a,(xsp+18)
 	and a,15
-	ld bc,35840
+	ld xbc,_spr_pal_shadow
 	ld e,(xsp+12)
 	extz de
-	add bc,de
-	extz xbc
+	exts xde
+	add xbc,xde
 	ld (xbc),a
-L4037:
-L4036:
+L4039:
+L4038:
 	incb 1,(xsp+2)
-L4033:
+L4035:
 	incb 1,(xsp+0)
-L4034:
+L4036:
 	ld a,(xsp+0)
 	cp a,(xsp+5)
-	jr uge,L4038
+	jr uge,L4040
 	ld a,(xsp+2)
 	cp a,64
-	jp ult,L4031
-L4038:
-L4032:
-L4027:
+	jp ult,L4033
+L4040:
+L4034:
+L4029:
 	incb 1,(xsp+1)
-L4028:
+L4030:
 	ld a,(xsp+1)
 	cp a,(_body__29+28)
-	jp ult,L4025
-L4026:
+	jp ult,L4027
+L4028:
 	push xix
 	push xiy
 	ld a,64
@@ -20470,7 +20562,7 @@ L4026:
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L4024:
+L4026:
 	lda xsp,(xsp+24)
 	pop xiz
 	ret
@@ -20502,10 +20594,10 @@ _car_layer__29:
 	ld (xsp+10),wa
 	ld wa,(_car_at_x__29)
 	cp wa,32767
-	jr z,L4044
+	jr z,L4046
 	ld wa,(_car_at_x__29)
 	ld (xsp+10),wa
-L4044:
+L4046:
 	ld a,(xsp+62)
 	sub a,(xsp+70)
 	ld (xsp+12),a
@@ -20516,12 +20608,12 @@ L4044:
 	ld (xsp+14),a
 	ld c,(xsp+42)
 	cp c,0
-	jr z,L4045
+	jr z,L4047
 	ld wa,128
-	jr L4046
-L4045:
+	jr L4048
+L4047:
 	ld wa,0
-L4046:
+L4048:
 	ld c,(_id_spr_priority)
 	extz bc
 	or wa,bc
@@ -20545,7 +20637,7 @@ L4046:
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-L4043:
+L4045:
 	lda xsp,(xsp+22)
 	ret
 
@@ -20555,23 +20647,23 @@ _lean_last__29:
 	lda xsp,(xsp-2)
 	ld c,(_body__29+29)
 	cp c,0
-	jr ule,L4052
+	jr ule,L4054
 	ld a,(_body__29+29)
 	extz wa
 	sub wa,1
-	jr L4053
-L4052:
+	jr L4055
+L4054:
 	ld wa,0
-L4053:
+L4055:
 	ld izl,a
 	ld a,izl
 	cp a,2
-	jr ule,L4054
+	jr ule,L4056
 	ld izl,2
-L4054:
+L4056:
 	ld a,izl
-	jr L4051
-L4051:
+	jr L4053
+L4053:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -20584,38 +20676,38 @@ _lean_pose__29:
 	ld (xsp+0),a
 	ld a,(_lean_hold__29)
 	cp a,0
-	jr nz,L4064
+	jr nz,L4066
 	ld wa,0
-	jr L4063
-L4064:
+	jr L4065
+L4066:
 	ld c,(_lean_hold__29)
 	cp c,12
-	jr ult,L4065
-	ld wa,3
-	jr L4066
-L4065:
-	ld c,(_lean_hold__29)
-	cp c,5
 	jr ult,L4067
-	ld wa,2
+	ld wa,3
 	jr L4068
 L4067:
+	ld c,(_lean_hold__29)
+	cp c,5
+	jr ult,L4069
+	ld wa,2
+	jr L4070
+L4069:
 	ld wa,1
+L4070:
 L4068:
-L4066:
 	ld izl,a
 	ld c,izl
 	cp c,(xsp+0)
-	jr ule,L4069
+	jr ule,L4071
 	ld a,(xsp+0)
 	extz wa
-	jr L4070
-L4069:
+	jr L4072
+L4071:
 	ld a,izl
 	extz wa
-L4070:
-	jr L4063
-L4063:
+L4072:
+	jr L4065
+L4065:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -20630,14 +20722,14 @@ _id_car_lean_share:
 	ld (xsp+1),a
 	ld a,(xsp+1)
 	cp a,0
-	jr z,L4079
+	jr z,L4081
 	ld a,(xsp+0)
 	cp a,0
-	jr nz,L4078
-L4079:
+	jr nz,L4080
+L4081:
 	ld wa,0
-	jr L4077
-L4078:
+	jr L4079
+L4080:
 	ld a,(xsp+1)
 	extz wa
 	sll 4,wa
@@ -20648,20 +20740,20 @@ L4078:
 	ld iz,wa
 	ld wa,iz
 	cp wa,16
-	jr le,L4080
+	jr le,L4082
 	ld iz,16
-L4080:
+L4082:
 	ld c,(_lean_side__29)
 	cp c,0
-	jr ge,L4081
+	jr ge,L4083
 	ld wa,iz
 	neg wa
-	jr L4082
-L4081:
+	jr L4084
+L4083:
 	ld wa,iz
-L4082:
-	jr L4077
-L4077:
+L4084:
+	jr L4079
+L4079:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -20669,15 +20761,15 @@ L4077:
 ; function id_car_last_x
 _id_car_last_x:
 	ld wa,(_car_last_x__29)
-	jr L4084
-L4084:
+	jr L4086
+L4086:
 	ret
 
 ; function id_car_last_top
 _id_car_last_top:
 	ld a,(_car_last_top__29)
-	jr L4086
-L4086:
+	jr L4088
+L4088:
 	ret
 
 ; function id_car_draw
@@ -20686,71 +20778,71 @@ _id_car_draw:
 	lda xsp,(xsp-8)
 	ld a,(xsp+20)
 	cp a,0
-	jr z,L4115
+	jr z,L4117
 	ld a,(_lean_side__29)
 	cp a,(xsp+20)
-	jr z,L4116
+	jr z,L4118
 	ld a,(xsp+20)
 	ld (_lean_side__29),a
 	ldb (_lean_hold__29),0
-L4116:
+L4118:
 	ld a,(_lean_hold__29)
 	cp a,255
-	jr uge,L4117
+	jr uge,L4119
 	incb 1,(_lean_hold__29)
-L4117:
+L4119:
 	ldb (_lean_wait__29),2
-	jr L4118
-L4115:
+	jr L4120
+L4117:
 	ld a,(_lean_hold__29)
 	cp a,0
-	jr z,L4119
+	jr z,L4121
 	ld a,(_lean_wait__29)
 	cp a,0
-	jr z,L4120
+	jr z,L4122
 	decb 1,(_lean_wait__29)
-	jr L4121
-L4120:
+	jr L4123
+L4122:
 	ldb (_lean_wait__29),2
 	ld a,(_lean_hold__29)
 	cp a,12
-	jr ult,L4122
-	ldb (_lean_hold__29),11
-	jr L4123
-L4122:
-	ld a,(_lean_hold__29)
-	cp a,5
 	jr ult,L4124
-	ldb (_lean_hold__29),4
+	ldb (_lean_hold__29),11
 	jr L4125
 L4124:
+	ld a,(_lean_hold__29)
+	cp a,5
+	jr ult,L4126
+	ldb (_lean_hold__29),4
+	jr L4127
+L4126:
 	ldb (_lean_hold__29),0
+L4127:
 L4125:
 L4123:
 L4121:
-L4119:
-L4118:
+L4120:
 	ld a,(xsp+24)
 	cp a,0
-	jr nz,L4126
+	jr nz,L4128
 	ldb (_bump_phase__29),0
 	ldb (xsp+2),0
-	jr L4127
-L4126:
+	jr L4129
+L4128:
 	incb 1,(_bump_phase__29)
 	ld c,(_bump_phase__29)
 	extz bc
 	and bc,2
 	cp bc,0
-	jr z,L4128
+	jr z,L4130
 	ld a,(xsp+24)
 	extz wa
-	jr L4129
-L4128:
+	jr L4131
+L4130:
 	ld wa,0
-L4129:
+L4131:
 	ld (xsp+2),a
-L4127:
+L4129:
 	ld a,148
 	ld c,(_body__29+30)
 	sub a,c
@@ -20770,12 +20862,12 @@ L4127:
 	ld (xsp+6),wa
 	ld bc,(xsp+6)
 	cp bc,0
-	jr ge,L4130
+	jr ge,L4132
 	ld wa,0
-	jr L4131
-L4130:
+	jr L4133
+L4132:
 	ld wa,(xsp+6)
-L4131:
+L4133:
 	ld (xsp+3),a
 	ld a,(xsp+4)
 	push xwa
@@ -20793,25 +20885,25 @@ L4131:
 	ld (_car_last_top__29),a
 	ld a,(_body__29+28)
 	cp a,1
-	jp ule,L4132
+	jp ule,L4134
 	call _lean_pose__29
 	ld (xsp+0),a
 	ldb (xsp+1),0
 	ld c,(xsp+0)
 	cp c,0
-	jr nz,L4133
+	jr nz,L4135
 	ld wa,0
-	jr L4134
-L4133:
-	ld c,(_lean_side__29)
-	cp c,0
-	jr ge,L4135
-	ld wa,2
 	jr L4136
 L4135:
+	ld c,(_lean_side__29)
+	cp c,0
+	jr ge,L4137
+	ld wa,2
+	jr L4138
+L4137:
 	ld wa,1
+L4138:
 L4136:
-L4134:
 	ld izl,a
 	ld a,(xsp+2)
 	push xwa
@@ -20904,25 +20996,25 @@ L4134:
 	push xwa
 	call _car_layer__29
 	lda xsp,(xsp+48)
-	jp L4114
-L4132:
+	jp L4116
+L4134:
 	ld c,(_lean_hold__29)
 	cp c,0
-	jr nz,L4137
+	jr nz,L4139
 	ld wa,0
-	jr L4138
-L4137:
+	jr L4140
+L4139:
 	ld wa,1
-L4138:
+L4140:
 	ld (xsp+0),a
 	ld c,(_lean_side__29)
 	cp c,0
-	jr le,L4139
+	jr le,L4141
 	ld wa,1
-	jr L4140
-L4139:
+	jr L4142
+L4141:
 	ld wa,0
-L4140:
+L4142:
 	ld (xsp+1),a
 	ld a,(xsp+2)
 	push xwa
@@ -20971,7 +21063,7 @@ L4140:
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-L4114:
+L4116:
 	lda xsp,(xsp+8)
 	pop xiz
 	ret
@@ -20982,7 +21074,7 @@ _id_car_draw_at:
 	ld (_car_at_x__29),wa
 	ld a,(_body__29+28)
 	cp a,1
-	jr ule,L4144
+	jr ule,L4146
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -21024,7 +21116,7 @@ _id_car_draw_at:
 	push xwa
 	call _car_layer__29
 	lda xsp,(xsp+48)
-L4144:
+L4146:
 	ld wa,0
 	push xwa
 	ld wa,0
@@ -21055,21 +21147,21 @@ L4144:
 	call _car_layer__29
 	lda xsp,(xsp+48)
 	ldw (_car_at_x__29),32767
-L4143:
+L4145:
 	ret
 
 ; function id_car_height
 _id_car_height:
 	ld a,(_body__29+30)
-	jr L4146
-L4146:
+	jr L4148
+L4148:
 	ret
 
 ; function id_car_tile_base
 _id_car_tile_base:
 	ld wa,(_car_tile_base__29)
-	jr L4148
-L4148:
+	jr L4150
+L4150:
 	ret
 
 ; function id_car_restore
@@ -21080,7 +21172,7 @@ _id_car_restore:
 	push xwa
 	call _id_car_init
 	lda xsp,(xsp+8)
-L4150:
+L4152:
 	ret
 
 ; function course_art
@@ -21100,15 +21192,15 @@ _course_art__30:
 	ldb (xiz+20),32
 	ldb (xiz+21),64
 	ldb (xiz+22),151
-L4152:
+L4154:
 	pop xiz
 	ret
 
 ; function uses_akina
 _uses_akina__30:
 	ld wa,0
-	jr L4154
-L4154:
+	jr L4156
+L4156:
 	ret
 
 ; function id_road_horizon
@@ -21119,22 +21211,22 @@ _id_road_horizon:
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
-	jr L4156
-L4156:
+	jr L4158
+L4158:
 	ret
 
 ; function sky_is_tall_course
 _sky_is_tall_course__30:
 	ld wa,0
-	jr L4158
-L4158:
+	jr L4160
+L4160:
 	ret
 
 ; function road_is_tarmac
 _road_is_tarmac__30:
 	ld wa,1
-	jr L4160
-L4160:
+	jr L4162
+L4162:
 	ret
 
 ; function id_build_weights
@@ -21161,15 +21253,15 @@ _id_build_weights__30:
 	sll 2,wa
 	ld (_id_curve_cm__30),wa
 	ld izl,0
-	jp L4195
-L4192:
+	jp L4197
+L4194:
 	push xix
 	push xiy
 	call _uses_akina__30
 	pop xiy
 	pop xix
 	cp a,0
-	jp nz,L4196
+	jp nz,L4198
 	ld a,(_art__30+22)
 	extz wa
 	srl 3,wa
@@ -21191,10 +21283,10 @@ L4192:
 	ld (xsp+8),wa
 	ld wa,(xsp+8)
 	cp wa,(xsp+6)
-	jr ule,L4197
+	jr ule,L4199
 	ld wa,(xsp+6)
 	ld (xsp+8),wa
-L4197:
+L4199:
 	ld a,(xsp+8)
 	ld xbc,_id_src__30
 	ld e,izl
@@ -21218,8 +21310,8 @@ L4197:
 	extz xwa
 	div xwa,(xsp+6)
 	ld iy,wa
-	jr L4198
-L4196:
+	jr L4200
+L4198:
 	ld a,izl
 	ld xbc,_id_src__30
 	ld e,izl
@@ -21245,7 +21337,7 @@ L4196:
 	extz xwa
 	div xwa,(xsp+2)
 	ld iy,wa
-L4198:
+L4200:
 	ld wa,255
 	sub wa,iy
 	ld (xsp+6),wa
@@ -21275,7 +21367,7 @@ L4198:
 	ld (xbc),a
 	ld wa,iy
 	cp wa,0
-	jr nz,L4199
+	jr nz,L4201
 	ld wa,1600
 	ld xbc,_id_ahead__30
 	ld e,izl
@@ -21284,8 +21376,8 @@ L4198:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	jr L4200
-L4199:
+	jr L4202
+L4201:
 	ld wa,60
 	mul xwa,(xsp+6)
 	extz xwa
@@ -21293,12 +21385,12 @@ L4199:
 	ld (xsp+8),wa
 	ld bc,(xsp+8)
 	cp bc,1600
-	jr ule,L4201
+	jr ule,L4203
 	ld wa,1600
-	jr L4202
-L4201:
+	jr L4204
+L4203:
 	ld wa,(xsp+8)
-L4202:
+L4204:
 	ld xbc,_id_ahead__30
 	ld e,izl
 	extz de
@@ -21306,7 +21398,7 @@ L4202:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4200:
+L4202:
 	ld a,izl
 	extz wa
 	mul xwa,47
@@ -21351,35 +21443,35 @@ L4200:
 	ld (xsp+12),wa
 	ld bc,(xsp+12)
 	cp bc,47
-	jr ule,L4203
+	jr ule,L4205
 	ld wa,47
-	jr L4204
-L4203:
+	jr L4206
+L4205:
 	ld wa,(xsp+12)
-L4204:
+L4206:
 	ld xbc,_id_sl__30+128
 	ld e,izl
 	extz de
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L4194:
+L4196:
 	inc 1,izl
-L4195:
+L4197:
 	ld a,izl
 	cp a,(_road_lines__30)
-	jp ult,L4192
-L4193:
+	jp ult,L4194
+L4195:
 	ld a,(_road_lines__30)
 	sub a,1
 	ld (_wide_k0__30),a
-	jr L4207
-L4205:
-	decb 1,(_wide_k0__30)
+	jr L4209
 L4207:
+	decb 1,(_wide_k0__30)
+L4209:
 	ld a,(_wide_k0__30)
 	cp a,0
-	jr ule,L4208
+	jr ule,L4210
 	ld xwa,_id_src__30
 	ld c,(_wide_k0__30)
 	sub c,1
@@ -21388,9 +21480,9 @@ L4207:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,48
-	jr uge,L4205
+	jr uge,L4207
+L4210:
 L4208:
-L4206:
 	ld a,(_road_top__30)
 	sub a,8
 	ld (_climb_room__30),a
@@ -21400,24 +21492,24 @@ L4206:
 	pop xiy
 	pop xix
 	cp a,0
-	jr z,L4209
+	jr z,L4211
 	ld a,(_road_lines__30)
 	extz wa
 	extz xwa
 	div xwa,10
 	ld (_descent_room__30),a
-	jr L4210
-L4209:
+	jr L4212
+L4211:
 	ld a,(_road_lines__30)
 	extz wa
 	srl 1,wa
 	ld (_descent_room__30),a
-L4210:
+L4212:
 	ldb (_grade_hi__30),0
 	ldb (_grade_lo__30),0
 	ld ix,1
-	jr L4214
-L4211:
+	jr L4216
+L4213:
 	ld a,(_road_lines__30)
 	extz wa
 	ld xbc,_hill_rate__30
@@ -21437,20 +21529,20 @@ L4211:
 	extz de
 	add bc,de
 	cp wa,bc
-	jr ugt,L4215
+	jr ugt,L4217
 	ld a,ixl
 	ld (_grade_hi__30),a
+L4217:
 L4215:
-L4213:
 	inc 1,ix
-L4214:
+L4216:
 	ld wa,ix
 	cp wa,20
-	jr le,L4211
-L4212:
+	jr le,L4213
+L4214:
 	ld ix,1
-	jr L4219
-L4216:
+	jr L4221
+L4218:
 	ld a,(_road_lines__30)
 	extz wa
 	ld xbc,_hill_rate__30
@@ -21470,19 +21562,19 @@ L4216:
 	ld c,(_road_lines__30)
 	extz bc
 	cp wa,bc
-	jr ult,L4220
+	jr ult,L4222
 	ld a,ixl
 	neg a
 	ld (_grade_lo__30),a
+L4222:
 L4220:
-L4218:
 	inc 1,ix
-L4219:
+L4221:
 	ld wa,ix
 	cp wa,20
-	jr le,L4216
-L4217:
-L4191:
+	jr le,L4218
+L4219:
+L4193:
 	lda xsp,(xsp+14)
 	pop xiz
 	ret
@@ -21493,35 +21585,35 @@ _rally_scan__30:
 	lda xsp,(xsp-6)
 	ld a,(_rally_scanned__30)
 	cp a,0
-	jr z,L4239
-	jp L4238
-L4239:
+	jr z,L4241
+	jp L4240
+L4241:
 	ldw (xsp+0),0
-	jr L4243
-L4240:
+	jr L4245
+L4242:
 	ld a,255
 	ld xbc,_rally_of__30
 	ld de,(xsp+0)
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L4242:
+L4244:
 	incw 1,(xsp+0)
-L4243:
+L4245:
 	ld wa,(xsp+0)
 	cp wa,512
-	jr ult,L4240
-L4241:
+	jr ult,L4242
+L4243:
 	ldb (_rally_used__30),0
 	ld a,(_art__30+21)
 	extz wa
 	srl 3,wa
 	ld iyl,a
-	jp L4247
-L4244:
+	jp L4249
+L4246:
 	ld ixl,0
-	jr L4251
-L4248:
+	jr L4253
+L4250:
 	ld xwa,(_art__30+4)
 	ld c,iyl
 	extz bc
@@ -21538,22 +21630,22 @@ L4248:
 	ld iz,wa
 	ld wa,iz
 	cp wa,512
-	jr uge,L4253
+	jr uge,L4255
 	ld xwa,_rally_of__30
 	ld bc,iz
 	extz xbc
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,255
-	jr z,L4252
-L4253:
-	jr L4250
-L4252:
+	jr z,L4254
+L4255:
+	jr L4252
+L4254:
 	ld a,(_rally_used__30)
 	cp a,255
-	jr ult,L4254
-	jr L4250
-L4254:
+	jr ult,L4256
+	jr L4252
+L4256:
 	ld a,(_rally_used__30)
 	ld xbc,_rally_of__30
 	ld de,iz
@@ -21569,22 +21661,22 @@ L4254:
 	add xbc,xde
 	ld (xbc),wa
 	incb 1,(_rally_used__30)
-L4250:
+L4252:
 	inc 1,ixl
-L4251:
+L4253:
 	ld a,ixl
 	cp a,(_art__30+20)
-	jp ult,L4248
-L4249:
-L4246:
+	jp ult,L4250
+L4251:
+L4248:
 	inc 1,iyl
-L4247:
+L4249:
 	ld a,iyl
 	cp a,29
-	jp ult,L4244
-L4245:
+	jp ult,L4246
+L4247:
 	ldb (_rally_scanned__30),1
-L4238:
+L4240:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -21594,8 +21686,8 @@ _id_road_char_count:
 	call _rally_scan__30
 	ld a,(_rally_used__30)
 	extz wa
-	jr L4256
-L4256:
+	jr L4258
+L4258:
 	ret
 
 ; function id_load_chars
@@ -21611,8 +21703,8 @@ _id_load_chars__30:
 	ld xwa,(_art__30)
 	ld (xsp+4),xwa
 	ld ix,0
-	jp L4272
-L4269:
+	jp L4274
+L4271:
 	ld wa,40960
 	extz xwa
 	ld bc,128
@@ -21629,21 +21721,21 @@ L4269:
 	pop xix
 	pop xwa
 	cp c,0
-	jr nz,L4273
+	jr nz,L4275
 	ld xwa,_rally_src__30
 	ld bc,ix
 	extz xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	jr L4274
-L4273:
+	jr L4276
+L4275:
 	ld wa,ix
-L4274:
+L4276:
 	ld (xsp+12),wa
 	ld iz,0
-	jr L4278
-L4275:
+	jr L4280
+L4277:
 	ld xwa,(xsp+4)
 	ld bc,(xsp+12)
 	sll 3,bc
@@ -21671,21 +21763,21 @@ L4275:
 	extz xde
 	add xbc,xde
 	ld (xbc),a
-L4277:
+L4279:
 	inc 1,iz
-L4278:
+L4280:
 	ld wa,iz
 	cp wa,8
-	jr ult,L4275
-L4276:
-L4271:
+	jr ult,L4277
+L4278:
+L4273:
 	inc 1,ix
-L4272:
+L4274:
 	ld wa,ix
 	cp wa,(xsp+2)
-	jp ult,L4269
+	jp ult,L4271
+L4272:
 L4270:
-L4268:
 	lda xsp,(xsp+18)
 	pop xiz
 	ret
@@ -21695,8 +21787,8 @@ _id_load_palettes__30:
 	push xiz
 	lda xsp,(xsp-2)
 	ld izl,0
-	jr L4288
-L4285:
+	jr L4290
+L4287:
 	ld xwa,(_art__30+12)
 	ld c,izl
 	extz bc
@@ -21742,13 +21834,13 @@ L4285:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-L4287:
+L4289:
 	inc 1,izl
-L4288:
+L4290:
 	ld a,izl
 	cp a,8
-	jp ult,L4285
-L4286:
+	jp ult,L4287
+L4288:
 	ld wa,4095
 	push xwa
 	ld wa,1365
@@ -21768,7 +21860,7 @@ L4286:
 	push xwa
 	call _ngpc_gfx_set_bg_color
 	lda xsp,(xsp+4)
-L4284:
+L4286:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -21780,7 +21872,7 @@ _id_road_reload_backdrop:
 	push xwa
 	call _ngpc_gfx_set_bg_color
 	lda xsp,(xsp+4)
-L4290:
+L4292:
 	ret
 
 ; function id_road_set_colors
@@ -21827,8 +21919,8 @@ _id_road_set_colors:
 	lda xsp,(xsp+4)
 	pop xix
 	ld izl,0
-	jr L4300
-L4297:
+	jr L4302
+L4299:
 	ld xwa,xix
 	ld c,izl
 	extz bc
@@ -21843,16 +21935,16 @@ L4297:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4299:
+L4301:
 	inc 1,izl
-L4300:
+L4302:
 	ld a,izl
 	cp a,4
-	jr ult,L4297
-L4298:
+	jr ult,L4299
+L4300:
 	ldw (_bc_rest__30),65535
 	ldw (_bc_rest__30+2),65535
-L4296:
+L4298:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -21880,41 +21972,27 @@ _id_load_maps_rally__30:
 	extz wa
 	srl 3,wa
 	ld iyl,a
-	jp L4322
-L4319:
+	jp L4324
+L4321:
 	ld a,iyl
 	ld c,(xsp+2)
 	sub a,c
 	ld (xsp+3),a
 	ld a,(xsp+3)
 	cp a,28
-	jr ule,L4323
+	jr ule,L4325
 	ldb (xsp+3),28
-L4323:
+L4325:
 	ld izl,0
-	jp L4327
-L4324:
+	jp L4329
+L4326:
 	ld wa,0
 	ld (xsp+4),a
 	ld a,(xsp+3)
 	ld (xsp+5),a
 	ld a,izl
 	cp a,0
-	jr uge,L4328
-	ld a,(_art__30+21)
-	extz wa
-	srl 3,wa
-	ld (xsp+5),a
-	jr L4329
-L4328:
-	ld a,izl
-	ld c,0
-	add c,(_art__30+20)
-	cp a,c
-	jr ult,L4330
-	ld a,(_art__30+20)
-	sub a,1
-	ld (xsp+4),a
+	jr uge,L4330
 	ld a,(_art__30+21)
 	extz wa
 	srl 3,wa
@@ -21922,10 +22000,24 @@ L4328:
 	jr L4331
 L4330:
 	ld a,izl
+	ld c,0
+	add c,(_art__30+20)
+	cp a,c
+	jr ult,L4332
+	ld a,(_art__30+20)
+	sub a,1
+	ld (xsp+4),a
+	ld a,(_art__30+21)
+	extz wa
+	srl 3,wa
+	ld (xsp+5),a
+	jr L4333
+L4332:
+	ld a,izl
 	sub a,0
 	ld (xsp+4),a
+L4333:
 L4331:
-L4329:
 	ld a,(xsp+5)
 	extz wa
 	ld c,(_art__30+20)
@@ -21944,23 +22036,23 @@ L4329:
 	ld (xsp+8),wa
 	ld bc,(xsp+8)
 	cp bc,512
-	jr uge,L4332
+	jr uge,L4334
 	ld xwa,_rally_of__30
 	ld bc,(xsp+8)
 	extz xbc
 	add xwa,xbc
 	ld a,(xwa)
 	extz wa
-	jr L4333
-L4332:
+	jr L4335
+L4334:
 	ld wa,255
-L4333:
+L4335:
 	ld ixl,a
 	ld a,ixl
 	cp a,255
-	jr nz,L4334
+	jr nz,L4336
 	ld ixl,0
-L4334:
+L4336:
 	ld wa,128
 	ld c,ixl
 	extz bc
@@ -21985,21 +22077,21 @@ L4334:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4326:
+L4328:
 	inc 1,izl
-L4327:
+L4329:
 	ld a,izl
 	cp a,32
-	jp ult,L4324
-L4325:
-L4321:
+	jp ult,L4326
+L4327:
+L4323:
 	inc 1,iyl
-L4322:
+L4324:
 	ld a,iyl
 	cp a,32
-	jp ult,L4319
+	jp ult,L4321
+L4322:
 L4320:
-L4318:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -22007,14 +22099,14 @@ L4318:
 ; function id_load_maps
 _id_load_maps__30:
 	call _id_load_maps_rally__30
-L4336:
+L4338:
 	ret
 
 ; function id_road_reload_maps
 _id_road_reload_maps:
 	call _id_load_palettes__30
 	call _id_load_maps_rally__30
-L4338:
+L4340:
 	ret
 
 ; function id_build_shear_limits
@@ -22027,10 +22119,10 @@ _id_build_shear_limits__30:
 	pop xiy
 	pop xix
 	cp a,0
-	jp nz,L4370
+	jp nz,L4372
 	ld izl,0
-	jr L4374
-L4371:
+	jr L4376
+L4373:
 	ld xwa,_id_src__30
 	ld c,izl
 	extz bc
@@ -22042,7 +22134,7 @@ L4371:
 	ld (xsp+2),wa
 	ld a,(xsp+1)
 	cp a,48
-	jr uge,L4375
+	jr uge,L4377
 	ld xwa,_id_route_lim0
 	ld c,(xsp+1)
 	extz bc
@@ -22054,11 +22146,11 @@ L4371:
 	ld (xsp+4),wa
 	ld wa,(xsp+4)
 	cp wa,(xsp+2)
-	jr ge,L4376
+	jr ge,L4378
 	ld wa,(xsp+4)
 	ld (xsp+2),wa
-L4376:
-L4375:
+L4378:
+L4377:
 	ld wa,(xsp+2)
 	neg wa
 	ld xbc,_id_dxc__30
@@ -22076,18 +22168,18 @@ L4375:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4373:
+L4375:
 	inc 1,izl
-L4374:
+L4376:
 	ld a,izl
 	cp a,(_road_lines__30)
-	jp ult,L4371
+	jp ult,L4373
+L4374:
+	jp L4371
 L4372:
-	jp L4369
-L4370:
 	ld izl,0
-	jp L4380
-L4377:
+	jp L4382
+L4379:
 	ld a,(_road_top__30)
 	extz wa
 	ld c,izl
@@ -22099,20 +22191,20 @@ L4377:
 	ld wa,0
 	ld (xsp+8),wa
 	ldb (xsp+4),0
-	jr L4384
-L4381:
+	jr L4386
+L4383:
 	ld wa,0
 	ld (xsp+10),wa
 	ld wa,0
 	ld (xsp+12),wa
 	ld wa,(xsp+12)
 	cp wa,0
-	jr nz,L4385
-	jr L4383
-L4385:
+	jr nz,L4387
+	jr L4385
+L4387:
 	ld ixl,0
-	jr L4389
-L4386:
+	jr L4391
+L4388:
 	ld wa,(xsp+12)
 	ld bc,14
 	ld de,2
@@ -22121,14 +22213,14 @@ L4386:
 	mul xde,hl
 	sub bc,de
 	cp c,0
-	jr z,L4392
-L4391:
+	jr z,L4394
+L4393:
 	srl 1,wa
-	djnz c,L4391
-L4392:
+	djnz c,L4393
+L4394:
 	and wa,3
 	cp wa,0
-	jr z,L4390
+	jr z,L4392
 	ld a,(xsp+4)
 	extz wa
 	sll 3,wa
@@ -22138,34 +22230,34 @@ L4392:
 	ld iy,wa
 	ld wa,iy
 	cp wa,(xsp+6)
-	jr uge,L4393
+	jr uge,L4395
 	ld wa,iy
 	ld (xsp+6),wa
-L4393:
+L4395:
 	ld wa,iy
 	cp wa,(xsp+8)
-	jr ule,L4394
+	jr ule,L4396
 	ld wa,iy
 	ld (xsp+8),wa
-L4394:
+L4396:
+L4392:
 L4390:
-L4388:
 	inc 1,ixl
-L4389:
+L4391:
 	ld a,ixl
 	cp a,8
-	jr ult,L4386
-L4387:
-L4383:
+	jr ult,L4388
+L4389:
+L4385:
 	incb 1,(xsp+4)
-L4384:
+L4386:
 	ld a,(xsp+4)
 	cp a,32
-	jr ult,L4381
-L4382:
+	jr ult,L4383
+L4384:
 	ld wa,(xsp+6)
 	cp wa,(xsp+8)
-	jr ule,L4395
+	jr ule,L4397
 	ld wa,65409
 	ld xbc,_id_dxc__30
 	ld e,izl
@@ -22182,8 +22274,8 @@ L4382:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-	jr L4396
-L4395:
+	jr L4398
+L4397:
 	ld wa,(xsp+8)
 	sub wa,255
 	sub wa,7
@@ -22204,7 +22296,7 @@ L4395:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4396:
+L4398:
 	ld xwa,_id_dxc__30+128
 	ld c,izl
 	extz bc
@@ -22213,7 +22305,7 @@ L4396:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,88
-	jr le,L4397
+	jr le,L4399
 	ld wa,88
 	ld xbc,_id_dxc__30+128
 	ld e,izl
@@ -22222,7 +22314,7 @@ L4396:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4397:
+L4399:
 	ld xwa,_id_dxc__30
 	ld c,izl
 	extz bc
@@ -22231,7 +22323,7 @@ L4397:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,65448
-	jr ge,L4398
+	jr ge,L4400
 	ld wa,65448
 	ld xbc,_id_dxc__30
 	ld e,izl
@@ -22240,15 +22332,15 @@ L4397:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4398:
-L4379:
+L4400:
+L4381:
 	inc 1,izl
-L4380:
+L4382:
 	ld a,izl
 	cp a,(_road_lines__30)
-	jp ult,L4377
-L4378:
-L4369:
+	jp ult,L4379
+L4380:
+L4371:
 	lda xsp,(xsp+18)
 	pop xiz
 	ret
@@ -22256,22 +22348,22 @@ L4369:
 ; function id_road_course
 _id_road_course:
 	ld a,(_road_course__30)
-	jr L4400
-L4400:
+	jr L4402
+L4402:
 	ret
 
 ; function id_road_top
 _id_road_top:
 	ld a,(_road_top__30)
-	jr L4402
-L4402:
+	jr L4404
+L4404:
 	ret
 
 ; function id_road_bottom
 _id_road_bottom:
 	ld a,(_road_bottom__30)
-	jr L4404
-L4404:
+	jr L4406
+L4406:
 	ret
 
 ; function id_road_select
@@ -22280,13 +22372,13 @@ _id_road_select:
 	lda xsp,(xsp-14)
 	ld c,(xsp+22)
 	cp c,1
-	jr uge,L4444
+	jr uge,L4446
 	ld a,(xsp+22)
 	extz wa
-	jr L4445
-L4444:
+	jr L4447
+L4446:
 	ld wa,0
-L4445:
+L4447:
 	ld (_road_course__30),a
 	push xix
 	ld wa,0
@@ -22298,7 +22390,7 @@ L4445:
 	call _uses_akina__30
 	pop xix
 	cp a,0
-	jr nz,L4446
+	jr nz,L4448
 	push xix
 	ld xwa,_art__30
 	push xwa
@@ -22308,12 +22400,12 @@ L4445:
 	lda xsp,(xsp+8)
 	pop xix
 	ldb (_rally_scanned__30),0
-L4446:
+L4448:
 	push xix
 	call _uses_akina__30
 	pop xix
 	cp a,0
-	jr nz,L4447
+	jr nz,L4449
 	ldb (_road_base_x__30),48
 	ldb (_road_top__30),88
 	push xwa
@@ -22323,23 +22415,23 @@ L4446:
 	pop xix
 	pop xwa
 	cp c,0
-	jr z,L4448
+	jr z,L4450
 	ld a,88
 	extz wa
-	jr L4449
-L4448:
+	jr L4451
+L4450:
 	ld a,88
 	extz wa
-L4449:
+L4451:
 	ld (_road_plane0__30),a
 	ldb (_road_lines__30),64
-	jr L4450
-L4447:
+	jr L4452
+L4449:
 	ldb (_road_base_x__30),7
 	ldb (_road_top__30),72
 	ldb (_road_plane0__30),72
 	ldb (_road_lines__30),40
-L4450:
+L4452:
 	ld a,(_road_top__30)
 	add a,(_road_lines__30)
 	sub a,1
@@ -22351,11 +22443,11 @@ L4450:
 	ld (_car_stand__30),a
 	ld a,(_car_stand__30)
 	cp a,(_road_lines__30)
-	jr ult,L4451
+	jr ult,L4453
 	ld a,(_road_lines__30)
 	sub a,1
 	ld (_car_stand__30),a
-L4451:
+L4453:
 	push xix
 	call _id_load_chars__30
 	pop xix
@@ -22366,19 +22458,19 @@ L4451:
 	call _uses_akina__30
 	pop xix
 	cp a,0
-	jr nz,L4452
+	jr nz,L4454
 	push xix
 	call _id_load_maps_rally__30
 	pop xix
-	jr L4453
-L4452:
+	jr L4455
+L4454:
 	push xix
 	call _id_load_maps__30
 	pop xix
-L4453:
+L4455:
 	ldb (xsp+0),0
-	jr L4457
-L4454:
+	jr L4459
+L4456:
 	ld wa,0
 	ld xbc,_id_shear__30
 	ld e,(xsp+0)
@@ -22387,13 +22479,13 @@ L4454:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4456:
+L4458:
 	incb 1,(xsp+0)
-L4457:
+L4459:
 	ld a,(xsp+0)
 	cp a,(_road_lines__30)
-	jr ult,L4454
-L4455:
+	jr ult,L4456
+L4457:
 	ldw (_band_top__30),65535
 	ldw (_band_top__30+2),65535
 	ldw (_band_mid__30),65535
@@ -22409,12 +22501,12 @@ L4455:
 	pop xix
 	pop xwa
 	cp c,0
-	jr z,L4458
+	jr z,L4460
 	ld wa,3
-	jr L4459
-L4458:
+	jr L4461
+L4460:
 	ld wa,0
-L4459:
+L4461:
 	ld (_road_band_pal__30),a
 	ld xwa,33536
 	ld c,(_road_band_pal__30)
@@ -22427,8 +22519,8 @@ L4459:
 	ld wa,(xwa)
 	ld (xsp+2),wa
 	ld izl,0
-	jp L4463
-L4460:
+	jp L4465
+L4462:
 	ld wa,3
 	ld c,izl
 	extz bc
@@ -22447,33 +22539,33 @@ L4460:
 	ld (xsp+12),wa
 	ld bc,(xsp+8)
 	cp bc,ix
-	jr ule,L4464
-	ld wa,(xsp+8)
-	sub wa,ix
-	jr L4465
-L4464:
-	ld wa,0
-L4465:
-	ld (xsp+8),wa
-	ld bc,(xsp+10)
-	cp bc,ix
 	jr ule,L4466
-	ld wa,(xsp+10)
+	ld wa,(xsp+8)
 	sub wa,ix
 	jr L4467
 L4466:
 	ld wa,0
 L4467:
-	ld (xsp+10),wa
-	ld bc,(xsp+12)
+	ld (xsp+8),wa
+	ld bc,(xsp+10)
 	cp bc,ix
 	jr ule,L4468
-	ld wa,(xsp+12)
+	ld wa,(xsp+10)
 	sub wa,ix
 	jr L4469
 L4468:
 	ld wa,0
 L4469:
+	ld (xsp+10),wa
+	ld bc,(xsp+12)
+	cp bc,ix
+	jr ule,L4470
+	ld wa,(xsp+12)
+	sub wa,ix
+	jr L4471
+L4470:
+	ld wa,0
+L4471:
 	ld (xsp+12),wa
 	ld wa,(xsp+8)
 	sll 8,wa
@@ -22488,21 +22580,21 @@ L4469:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4462:
+L4464:
 	inc 1,izl
-L4463:
+L4465:
 	ld a,izl
 	cp a,4
-	jp ult,L4460
-L4461:
+	jp ult,L4462
+L4463:
 	push xix
 	call _road_is_tarmac__30
 	pop xix
 	cp a,0
-	jr z,L4470
+	jr z,L4472
 	ld izl,0
-	jr L4474
-L4471:
+	jr L4476
+L4473:
 	ld xwa,_course_sol__30
 	ld c,(_road_course__30)
 	extz bc
@@ -22522,23 +22614,23 @@ L4471:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4473:
+L4475:
 	inc 1,izl
-L4474:
+L4476:
 	ld a,izl
 	cp a,4
-	jr ult,L4471
+	jr ult,L4473
+L4474:
+	jr L4477
 L4472:
-	jr L4475
-L4470:
 	push xix
 	call _uses_akina__30
 	pop xix
 	cp a,0
-	jr nz,L4476
+	jr nz,L4478
 	ld izl,0
-	jr L4480
-L4477:
+	jr L4482
+L4479:
 	ld wa,(xsp+2)
 	ld xbc,_band_col__30
 	ld e,izl
@@ -22547,15 +22639,15 @@ L4477:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4479:
+L4481:
 	inc 1,izl
-L4480:
+L4482:
 	ld a,izl
 	cp a,4
-	jr ult,L4477
+	jr ult,L4479
+L4480:
 L4478:
-L4476:
-L4475:
+L4477:
 	push xix
 	call _id_build_weights__30
 	pop xix
@@ -22575,7 +22667,7 @@ L4475:
 	call _id_road_frame
 	lda xsp,(xsp+12)
 	pop xix
-L4443:
+L4445:
 	lda xsp,(xsp+14)
 	pop xiz
 	ret
@@ -22584,12 +22676,12 @@ L4443:
 _id_road_dma_pause:
 	ld a,(_road_dma_depth__30)
 	cp a,255
-	jr uge,L4485
+	jr uge,L4487
 	incb 1,(_road_dma_depth__30)
-L4485:
+L4487:
 	ld a,(_road_dma_live__30)
 	cp a,0
-	jr z,L4486
+	jr z,L4488
 	ld xwa,0
 	push xwa
 	call _ngpc_set_vblank_hook
@@ -22603,25 +22695,25 @@ L4485:
 	call _ngpc_dma_stream_end_u16
 	lda xsp,(xsp+4)
 	ldb (_road_dma_live__30),0
+L4488:
 L4486:
-L4484:
 	ret
 
 ; function id_road_dma_resume
 _id_road_dma_resume:
 	ld a,(_road_dma_depth__30)
 	cp a,0
-	jr z,L4493
+	jr z,L4495
 	decb 1,(_road_dma_depth__30)
-L4493:
+L4495:
 	ld a,(_road_dma_depth__30)
 	cp a,0
-	jr z,L4494
-	jp L4492
-L4494:
+	jr z,L4496
+	jp L4494
+L4496:
 	ld a,(_road_dma_live__30)
 	cp a,0
-	jp nz,L4495
+	jp nz,L4497
 	ld xwa,(_id_xy_live__30)
 	push xwa
 	ld wa,1
@@ -22636,18 +22728,18 @@ L4494:
 	lda xsp,(xsp+4)
 	call _uses_akina__30
 	cp a,0
-	jr nz,L4496
+	jr nz,L4498
 	call _road_is_tarmac__30
 	cp a,0
-	jr nz,L4496
+	jr nz,L4498
 	ldw (_id_bandstream__30+10),0
 	ldb (_road_dma_live__30),1
 	ld xwa,_id_road_rearm
 	push xwa
 	call _ngpc_set_vblank_hook
 	lda xsp,(xsp+4)
-	jr L4492
-L4496:
+	jr L4494
+L4498:
 	call _ngpc_dma_timer01_hblank_enable
 	ld wa,17
 	push xwa
@@ -22680,8 +22772,8 @@ L4496:
 	push xwa
 	call _ngpc_set_vblank_hook
 	lda xsp,(xsp+4)
-L4495:
-L4492:
+L4497:
+L4494:
 	ret
 
 ; function id_road_init
@@ -22692,7 +22784,7 @@ _id_road_init:
 	lda xsp,(xsp+4)
 	call _ngpc_dma_init
 	call _id_road_dma_resume
-L4498:
+L4500:
 	ret
 
 ; function id_road_flat
@@ -22700,8 +22792,8 @@ _id_road_flat:
 	push xiz
 	lda xsp,(xsp-2)
 	ld iz,0
-	jr L4508
-L4505:
+	jr L4510
+L4507:
 	ld wa,0
 	ld xbc,_id_xy_a__30
 	ld de,iz
@@ -22730,13 +22822,13 @@ L4505:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4507:
+L4509:
 	inc 1,iz
-L4508:
+L4510:
 	ld wa,iz
 	cp wa,152
-	jr ult,L4505
-L4506:
+	jr ult,L4507
+L4508:
 	ldw (_bc_rest__30),65535
 	ldw (_bc_rest__30+2),65535
 	ld wa,0
@@ -22753,7 +22845,7 @@ L4506:
 	ldw (_band_tree__30+2),65535
 	ldb (08034h),0
 	ldb (08035h),0
-L4504:
+L4506:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -22762,7 +22854,7 @@ L4504:
 _id_road_rearm:
 	ld xwa,(_id_xy_done__30)
 	cp xwa,0
-	jr z,L4513
+	jr z,L4515
 	ld xwa,(_id_xy_done__30)
 	ld (_id_xy_live__30),xwa
 	ld xwa,(_id_xy_done__30)
@@ -22777,20 +22869,20 @@ _id_road_rearm:
 	ld wa,0
 	exts xwa
 	ld (_id_bandcol_done__30),xwa
-L4513:
+L4515:
 	ld xwa,_id_raster__30
 	push xwa
 	call _ngpc_dma_raster_xy_rearm
 	lda xsp,(xsp+4)
 	ld wa,(_id_bandstream__30+10)
 	cp wa,0
-	jr z,L4514
+	jr z,L4516
 	ld xwa,_id_bandstream__30
 	push xwa
 	call _ngpc_dma_stream_rearm_u16
 	lda xsp,(xsp+4)
+L4516:
 L4514:
-L4512:
 	ret
 
 ; function id_road_dma_state
@@ -22799,15 +22891,15 @@ _id_road_dma_state:
 	extz wa
 	ld xde,(_id_raster__30+2)
 	cp xde,0
-	jr z,L4519
+	jr z,L4521
 	ld bc,2
-	jr L4520
-L4519:
+	jr L4522
+L4521:
 	ld bc,0
-L4520:
+L4522:
 	or wa,bc
-	jr L4518
-L4518:
+	jr L4520
+L4520:
 	ret
 
 ; function id_road_xy_at
@@ -22819,21 +22911,21 @@ _id_road_xy_at:
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	jr L4522
-L4522:
+	jr L4524
+L4524:
 	ret
 
 ; function id_road_restore_map
 _id_road_restore_map:
 	call _uses_akina__30
 	cp a,0
-	jr nz,L4527
+	jr nz,L4529
 	call _id_load_maps_rally__30
-	jr L4528
-L4527:
+	jr L4530
+L4529:
 	call _id_load_maps__30
+L4530:
 L4528:
-L4526:
 	ret
 
 ; function id_road_reload
@@ -22846,152 +22938,71 @@ _id_road_reload:
 	call _id_load_palettes__30
 	call _uses_akina__30
 	cp a,0
-	jr nz,L4533
+	jr nz,L4535
 	call _id_load_maps_rally__30
-	jr L4534
-L4533:
+	jr L4536
+L4535:
 	call _id_load_maps__30
+L4536:
 L4534:
-L4532:
 	ret
 
 ; function wide_rows
 _wide_rows__30:
 	push xiz
-	lda xsp,(xsp-12)
+	lda xsp,(xsp-14)
+	ld wa,(xsp+34)
+	add wa,1
+	ld iz,wa
+	ld wa,iz
+	cp wa,0
+	jr ge,L4543
+	ld iz,0
+L4543:
+	ld wa,iz
+	ld c,(_road_bottom__30)
+	extz bc
+	cp wa,bc
+	jr le,L4544
 	ld a,(_road_bottom__30)
-	ld ixl,a
-L4554:
-	ld xwa,(xsp+20)
-	ld c,ixl
+	extz wa
+	ld iz,wa
+L4544:
+	ld xwa,(xsp+22)
+	ld c,(_road_bottom__30)
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
-	ld wa,(xwa)
-	ld (xsp+2),wa
-	ld wa,(xsp+2)
-	srl 8,wa
-	ld (xsp+4),a
-	ld a,(xsp+2)
-	ld (xsp+5),a
-	ld a,(xsp+4)
-	add a,ixl
-	sub a,(xsp+28)
-	ld (xsp+6),a
-	ld a,(xsp+6)
-	cp a,48
-	jr ult,L4559
-	ld a,(xsp+6)
-	cp a,88
-	jr ult,L4558
-L4559:
-	jp L4555
-L4558:
-	ld a,(xsp+5)
-	sub a,(xsp+24)
-	ld izl,a
-	ld wa,(xsp+36)
-	cp wa,0
-	jr lt,L4560
-	ld c,izl
-	cp c,144
-	jr ult,L4561
-	ld a,izl
-	extz wa
-	sub wa,256
-	jr L4562
-L4561:
-	ld a,izl
-	extz wa
-L4562:
-	ld iy,wa
-	jr L4563
-L4560:
-	ld c,izl
-	cp c,112
-	jr ule,L4564
-	ld a,izl
-	extz wa
-	sub wa,256
-	jr L4565
-L4564:
-	ld a,izl
-	extz wa
-L4565:
-	ld iy,wa
-L4563:
+	lda xwa,(xwa)
+	ld (xsp+0),xwa
 	ld xwa,_id_route_lim0
-	ld c,(xsp+6)
-	extz bc
-	exts xbc
-	add xwa,xbc
-	ld a,(xwa)
+	ld (xsp+4),xwa
+	ld a,(_road_bottom__30)
+	sub a,(xsp+30)
+	ld (xsp+8),a
+	ld a,(_road_bottom__30)
+	ld c,izl
+	sub a,c
+	add a,1
+	ld (xsp+9),a
+	ld bc,(xsp+38)
+	cp bc,0
+	jr lt,L4545
+	ld wa,144
+	jr L4546
+L4545:
+	ld wa,113
+L4546:
 	ld (xsp+10),a
-	ld wa,iy
-	cp wa,0
-	jr lt,L4566
-	ld wa,iy
-	ld c,(xsp+10)
-	extz bc
-	cp wa,bc
-	jr ult,L4567
-	ld a,(xsp+4)
-	add a,40
-	extz wa
-	sll 8,wa
-	ld c,(xsp+5)
-	sub c,96
-	extz bc
-	or wa,bc
-	ld xbc,(xsp+20)
-	ld e,ixl
-	extz de
-	exts xde
-	sll 1,xde
-	add xbc,xde
-	ld (xbc),wa
-L4567:
-	jr L4568
-L4566:
-	ld wa,iy
-	neg wa
-	ld c,(xsp+10)
-	extz bc
-	cp wa,bc
-	jr ult,L4569
-	ld a,(xsp+4)
-	add a,80
-	extz wa
-	sll 8,wa
-	ld c,(xsp+5)
-	add c,96
-	extz bc
-	or wa,bc
-	ld xbc,(xsp+20)
-	ld e,ixl
-	extz de
-	exts xde
-	sll 1,xde
-	add xbc,xde
-	ld (xbc),wa
-L4569:
-L4568:
-	ld a,ixl
-	extz wa
-	ld bc,(xsp+32)
-	add bc,1
-	cp wa,bc
-	jr gt,L4570
-	jr L4555
-L4570:
-	dec 1,ixl
-L4556:
-L4557:
-	jp L4554
-L4555:
-L4553:
-	lda xsp,(xsp+12)
+	ld a,(xsp+26)
+	ld (xsp+11),a
+	lda xwa,(xsp+0)
+	push xwa
+	call _id_road_wide_asm
+	lda xsp,(xsp+4)
+L4542:
+	lda xsp,(xsp+14)
 	pop xiz
 	ret
 
@@ -23058,7 +23069,7 @@ _id_road_write__30:
 	ld (xsp+18),wa
 	ld a,(_road_lines__30)
 	cp a,0
-	jr z,L4671
+	jr z,L4647
 	ld xwa,_id_w_lat__30
 	ld (xsp+42),xwa
 	ld xwa,_id_curve_dx__30
@@ -23080,23 +23091,23 @@ _id_road_write__30:
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-L4671:
+L4647:
 	ld a,(_road_lines__30)
 	cp a,0
-	jp z,L4672
+	jp z,L4648
 	ld wa,(xsp+22)
 	cp wa,2
-	jp lt,L4672
+	jp lt,L4648
 	ld wa,(xsp+22)
 	cp wa,255
-	jp gt,L4672
+	jp gt,L4648
 	ld a,(_road_lines__30)
 	extz wa
 	sub wa,1
 	ld (xsp+24),wa
 	ld wa,iz
 	cp wa,(xsp+22)
-	jp lt,L4673
+	jp lt,L4649
 	ld xwa,(xsp+32)
 	ld bc,iz
 	exts xbc
@@ -23162,15 +23173,15 @@ L4671:
 	ld a,(xsp+80)
 	extz wa
 	ld iz,wa
-L4673:
-	jp L4674
-L4672:
+L4649:
+	jp L4650
+L4648:
 	ld a,(_road_lines__30)
 	extz wa
 	sub wa,1
 	ld (xsp+24),wa
-	jp L4678
-L4675:
+	jp L4654
+L4651:
 	ld xwa,_hill_rate__30
 	ld bc,20
 	ld xde,_id_sl__30+64
@@ -23207,12 +23218,12 @@ L4675:
 	ld (xsp+46),wa
 	ld bc,iz
 	cp bc,(xsp+22)
-	jr ge,L4679
+	jr ge,L4655
 	ld wa,(xsp+22)
-	jr L4680
-L4679:
+	jr L4656
+L4655:
 	ld wa,iz
-L4680:
+L4656:
 	ld xbc,_id_sl__30
 	ld de,(xsp+24)
 	exts xde
@@ -23237,10 +23248,10 @@ L4680:
 	ld (xsp+14),wa
 	ld a,(xsp+43)
 	cp a,1
-	jr ult,L4681
+	jr ult,L4657
 	ld wa,iz
 	cp wa,(xsp+22)
-	jr lt,L4681
+	jr lt,L4657
 	ld a,izl
 	ld (xsp+48),a
 	ld wa,(xsp+16)
@@ -23272,13 +23283,13 @@ L4680:
 	add xbc,xde
 	ld (xbc),wa
 	dec 1,iz
-L4681:
+L4657:
 	ld a,(xsp+43)
 	cp a,2
-	jr nz,L4682
+	jr nz,L4658
 	ld wa,iz
 	cp wa,(xsp+22)
-	jr lt,L4682
+	jr lt,L4658
 	ld a,izl
 	ld (xsp+48),a
 	ld wa,(xsp+18)
@@ -23286,13 +23297,13 @@ L4681:
 	ld (xsp+50),wa
 	ld bc,(xsp+16)
 	cp bc,(xsp+50)
-	jr ule,L4683
+	jr ule,L4659
 	ld wa,(xsp+16)
 	sub wa,(xsp+50)
-	jr L4684
-L4683:
+	jr L4660
+L4659:
 	ld wa,(xsp+16)
-L4684:
+L4660:
 	ld (xsp+52),wa
 	ld wa,(xsp+52)
 	srl 8,wa
@@ -23323,24 +23334,24 @@ L4684:
 	add xbc,xde
 	ld (xbc),wa
 	dec 1,iz
-L4682:
+L4658:
 	ld wa,(xsp+16)
 	ld bc,(xsp+18)
 	sub wa,bc
 	ld (xsp+16),wa
 	ld wa,iz
 	cp wa,(xsp+22)
-	jr ge,L4685
-	jr L4676
-L4685:
-L4677:
+	jr ge,L4661
+	jr L4652
+L4661:
+L4653:
 	decw 1,(xsp+24)
-L4678:
+L4654:
 	ld wa,(xsp+24)
 	cp wa,0
-	jp ge,L4675
-L4676:
-L4674:
+	jp ge,L4651
+L4652:
+L4650:
 	ld xwa,_id_shear__30
 	ld c,(_wide_k0__30)
 	extz bc
@@ -23360,25 +23371,25 @@ L4674:
 	ld (xsp+44),wa
 	ld wa,(xsp+42)
 	cp wa,0
-	jr ge,L4686
+	jr ge,L4662
 	ld wa,(xsp+42)
 	neg wa
 	ld (xsp+42),wa
-L4686:
+L4662:
 	ld wa,(xsp+44)
 	cp wa,0
-	jr ge,L4687
+	jr ge,L4663
 	ld wa,(xsp+44)
 	neg wa
 	ld (xsp+44),wa
-L4687:
+L4663:
 	ld wa,(xsp+42)
 	cp wa,46
-	jr ge,L4689
+	jr ge,L4665
 	ld wa,(xsp+44)
 	cp wa,46
-	jr lt,L4688
-L4689:
+	jr lt,L4664
+L4665:
 	push xix
 	push xiy
 	ld wa,(xsp+98)
@@ -23395,18 +23406,18 @@ L4689:
 	lda xsp,(xsp+20)
 	pop xiy
 	pop xix
-L4688:
+L4664:
 	ld bc,(xsp+24)
 	cp bc,0
-	jr ge,L4690
+	jr ge,L4666
 	ld wa,1
-	jr L4691
-L4690:
+	jr L4667
+L4666:
 	ld wa,0
-L4691:
+L4667:
 	ld (xsp+26),a
-	jr L4694
-L4692:
+	jr L4670
+L4668:
 	ld a,(xsp+22)
 	ld xbc,_id_sl__30
 	ld de,(xsp+24)
@@ -23414,31 +23425,31 @@ L4692:
 	add xbc,xde
 	ld (xbc),a
 	decw 1,(xsp+24)
-L4694:
+L4670:
 	ld wa,(xsp+24)
 	cp wa,0
-	jr ge,L4692
-L4693:
+	jr ge,L4668
+L4669:
 	ld a,izl
 	add a,1
 	ld (_band_first__30),a
 	ld a,(_band_first__30)
 	cp a,(_band_held__30)
-	jp ule,L4695
+	jp ule,L4671
 	ld a,(_band_first__30)
 	sub a,(_band_held__30)
 	cp a,2
-	jr uge,L4697
+	jr uge,L4673
 	ld a,(_band_wait__30)
 	cp a,16
-	jr ult,L4696
-L4697:
+	jr ult,L4672
+L4673:
 	ldb (_band_wait__30),0
-	jr L4698
-L4696:
+	jr L4674
+L4672:
 	incb 1,(_band_wait__30)
-	jr L4701
-L4699:
+	jr L4677
+L4675:
 	decb 1,(_band_first__30)
 	ld xwa,(_id_xy__30)
 	ld c,(_band_first__30)
@@ -23470,16 +23481,16 @@ L4699:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4701:
+L4677:
 	ld a,(_band_first__30)
 	cp a,(_band_held__30)
-	jr ugt,L4699
-L4700:
-L4698:
-	jr L4702
-L4695:
+	jr ugt,L4675
+L4676:
+L4674:
+	jr L4678
+L4671:
 	ldb (_band_wait__30),0
-L4702:
+L4678:
 	ld a,(_band_first__30)
 	ld (_band_held__30),a
 	ld a,(_road_top__30)
@@ -23496,7 +23507,7 @@ L4702:
 	pop xiy
 	pop xix
 	cp a,0
-	jp z,L4703
+	jp z,L4679
 	ld wa,(_band_col__30)
 	ld (xsp+56),wa
 	ld wa,0
@@ -23511,11 +23522,11 @@ L4702:
 	ld c,(_road_bottom__30)
 	extz bc
 	cp wa,bc
-	jr ule,L4704
+	jr ule,L4680
 	ld a,(_road_bottom__30)
 	extz wa
 	ld (xsp+44),wa
-L4704:
+L4680:
 	ld xwa,(_id_bandcol__30)
 	ld c,(_band_first__30)
 	extz bc
@@ -23529,57 +23540,57 @@ L4704:
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+52),xwa
-	jr L4707
-L4705:
+	jr L4683
+L4681:
 	ld c,(xsp+58)
 	incb 1,(xsp+58)
 	extz bc
 	and bc,2
 	cp bc,0
-	jr z,L4708
+	jr z,L4684
 	ld wa,(xsp+46)
-	jr L4709
-L4708:
+	jr L4685
+L4684:
 	ld wa,(xsp+56)
-L4709:
+L4685:
 	ld xbc,(xsp+48)
 	inc 2,xbc
 	ld (xsp+48),xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4707:
+L4683:
 	ld xwa,(xsp+48)
 	cp xwa,(xsp+52)
-	jr ult,L4705
-L4706:
-	jr L4710
-L4703:
+	jr ult,L4681
+L4682:
+	jr L4686
+L4679:
 	ld wa,(xsp+42)
 	cp wa,24
-	jr le,L4711
+	jr le,L4687
 	ldw (xsp+42),24
-L4711:
+L4687:
 	ld a,(_band_first__30)
 	extz wa
 	ld de,(xsp+42)
 	cp de,0
-	jr le,L4712
+	jr le,L4688
 	ld bc,(xsp+42)
-	jr L4713
-L4712:
+	jr L4689
+L4688:
 	ld bc,0
-L4713:
+L4689:
 	add wa,bc
 	ld (xsp+44),wa
 	ld wa,(xsp+44)
 	ld c,(_road_bottom__30)
 	extz bc
 	cp wa,bc
-	jr ule,L4714
+	jr ule,L4690
 	ld a,(_road_bottom__30)
 	extz wa
 	ld (xsp+44),wa
-L4714:
+L4690:
 	ld xwa,(_id_bandcol__30)
 	ld c,(_band_first__30)
 	extz bc
@@ -23593,20 +23604,20 @@ L4714:
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+52),xwa
-	jr L4717
-L4715:
+	jr L4693
+L4691:
 	ld wa,(xsp+46)
 	ld xbc,(xsp+48)
 	inc 2,xbc
 	ld (xsp+48),xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4717:
+L4693:
 	ld xwa,(xsp+48)
 	cp xwa,(xsp+52)
-	jr ult,L4715
-L4716:
-L4710:
+	jr ult,L4691
+L4692:
+L4686:
 	ld a,(_band_first__30)
 	extz wa
 	ld c,(_road_top__30)
@@ -23630,7 +23641,7 @@ L4710:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,(xsp+12)
-	jr z,L4718
+	jr z,L4694
 	ld wa,(xsp+12)
 	ld xbc,_bc_rest__30
 	ld e,(xsp+14)
@@ -23662,20 +23673,20 @@ L4710:
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+20),xwa
-	jr L4721
-L4719:
+	jr L4697
+L4695:
 	ld wa,(xsp+12)
 	ld xbc,(xsp+16)
 	inc 2,xbc
 	ld (xsp+16),xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4721:
+L4697:
 	ld xwa,(xsp+16)
 	cp xwa,(xsp+20)
-	jr ult,L4719
-L4720:
-L4718:
+	jr ult,L4695
+L4696:
+L4694:
 	ld xwa,_bc_top__30
 	ld c,(xsp+14)
 	extz bc
@@ -23683,7 +23694,7 @@ L4718:
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,(_band_first__30)
-	jr uge,L4722
+	jr uge,L4698
 	ld xwa,(_id_bandcol__30)
 	ld xbc,_bc_top__30
 	ld e,(xsp+14)
@@ -23703,20 +23714,20 @@ L4718:
 	sll 1,xbc
 	add xwa,xbc
 	ld (xsp+20),xwa
-	jr L4725
-L4723:
+	jr L4701
+L4699:
 	ld wa,(xsp+12)
 	ld xbc,(xsp+16)
 	inc 2,xbc
 	ld (xsp+16),xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4725:
+L4701:
 	ld xwa,(xsp+16)
 	cp xwa,(xsp+20)
-	jr ult,L4723
-L4724:
-L4722:
+	jr ult,L4699
+L4700:
+L4698:
 	ld a,(_band_first__30)
 	ld xbc,_bc_top__30
 	ld e,(xsp+14)
@@ -23744,12 +23755,12 @@ L4722:
 	ld (xbc+304),wa
 	ld bc,(_band_shift__30)
 	cp bc,0
-	jr le,L4726
+	jr le,L4702
 	ld wa,(_band_shift__30)
-	jr L4727
-L4726:
+	jr L4703
+L4702:
 	ld wa,0
-L4727:
+L4703:
 	ld (xsp+10),wa
 	ldw (xsp+8),0
 	ld wa,(xsp+94)
@@ -23772,27 +23783,27 @@ L4727:
 	pop xiy
 	pop xix
 	cp a,0
-	jp nz,L4728
+	jp nz,L4704
 	ld a,(_road_base_x__30)
 	extz wa
 	ld e,(_pan_fine__30)
 	cp e,0
-	jr z,L4729
+	jr z,L4705
 	ld bc,(_pan_head__30)
 	exts xbc
 	divs xbc,2
 	neg bc
 	exts xbc
 	divs xbc,16
-	jr L4730
-L4729:
+	jr L4706
+L4705:
 	ld bc,(xsp+94)
 	sra 1,bc
 	neg bc
 	ld de,(xsp+90)
 	sra 4,de
 	add bc,de
-L4730:
+L4706:
 	add wa,bc
 	extz wa
 	ld (xsp+12),wa
@@ -23800,57 +23811,57 @@ L4730:
 	extz wa
 	ld e,(_pan_fine__30)
 	cp e,0
-	jr z,L4731
+	jr z,L4707
 	ld bc,(_pan_head__30)
 	sll 1,bc
 	neg bc
 	exts xbc
 	divs xbc,16
-	jr L4732
-L4731:
+	jr L4708
+L4707:
 	ld bc,(xsp+94)
 	sll 1,bc
 	neg bc
 	ld de,(xsp+90)
 	sra 2,de
 	add bc,de
-L4732:
+L4708:
 	add wa,bc
 	extz wa
 	ld (xsp+14),wa
 	ld c,(_band_first__30)
 	cp c,244
-	jr uge,L4733
+	jr uge,L4709
 	ld a,(_band_first__30)
 	extz wa
 	add wa,0
-	jr L4734
-L4733:
+	jr L4710
+L4709:
 	ld a,(_band_first__30)
 	extz wa
-L4734:
+L4710:
 	ld (xsp+16),a
 	ld c,(xsp+16)
 	cp c,0
-	jr ule,L4735
+	jr ule,L4711
 	ld a,(xsp+16)
 	extz wa
-	jr L4736
-L4735:
+	jr L4712
+L4711:
 	ld a,0
 	extz wa
-L4736:
+L4712:
 	ld (xsp+17),a
 	ld c,(_band_first__30)
 	cp c,(xsp+17)
-	jr uge,L4737
+	jr uge,L4713
 	ld a,(_band_first__30)
 	extz wa
-	jr L4738
-L4737:
+	jr L4714
+L4713:
 	ld a,(xsp+17)
 	extz wa
-L4738:
+L4714:
 	ld (xsp+18),a
 	ld a,(xsp+18)
 	extz wa
@@ -23864,7 +23875,7 @@ L4738:
 	add xbc,xde
 	ld bc,(xbc)
 	cp wa,bc
-	jr nz,L4740
+	jr nz,L4716
 	ld wa,(xsp+14)
 	ld xbc,_band_mid__30
 	ld e,(_id_buf__30)
@@ -23874,7 +23885,7 @@ L4738:
 	add xbc,xde
 	ld bc,(xbc)
 	cp wa,bc
-	jr nz,L4740
+	jr nz,L4716
 	ld a,(xsp+17)
 	ld xbc,_band_bg_end__30
 	ld e,(_id_buf__30)
@@ -23883,7 +23894,7 @@ L4738:
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jr nz,L4740
+	jr nz,L4716
 	ld wa,(xsp+10)
 	ld xbc,_band_pitch__30
 	ld e,(_id_buf__30)
@@ -23893,7 +23904,7 @@ L4738:
 	ld c,(xbc)
 	exts bc
 	cp wa,bc
-	jr nz,L4740
+	jr nz,L4716
 	ld a,(_band_first__30)
 	ld xbc,_band_bg_first__30
 	ld e,(_id_buf__30)
@@ -23902,8 +23913,8 @@ L4738:
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jr z,L4739
-L4740:
+	jr z,L4715
+L4716:
 	ld wa,(xsp+12)
 	ld xbc,_band_top__30
 	ld e,(_id_buf__30)
@@ -23935,7 +23946,7 @@ L4740:
 	add xbc,xde
 	ld (xbc),a
 	ldw (xsp+20),0
-L4739:
+L4715:
 	push xix
 	push xiy
 	call _sky_is_tall_course__30
@@ -23957,22 +23968,22 @@ L4739:
 	ld (xsp+28),xwa
 	ld a,(xsp+22)
 	cp a,0
-	jr z,L4741
-	jr L4744
-L4742:
+	jr z,L4717
+	jr L4720
+L4718:
 	ld wa,(xsp+14)
 	ld xbc,xix
 	inc 2,xbc
 	ld xix,xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4744:
+L4720:
 	ld xwa,xix
 	cp xwa,(xsp+28)
-	jr ult,L4742
-L4743:
-	jp L4745
-L4741:
+	jr ult,L4718
+L4719:
+	jp L4721
+L4717:
 	ld a,(xsp+10)
 	neg a
 	extz wa
@@ -23980,16 +23991,16 @@ L4741:
 	ld (xsp+36),wa
 	ld wa,(xsp+20)
 	ld iy,wa
-	jr L4748
-L4746:
+	jr L4724
+L4722:
 	ld bc,iy
 	cp bc,0
-	jr uge,L4749
+	jr uge,L4725
 	ld wa,(xsp+12)
-	jr L4750
-L4749:
+	jr L4726
+L4725:
 	ld wa,(xsp+14)
-L4750:
+L4726:
 	ld c,iyl
 	neg c
 	extz bc
@@ -24001,15 +24012,15 @@ L4750:
 	dec 2,xbc
 	ld (xbc),wa
 	inc 1,iy
-L4748:
+L4724:
 	ld xwa,xix
 	cp xwa,(xsp+28)
-	jr uge,L4751
+	jr uge,L4727
 	ld wa,iy
 	cp wa,(xsp+10)
-	jr lt,L4746
-L4751:
-L4747:
+	jr lt,L4722
+L4727:
+L4723:
 	ld xwa,(_id_xy__30)
 	ld bc,0
 	extz xbc
@@ -24018,12 +24029,12 @@ L4747:
 	ld (xsp+32),xwa
 	ld xwa,(xsp+32)
 	cp xwa,(xsp+28)
-	jr ule,L4752
+	jr ule,L4728
 	ld xwa,(xsp+28)
 	ld (xsp+32),xwa
-L4752:
-	jr L4755
-L4753:
+L4728:
+	jr L4731
+L4729:
 	ld wa,(xsp+12)
 	or wa,(xsp+36)
 	ld xbc,xix
@@ -24031,13 +24042,13 @@ L4753:
 	ld xix,xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4755:
+L4731:
 	ld xwa,xix
 	cp xwa,(xsp+32)
-	jr ult,L4753
-L4754:
-	jr L4758
-L4756:
+	jr ult,L4729
+L4730:
+	jr L4734
+L4732:
 	ld wa,(xsp+14)
 	or wa,(xsp+36)
 	ld xbc,xix
@@ -24045,12 +24056,12 @@ L4756:
 	ld xix,xbc
 	dec 2,xbc
 	ld (xbc),wa
-L4758:
+L4734:
 	ld xwa,xix
 	cp xwa,(xsp+28)
-	jr ult,L4756
-L4757:
-L4745:
+	jr ult,L4732
+L4733:
+L4721:
 	ld a,(xsp+10)
 	ld xbc,_band_pitch__30
 	ld e,(_id_buf__30)
@@ -24060,8 +24071,8 @@ L4745:
 	ld (xbc),a
 	ld wa,(xsp+14)
 	ld (xsp+8),wa
-	jp L4759
-L4728:
+	jp L4735
+L4704:
 	ld a,(_road_base_x__30)
 	add a,(xsp+2)
 	extz wa
@@ -24083,7 +24094,7 @@ L4728:
 	add xbc,xde
 	ld bc,(xbc)
 	cp wa,bc
-	jr nz,L4761
+	jr nz,L4737
 	ld wa,(xsp+10)
 	ld xbc,_band_pitch__30
 	ld e,(_id_buf__30)
@@ -24093,7 +24104,7 @@ L4728:
 	ld c,(xbc)
 	exts bc
 	cp wa,bc
-	jr nz,L4761
+	jr nz,L4737
 	ld a,(_band_first__30)
 	ld xbc,_band_bg_end__30
 	ld e,(_id_buf__30)
@@ -24102,8 +24113,8 @@ L4728:
 	add xbc,xde
 	ld c,(xbc)
 	cp a,c
-	jp z,L4760
-L4761:
+	jp z,L4736
+L4737:
 	ld a,(xsp+10)
 	ld xbc,_band_pitch__30
 	ld e,(_id_buf__30)
@@ -24135,8 +24146,8 @@ L4761:
 	add xbc,xde
 	ld (xbc),wa
 	ld iy,0
-	jr L4765
-L4762:
+	jr L4741
+L4738:
 	push xwa
 	push xix
 	push xiy
@@ -24146,22 +24157,22 @@ L4762:
 	pop xix
 	pop xwa
 	cp c,0
-	jr z,L4766
+	jr z,L4742
 	ld wa,0
-	jr L4767
-L4766:
+	jr L4743
+L4742:
 	ld wa,(xsp+10)
 	neg wa
-L4767:
+L4743:
 	ld (xsp+18),wa
 	ld wa,iy
 	add wa,(xsp+18)
 	cp wa,0
-	jr ge,L4768
+	jr ge,L4744
 	ld wa,iy
 	neg wa
 	ld (xsp+18),wa
-L4768:
+L4744:
 	ld wa,(xsp+16)
 	ld c,(xsp+18)
 	extz bc
@@ -24173,20 +24184,20 @@ L4768:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4764:
+L4740:
 	inc 1,iy
-L4765:
+L4741:
 	ld wa,iy
 	ld c,(_band_first__30)
 	extz bc
 	cp wa,bc
-	jr ult,L4762
-L4763:
-L4760:
+	jr ult,L4738
+L4739:
+L4736:
 	ld wa,(xsp+16)
 	ld (xsp+8),wa
-L4759:
-L4670:
+L4735:
+L4646:
 	lda xsp,(xsp+82)
 	pop xiz
 	ret
@@ -24197,7 +24208,7 @@ _id_road_ready:
 	ld (_id_xy_done__30),xwa
 	ld xwa,(_id_bandcol__30)
 	ld (_id_bandcol_done__30),xwa
-L4770:
+L4746:
 	ret
 
 ; function id_road_pan
@@ -24207,35 +24218,35 @@ _id_road_pan:
 	ld wa,(xsp+8)
 	ld (_pan_lat__30),wa
 	ldb (_pan_fine__30),1
-L4772:
+L4748:
 	ret
 
 ; function id_road_begin
 _id_road_begin:
 	ld xwa,(_id_xy_live__30)
 	cp xwa,_id_xy_a__30
-	jr nz,L4779
+	jr nz,L4755
 	ld xwa,_id_xy_b__30
 	ld (_id_xy__30),xwa
 	ld xwa,_id_bandcol_b__30
 	ld (_id_bandcol__30),xwa
-	jr L4780
-L4779:
+	jr L4756
+L4755:
 	ld xwa,_id_xy_a__30
 	ld (_id_xy__30),xwa
 	ld xwa,_id_bandcol_a__30
 	ld (_id_bandcol__30),xwa
-L4780:
+L4756:
 	ld xbc,(_id_xy__30)
 	cp xbc,_id_xy_a__30
-	jr nz,L4781
+	jr nz,L4757
 	ld wa,0
-	jr L4782
-L4781:
+	jr L4758
+L4757:
 	ld wa,1
-L4782:
+L4758:
 	ld (_id_buf__30),a
-L4778:
+L4754:
 	ret
 
 ; function id_road_frame
@@ -24247,8 +24258,8 @@ _id_road_frame:
 	call _id_road_begin
 	pop xix
 	ld izl,0
-	jr L4792
-L4789:
+	jr L4768
+L4765:
 	ld wa,ix
 	ld xbc,_id_w_curve__30
 	ld e,izl
@@ -24266,13 +24277,13 @@ L4789:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4791:
+L4767:
 	inc 1,izl
-L4792:
+L4768:
 	ld a,izl
 	cp a,(_road_lines__30)
-	jr ult,L4789
-L4790:
+	jr ult,L4765
+L4766:
 	push xix
 	ld wa,(xsp+22)
 	push xwa
@@ -24284,7 +24295,7 @@ L4790:
 	push xix
 	call _id_road_ready
 	pop xix
-L4788:
+L4764:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -24292,15 +24303,15 @@ L4788:
 ; function id_road_ahead
 _id_road_ahead:
 	ld xwa,_id_ahead__30
-	jr L4794
-L4794:
+	jr L4770
+L4770:
 	ret
 
 ; function id_road_lines
 _id_road_lines:
 	ld a,(_road_lines__30)
-	jr L4796
-L4796:
+	jr L4772
+L4772:
 	ret
 
 ; function id_road_frame_ahead
@@ -24316,7 +24327,7 @@ _id_road_frame_ahead:
 	call _id_road_begin
 	ld a,izl
 	cp a,0
-	jr z,L4800
+	jr z,L4776
 	ld xwa,(xsp+30)
 	ld c,izl
 	extz bc
@@ -24340,15 +24351,14 @@ _id_road_frame_ahead:
 	push xwa
 	call _id_road_curve_asm
 	lda xsp,(xsp+4)
-L4800:
+L4776:
 	ld wa,(xsp+34)
 	push xwa
 	ld wa,(xsp+30)
 	push xwa
 	call _id_road_write__30
 	lda xsp,(xsp+8)
-	call _id_road_ready
-L4799:
+L4775:
 	lda xsp,(xsp+18)
 	pop xiz
 	ret
@@ -24358,8 +24368,8 @@ _id_fill_hud_band__30:
 	push xiz
 	lda xsp,(xsp-2)
 	ld iz,152
-	jr L4810
-L4807:
+	jr L4786
+L4783:
 	ld wa,2048
 	ld c,(_road_base_x__30)
 	extz bc
@@ -24382,14 +24392,14 @@ L4807:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4809:
+L4785:
 	inc 1,iz
-L4810:
+L4786:
 	ld wa,iz
 	cp wa,152
-	jr ult,L4807
-L4808:
-L4806:
+	jr ult,L4783
+L4784:
+L4782:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -24403,18 +24413,18 @@ _id_road_sprite_sample:
 	ld xiy,(xsp+14)
 	ld a,izl
 	cp a,(_road_top__30)
-	jr uge,L4816
+	jr uge,L4792
 	ld a,(_road_top__30)
 	ld izl,a
-	jr L4817
-L4816:
+	jr L4793
+L4792:
 	ld a,izl
 	cp a,(_road_bottom__30)
-	jr ule,L4818
+	jr ule,L4794
 	ld a,(_road_bottom__30)
 	ld izl,a
-L4818:
-L4817:
+L4794:
+L4793:
 	ld a,izl
 	sub a,(_road_top__30)
 	ld ixl,a
@@ -24448,7 +24458,7 @@ L4817:
 	add xwa,xbc
 	ld a,(xwa)
 	ld (xiy+4),a
-L4815:
+L4791:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -24461,18 +24471,18 @@ _id_road_centre_at:
 	ld izl,a
 	ld a,izl
 	cp a,(_road_top__30)
-	jr uge,L4824
+	jr uge,L4800
 	ld a,(_road_top__30)
 	ld izl,a
-	jr L4825
-L4824:
+	jr L4801
+L4800:
 	ld a,izl
 	cp a,(_road_bottom__30)
-	jr ule,L4826
+	jr ule,L4802
 	ld a,(_road_bottom__30)
 	ld izl,a
-L4826:
-L4825:
+L4802:
+L4801:
 	ld a,izl
 	sub a,(_road_top__30)
 	ld (xsp+0),a
@@ -24485,8 +24495,8 @@ L4825:
 	add xbc,xde
 	ld bc,(xbc)
 	sub wa,bc
-	jr L4823
-L4823:
+	jr L4799
+L4799:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -24495,27 +24505,27 @@ L4823:
 _id_road_band_phase:
 	ld wa,(xsp+4)
 	ld (_band_phase__30),wa
-L4828:
+L4804:
 	ret
 
 ; function id_road_join
 _id_road_join:
 	ld c,(xsp+4)
 	cp c,1
-	jr uge,L4833
+	jr uge,L4809
 	ld a,(xsp+4)
 	extz wa
-	jr L4834
-L4833:
+	jr L4810
+L4809:
 	ld wa,0
-L4834:
+L4810:
 	ld (_road_course__30),a
 	call _id_load_palettes__30
 	ld wa,0
 	push xwa
 	call _id_road_join_white
 	lda xsp,(xsp+4)
-L4832:
+L4808:
 	ret
 
 ; function id_road_join_white
@@ -24523,8 +24533,8 @@ _id_road_join_white:
 	push xiz
 	lda xsp,(xsp-10)
 	ld izl,0
-	jp L4844
-L4841:
+	jp L4820
+L4817:
 	ld xwa,_course_sol__30
 	ld c,(_road_course__30)
 	extz bc
@@ -24595,13 +24605,13 @@ L4841:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L4843:
+L4819:
 	inc 1,izl
-L4844:
+L4820:
 	ld a,izl
 	cp a,4
-	jp ult,L4841
-L4842:
+	jp ult,L4817
+L4818:
 	ld wa,65535
 	ld (_band_top__30+2),wa
 	ld (_band_top__30),wa
@@ -24611,7 +24621,7 @@ L4842:
 	ld wa,65535
 	ld (_band_tree__30+2),wa
 	ld (_band_tree__30),wa
-L4840:
+L4816:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -24632,11 +24642,11 @@ _id_road_hill_ahead:
 	ld ixl,a
 	ld xwa,(xsp+0)
 	cp xwa,xiy
-	jr nz,L4854
+	jr nz,L4830
 	ld ixl,0
-L4854:
-	jr L4857
-L4855:
+L4830:
+	jr L4833
+L4831:
 	ld xwa,(xsp+0)
 	inc 1,xwa
 	ld (xsp+0),xwa
@@ -24645,18 +24655,18 @@ L4855:
 	ld izl,a
 	ld a,izl
 	cp a,(xsp+8)
-	jr le,L4858
+	jr le,L4834
 	ld a,(xsp+8)
 	ld izl,a
-	jr L4859
-L4858:
+	jr L4835
+L4834:
 	ld a,izl
 	cp a,(xsp+9)
-	jr ge,L4860
+	jr ge,L4836
 	ld a,(xsp+9)
 	ld izl,a
-L4860:
-L4859:
+L4836:
+L4835:
 	ld a,izl
 	ld xbc,xiy
 	inc 1,xbc
@@ -24664,11 +24674,11 @@ L4859:
 	dec 1,xbc
 	ld (xbc),a
 	dec 1,ixl
-L4857:
+L4833:
 	ld a,ixl
 	cp a,0
-	jr nz,L4855
-L4856:
+	jr nz,L4831
+L4832:
 	ld xwa,_id_sl__30+64
 	ld c,(_road_lines__30)
 	extz bc
@@ -24677,7 +24687,7 @@ L4856:
 	add xwa,xbc
 	ld a,(xwa)
 	ld (_road_grade__30),a
-L4853:
+L4829:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -24685,15 +24695,15 @@ L4853:
 ; function id_road_grade_buf
 _id_road_grade_buf:
 	ld xwa,_id_sl__30+64
-	jr L4862
-L4862:
+	jr L4838
+L4838:
 	ret
 
 ; function id_road_band_first
 _id_road_band_first:
 	ld a,(_band_first__30)
-	jr L4864
-L4864:
+	jr L4840
+L4840:
 	ret
 
 ; function id_road_visible_top
@@ -24702,33 +24712,33 @@ _id_road_visible_top:
 	lda xsp,(xsp-2)
 	ld c,(_band_first__30)
 	cp c,244
-	jr uge,L4872
+	jr uge,L4848
 	ld a,(_band_first__30)
 	add a,0
 	extz wa
-	jr L4873
-L4872:
+	jr L4849
+L4848:
 	ld a,(_band_first__30)
 	extz wa
-L4873:
+L4849:
 	ld izl,a
 	ld a,izl
 	cp a,0
-	jr uge,L4874
+	jr uge,L4850
 	ld izl,0
-L4874:
+L4850:
 	ld c,izl
 	cp c,(_road_bottom__30)
-	jr ule,L4875
+	jr ule,L4851
 	ld a,(_road_bottom__30)
 	extz wa
-	jr L4876
-L4875:
+	jr L4852
+L4851:
 	ld a,izl
 	extz wa
-L4876:
-	jr L4871
-L4871:
+L4852:
+	jr L4847
+L4847:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -24736,15 +24746,15 @@ L4871:
 ; function id_road_grade_hi
 _id_road_grade_hi:
 	ld a,(_grade_hi__30)
-	jr L4878
-L4878:
+	jr L4854
+L4854:
 	ret
 
 ; function id_road_grade_lo
 _id_road_grade_lo:
 	ld a,(_grade_lo__30)
-	jr L4880
-L4880:
+	jr L4856
+L4856:
 	ret
 
 ; function id_road_set_hill
@@ -24755,23 +24765,23 @@ _id_road_set_hill:
 	ld ixl,a
 	ld a,ixl
 	cp a,(_grade_hi__30)
-	jr le,L4890
+	jr le,L4866
 	ld a,(_grade_hi__30)
 	ld ixl,a
-	jr L4891
-L4890:
+	jr L4867
+L4866:
 	ld a,ixl
 	cp a,(_grade_lo__30)
-	jr ge,L4892
+	jr ge,L4868
 	ld a,(_grade_lo__30)
 	ld ixl,a
-L4892:
-L4891:
+L4868:
+L4867:
 	ld a,ixl
 	ld (_road_grade__30),a
 	ld izl,0
-	jr L4896
-L4893:
+	jr L4872
+L4869:
 	ld a,ixl
 	ld xbc,_id_sl__30+64
 	ld e,izl
@@ -24779,14 +24789,14 @@ L4893:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L4895:
+L4871:
 	inc 1,izl
-L4896:
+L4872:
 	ld a,izl
 	cp a,(_road_lines__30)
-	jr ult,L4893
-L4894:
-L4889:
+	jr ult,L4869
+L4870:
+L4865:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -24799,14 +24809,14 @@ _id_road_line_shift:
 	ld ixl,a
 	ld a,ixl
 	cp a,(_road_top__30)
-	jr ult,L4903
+	jr ult,L4879
 	ld a,ixl
 	cp a,(_road_bottom__30)
-	jr ule,L4902
-L4903:
+	jr ule,L4878
+L4879:
 	ld wa,0
-	jr L4901
-L4902:
+	jr L4877
+L4878:
 	ld a,ixl
 	extz wa
 	ld c,(_road_top__30)
@@ -24817,12 +24827,12 @@ L4902:
 	ld c,(_road_lines__30)
 	extz bc
 	cp wa,bc
-	jr lt,L4904
+	jr lt,L4880
 	ld a,(_road_lines__30)
 	extz wa
 	sub wa,1
 	ld iz,wa
-L4904:
+L4880:
 	ld xwa,_id_sl__30
 	ld bc,iz
 	exts xbc
@@ -24833,8 +24843,8 @@ L4904:
 	ld a,iyl
 	ld c,ixl
 	sub a,c
-	jr L4901
-L4901:
+	jr L4877
+L4877:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -24853,19 +24863,19 @@ _id_road_car_lift:
 	ld iz,wa
 	ld wa,iz
 	cp wa,8
-	jr le,L4910
+	jr le,L4886
 	ld iz,8
-	jr L4911
-L4910:
+	jr L4887
+L4886:
 	ld wa,iz
 	cp wa,65531
-	jr ge,L4912
+	jr ge,L4888
 	ld iz,65531
-L4912:
-L4911:
+L4888:
+L4887:
 	ld a,izl
-	jr L4909
-L4909:
+	jr L4885
+L4885:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -24877,18 +24887,18 @@ _id_road_half_at:
 	ld izl,a
 	ld a,izl
 	cp a,(_road_top__30)
-	jr uge,L4918
+	jr uge,L4894
 	ld a,(_road_top__30)
 	ld izl,a
-	jr L4919
-L4918:
+	jr L4895
+L4894:
 	ld a,izl
 	cp a,(_road_bottom__30)
-	jr ule,L4920
+	jr ule,L4896
 	ld a,(_road_bottom__30)
 	ld izl,a
-L4920:
-L4919:
+L4896:
+L4895:
 	ld xwa,_id_half__30
 	ld c,izl
 	sub c,(_road_top__30)
@@ -24896,8 +24906,8 @@ L4919:
 	exts xbc
 	add xwa,xbc
 	ld a,(xwa)
-	jr L4917
-L4917:
+	jr L4893
+L4893:
 	pop xiz
 	ret
 
@@ -24912,12 +24922,12 @@ _id_road_line_at_distance:
 	ld iyl,a
 	ld wa,(xsp+12)
 	cp wa,(_id_ahead__30)
-	jr ule,L4929
+	jr ule,L4905
 	ld wa,255
-	jr L4928
-L4929:
-	jr L4932
-L4930:
+	jr L4904
+L4905:
+	jr L4908
+L4906:
 	ld a,izl
 	extz wa
 	ld c,iyl
@@ -24934,24 +24944,24 @@ L4930:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,(xsp+12)
-	jr ult,L4933
+	jr ult,L4909
 	ld a,ixl
 	ld izl,a
-	jr L4934
-L4933:
+	jr L4910
+L4909:
 	ld a,ixl
 	sub a,1
 	ld iyl,a
-L4934:
-L4932:
+L4910:
+L4908:
 	ld a,izl
 	cp a,iyl
-	jr ult,L4930
-L4931:
+	jr ult,L4906
+L4907:
 	ld a,(_road_top__30)
 	add a,izl
-	jr L4928
-L4928:
+	jr L4904
+L4904:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
@@ -24963,18 +24973,18 @@ _id_road_distance_at_line:
 	ld izl,a
 	ld a,izl
 	cp a,(_road_top__30)
-	jr uge,L4940
+	jr uge,L4916
 	ld a,(_road_top__30)
 	ld izl,a
-	jr L4941
-L4940:
+	jr L4917
+L4916:
 	ld a,izl
 	cp a,(_road_bottom__30)
-	jr ule,L4942
+	jr ule,L4918
 	ld a,(_road_bottom__30)
 	ld izl,a
-L4942:
-L4941:
+L4918:
+L4917:
 	ld xwa,_id_ahead__30
 	ld c,izl
 	sub c,(_road_top__30)
@@ -24983,16 +24993,16 @@ L4941:
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	jr L4939
-L4939:
+	jr L4915
+L4915:
 	pop xiz
 	ret
 
 ; function id_scenery_char_count
 _id_scenery_char_count:
 	ld wa,0
-	jr L4944
-L4944:
+	jr L4920
+L4920:
 	ret
 
 ; function id_scenery_init
@@ -25007,7 +25017,7 @@ _id_scenery_init:
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-L4946:
+L4922:
 	ret
 
 ; function scenery_mode
@@ -25017,85 +25027,85 @@ _scenery_mode:
 	ld izl,a
 	ld c,izl
 	cp c,5
-	jr nz,L4957
+	jr nz,L4933
 	ld wa,1
-	jr L4958
-L4957:
+	jr L4934
+L4933:
 	ld wa,0
-L4958:
+L4934:
 	ld e,(_scn_mode__31)
 	cp e,5
-	jr nz,L4959
+	jr nz,L4935
 	ld bc,1
-	jr L4960
-L4959:
+	jr L4936
+L4935:
 	ld bc,0
-L4960:
+L4936:
 	cp wa,bc
-	jr z,L4956
+	jr z,L4932
 	ld c,izl
 	cp c,5
-	jr nz,L4961
+	jr nz,L4937
 	ld wa,1
-	jr L4962
-L4961:
+	jr L4938
+L4937:
 	ld wa,0
-L4962:
+L4938:
 	push xwa
 	call _theme_crowd_colours
 	lda xsp,(xsp+4)
-L4956:
+L4932:
 	ld a,izl
 	ld (_scn_mode__31),a
-L4955:
+L4931:
 	pop xiz
 	ret
 
 ; function id_scenery_passed
 _id_scenery_passed:
 	ld a,(_scn_passed__31)
-	jr L4964
-L4964:
+	jr L4940
+L4940:
 	ret
 
 ; function kind_of
 _kind_of__31:
 	ld a,(_scn_mode__31)
 	cp a,5
-	jr nz,L4973
+	jr nz,L4949
 	ld wa,14
-	jr L4972
-L4973:
+	jr L4948
+L4949:
 	ld a,(_scn_mode__31)
 	cp a,1
-	jr nz,L4974
+	jr nz,L4950
 	ld wa,12
-	jr L4972
-L4974:
+	jr L4948
+L4950:
 	ld a,(_scn_mode__31)
 	cp a,3
-	jr ult,L4975
+	jr ult,L4951
 	ld wa,11
-	jr L4972
-L4975:
+	jr L4948
+L4951:
 	ld a,(_scn_mode__31)
 	cp a,2
-	jr nz,L4976
+	jr nz,L4952
 	ld wa,13
-	jr L4972
-L4976:
+	jr L4948
+L4952:
 	ld c,(xsp+4)
 	cp c,0
-	jr z,L4977
+	jr z,L4953
 	call _theme_obj_kind_right
 	extz wa
-	jr L4978
-L4977:
+	jr L4954
+L4953:
 	call _theme_obj_kind_left
 	extz wa
-L4978:
-	jr L4972
-L4972:
+L4954:
+	jr L4948
+L4948:
 	ret
 
 ; function id_scenery_hit
@@ -25125,24 +25135,24 @@ _id_scenery_hit:
 	add wa,bc
 	ld (xsp+4),wa
 	ld izl,0
-	jp L4995
-L4992:
+	jp L4971
+L4968:
 	ld a,(_scn_passed__31)
 	extz wa
 	ld bc,1
 	ld e,izl
 	cp e,0
-	jr z,L4998
-L4997:
+	jr z,L4974
+L4973:
 	sll 1,bc
-	djnz e,L4997
-L4998:
+	djnz e,L4973
+L4974:
 	extz bc
 	and wa,bc
 	cp wa,0
-	jr nz,L4996
-	jp L4994
-L4996:
+	jr nz,L4972
+	jp L4970
+L4972:
 	ld xwa,_gfx_obj_frames
 	push xwa
 	push xix
@@ -25180,44 +25190,44 @@ L4996:
 	ld (xsp+14),wa
 	ld a,izl
 	cp a,0
-	jr nz,L4999
+	jr nz,L4975
 	ld wa,iy
 	neg wa
 	add wa,12
 	cp wa,(xsp+12)
-	jr lt,L5000
+	jr lt,L4976
 	ld wa,iy
 	neg wa
 	sub wa,12
 	cp wa,(xsp+14)
-	jr gt,L5000
+	jr gt,L4976
 	ld wa,1
-	jr L4991
-L5000:
-	jr L5001
-L4999:
+	jr L4967
+L4976:
+	jr L4977
+L4975:
 	ld wa,iy
 	add wa,12
 	cp wa,(xsp+12)
-	jr lt,L5002
+	jr lt,L4978
 	ld wa,iy
 	sub wa,12
 	cp wa,(xsp+14)
-	jr gt,L5002
+	jr gt,L4978
 	ld wa,1
-	jr L4991
-L5002:
-L5001:
-L4994:
+	jr L4967
+L4978:
+L4977:
+L4970:
 	inc 1,izl
-L4995:
+L4971:
 	ld a,izl
 	cp a,2
-	jp ult,L4992
-L4993:
+	jp ult,L4968
+L4969:
 	ld wa,0
-	jr L4991
-L4991:
+	jr L4967
+L4967:
 	lda xsp,(xsp+16)
 	pop xiz
 	ret
@@ -25231,8 +25241,8 @@ _obj_phase__31:
 	mul xbc,43
 	extz bc
 	add wa,bc
-	jr L5004
-L5004:
+	jr L4980
+L4980:
 	ret
 
 ; function id_scenery_advance
@@ -25259,8 +25269,8 @@ _id_scenery_advance:
 	ld (_scn_phase__31),a
 	ldb (_scn_passed__31),0
 	ld izl,0
-	jr L5017
-L5014:
+	jr L4993
+L4990:
 	ld a,izl
 	extz wa
 	mul xwa,43
@@ -25270,31 +25280,31 @@ L5014:
 	ld c,iyl
 	add c,ixl
 	cp a,c
-	jr uge,L5018
+	jr uge,L4994
 	ld a,(_scn_passed__31)
 	extz wa
 	ld e,izl
 	extz de
 	and de,1
 	cp de,0
-	jr z,L5019
+	jr z,L4995
 	ld bc,2
-	jr L5020
-L5019:
+	jr L4996
+L4995:
 	ld bc,1
-L5020:
+L4996:
 	extz bc
 	or wa,bc
 	ld (_scn_passed__31),a
-L5018:
-L5016:
+L4994:
+L4992:
 	inc 1,izl
-L5017:
+L4993:
 	ld a,izl
 	cp a,6
-	jr ult,L5014
-L5015:
-L5013:
+	jr ult,L4990
+L4991:
+L4989:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -25306,7 +25316,7 @@ _id_scenery_frame:
 	call _id_scenery_advance
 	lda xsp,(xsp+4)
 	call _id_scenery_draw
-L5022:
+L4998:
 	ret
 
 ; function id_scenery_draw
@@ -25320,12 +25330,12 @@ _id_scenery_draw:
 	ld xbc,xwa
 	pop xwa
 	cp c,0
-	jr z,L5075
+	jr z,L5051
 	ld wa,58
-	jr L5076
-L5075:
+	jr L5052
+L5051:
 	ld wa,64
-L5076:
+L5052:
 	ld (xsp+3),a
 	call _id_road_top
 	ld (xsp+4),a
@@ -25342,8 +25352,8 @@ L5076:
 	ld (xsp+10),wa
 	ldb (xsp+1),0
 	ldb (xsp+0),1
-	jr L5080
-L5077:
+	jr L5056
+L5053:
 	ld a,(xsp+0)
 	push xwa
 	call _obj_phase__31
@@ -25356,20 +25366,20 @@ L5077:
 	ld xbc,xwa
 	pop xwa
 	cp a,c
-	jr ule,L5081
+	jr ule,L5057
 	ld a,(xsp+0)
 	ld (xsp+1),a
-L5081:
-L5079:
+L5057:
+L5055:
 	incb 1,(xsp+0)
-L5080:
+L5056:
 	ld a,(xsp+0)
 	cp a,6
-	jr ult,L5077
-L5078:
+	jr ult,L5053
+L5054:
 	ldb (xsp+0),0
-	jp L5085
-L5082:
+	jp L5061
+L5058:
 	ld a,(xsp+1)
 	extz wa
 	add wa,6
@@ -25402,58 +25412,58 @@ L5082:
 	ld iz,wa
 	ld wa,iz
 	cp wa,(xsp+10)
-	jr ule,L5086
+	jr ule,L5062
 	ld wa,(xsp+10)
 	ld iz,wa
-L5086:
+L5062:
 	ld a,(xsp+4)
 	add a,izl
 	ld (xsp+18),a
 	ld wa,iz
 	cp wa,6
-	jr uge,L5087
+	jr uge,L5063
 	ldb (xsp+17),4
-	jr L5088
-L5087:
+	jr L5064
+L5063:
 	ld wa,iz
 	cp wa,10
-	jr uge,L5089
+	jr uge,L5065
 	ldb (xsp+17),3
-	jr L5090
-L5089:
+	jr L5066
+L5065:
 	ld wa,iz
 	cp wa,15
-	jr uge,L5091
+	jr uge,L5067
 	ldb (xsp+17),2
-	jr L5092
-L5091:
+	jr L5068
+L5067:
 	ld wa,iz
 	cp wa,22
-	jr uge,L5093
+	jr uge,L5069
 	ldb (xsp+17),1
-	jr L5094
-L5093:
+	jr L5070
+L5069:
 	ldb (xsp+17),0
-L5094:
-L5092:
-L5090:
-L5088:
+L5070:
+L5068:
+L5066:
+L5064:
 	ld c,(xsp+12)
 	extz bc
 	and bc,1
 	cp bc,0
-	jr z,L5095
+	jr z,L5071
 	ld wa,1
-	jr L5096
-L5095:
+	jr L5072
+L5071:
 	ld wa,0
-L5096:
+L5072:
 	ld (xsp+14),a
 	ld a,(_scn_mode__31)
 	cp a,5
-	jr nz,L5097
+	jr nz,L5073
 	ldb (xsp+15),14
-	ld xwa,_crowd_pal__31_L5098
+	ld xwa,_crowd_pal__31_L5074
 	ld c,(xsp+12)
 	extz bc
 	extz xbc
@@ -25463,60 +25473,60 @@ L5096:
 	add xwa,xbc
 	ld a,(xwa)
 	ld (xsp+16),a
-	jr L5099
-L5097:
+	jr L5075
+L5073:
 	ld a,(_scn_mode__31)
 	cp a,1
-	jr nz,L5100
+	jr nz,L5076
 	ldb (xsp+15),12
 	ldb (xsp+16),4
-	jr L5101
-L5100:
+	jr L5077
+L5076:
 	ld a,(_scn_mode__31)
 	cp a,3
-	jr ult,L5102
+	jr ult,L5078
 	ldb (xsp+15),11
 	ldb (xsp+16),9
-	jr L5103
-L5102:
+	jr L5079
+L5078:
 	ld a,(_scn_mode__31)
 	cp a,2
-	jr nz,L5104
+	jr nz,L5080
 	ldb (xsp+15),13
 	ldb (xsp+16),10
-	jr L5105
-L5104:
+	jr L5081
+L5080:
 	ld a,(xsp+14)
 	cp a,0
-	jr z,L5106
+	jr z,L5082
 	call _theme_obj_kind_right
 	ld (xsp+15),a
 	ldb (xsp+16),2
-	jr L5107
-L5106:
+	jr L5083
+L5082:
 	call _theme_obj_kind_left
 	ld (xsp+15),a
 	ldb (xsp+16),1
-L5107:
-L5105:
-L5103:
-L5101:
-L5099:
+L5083:
+L5081:
+L5079:
+L5077:
+L5075:
 	ld c,(xsp+14)
 	cp c,0
-	jr z,L5108
+	jr z,L5084
 	ld c,(xsp+15)
 	cp c,11
-	jr ult,L5108
+	jr ult,L5084
 	ld wa,1
-	jr L5109
-L5108:
+	jr L5085
+L5084:
 	ld wa,0
-L5109:
+L5085:
 	ld (xsp+20),a
 	ld a,(_scn_mode__31)
 	cp a,5
-	jr nz,L5110
+	jr nz,L5086
 	ld a,(_g_vb_counter)
 	extz wa
 	sra 3,wa
@@ -25525,21 +25535,21 @@ L5109:
 	add wa,bc
 	and wa,1
 	ld (xsp+20),a
-	jr L5111
-L5110:
+	jr L5087
+L5086:
 	ld a,(_scn_mode__31)
 	cp a,3
-	jr nz,L5112
+	jr nz,L5088
 	ldb (xsp+20),0
-	jr L5113
-L5112:
+	jr L5089
+L5088:
 	ld a,(_scn_mode__31)
 	cp a,4
-	jr nz,L5114
+	jr nz,L5090
 	ldb (xsp+20),1
-L5114:
-L5113:
-L5111:
+L5090:
+L5089:
+L5087:
 	ld xwa,_gfx_obj_frames
 	ld c,(xsp+15)
 	extz bc
@@ -25563,15 +25573,15 @@ L5111:
 	ld (xsp+38),wa
 	ld wa,(xsp+38)
 	cp wa,(xsp+8)
-	jr ge,L5115
-	jp L5084
-L5115:
+	jr ge,L5091
+	jp L5060
+L5091:
 	ld wa,(xsp+38)
 	cp wa,(xsp+6)
-	jr le,L5116
+	jr le,L5092
 	ld wa,(xsp+6)
 	ld (xsp+38),wa
-L5116:
+L5092:
 	ld a,(xsp+38)
 	ld (xsp+19),a
 	ld a,(xsp+32)
@@ -25592,12 +25602,12 @@ L5116:
 	ld (xsp+42),wa
 	ld a,(xsp+14)
 	cp a,0
-	jr z,L5117
+	jr z,L5093
 	ld wa,(xsp+40)
 	add wa,(xsp+42)
 	ld (xsp+26),wa
-	jr L5118
-L5117:
+	jr L5094
+L5093:
 	ld wa,(xsp+40)
 	sub wa,(xsp+42)
 	ld xbc,(xsp+34)
@@ -25606,16 +25616,16 @@ L5117:
 	sub wa,bc
 	add wa,1
 	ld (xsp+26),wa
-L5118:
+L5094:
 	ld wa,(xsp+26)
 	cp wa,65504
-	jr lt,L5120
+	jr lt,L5096
 	ld wa,(xsp+26)
 	cp wa,168
-	jr le,L5119
-L5120:
-	jp L5084
-L5119:
+	jr le,L5095
+L5096:
+	jp L5060
+L5095:
 	ld xwa,_gfx_obj_cells
 	ld xbc,(xsp+34)
 	ld bc,(xbc+4)
@@ -25646,24 +25656,24 @@ L5119:
 	ld (xsp+52),a
 	ld c,(xsp+20)
 	cp c,0
-	jr z,L5121
+	jr z,L5097
 	ld wa,128
-	jr L5122
-L5121:
+	jr L5098
+L5097:
 	ld wa,0
-L5122:
+L5098:
 	ld e,(_bridge_line)
 	cp e,0
-	jr z,L5123
+	jr z,L5099
 	ld e,(xsp+19)
 	cp e,(_bridge_line)
-	jr uge,L5123
+	jr uge,L5099
 	ld bc,16
-	jr L5124
-L5123:
+	jr L5100
+L5099:
 	ld c,(_id_spr_priority)
 	extz bc
-L5124:
+L5100:
 	or wa,bc
 	ld (xsp+53),a
 	ld a,(xsp+16)
@@ -25681,71 +25691,410 @@ L5124:
 	lda xsp,(xsp+4)
 	ld a,(xsp+55)
 	ld (xsp+2),a
-L5084:
+L5060:
 	incb 1,(xsp+0)
-L5085:
+L5061:
 	ld a,(xsp+0)
 	cp a,6
-	jp ult,L5082
-L5083:
+	jp ult,L5058
+L5059:
 	ld a,(xsp+3)
 	push xwa
 	ld a,(xsp+6)
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-L5074:
+L5050:
 	lda xsp,(xsp+60)
+	pop xiz
+	ret
+
+; function ovl_clear
+_ovl_clear:
+	push xiz
+	lda xsp,(xsp-6)
+	ld a,(xsp+14)
+	ld ixl,a
+	jr L5114
+L5111:
+	ld xwa,_ovl_grid
+	ld c,ixl
+	sub c,2
+	extz bc
+	mul xbc,20
+	ld e,(xsp+22)
+	extz de
+	add bc,de
+	extz xbc
+	sll 1,xbc
+	add xwa,xbc
+	lda xwa,(xwa)
+	ld xiy,xwa
+	ld a,(xsp+22)
+	ld izl,a
+	jr L5118
+L5115:
+	ld wa,0
+	ld xbc,xiy
+	inc 2,xbc
+	ld xiy,xbc
+	dec 2,xbc
+	ld (xbc),wa
+L5117:
+	inc 1,izl
+L5118:
+	ld a,izl
+	cp a,(xsp+26)
+	jr ule,L5115
+L5116:
+L5113:
+	inc 1,ixl
+L5114:
+	ld a,ixl
+	cp a,(xsp+18)
+	jr ule,L5111
+L5112:
+L5110:
+	lda xsp,(xsp+6)
+	pop xiz
+	ret
+
+; function ovl_mark
+_ovl_mark:
+	push xiz
+	ld a,(xsp+8)
+	ld iyl,a
+	ld a,(xsp+12)
+	ld ixl,a
+	ld a,(xsp+20)
+	ld izl,a
+	ld a,iyl
+	cp a,2
+	jr uge,L5131
+	ld iyl,2
+L5131:
+	ld a,ixl
+	cp a,18
+	jr ule,L5132
+	ld ixl,18
+L5132:
+	ld a,izl
+	cp a,20
+	jr ult,L5133
+	ld izl,19
+L5133:
+	ld a,ixl
+	cp a,iyl
+	jr ult,L5135
+	ld a,izl
+	cp a,(xsp+16)
+	jr uge,L5134
+L5135:
+	jr L5130
+L5134:
+	ld a,(_m_r0__32)
+	cp a,255
+	jr nz,L5136
+	ld a,iyl
+	ld (_m_r0__32),a
+	ld a,ixl
+	ld (_m_r1__32),a
+	ld a,(xsp+16)
+	ld (_m_c0__32),a
+	ld a,izl
+	ld (_m_c1__32),a
+	jr L5130
+L5136:
+	ld a,iyl
+	cp a,(_m_r0__32)
+	jr uge,L5137
+	ld a,iyl
+	ld (_m_r0__32),a
+L5137:
+	ld a,ixl
+	cp a,(_m_r1__32)
+	jr ule,L5138
+	ld a,ixl
+	ld (_m_r1__32),a
+L5138:
+	ld a,(xsp+16)
+	cp a,(_m_c0__32)
+	jr uge,L5139
+	ld a,(xsp+16)
+	ld (_m_c0__32),a
+L5139:
+	ld a,izl
+	cp a,(_m_c1__32)
+	jr ule,L5140
+	ld a,izl
+	ld (_m_c1__32),a
+L5140:
+L5130:
+	pop xiz
+	ret
+
+; function ovl_touch
+_ovl_touch:
+	push xiz
+	lda xsp,(xsp-6)
+	push xix
+	push xiy
+	ld a,(xsp+34)
+	push xwa
+	ld a,(xsp+34)
+	push xwa
+	ld a,(xsp+34)
+	push xwa
+	ld a,(xsp+34)
+	push xwa
+	call _ovl_mark
+	lda xsp,(xsp+16)
+	pop xiy
+	pop xix
+	ld a,(xsp+14)
+	cp a,2
+	jr uge,L5155
+	ldb (xsp+14),2
+L5155:
+	ld a,(xsp+18)
+	cp a,18
+	jr ule,L5156
+	ldb (xsp+18),18
+L5156:
+	ld a,(xsp+26)
+	cp a,20
+	jr ult,L5157
+	ldb (xsp+26),19
+L5157:
+	ld a,(xsp+14)
+	ld ixl,a
+	jr L5161
+L5158:
+	ld xwa,_ovl_prev__32
+	ld c,ixl
+	extz bc
+	sub bc,2
+	mul xbc,20
+	ld e,(xsp+22)
+	extz de
+	add bc,de
+	extz xbc
+	sll 1,xbc
+	add xwa,xbc
+	lda xwa,(xwa)
+	ld xiy,xwa
+	ld a,(xsp+22)
+	ld izl,a
+	jr L5165
+L5162:
+	ld wa,65535
+	ld xbc,xiy
+	inc 2,xbc
+	ld xiy,xbc
+	dec 2,xbc
+	ld (xbc),wa
+L5164:
+	inc 1,izl
+L5165:
+	ld a,izl
+	cp a,(xsp+26)
+	jr ule,L5162
+L5163:
+L5160:
+	inc 1,ixl
+L5161:
+	ld a,ixl
+	cp a,(xsp+18)
+	jr ugt,L5166
+	ld a,(xsp+18)
+	cp a,(xsp+14)
+	jr uge,L5158
+L5166:
+L5159:
+L5154:
+	lda xsp,(xsp+6)
+	pop xiz
+	ret
+
+; function ovl_commit
+_ovl_commit:
+	push xiz
+	lda xsp,(xsp-2)
+	ld a,(_m_r0__32)
+	cp a,255
+	jr nz,L5170
+	jp L5169
+L5170:
+	ld a,(_m_r0__32)
+	extz wa
+	sub wa,2
+	mul xwa,20
+	ld c,(_m_c0__32)
+	extz bc
+	add wa,bc
+	ld iz,wa
+	ld xwa,_ovl_grid
+	ld bc,iz
+	extz xbc
+	sll 1,xbc
+	add xwa,xbc
+	lda xwa,(xwa)
+	ld (_fl__32),xwa
+	ld xwa,_ovl_prev__32
+	ld bc,iz
+	extz xbc
+	sll 1,xbc
+	add xwa,xbc
+	lda xwa,(xwa)
+	ld (_fl__32+4),xwa
+	ld xwa,36864
+	ld c,(_m_r0__32)
+	extz bc
+	sll 5,bc
+	ld e,(_m_c0__32)
+	extz de
+	add bc,de
+	extz xbc
+	sll 1,xbc
+	add xwa,xbc
+	lda xwa,(xwa)
+	ld (_fl__32+8),xwa
+	ld a,(_m_r1__32)
+	sub a,(_m_r0__32)
+	add a,1
+	ld (_fl__32+12),a
+	ld a,(_m_c1__32)
+	sub a,(_m_c0__32)
+	add a,1
+	ld (_fl__32+13),a
+	ldb (_m_r0__32),255
+	ldb (_fl_ready__32),1
+L5169:
+	lda xsp,(xsp+2)
+	pop xiz
+	ret
+
+; function ovl_vblank
+_ovl_vblank:
+	ld a,(_fl_ready__32)
+	cp a,0
+	jr z,L5174
+	ld xwa,_fl__32
+	push xwa
+	call _ovl_flush_asm
+	lda xsp,(xsp+4)
+	ldb (_fl_ready__32),0
+L5174:
+L5173:
+	ret
+
+; function ovl_forget
+_ovl_forget:
+	push xiz
+	lda xsp,(xsp-2)
+	ldb (_fl_ready__32),0
+	ldb (_m_r0__32),255
+	ld iz,0
+	jr L5185
+L5182:
+	ld xwa,_ovl_prev__32
+	ld bc,iz
+	extz xbc
+	sll 1,xbc
+	add xwa,xbc
+	ld wa,(xwa)
+	cp wa,0
+	jr z,L5186
+	ld wa,0
+	ld xbc,36864
+	ld de,iz
+	extz xde
+	div xde,20
+	add de,2
+	sll 5,de
+	ld hl,iz
+	extz xhl
+	div xhl,20
+	ld hl,qhl
+	add de,hl
+	extz xde
+	sll 1,xde
+	add xbc,xde
+	ld (xbc),wa
+L5186:
+	ld wa,0
+	ld xbc,_ovl_prev__32
+	ld de,iz
+	extz xde
+	sll 1,xde
+	add xbc,xde
+	ld (xbc),wa
+	ld wa,0
+	ld xbc,_ovl_grid
+	ld de,iz
+	extz xde
+	sll 1,xde
+	add xbc,xde
+	ld (xbc),wa
+L5184:
+	inc 1,iz
+L5185:
+	ld wa,iz
+	cp wa,340
+	jr ult,L5182
+L5183:
+L5181:
+	lda xsp,(xsp+2)
 	pop xiz
 	ret
 
 ; function theme_init_tiles
 _theme_init_tiles:
 	ld wa,(xsp+4)
-	ld (_pano_base__32),wa
+	ld (_pano_base__33),wa
 	ld wa,(xsp+8)
-	ld (_obj_base__32),wa
+	ld (_obj_base__33),wa
 	ld wa,(xsp+12)
-	ld (_obj_end__32),wa
-L5126:
+	ld (_obj_end__33),wa
+L5188:
 	ret
 
 ; function theme_obj_map
 _theme_obj_map:
-	ld xwa,_objmap__32
-	jr L5128
-L5128:
+	ld xwa,_objmap__33
+	jr L5190
+L5190:
 	ret
 
 ; function theme_obj_tile
 _theme_obj_tile:
-	ld xwa,_objmap__32
+	ld xwa,_objmap__33
 	ld c,(xsp+4)
 	extz bc
 	exts xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	jr L5130
-L5130:
+	jr L5192
+L5192:
 	ret
 
 ; function theme_obj_kind_left
 _theme_obj_kind_left:
-	ld a,(_kind_l__32)
-	jr L5132
-L5132:
+	ld a,(_kind_l__33)
+	jr L5194
+L5194:
 	ret
 
 ; function theme_obj_kind_right
 _theme_obj_kind_right:
-	ld a,(_kind_r__32)
-	jr L5134
-L5134:
+	ld a,(_kind_r__33)
+	jr L5196
+L5196:
 	ret
 
 ; function load_tile
-_load_tile__32:
+_load_tile__33:
 	push xiz
 	lda xsp,(xsp-6)
 	ld xiy,(xsp+18)
@@ -25756,8 +26105,8 @@ _load_tile__32:
 	add xwa,xbc
 	ld xix,xwa
 	ld izl,0
-	jr L5144
-L5141:
+	jr L5206
+L5203:
 	ld xwa,xiy
 	ld c,izl
 	extz bc
@@ -25772,78 +26121,78 @@ L5141:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L5143:
+L5205:
 	inc 1,izl
-L5144:
+L5206:
 	ld a,izl
 	cp a,8
-	jr ult,L5141
-L5142:
-L5140:
+	jr ult,L5203
+L5204:
+L5202:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
 
 ; function alloc_slot
-_alloc_slot__32:
+_alloc_slot__33:
 	push xiz
 	lda xsp,(xsp-4)
-	ld wa,(_next_slot__32)
+	ld wa,(_next_slot__33)
 	ld iz,wa
-	ld wa,(_pano_base__32)
+	ld wa,(_pano_base__33)
 	add wa,111
 	ld (xsp+2),wa
 	ld wa,iz
 	cp wa,32
-	jr ult,L5152
+	jr ult,L5214
 	ld wa,iz
 	cp wa,101
-	jr uge,L5152
+	jr uge,L5214
 	ld iz,101
-	jr L5153
-L5152:
+	jr L5215
+L5214:
 	ld wa,iz
 	cp wa,125
-	jr ult,L5154
+	jr ult,L5216
 	ld wa,iz
-	cp wa,(_pano_base__32)
-	jr uge,L5154
-	ld wa,(_obj_base__32)
+	cp wa,(_pano_base__33)
+	jr uge,L5216
+	ld wa,(_obj_base__33)
 	ld iz,wa
-L5154:
-L5153:
+L5216:
+L5215:
 	ld wa,iz
-	cp wa,(_obj_end__32)
-	jr ult,L5155
-	ld wa,(_pano_end__32)
+	cp wa,(_obj_end__33)
+	jr ult,L5217
+	ld wa,(_pano_end__33)
 	ld iz,wa
-L5155:
+L5217:
 	ld wa,iz
 	cp wa,(xsp+2)
-	jr ult,L5156
+	jr ult,L5218
 	ld wa,iz
-	cp wa,(_obj_base__32)
-	jr uge,L5156
+	cp wa,(_obj_base__33)
+	jr uge,L5218
 	ld wa,0
-	jr L5151
-L5156:
+	jr L5213
+L5218:
 	ld wa,iz
 	add wa,1
-	ld (_next_slot__32),wa
+	ld (_next_slot__33),wa
 	ld wa,iz
-	jr L5151
-L5151:
+	jr L5213
+L5213:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
 
 ; function load_kind
-_load_kind__32:
+_load_kind__33:
 	push xiz
 	lda xsp,(xsp-10)
 	ldb (xsp+0),0
-	jp L5172
-L5169:
+	jp L5234
+L5231:
 	ld xwa,_gfx_obj_frames
 	ld c,(xsp+18)
 	extz bc
@@ -25858,8 +26207,8 @@ L5169:
 	lda xwa,(xwa)
 	ld (xsp+2),xwa
 	ld izl,0
-	jp L5176
-L5173:
+	jp L5238
+L5235:
 	ld xwa,_gfx_obj_cells
 	ld xbc,(xsp+2)
 	ld bc,(xbc+4)
@@ -25870,7 +26219,7 @@ L5173:
 	add xwa,xbc
 	ld a,(xwa+2)
 	ld (xsp+7),a
-	ld xwa,_objmap__32
+	ld xwa,_objmap__33
 	ld c,(xsp+7)
 	extz bc
 	exts xbc
@@ -25878,11 +26227,11 @@ L5173:
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,65535
-	jr nz,L5177
-	call _alloc_slot__32
+	jr nz,L5239
+	call _alloc_slot__33
 	ld (xsp+8),wa
 	ld wa,(xsp+8)
-	ld xbc,_objmap__32
+	ld xbc,_objmap__33
 	ld e,(xsp+7)
 	extz de
 	exts xde
@@ -25891,7 +26240,7 @@ L5173:
 	ld (xbc),wa
 	ld wa,(xsp+8)
 	cp wa,0
-	jr z,L5178
+	jr z,L5240
 	ld xwa,_gfx_obj_tiles
 	ld c,(xsp+7)
 	extz bc
@@ -25903,33 +26252,33 @@ L5173:
 	push xwa
 	ld wa,(xsp+12)
 	push xwa
-	call _load_tile__32
+	call _load_tile__33
 	lda xsp,(xsp+8)
-L5178:
-L5177:
-L5175:
+L5240:
+L5239:
+L5237:
 	inc 1,izl
-L5176:
+L5238:
 	ld a,izl
 	ld xbc,(xsp+2)
 	ld c,(xbc+2)
 	cp a,c
-	jp ult,L5173
-L5174:
-L5171:
+	jp ult,L5235
+L5236:
+L5233:
 	incb 1,(xsp+0)
-L5172:
+L5234:
 	ld a,(xsp+0)
 	cp a,5
-	jp ult,L5169
-L5170:
-L5168:
+	jp ult,L5231
+L5232:
+L5230:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
 
 ; function set_spr_pal
-_set_spr_pal__32:
+_set_spr_pal__33:
 	push xiz
 	lda xsp,(xsp-6)
 	ld a,(xsp+22)
@@ -25944,8 +26293,8 @@ _set_spr_pal__32:
 	lda xwa,(xwa)
 	ld xix,xwa
 	ld izl,0
-	jr L5188
-L5185:
+	jr L5250
+L5247:
 	ld xwa,xix
 	ld c,izl
 	extz bc
@@ -25953,7 +26302,7 @@ L5185:
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld xbc,_cur_spr__32
+	ld xbc,_cur_spr__33
 	ld e,iyl
 	extz de
 	exts xde
@@ -25966,13 +26315,13 @@ L5185:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L5187:
+L5249:
 	inc 1,izl
-L5188:
+L5250:
 	ld a,izl
 	cp a,4
-	jr ult,L5185
-L5186:
+	jr ult,L5247
+L5248:
 	push xix
 	push xiy
 	ld wa,(xix+6)
@@ -25991,7 +26340,7 @@ L5186:
 	lda xsp,(xsp+24)
 	pop xiy
 	pop xix
-L5184:
+L5246:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -26021,8 +26370,8 @@ _theme_apply:
 	lda xwa,(xwa)
 	ld xiy,xwa
 	ld iz,0
-	jr L5227
-L5224:
+	jr L5289
+L5286:
 	push xix
 	push xiy
 	ld xwa,(xiy)
@@ -26033,48 +26382,48 @@ L5224:
 	add xwa,xbc
 	lda xwa,(xwa)
 	push xwa
-	ld wa,(_pano_base__32)
+	ld wa,(_pano_base__33)
 	add wa,iz
 	push xwa
-	call _load_tile__32
+	call _load_tile__33
 	lda xsp,(xsp+8)
 	pop xiy
 	pop xix
-L5226:
+L5288:
 	inc 1,iz
-L5227:
+L5289:
 	ld wa,iz
 	cp wa,(xiy+4)
-	jr ult,L5224
-L5225:
+	jr ult,L5286
+L5287:
 	ld iz,0
-	jr L5231
-L5228:
+	jr L5293
+L5290:
 	ld xwa,(xiy+14)
 	ld bc,iz
 	extz xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld xbc,_cur_pals__32
+	ld xbc,_cur_pals__33
 	ld de,iz
 	extz xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L5230:
+L5292:
 	inc 1,iz
-L5231:
+L5293:
 	ld wa,iz
 	cp wa,52
-	jr ult,L5228
-L5229:
+	jr ult,L5290
+L5291:
 	ldb (xsp+11),0
-	jr L5235
-L5232:
+	jr L5297
+L5294:
 	ld ixl,0
-	jr L5239
-L5236:
+	jr L5301
+L5298:
 	ld a,(xsp+11)
 	extz wa
 	sll 5,wa
@@ -26082,7 +26431,7 @@ L5236:
 	extz bc
 	add wa,bc
 	ld (xsp+12),wa
-	ld wa,(_pano_base__32)
+	ld wa,(_pano_base__33)
 	ld xbc,(xiy+6)
 	ld de,(xsp+12)
 	extz xde
@@ -26090,7 +26439,7 @@ L5236:
 	ld c,(xbc)
 	extz bc
 	add wa,bc
-	ld xbc,_pano_slot__32
+	ld xbc,_pano_slot__33
 	ld xde,(xiy+10)
 	ld hl,(xsp+12)
 	extz xhl
@@ -26109,40 +26458,40 @@ L5236:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L5238:
+L5300:
 	inc 1,ixl
-L5239:
+L5301:
 	ld a,ixl
 	cp a,32
-	jr ult,L5236
-L5237:
-L5234:
+	jr ult,L5298
+L5299:
+L5296:
 	incb 1,(xsp+11)
-L5235:
+L5297:
 	ld a,(xsp+11)
 	cp a,11
-	jr ult,L5232
-L5233:
-	ld wa,(_pano_base__32)
+	jr ult,L5294
+L5295:
+	ld wa,(_pano_base__33)
 	add wa,(xiy+4)
-	ld (_pano_end__32),wa
+	ld (_pano_end__33),wa
 	ld wa,(xiy+18)
-	ld (_cur_backdrop__32),wa
+	ld (_cur_backdrop__33),wa
 	ld wa,(xiy+18)
-	ld (_cur_road__32),wa
+	ld (_cur_road__33),wa
 	ld xwa,(xsp+0)
 	ld wa,(xwa+4)
-	ld (_cur_road__32+2),wa
+	ld (_cur_road__33+2),wa
 	ld xwa,(xsp+0)
 	lda xwa,(xwa+8)
 	ld wa,(xwa)
-	ld (_cur_road__32+4),wa
+	ld (_cur_road__33+4),wa
 	ld xwa,(xsp+0)
 	ld wa,(xwa+6)
-	ld (_cur_road__32+6),wa
+	ld (_cur_road__33+6),wa
 	ld iz,0
-	jr L5243
-L5240:
+	jr L5305
+L5302:
 	ld xwa,(xsp+0)
 	lda xwa,(xwa+8)
 	ld bc,iz
@@ -26150,142 +26499,142 @@ L5240:
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
-	ld xbc,_cur_band__32
+	ld xbc,_cur_band__33
 	ld de,iz
 	extz xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L5242:
+L5304:
 	inc 1,iz
-L5243:
+L5305:
 	ld wa,iz
 	cp wa,4
-	jr ult,L5240
-L5241:
+	jr ult,L5302
+L5303:
 	ld iz,0
-	jr L5247
-L5244:
+	jr L5309
+L5306:
 	ld wa,65535
-	ld xbc,_objmap__32
+	ld xbc,_objmap__33
 	ld de,iz
 	extz xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L5246:
+L5308:
 	inc 1,iz
-L5247:
+L5309:
 	ld wa,iz
 	cp wa,256
-	jr ult,L5244
-L5245:
-	ldw (_next_slot__32),2
+	jr ult,L5306
+L5307:
+	ldw (_next_slot__33),2
 	ld xwa,(xsp+0)
 	ld a,(xwa+1)
-	ld (_kind_l__32),a
+	ld (_kind_l__33),a
 	ld xwa,(xsp+0)
 	ld a,(xwa+2)
-	ld (_kind_r__32),a
+	ld (_kind_r__33),a
 	push xix
 	push xiy
-	ld a,(_kind_l__32)
+	ld a,(_kind_l__33)
 	push xwa
-	call _load_kind__32
+	call _load_kind__33
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-	ld a,(_kind_r__32)
-	cp a,(_kind_l__32)
-	jr z,L5248
+	ld a,(_kind_r__33)
+	cp a,(_kind_l__33)
+	jr z,L5310
 	push xix
 	push xiy
-	ld a,(_kind_r__32)
+	ld a,(_kind_r__33)
 	push xwa
-	call _load_kind__32
+	call _load_kind__33
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-L5248:
+L5310:
 	push xix
 	push xiy
 	ld wa,11
 	push xwa
-	call _load_kind__32
+	call _load_kind__33
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
 	ld a,(xsp+22)
 	cp a,10
-	jr uge,L5249
+	jr uge,L5311
 	push xix
 	push xiy
 	ld wa,12
 	push xwa
-	call _load_kind__32
+	call _load_kind__33
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-L5249:
+L5311:
 	push xix
 	push xiy
 	ld wa,13
 	push xwa
-	call _load_kind__32
+	call _load_kind__33
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
 	ld a,(xsp+22)
 	cp a,0
-	jr z,L5251
+	jr z,L5313
 	ld a,(xsp+22)
 	cp a,10
-	jr ult,L5250
-L5251:
+	jr ult,L5312
+L5313:
 	push xix
 	push xiy
 	ld wa,14
 	push xwa
-	call _load_kind__32
+	call _load_kind__33
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-L5250:
+L5312:
 	ld iz,0
-	jr L5255
-L5252:
-	ld xwa,_objmap__32
+	jr L5317
+L5314:
+	ld xwa,_objmap__33
 	ld bc,iz
 	extz xbc
 	sll 1,xbc
 	add xwa,xbc
 	ld wa,(xwa)
 	cp wa,65535
-	jr nz,L5256
+	jr nz,L5318
 	ld wa,0
-	ld xbc,_objmap__32
+	ld xbc,_objmap__33
 	ld de,iz
 	extz xde
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L5256:
-L5254:
+L5318:
+L5316:
 	inc 1,iz
-L5255:
+L5317:
 	ld wa,iz
 	cp wa,256
-	jr ult,L5252
-L5253:
+	jr ult,L5314
+L5315:
 	push xix
 	push xiy
 	ld wa,0
 	push xwa
-	ld a,(_kind_l__32)
+	ld a,(_kind_l__33)
 	push xwa
 	ld wa,1
 	push xwa
-	call _set_spr_pal__32
+	call _set_spr_pal__33
 	lda xsp,(xsp+12)
 	pop xiy
 	pop xix
@@ -26293,11 +26642,11 @@ L5253:
 	push xiy
 	ld wa,1
 	push xwa
-	ld a,(_kind_r__32)
+	ld a,(_kind_r__33)
 	push xwa
 	ld wa,2
 	push xwa
-	call _set_spr_pal__32
+	call _set_spr_pal__33
 	lda xsp,(xsp+12)
 	pop xiy
 	pop xix
@@ -26309,7 +26658,7 @@ L5253:
 	push xwa
 	ld wa,9
 	push xwa
-	call _set_spr_pal__32
+	call _set_spr_pal__33
 	lda xsp,(xsp+12)
 	pop xiy
 	pop xix
@@ -26321,7 +26670,7 @@ L5253:
 	push xwa
 	ld wa,10
 	push xwa
-	call _set_spr_pal__32
+	call _set_spr_pal__33
 	lda xsp,(xsp+12)
 	pop xiy
 	pop xix
@@ -26333,7 +26682,7 @@ L5253:
 	push xwa
 	ld wa,4
 	push xwa
-	call _set_spr_pal__32
+	call _set_spr_pal__33
 	lda xsp,(xsp+12)
 	pop xiy
 	pop xix
@@ -26345,7 +26694,7 @@ L5253:
 	push xwa
 	ld wa,6
 	push xwa
-	call _set_spr_pal__32
+	call _set_spr_pal__33
 	lda xsp,(xsp+12)
 	pop xiy
 	pop xix
@@ -26357,7 +26706,7 @@ L5253:
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-L5223:
+L5285:
 	lda xsp,(xsp+14)
 	pop xiz
 	ret
@@ -26369,7 +26718,7 @@ _theme_crowd_colours:
 	ld (xsp+0),xwa
 	ld a,(xsp+8)
 	cp a,0
-	jr z,L5261
+	jr z,L5323
 	ld xwa,(xsp+0)
 	ld wa,(xwa+6)
 	push xwa
@@ -26400,15 +26749,15 @@ _theme_crowd_colours:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-	jr L5262
-L5261:
-	ld wa,(_cur_spr__32+24+6)
+	jr L5324
+L5323:
+	ld wa,(_cur_spr__33+24+6)
 	push xwa
-	ld wa,(_cur_spr__32+24+4)
+	ld wa,(_cur_spr__33+24+4)
 	push xwa
-	ld wa,(_cur_spr__32+24+2)
+	ld wa,(_cur_spr__33+24+2)
 	push xwa
-	ld wa,(_cur_spr__32+24)
+	ld wa,(_cur_spr__33+24)
 	push xwa
 	ld a,10
 	push xwa
@@ -26416,13 +26765,13 @@ L5261:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-L5262:
-L5260:
+L5324:
+L5322:
 	lda xsp,(xsp+4)
 	ret
 
 ; function to_white
-_to_white__32:
+_to_white__33:
 	push xiz
 	lda xsp,(xsp-6)
 	ld wa,(xsp+14)
@@ -26438,10 +26787,10 @@ _to_white__32:
 	ld iz,wa
 	ld a,(xsp+18)
 	cp a,4
-	jr ult,L5266
+	jr ult,L5328
 	ld wa,4095
-	jr L5265
-L5266:
+	jr L5327
+L5328:
 	ld wa,iy
 	ld bc,15
 	sub bc,iy
@@ -26476,8 +26825,8 @@ L5266:
 	ld bc,iz
 	sll 8,bc
 	or wa,bc
-	jr L5265
-L5265:
+	jr L5327
+L5327:
 	lda xsp,(xsp+6)
 	pop xiz
 	ret
@@ -26487,11 +26836,11 @@ _theme_flash:
 	push xiz
 	lda xsp,(xsp-10)
 	ld izl,0
-	jp L5280
-L5277:
+	jp L5342
+L5339:
 	ld a,(xsp+18)
 	push xwa
-	ld xwa,_cur_pals__32
+	ld xwa,_cur_pals__33
 	ld c,izl
 	extz bc
 	sll 2,bc
@@ -26501,12 +26850,12 @@ L5277:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	call _to_white__32
+	call _to_white__33
 	lda xsp,(xsp+8)
 	push xwa
 	ld a,(xsp+22)
 	push xwa
-	ld xwa,_cur_pals__32
+	ld xwa,_cur_pals__33
 	ld c,izl
 	extz bc
 	sll 2,bc
@@ -26516,12 +26865,12 @@ L5277:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	call _to_white__32
+	call _to_white__33
 	lda xsp,(xsp+8)
 	push xwa
 	ld a,(xsp+26)
 	push xwa
-	ld xwa,_cur_pals__32
+	ld xwa,_cur_pals__33
 	ld c,izl
 	extz bc
 	sll 2,bc
@@ -26531,12 +26880,12 @@ L5277:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	call _to_white__32
+	call _to_white__33
 	lda xsp,(xsp+8)
 	push xwa
 	ld a,(xsp+30)
 	push xwa
-	ld xwa,_cur_pals__32
+	ld xwa,_cur_pals__33
 	ld c,izl
 	extz bc
 	sll 2,bc
@@ -26545,10 +26894,10 @@ L5277:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	call _to_white__32
+	call _to_white__33
 	lda xsp,(xsp+8)
 	push xwa
-	ld xwa,_pano_slot__32
+	ld xwa,_pano_slot__33
 	ld c,izl
 	extz bc
 	exts xbc
@@ -26559,19 +26908,19 @@ L5277:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-L5279:
+L5341:
 	inc 1,izl
-L5280:
+L5342:
 	ld a,izl
 	cp a,13
-	jp ult,L5277
-L5278:
+	jp ult,L5339
+L5340:
 	ldb (xsp+1),0
-	jr L5284
-L5281:
+	jr L5346
+L5343:
 	ld a,(xsp+18)
 	push xwa
-	ld xwa,_cur_band__32
+	ld xwa,_cur_band__33
 	ld c,(xsp+5)
 	extz bc
 	exts xbc
@@ -26579,7 +26928,7 @@ L5281:
 	add xwa,xbc
 	ld wa,(xwa)
 	push xwa
-	call _to_white__32
+	call _to_white__33
 	lda xsp,(xsp+8)
 	lda xbc,(xsp+2)
 	ld e,(xsp+1)
@@ -26588,39 +26937,39 @@ L5281:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L5283:
+L5345:
 	incb 1,(xsp+1)
-L5284:
+L5346:
 	ld a,(xsp+1)
 	cp a,4
-	jr ult,L5281
-L5282:
+	jr ult,L5343
+L5344:
 	lda xwa,(xsp+2)
 	push xwa
 	ld a,(xsp+22)
 	push xwa
-	ld wa,(_cur_road__32+6)
+	ld wa,(_cur_road__33+6)
 	push xwa
-	call _to_white__32
+	call _to_white__33
 	lda xsp,(xsp+8)
 	push xwa
 	ld a,(xsp+26)
 	push xwa
-	ld wa,(_cur_road__32+2)
+	ld wa,(_cur_road__33+2)
 	push xwa
-	call _to_white__32
+	call _to_white__33
 	lda xsp,(xsp+8)
 	push xwa
 	ld a,(xsp+30)
 	push xwa
-	ld wa,(_cur_backdrop__32)
+	ld wa,(_cur_backdrop__33)
 	push xwa
-	call _to_white__32
+	call _to_white__33
 	lda xsp,(xsp+8)
 	push xwa
 	call _id_road_set_colors
 	lda xsp,(xsp+16)
-L5276:
+L5338:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -26628,29 +26977,29 @@ L5276:
 ; function traffic_set_hard
 _traffic_set_hard:
 	ld a,(xsp+4)
-	ld (_hard__33),a
+	ld (_hard__34),a
 	ld c,(xsp+4)
 	cp c,0
-	jr z,L5289
+	jr z,L5351
 	ld wa,7
-	jr L5290
-L5289:
+	jr L5352
+L5351:
 	ld wa,6
-L5290:
-	ld (_trf_cap__33),a
-L5288:
+L5352:
+	ld (_trf_cap__34),a
+L5350:
 	ret
 
 ; function rnd8
-_rnd8__33:
-	ld wa,(_rng__33)
+_rnd8__34:
+	ld wa,(_rng__34)
 	mul xwa,25173
 	add wa,13849
-	ld (_rng__33),wa
-	ld wa,(_rng__33)
+	ld (_rng__34),wa
+	ld wa,(_rng__34)
 	srl 8,wa
-	jr L5292
-L5292:
+	jr L5354
+L5354:
 	ret
 
 ; function traffic_init
@@ -26658,10 +27007,10 @@ _traffic_init:
 	push xiz
 	lda xsp,(xsp-2)
 	ld wa,(xsp+10)
-	ld (_trf_tiles__33),wa
+	ld (_trf_tiles__34),wa
 	ld iz,0
-	jr L5306
-L5303:
+	jr L5368
+L5365:
 	ld xwa,_gfx_traffic_tiles
 	ld bc,iz
 	extz xbc
@@ -26678,18 +27027,18 @@ L5303:
 	sll 1,xde
 	add xbc,xde
 	ld (xbc),wa
-L5305:
+L5367:
 	inc 1,iz
-L5306:
+L5368:
 	ld wa,iz
 	ld bc,(_gfx_traffic_tiles_count)
 	sll 3,bc
 	cp wa,bc
-	jr ult,L5303
-L5304:
+	jr ult,L5365
+L5366:
 	ld iz,0
-	jr L5310
-L5307:
+	jr L5372
+L5369:
 	ld xwa,_gfx_traffic_pals
 	ld bc,iz
 	sll 2,bc
@@ -26732,15 +27081,15 @@ L5307:
 	push xwa
 	call _ngpc_gfx_set_palette
 	lda xsp,(xsp+24)
-L5309:
+L5371:
 	inc 1,iz
-L5310:
+L5372:
 	ld wa,iz
 	cp wa,5
-	jr ult,L5307
-L5308:
+	jr ult,L5369
+L5370:
 	call _traffic_clear
-L5302:
+L5364:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -26751,18 +27100,18 @@ _traffic_set_car_line:
 	push xwa
 	call _id_road_distance_at_line
 	lda xsp,(xsp+4)
-	ld (_car_d__33),wa
+	ld (_car_d__34),wa
 	ld a,(xsp+4)
 	push xwa
 	call _id_road_half_at
 	lda xsp,(xsp+4)
-	ld (_half_wheel__33),a
-	ld a,(_half_wheel__33)
+	ld (_half_wheel__34),a
+	ld a,(_half_wheel__34)
 	cp a,0
-	jr nz,L5314
-	ldb (_half_wheel__33),1
-L5314:
-L5313:
+	jr nz,L5376
+	ldb (_half_wheel__34),1
+L5376:
+L5375:
 	ret
 
 ; function traffic_clear
@@ -26770,29 +27119,29 @@ _traffic_clear:
 	push xiz
 	lda xsp,(xsp-2)
 	ld izl,0
-	jr L5324
-L5321:
+	jr L5386
+L5383:
 	ld a,0
-	ld xbc,_cars__33
+	ld xbc,_cars__34
 	ld e,izl
 	extz de
 	muls xde,14
 	add xbc,xde
 	ld (xbc),a
-L5323:
+L5385:
 	inc 1,izl
-L5324:
+L5386:
 	ld a,izl
 	cp a,7
-	jr ult,L5321
-L5322:
+	jr ult,L5383
+L5384:
 	ld a,50
 	push xwa
 	ld a,28
 	push xwa
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
-L5320:
+L5382:
 	lda xsp,(xsp+2)
 	pop xiz
 	ret
@@ -26803,35 +27152,35 @@ _traffic_reset:
 	ld a,(xsp+8)
 	ld izl,a
 	ld a,izl
-	cp a,(_trf_cap__33)
-	jr ule,L5330
-	ld a,(_trf_cap__33)
+	cp a,(_trf_cap__34)
+	jr ule,L5392
+	ld a,(_trf_cap__34)
 	ld izl,a
-L5330:
+L5392:
 	ld a,izl
-	ld (_dens_min__33),a
+	ld (_dens_min__34),a
 	ld c,(xsp+12)
-	cp c,(_trf_cap__33)
-	jr ule,L5331
-	ld a,(_trf_cap__33)
+	cp c,(_trf_cap__34)
+	jr ule,L5393
+	ld a,(_trf_cap__34)
 	extz wa
-	jr L5332
-L5331:
+	jr L5394
+L5393:
 	ld a,(xsp+12)
 	extz wa
-L5332:
-	ld (_dens_max__33),a
-	ld a,(_dens_min__33)
-	ld (_target__33),a
-	ldb (_cooldown__33),30
-L5329:
+L5394:
+	ld (_dens_max__34),a
+	ld a,(_dens_min__34)
+	ld (_target__34),a
+	ldb (_cooldown__34),30
+L5391:
 	pop xiz
 	ret
 
 ; function lane_lat
-_lane_lat__33:
+_lane_lat__34:
 	lda xsp,(xsp-2)
-	ld a,(_half_wheel__33)
+	ld a,(_half_wheel__34)
 	extz wa
 	sll 4,wa
 	exts xwa
@@ -26844,16 +27193,16 @@ _lane_lat__33:
 	mul xbc,de
 	sub bc,3
 	mul xwa,bc
-	jr L5334
-L5334:
+	jr L5396
+L5396:
 	lda xsp,(xsp+2)
 	ret
 
 ; function lane_of
-_lane_of__33:
+_lane_of__34:
 	push xiz
 	lda xsp,(xsp-4)
-	ld a,(_half_wheel__33)
+	ld a,(_half_wheel__34)
 	extz wa
 	sll 4,wa
 	exts xwa
@@ -26870,81 +27219,81 @@ _lane_of__33:
 	ld iz,wa
 	ld wa,iz
 	cp wa,0
-	jr ge,L5339
+	jr ge,L5401
 	ld iz,0
-L5339:
+L5401:
 	ld wa,iz
 	cp wa,3
-	jr le,L5340
+	jr le,L5402
 	ld iz,3
-L5340:
+L5402:
 	ld a,izl
-	jr L5338
-L5338:
+	jr L5400
+L5400:
 	lda xsp,(xsp+4)
 	pop xiz
 	ret
 
 ; function spawn
-_spawn__33:
+_spawn__34:
 	push xiz
 	lda xsp,(xsp-10)
 	ld wa,0
 	exts xwa
 	ld (xsp+4),xwa
 	ld izl,0
-	jr L5366
-L5363:
-	ld xwa,_cars__33
+	jr L5428
+L5425:
+	ld xwa,_cars__34
 	ld c,izl
 	extz bc
 	muls xbc,14
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr nz,L5367
-	ld xwa,_cars__33
+	jr nz,L5429
+	ld xwa,_cars__34
 	ld c,izl
 	extz bc
 	muls xbc,14
 	add xwa,xbc
 	lda xwa,(xwa)
 	ld (xsp+4),xwa
-	jr L5364
-L5367:
-L5365:
+	jr L5426
+L5429:
+L5427:
 	inc 1,izl
-L5366:
+L5428:
 	ld a,izl
 	cp a,7
-	jr ult,L5363
-L5364:
+	jr ult,L5425
+L5426:
 	ld xwa,(xsp+4)
 	cp xwa,0
-	jr nz,L5368
-	jp L5362
-L5368:
+	jr nz,L5430
+	jp L5424
+L5430:
 	ldb (xsp+2),0
-	jp L5372
-L5369:
+	jp L5434
+L5431:
 	ld wa,0
 	ld (xsp+8),a
-	call _rnd8__33
+	call _rnd8__34
 	extz wa
 	and wa,3
 	ld (xsp+1),a
 	ld izl,0
-	jr L5376
-L5373:
-	ld xwa,_cars__33
+	jr L5438
+L5435:
+	ld xwa,_cars__34
 	ld c,izl
 	extz bc
 	muls xbc,14
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L5377
-	ld xwa,_cars__33
+	jr z,L5439
+	ld xwa,_cars__34
 	ld c,izl
 	extz bc
 	muls xbc,14
@@ -26953,55 +27302,55 @@ L5373:
 	push xwa
 	ld a,(xsp+5)
 	push xwa
-	call _lane_lat__33
+	call _lane_lat__34
 	lda xsp,(xsp+4)
 	ld xbc,xwa
 	pop xwa
 	cp wa,bc
-	jr nz,L5377
-	ld xwa,_cars__33
+	jr nz,L5439
+	ld xwa,_cars__34
 	ld c,izl
 	extz bc
 	muls xbc,14
 	add xwa,xbc
 	ld wa,(xwa+6)
 	ld bc,1450
-	ld de,(_car_d__33)
+	ld de,(_car_d__34)
 	sub bc,de
 	sub bc,400
 	sll 4,bc
 	cp wa,bc
-	jr le,L5377
+	jr le,L5439
 	ldb (xsp+8),1
-L5377:
-L5375:
+L5439:
+L5437:
 	inc 1,izl
-L5376:
+L5438:
 	ld a,izl
 	cp a,7
-	jr ult,L5373
-L5374:
+	jr ult,L5435
+L5436:
 	ld a,(xsp+8)
 	cp a,0
-	jr nz,L5378
-	jr L5370
-L5378:
-L5371:
+	jr nz,L5440
+	jr L5432
+L5440:
+L5433:
 	incb 1,(xsp+2)
-L5372:
+L5434:
 	ld a,(xsp+2)
 	cp a,3
-	jp ult,L5369
-L5370:
+	jp ult,L5431
+L5432:
 	ld a,(xsp+2)
 	cp a,3
-	jr nz,L5379
-	jp L5362
-L5379:
+	jr nz,L5441
+	jp L5424
+L5441:
 	ld a,1
 	ld xbc,(xsp+4)
 	ld (xbc),a
-	call _rnd8__33
+	call _rnd8__34
 	extz wa
 	exts xwa
 	divs xwa,3
@@ -27010,7 +27359,7 @@ L5379:
 	ld (xbc+1),a
 	ld wa,11
 	push xwa
-	call _rnd8__33
+	call _rnd8__34
 	ld xbc,xwa
 	pop xwa
 	extz bc
@@ -27020,16 +27369,16 @@ L5379:
 	add wa,bc
 	ld xbc,(xsp+4)
 	ld (xbc+2),a
-	ld c,(_hard__33)
+	ld c,(_hard__34)
 	cp c,0
-	jr z,L5380
+	jr z,L5442
 	ld wa,42
-	jr L5381
-L5380:
+	jr L5443
+L5442:
 	ld wa,55
-L5381:
+L5443:
 	push xwa
-	call _rnd8__33
+	call _rnd8__34
 	ld xbc,xwa
 	pop xwa
 	extz bc
@@ -27042,16 +27391,16 @@ L5381:
 	ld xwa,(xsp+4)
 	ld a,(xwa+1)
 	cp a,2
-	jr nz,L5382
+	jr nz,L5444
 	ld xwa,(xsp+4)
 	ld a,(xwa+3)
 	sub a,15
 	ld xbc,(xsp+4)
 	ld (xbc+3),a
-L5382:
+L5444:
 	ld a,(xsp+1)
 	push xwa
-	call _lane_lat__33
+	call _lane_lat__34
 	lda xsp,(xsp+4)
 	ld xbc,(xsp+4)
 	ld (xbc+4),wa
@@ -27060,7 +27409,7 @@ L5382:
 	ld xbc,(xsp+4)
 	ld (xbc+10),wa
 	ld wa,1450
-	ld bc,(_car_d__33)
+	ld bc,(_car_d__34)
 	sub wa,bc
 	sll 4,wa
 	ld xbc,(xsp+4)
@@ -27072,7 +27421,7 @@ L5382:
 	ld wa,0
 	ld xbc,(xsp+4)
 	ld (xbc+8),wa
-L5362:
+L5424:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -27084,9 +27433,9 @@ _traffic_update:
 	ld wa,0
 	ld (xsp+1),a
 	ldb (xsp+0),0
-	jp L5415
-L5412:
-	ld xwa,_cars__33
+	jp L5477
+L5474:
+	ld xwa,_cars__34
 	ld c,(xsp+0)
 	extz bc
 	muls xbc,14
@@ -27095,9 +27444,9 @@ L5412:
 	ld xiz,xwa
 	ld a,(xiz)
 	cp a,0
-	jr nz,L5416
-	jp L5414
-L5416:
+	jr nz,L5478
+	jp L5476
+L5478:
 	ld wa,(xiz+6)
 	ld (xiz+12),wa
 	ld wa,(xiz+8)
@@ -27123,170 +27472,170 @@ L5416:
 	ld (xiz+8),wa
 	ld wa,(xiz+4)
 	cp wa,(xiz+10)
-	jr z,L5417
+	jr z,L5479
 	ld wa,(xiz+4)
 	cp wa,(xiz+10)
-	jr ge,L5418
+	jr ge,L5480
 	ld wa,(xiz+4)
 	add wa,8
 	ld (xiz+4),wa
 	ld wa,(xiz+4)
 	cp wa,(xiz+10)
-	jr le,L5419
+	jr le,L5481
 	ld wa,(xiz+10)
 	ld (xiz+4),wa
-L5419:
-	jr L5420
-L5418:
+L5481:
+	jr L5482
+L5480:
 	ld wa,(xiz+4)
 	sub wa,8
 	ld (xiz+4),wa
 	ld wa,(xiz+4)
 	cp wa,(xiz+10)
-	jr ge,L5421
+	jr ge,L5483
 	ld wa,(xiz+10)
 	ld (xiz+4),wa
-L5421:
-L5420:
-	jr L5422
-L5417:
-	call _rnd8__33
-	ld e,(_hard__33)
+L5483:
+L5482:
+	jr L5484
+L5479:
+	call _rnd8__34
+	ld e,(_hard__34)
 	cp e,0
-	jr z,L5424
+	jr z,L5486
 	ld bc,6
-	jr L5425
-L5424:
+	jr L5487
+L5486:
 	ld bc,2
-L5425:
+L5487:
 	cp a,c
-	jr uge,L5423
+	jr uge,L5485
 	ld wa,(xiz+4)
 	push xwa
-	call _lane_of__33
+	call _lane_of__34
 	lda xsp,(xsp+4)
 	ld (xsp+8),a
 	ld a,(xsp+8)
 	cp a,0
-	jr nz,L5426
+	jr nz,L5488
 	ldb (xsp+8),1
-	jr L5427
-L5426:
+	jr L5489
+L5488:
 	ld a,(xsp+8)
 	cp a,3
-	jr nz,L5428
+	jr nz,L5490
 	ldb (xsp+8),2
-	jr L5429
-L5428:
+	jr L5491
+L5490:
 	push xwa
-	call _rnd8__33
+	call _rnd8__34
 	ld xbc,xwa
 	pop xwa
 	extz bc
 	and bc,1
 	cp bc,0
-	jr z,L5430
+	jr z,L5492
 	ld a,(xsp+8)
 	add a,1
 	extz wa
-	jr L5431
-L5430:
+	jr L5493
+L5492:
 	ld a,(xsp+8)
 	sub a,1
 	extz wa
-L5431:
+L5493:
 	ld (xsp+8),a
-L5429:
-L5427:
+L5491:
+L5489:
 	ld a,(xsp+8)
 	push xwa
-	call _lane_lat__33
+	call _lane_lat__34
 	lda xsp,(xsp+4)
 	ld (xiz+10),wa
-L5423:
-L5422:
+L5485:
+L5484:
 	ld wa,(xiz+6)
-	ld bc,(_car_d__33)
+	ld bc,(_car_d__34)
 	neg bc
 	sll 4,bc
 	sub bc,64
 	cp wa,bc
-	jr lt,L5433
+	jr lt,L5495
 	ld wa,(xiz+6)
 	ld bc,1600
-	ld de,(_car_d__33)
+	ld de,(_car_d__34)
 	sub bc,de
 	sll 4,bc
 	cp wa,bc
-	jr le,L5432
-L5433:
+	jr le,L5494
+L5495:
 	ldb (xiz),0
-	jr L5414
-L5432:
+	jr L5476
+L5494:
 	incb 1,(xsp+1)
-L5414:
+L5476:
 	incb 1,(xsp+0)
-L5415:
+L5477:
 	ld a,(xsp+0)
 	cp a,7
-	jp ult,L5412
-L5413:
-	ld a,(_cooldown__33)
+	jp ult,L5474
+L5475:
+	ld a,(_cooldown__34)
 	cp a,0
-	jr z,L5434
-	decb 1,(_cooldown__33)
-L5434:
+	jr z,L5496
+	decb 1,(_cooldown__34)
+L5496:
 	ld a,(xsp+22)
 	cp a,0
-	jr z,L5435
+	jr z,L5497
 	ld a,(xsp+1)
-	cp a,(_target__33)
-	jr uge,L5435
-	ld a,(_cooldown__33)
+	cp a,(_target__34)
+	jr uge,L5497
+	ld a,(_cooldown__34)
 	cp a,0
-	jr nz,L5435
+	jr nz,L5497
 	ld a,(xsp+18)
 	cp a,50
-	jr ule,L5435
-	call _spawn__33
-	ld c,(_hard__33)
+	jr ule,L5497
+	call _spawn__34
+	ld c,(_hard__34)
 	cp c,0
-	jr z,L5436
+	jr z,L5498
 	ld wa,16
-	jr L5437
-L5436:
+	jr L5499
+L5498:
 	ld wa,25
-L5437:
+L5499:
 	push xwa
-	call _rnd8__33
+	call _rnd8__34
 	ld xbc,xwa
 	pop xwa
 	extz bc
 	and bc,31
 	add wa,bc
-	ld (_cooldown__33),a
-	ld a,(_dens_max__33)
-	cp a,(_dens_min__33)
-	jr ule,L5438
-	ld a,(_dens_min__33)
+	ld (_cooldown__34),a
+	ld a,(_dens_max__34)
+	cp a,(_dens_min__34)
+	jr ule,L5500
+	ld a,(_dens_min__34)
 	extz wa
 	push xwa
-	call _rnd8__33
+	call _rnd8__34
 	ld xbc,xwa
 	pop xwa
 	extz bc
 	exts xbc
-	ld e,(_dens_max__33)
-	sub e,(_dens_min__33)
+	ld e,(_dens_max__34)
+	sub e,(_dens_min__34)
 	add e,1
 	extz de
 	divs xbc,de
 	ld bc,qbc
 	add wa,bc
-	ld (_target__33),a
-L5438:
-L5435:
-L5411:
+	ld (_target__34),a
+L5500:
+L5497:
+L5473:
 	lda xsp,(xsp+10)
 	pop xiz
 	ret
@@ -27296,9 +27645,9 @@ _traffic_collide:
 	push xiz
 	lda xsp,(xsp-12)
 	ld iyl,0
-	jp L5459
-L5456:
-	ld xwa,_cars__33
+	jp L5521
+L5518:
+	ld xwa,_cars__34
 	ld c,iyl
 	extz bc
 	muls xbc,14
@@ -27307,49 +27656,49 @@ L5456:
 	ld xiz,xwa
 	ld a,(xiz)
 	cp a,0
-	jr nz,L5460
-	jp L5458
-L5460:
+	jr nz,L5522
+	jp L5520
+L5522:
 	ld bc,(xiz+12)
 	cp bc,(xiz+6)
-	jr ge,L5461
+	jr ge,L5523
 	ld wa,(xiz+12)
-	jr L5462
-L5461:
+	jr L5524
+L5523:
 	ld wa,(xiz+6)
-L5462:
+L5524:
 	ld (xsp+8),wa
 	ld bc,(xiz+12)
 	cp bc,(xiz+6)
-	jr ge,L5463
+	jr ge,L5525
 	ld wa,(xiz+6)
-	jr L5464
-L5463:
+	jr L5526
+L5525:
 	ld wa,(xiz+12)
-L5464:
+L5526:
 	ld (xsp+10),wa
 	ld wa,(xsp+8)
 	cp wa,224
-	jr gt,L5466
+	jr gt,L5528
 	ld wa,(xsp+10)
 	cp wa,65440
-	jr ge,L5465
-L5466:
-	jr L5458
-L5465:
+	jr ge,L5527
+L5528:
+	jr L5520
+L5527:
 	ld wa,(xiz+4)
 	sub wa,(xsp+20)
 	ld ix,wa
 	ld wa,ix
 	cp wa,0
-	jr ge,L5467
+	jr ge,L5529
 	ld wa,ix
 	neg wa
 	ld ix,wa
-L5467:
+L5529:
 	ld wa,ix
 	cp wa,416
-	jr ge,L5468
+	jr ge,L5530
 	ld wa,(xiz+6)
 	add wa,960
 	ld (xiz+6),wa
@@ -27360,24 +27709,24 @@ L5467:
 	ld (xiz+3),a
 	ld bc,(xiz+4)
 	cp bc,(xsp+20)
-	jr ge,L5469
+	jr ge,L5531
 	ld wa,1
-	jr L5470
-L5469:
+	jr L5532
+L5531:
 	ld wa,2
-L5470:
-	jr L5455
-L5468:
-L5458:
+L5532:
+	jr L5517
+L5530:
+L5520:
 	inc 1,iyl
-L5459:
+L5521:
 	ld a,iyl
 	cp a,7
-	jp ult,L5456
-L5457:
+	jp ult,L5518
+L5519:
 	ld wa,0
-	jr L5455
-L5455:
+	jr L5517
+L5517:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -27396,16 +27745,16 @@ _traffic_draw:
 	extz wa
 	ld (xsp+12),wa
 	ld izl,0
-	jr L5507
-L5504:
-	ld xwa,_cars__33
+	jr L5569
+L5566:
+	ld xwa,_cars__34
 	ld c,izl
 	extz bc
 	muls xbc,14
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L5508
+	jr z,L5570
 	ld a,izl
 	lda xbc,(xsp+0)
 	ld e,(xsp+7)
@@ -27414,17 +27763,17 @@ L5504:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L5508:
-L5506:
+L5570:
+L5568:
 	inc 1,izl
-L5507:
+L5569:
 	ld a,izl
 	cp a,7
-	jr ult,L5504
-L5505:
+	jr ult,L5566
+L5567:
 	ld izl,1
-	jp L5512
-L5509:
+	jp L5574
+L5571:
 	lda xwa,(xsp+0)
 	ld c,izl
 	extz bc
@@ -27434,8 +27783,8 @@ L5509:
 	ld (xsp+14),a
 	ld a,izl
 	ld ixl,a
-	jr L5515
-L5513:
+	jr L5577
+L5575:
 	lda xwa,(xsp+0)
 	ld c,ixl
 	sub c,1
@@ -27450,11 +27799,11 @@ L5513:
 	add xbc,xde
 	ld (xbc),a
 	dec 1,ixl
-L5515:
+L5577:
 	ld a,ixl
 	cp a,0
-	jr ule,L5516
-	ld xwa,_cars__33
+	jr ule,L5578
+	ld xwa,_cars__34
 	lda xbc,(xsp+0)
 	ld e,ixl
 	sub e,1
@@ -27466,16 +27815,16 @@ L5515:
 	muls xbc,14
 	add xwa,xbc
 	ld wa,(xwa+6)
-	ld xbc,_cars__33
+	ld xbc,_cars__34
 	ld e,(xsp+14)
 	extz de
 	muls xde,14
 	add xbc,xde
 	ld bc,(xbc+6)
 	cp wa,bc
-	jr gt,L5513
-L5516:
-L5514:
+	jr gt,L5575
+L5578:
+L5576:
 	ld a,(xsp+14)
 	lda xbc,(xsp+0)
 	ld e,ixl
@@ -27483,17 +27832,17 @@ L5514:
 	exts xde
 	add xbc,xde
 	ld (xbc),a
-L5511:
+L5573:
 	inc 1,izl
-L5512:
+L5574:
 	ld a,izl
 	cp a,(xsp+7)
-	jp ult,L5509
-L5510:
+	jp ult,L5571
+L5572:
 	ld izl,0
-	jp L5520
-L5517:
-	ld xwa,_cars__33
+	jp L5582
+L5579:
+	ld xwa,_cars__34
 	lda xbc,(xsp+0)
 	ld e,izl
 	extz de
@@ -27505,7 +27854,7 @@ L5517:
 	add xwa,xbc
 	lda xwa,(xwa)
 	ld (xsp+14),xwa
-	ld wa,(_car_d__33)
+	ld wa,(_car_d__34)
 	ld xbc,(xsp+14)
 	ld bc,(xbc+6)
 	exts xbc
@@ -27514,9 +27863,9 @@ L5517:
 	ld (xsp+18),wa
 	ld wa,(xsp+18)
 	cp wa,0
-	jr ge,L5521
-	jp L5519
-L5521:
+	jr ge,L5583
+	jp L5581
+L5583:
 	push xix
 	ld wa,(xsp+22)
 	push xwa
@@ -27526,9 +27875,9 @@ L5521:
 	ld (xsp+20),a
 	ld a,(xsp+20)
 	cp a,255
-	jr nz,L5522
-	jp L5519
-L5522:
+	jr nz,L5584
+	jp L5581
+L5584:
 	push xix
 	lda xwa,(xsp+28)
 	push xwa
@@ -27539,46 +27888,46 @@ L5522:
 	pop xix
 	ld wa,(xsp+26)
 	cp wa,(xsp+12)
-	jr ge,L5523
-	jp L5519
-L5523:
+	jr ge,L5585
+	jp L5581
+L5585:
 	ld a,(xsp+28)
 	extz wa
 	sll 5,wa
 	extz xwa
-	ld c,(_half_wheel__33)
+	ld c,(_half_wheel__34)
 	extz bc
 	div xwa,bc
 	ld (xsp+22),a
 	ld a,(xsp+22)
 	cp a,28
-	jr ult,L5524
+	jr ult,L5586
 	ldb (xsp+21),0
-	jr L5525
-L5524:
+	jr L5587
+L5586:
 	ld a,(xsp+22)
 	cp a,20
-	jr ult,L5526
+	jr ult,L5588
 	ldb (xsp+21),1
-	jr L5527
-L5526:
+	jr L5589
+L5588:
 	ld a,(xsp+22)
 	cp a,13
-	jr ult,L5528
+	jr ult,L5590
 	ldb (xsp+21),2
-	jr L5529
-L5528:
+	jr L5591
+L5590:
 	ld a,(xsp+22)
 	cp a,9
-	jr ult,L5530
+	jr ult,L5592
 	ldb (xsp+21),3
-	jr L5531
-L5530:
+	jr L5593
+L5592:
 	ldb (xsp+21),4
-L5531:
-L5529:
-L5527:
-L5525:
+L5593:
+L5591:
+L5589:
+L5587:
 	ld xwa,_gfx_traffic_frames
 	ld xbc,(xsp+14)
 	ld c,(xbc+1)
@@ -27601,7 +27950,7 @@ L5525:
 	extz de
 	mul xbc,de
 	exts xbc
-	ld e,(_half_wheel__33)
+	ld e,(_half_wheel__34)
 	extz de
 	divs xbc,de
 	add wa,bc
@@ -27615,9 +27964,9 @@ L5525:
 	ld (xsp+38),wa
 	ld wa,(xsp+26)
 	cp wa,151
-	jr le,L5532
-	jp L5519
-L5532:
+	jr le,L5594
+	jp L5581
+L5594:
 	ld wa,(xsp+26)
 	add wa,1
 	ld xbc,(xsp+30)
@@ -27636,7 +27985,7 @@ L5532:
 	ld wa,0
 	exts xwa
 	ld (xsp+48),xwa
-	ld wa,(_trf_tiles__33)
+	ld wa,(_trf_tiles__34)
 	ld (xsp+52),wa
 	ld wa,(xsp+38)
 	ld (xsp+54),wa
@@ -27648,18 +27997,18 @@ L5532:
 	ldb (xsp+58),0
 	ld c,(_bridge_line)
 	cp c,0
-	jr z,L5533
+	jr z,L5595
 	ld bc,(xsp+26)
 	ld e,(_bridge_line)
 	extz de
 	cp bc,de
-	jr ge,L5533
+	jr ge,L5595
 	ld wa,16
-	jr L5534
-L5533:
+	jr L5596
+L5595:
 	ld a,(_id_spr_priority)
 	extz wa
-L5534:
+L5596:
 	ld (xsp+59),a
 	ld xwa,(xsp+14)
 	ld a,(xwa+2)
@@ -27678,13 +28027,13 @@ L5534:
 	pop xix
 	ld a,(xsp+61)
 	ld (xsp+10),a
-L5519:
+L5581:
 	inc 1,izl
-L5520:
+L5582:
 	ld a,izl
 	cp a,(xsp+7)
-	jp ult,L5517
-L5518:
+	jp ult,L5579
+L5580:
 	push xix
 	ld a,(_trf_spr_end)
 	push xwa
@@ -27693,7 +28042,7 @@ L5518:
 	call _id_spr_hide_range
 	lda xsp,(xsp+8)
 	pop xix
-L5503:
+L5565:
 	lda xsp,(xsp+66)
 	pop xiz
 	ret
@@ -27707,13 +28056,13 @@ _traffic_ap_target:
 	ld wa,65535
 	ld (xsp+4),wa
 	ld iyl,0
-	jp L5557
-L5554:
+	jp L5619
+L5616:
 	push xix
 	push xiy
 	ld a,iyl
 	push xwa
-	call _lane_lat__33
+	call _lane_lat__34
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
@@ -27721,28 +28070,28 @@ L5554:
 	ld wa,32767
 	ld (xsp+8),wa
 	ld izl,0
-	jp L5561
-L5558:
-	ld xwa,_cars__33
+	jp L5623
+L5620:
+	ld xwa,_cars__34
 	ld c,izl
 	extz bc
 	muls xbc,14
 	add xwa,xbc
 	ld a,(xwa)
 	cp a,0
-	jr z,L5563
-	ld xwa,_cars__33
+	jr z,L5625
+	ld xwa,_cars__34
 	ld c,izl
 	extz bc
 	muls xbc,14
 	add xwa,xbc
 	ld wa,(xwa+6)
 	cp wa,65280
-	jr ge,L5562
-L5563:
-	jr L5560
-L5562:
-	ld xwa,_cars__33
+	jr ge,L5624
+L5625:
+	jr L5622
+L5624:
+	ld xwa,_cars__34
 	ld c,izl
 	extz bc
 	muls xbc,14
@@ -27752,89 +28101,89 @@ L5562:
 	ld ix,wa
 	ld wa,ix
 	cp wa,0
-	jr ge,L5564
+	jr ge,L5626
 	ld wa,ix
 	neg wa
 	ld ix,wa
-L5564:
+L5626:
 	ld wa,ix
 	cp wa,480
-	jr ge,L5565
-	ld xwa,_cars__33
+	jr ge,L5627
+	ld xwa,_cars__34
 	ld c,izl
 	extz bc
 	muls xbc,14
 	add xwa,xbc
 	ld wa,(xwa+6)
 	cp wa,(xsp+8)
-	jr ge,L5565
-	ld xwa,_cars__33
+	jr ge,L5627
+	ld xwa,_cars__34
 	ld c,izl
 	extz bc
 	muls xbc,14
 	add xwa,xbc
 	ld wa,(xwa+6)
 	ld (xsp+8),wa
-L5565:
-L5560:
+L5627:
+L5622:
 	inc 1,izl
-L5561:
+L5623:
 	ld a,izl
 	cp a,7
-	jp ult,L5558
-L5559:
+	jp ult,L5620
+L5621:
 	ld wa,(xsp+8)
 	cp wa,(xsp+4)
-	jr gt,L5567
+	jr gt,L5629
 	ld wa,(xsp+8)
 	cp wa,(xsp+4)
-	jr nz,L5566
+	jr nz,L5628
 	ld wa,(xsp+24)
 	cp wa,0
-	jr ge,L5569
+	jr ge,L5631
 	ld a,iyl
 	cp a,0
-	jr z,L5568
-L5569:
+	jr z,L5630
+L5631:
 	ld wa,(xsp+24)
 	cp wa,0
-	jr le,L5566
+	jr le,L5628
 	ld a,iyl
 	cp a,3
-	jr nz,L5566
-L5568:
-L5567:
+	jr nz,L5628
+L5630:
+L5629:
 	ld wa,(xsp+8)
 	ld (xsp+4),wa
 	ld a,iyl
 	ld (xsp+2),a
-L5566:
-L5556:
+L5628:
+L5618:
 	inc 1,iyl
-L5557:
+L5619:
 	ld a,iyl
 	cp a,4
-	jp ult,L5554
-L5555:
+	jp ult,L5616
+L5617:
 	ld wa,(xsp+4)
 	cp wa,14400
-	jr le,L5570
+	jr le,L5632
 	ld wa,(xsp+24)
 	cp wa,0
-	jr z,L5570
+	jr z,L5632
 	ld wa,(xsp+24)
-	jr L5553
-L5570:
+	jr L5615
+L5632:
 	push xix
 	push xiy
 	ld a,(xsp+10)
 	push xwa
-	call _lane_lat__33
+	call _lane_lat__34
 	lda xsp,(xsp+4)
 	pop xiy
 	pop xix
-	jr L5553
-L5553:
+	jr L5615
+L5615:
 	lda xsp,(xsp+12)
 	pop xiz
 	ret
@@ -28923,6 +29272,75 @@ cv_have:
         pop     xiz
         ret
 
+
+; ================================================================
+; void id_road_wide_asm(RoadWide *w);   (SUNSET RUN)
+;
+; wide_rows() of id_road.c: from the bottom row up, the near rows whose plain
+; copy would wrap around the 256 px map take the copy stored VSHIFT px to
+; that side instead.  Stops at the first row outside the wide source rows.
+;
+;   XIX = &xy[scr] (descend de 2)   XIY = id_route_lim0
+;   C = scr - plane0 (descend)      B = rows left
+;   D = threshold of the negative side (0x90, 0x71 if lateral < 0)
+;   E = base_x                      W = lim of the row
+W_XY     equ 0      ; u16 *    &xy[road_bottom]
+W_LIM    equ 4      ; const u8 * id_route_lim0
+W_K      equ 8      ; u8 road_bottom - plane0
+W_N      equ 9      ; u8 rows (> 0)
+W_T      equ 10     ; u8 0x90 / 0x71
+W_BX     equ 11     ; u8 base_x
+WIDE0    equ 48
+WIDE_END equ 88
+VROWS    equ 40
+VSHIFT   equ 96
+
+
+_id_road_wide_asm:
+        ld      xwa,(xsp+0x4)
+        ld      xix,(xwa+W_XY)
+        ld      xiy,(xwa+W_LIM)
+        ld      bc,(xwa+W_K)            ; C = k, B = n
+        ld      de,(xwa+W_T)            ; E = threshold, D = base_x
+        ld      a,e
+        ld      e,d
+        ld      d,a                     ; D = threshold, E = base_x
+wd_loop:
+        ld      hl,(xix)                ; H = y, L = x
+        ld      a,h
+        add     a,c                     ; j = y + scr - plane0
+        cp      a,WIDE0
+        jr      c,wd_out
+        cp      a,WIDE_END
+        jr      nc,wd_out
+        extz    wa
+        ld      a,(xiy+wa)
+        ld      w,a                     ; lim
+        ld      a,l
+        sub     a,e                     ; d = x - base_x
+        cp      a,d
+        jr      nc,wd_neg
+        cp      a,w
+        jr      c,wd_next
+        add     h,VROWS
+        sub     l,VSHIFT
+        ld      (xix),hl
+        jr      wd_next
+wd_neg:
+        neg     a                       ; |dx|
+        cp      a,w
+        jr      c,wd_next
+        add     h,2*VROWS
+        add     l,VSHIFT
+        ld      (xix),hl
+wd_next:
+        dec     0x2,xix
+        dec     0x1,c
+        dec     0x1,b
+        jr      nz,wd_loop
+wd_out:
+        ret
+
 ; ---- src/spr_cells_asm.asm
 ; spr_cells_asm.asm - write a list of 8x8 sprite cells to the K2GE sprite table
 ;
@@ -28981,7 +29399,7 @@ sc_noflip:
         ld      l,c
         extz    hl
         sll     0x2,hl
-        add     hl,0x8800
+        add     hl,_spr_shadow          ; RAM copy, sent to 0x8800 in VBlank
         extz    xhl
         ld      (xhl+0x2),a             ; x (low byte of sx)
         ld      a,(xix+0x1)             ; cy * 8 + y
@@ -29007,7 +29425,7 @@ sc_tile:
         ; palette: 0x8C00 + spr
         ld      l,c
         extz    hl
-        add     hl,0x8c00
+        add     hl,_spr_pal_shadow      ; RAM copy of 0x8C00
         extz    xhl
         ld      a,(xiz+J_PAL)
         ld      (xhl),a
@@ -29018,6 +29436,59 @@ sc_next:
         jp      nz,sc_loop
 sc_done:
         ld      (xiz+J_SPR),c
+        pop     xiz
+        ret
+
+
+; ================================================================
+; void ovl_flush_asm(OvlFlush *f);   (SUNSET RUN, ovl.c, in VBlank)
+;
+; Writes to SCR1 the overlay cells of a box that differ from what is on
+; screen.  XIX = grid, XIY = prev (both 20 cells a row), XHL = SCR1 (32).
+F_GRID   equ 0
+F_PREV   equ 4
+F_VRAM   equ 8
+F_ROWS   equ 12
+F_COLS   equ 13
+
+
+_ovl_flush_asm:
+        push    xiz
+        ld      xwa,(xsp+0x8)
+        ld      xix,(xwa+F_GRID)
+        ld      xiy,(xwa+F_PREV)
+        ld      xhl,(xwa+F_VRAM)
+        ld      bc,(xwa+F_ROWS)         ; C = rows, B = cols
+        push    bc
+        ld      a,b
+        extz    wa
+        add     wa,wa
+        neg     wa                      ; -2 * cols
+        ld      de,wa
+        add     de,0x28                 ; 40 - 2 cols: next row of the grids
+        extz    xde
+        ld      iz,wa
+        add     iz,0x40                 ; 64 - 2 cols: next SCR1 row
+        extz    xiz
+of_row:
+        ld      b,(xsp+0x1)
+of_col:
+        ld      wa,(xix+)
+        cp      wa,(xiy)
+        jr      z,of_same
+        ld      (xiy),wa
+        ld      (xhl),wa
+of_same:
+        inc     0x2,xiy
+        inc     0x2,xhl
+        dec     0x1,b
+        jr      nz,of_col
+        add     xix,xde
+        add     xiy,xde
+        add     xhl,xiz
+        dec     0x1,c
+        jr      nz,of_row
+        pop     bc
         pop     xiz
         ret
 
@@ -29099,7 +29570,7 @@ _S0_11:
 	db 69,88,84,69,78,68,69,68,32,80,76,65,89,0
 _S0_12:
 	db 67,72,69,67,75,80,79,73,78,84,33,0
-_lv__0_L355:
+_lv__0_L363:
 	db 1,2,3,4,4,4,4,3,3,2,1,0
 _emblem_pal_slot__0:
 	db 2,3,4,5,6,8,9,10,11,12,13,14,15
@@ -29109,7 +29580,7 @@ _S0_13:
 	db 72,73,0
 _S0_14:
 	db 66,58,78,69,87,0
-_tsm__0_L587:
+_tsm__0_L595:
 	db 1,125,126,127
 _S0_15:
 	db 80,82,69,83,83,32,65,32,84,79,32,83,84,65,82,84
@@ -29159,7 +29630,7 @@ _S0_30:
 _S0_31:
 	db 71,79,33,0
 	align 2
-_cd__0_L1181:
+_cd__0_L1189:
 	dd _S0_28
 	dd _S0_29
 	dd _S0_30
@@ -36081,7 +36552,7 @@ _b_text__11:
 	align 2
 _b_shad__11:
 	db 0,0,6,0,0,0,0,0
-_slim__12_L1712:
+_slim__12_L1728:
 	db 34,39,59,61,62,63
 	align 2
 _overrev_dash_tiles__15:
@@ -36265,7 +36736,7 @@ _dir_x__19:
 	db 16,11,0,245,240,245,0,11
 _dir_y__19:
 	db 0,245,240,245,0,11,16,11
-_pals__19_L2730:
+_pals__19_L2732:
 	db 1,2,9,10
 	align 2
 _gfx_font_tiles__26:
@@ -36407,9 +36878,9 @@ _band_lut__30:
 	db 3,0,1,2,3,3,3,3,2,1,0,0,0,0,1,2
 	db 3,3,3,3,3,3,3,2,1,0,0,0,0,0,0,0
 	db 1,2,3,3,3,3,3,3,3,3,3,3,3,3,2,1
-_crowd_pal__31_L5098:
+_crowd_pal__31_L5074:
 	db 6,8,10
-_pano_slot__32:
+_pano_slot__33:
 	db 8,9,10,11,12,13,14,15,2,3,4,5,6
 	align 2
 __DataROM_START:
@@ -36465,14 +36936,16 @@ __DataROM_START:
 	db 2
 	db 0
 	db 255,255,255,255
+	db 255
+	db 0
 	db 43,29
 	db 6
 	db 50
 __DataROM_END:
 __Bss_START equ 04000h
-__Bss_END equ 05766h
-__DataRAM_START equ 05766h
-__RAM_END equ 057CEh
+__Bss_END equ 05E0Ch
+__DataRAM_START equ 05E0Ch
+__RAM_END equ 05E76h
 _road_edge__0 equ 04000h
 _lat_limit__0 equ 04002h
 _speed__0 equ 04004h
@@ -36538,12 +37011,13 @@ _dbg_crashes equ 040E8h
 _dbg_scn equ 040E9h
 _dbg_off equ 040EAh
 _grade_tab__0 equ 040EBh
-_save_buf__0 equ 040F8h
-_save_dirty__0 equ 041F8h
-_map_px__0 equ 041F9h
-_map_py__0 equ 04205h
-_map_n__0 equ 04211h
-_map_seg__0 equ 04212h
+_frame_vb__0 equ 040F8h
+_save_buf__0 equ 040F9h
+_save_dirty__0 equ 041F9h
+_map_px__0 equ 041FAh
+_map_py__0 equ 04206h
+_map_n__0 equ 04212h
+_map_seg__0 equ 04213h
 _map_t__0 equ 04214h
 _map_along__0 equ 04216h
 _map_done__0 equ 04218h
@@ -36634,136 +37108,147 @@ _s_rearm_src__20 equ 04672h
 _h_score__26 equ 04682h
 _h_score_ok__26 equ 04689h
 _s_dig__26 equ 0468Ah
-_body__29 equ 04692h
-_car_variant__29 equ 046B2h
-_car_wheel_dx__29 equ 046B3h
-_car_tile_base__29 equ 046B4h
-_lean_hold__29 equ 046B6h
-_lean_side__29 equ 046B7h
-_lean_wait__29 equ 046B8h
-_bump_phase__29 equ 046B9h
-_car_last_x__29 equ 046BAh
-_car_last_top__29 equ 046BCh
-_art__30 equ 046BEh
-_road_course__30 equ 046D6h
-_road_grade__30 equ 046D7h
-_band_pitch__30 equ 046D8h
-_climb_room__30 equ 046DAh
-_descent_room__30 equ 046DBh
-_band_shift__30 equ 046DCh
-_id_xy_a__30 equ 046DEh
-_id_xy_b__30 equ 04810h
-_id_xy_done__30 equ 04942h
-_id_xy_last__30 equ 04946h
-_id_raster__30 equ 0494Ah
-_id_shear__30 equ 0495Eh
-_id_sl__30 equ 049DEh
-_id_bandcol_a__30 equ 04A9Eh
-_id_bandcol_b__30 equ 04BD0h
-_bc_top__30 equ 04D02h
-_id_bandcol_done__30 equ 04D04h
-_id_bandstream__30 equ 04D08h
-_band_phase__30 equ 04D16h
-_id_dxc__30 equ 04D18h
-_id_w_lat__30 equ 04E18h
-_id_w_curve__30 equ 04E58h
-_id_half__30 equ 04E98h
-_id_src__30 equ 04ED8h
-_band_top__30 equ 04F18h
-_band_mid__30 equ 04F1Ch
-_band_tree__30 equ 04F20h
-_band_bg_first__30 equ 04F24h
-_id_buf__30 equ 04F26h
-_pan_head__30 equ 04F28h
-_pan_lat__30 equ 04F2Ah
-_pan_fine__30 equ 04F2Ch
-_band_held__30 equ 04F2Dh
-_band_wait__30 equ 04F2Eh
-_id_ahead__30 equ 04F30h
-_id_curve_cm__30 equ 04FB0h
-_wide_k0__30 equ 04FB2h
-_rally_of__30 equ 04FB3h
-_rally_src__30 equ 051B4h
-_rally_used__30 equ 053B2h
-_rally_scanned__30 equ 053B3h
-_band_col__30 equ 053B4h
-_road_dma_live__30 equ 053BCh
-_road_dma_depth__30 equ 053BDh
-_id_curve_dx__30 equ 053BEh
-_scn_phase__31 equ 0543Eh
-_scn_frac__31 equ 05440h
-_scn_passed__31 equ 05442h
-_scn_mode__31 equ 05443h
-_pano_base__32 equ 05444h
-_obj_base__32 equ 05446h
-_obj_end__32 equ 05448h
-_pano_end__32 equ 0544Ah
-_objmap__32 equ 0544Ch
-_kind_l__32 equ 0564Ch
-_kind_r__32 equ 0564Dh
-_cur_pals__32 equ 0564Eh
-_cur_backdrop__32 equ 056B6h
-_cur_road__32 equ 056B8h
-_cur_band__32 equ 056C0h
-_cur_spr__32 equ 056C8h
-_next_slot__32 equ 056F8h
-_cars__33 equ 056FAh
-_trf_tiles__33 equ 0575Ch
-_car_d__33 equ 0575Eh
-_half_wheel__33 equ 05760h
-_dens_min__33 equ 05761h
-_dens_max__33 equ 05762h
-_target__33 equ 05763h
-_cooldown__33 equ 05764h
-_hard__33 equ 05765h
-_car_tuned__0 equ 05766h
-_roll_loaded__0 equ 05774h
-_hiscore__0 equ 05776h
-_eng_attn__10 equ 05786h
-_bb_r0__12 equ 05787h
-_sig_prev__12 equ 05788h
-_s_current__13 equ 0578Ah
-_s_last_slot__13 equ 0578Bh
-_ngpc_pad_held equ 0578Ch
-_ngpc_pad_pressed equ 0578Dh
-_ngpc_pad_released equ 0578Eh
-_ngpc_pad_repeat equ 0578Fh
-_s_pad_prev__14 equ 05790h
-_s_repeat_delay__14 equ 05791h
-_s_repeat_rate__14 equ 05792h
-_s_vbl_down__14 equ 05793h
-_s_vbl_prev__14 equ 05794h
-_g_vb_counter equ 05795h
-_s_is_color__15 equ 05796h
-_s_language__15 equ 05797h
-_s_power_hold__16_L2380 equ 05798h
-_track_seg equ 0579Ah
-_free_seed equ 0579Eh
-_seed__19 equ 057A0h
-_cur_song__22 equ 057A2h
-_h_time__26 equ 057A3h
-_h_kmh__26 equ 057A4h
-_h_gear__26 equ 057A5h
-_h_prog__26 equ 057A6h
-_h_stage__26 equ 057A7h
-_id_spr_priority equ 057A8h
-_car_at_x__29 equ 057AAh
-_car_stand__30 equ 057ACh
-_grade_hi__30 equ 057ADh
-_grade_lo__30 equ 057AEh
-_band_first__30 equ 057AFh
-_band_count__30 equ 057B0h
-_band_bg_end__30 equ 057B1h
-_road_top__30 equ 057B3h
-_road_plane0__30 equ 057B4h
-_road_bottom__30 equ 057B5h
-_road_lines__30 equ 057B6h
-_road_base_x__30 equ 057B7h
-_id_xy__30 equ 057B8h
-_id_xy_live__30 equ 057BCh
-_id_bandcol__30 equ 057C0h
-_road_band_pal__30 equ 057C4h
-_bc_rest__30 equ 057C6h
-_rng__33 equ 057CAh
-_trf_cap__33 equ 057CCh
-_trf_spr_end equ 057CDh
+_spr_shadow equ 04692h
+_spr_pal_shadow equ 04792h
+_spr_ready equ 047D2h
+_body__29 equ 047D4h
+_car_variant__29 equ 047F4h
+_car_wheel_dx__29 equ 047F5h
+_car_tile_base__29 equ 047F6h
+_lean_hold__29 equ 047F8h
+_lean_side__29 equ 047F9h
+_lean_wait__29 equ 047FAh
+_bump_phase__29 equ 047FBh
+_car_last_x__29 equ 047FCh
+_car_last_top__29 equ 047FEh
+_art__30 equ 04800h
+_road_course__30 equ 04818h
+_road_grade__30 equ 04819h
+_band_pitch__30 equ 0481Ah
+_climb_room__30 equ 0481Ch
+_descent_room__30 equ 0481Dh
+_band_shift__30 equ 0481Eh
+_id_xy_a__30 equ 04820h
+_id_xy_b__30 equ 04952h
+_id_xy_done__30 equ 04A84h
+_id_xy_last__30 equ 04A88h
+_id_raster__30 equ 04A8Ch
+_id_shear__30 equ 04AA0h
+_id_sl__30 equ 04B20h
+_id_bandcol_a__30 equ 04BE0h
+_id_bandcol_b__30 equ 04D12h
+_bc_top__30 equ 04E44h
+_id_bandcol_done__30 equ 04E46h
+_id_bandstream__30 equ 04E4Ah
+_band_phase__30 equ 04E58h
+_id_dxc__30 equ 04E5Ah
+_id_w_lat__30 equ 04F5Ah
+_id_w_curve__30 equ 04F9Ah
+_id_half__30 equ 04FDAh
+_id_src__30 equ 0501Ah
+_band_top__30 equ 0505Ah
+_band_mid__30 equ 0505Eh
+_band_tree__30 equ 05062h
+_band_bg_first__30 equ 05066h
+_id_buf__30 equ 05068h
+_pan_head__30 equ 0506Ah
+_pan_lat__30 equ 0506Ch
+_pan_fine__30 equ 0506Eh
+_band_held__30 equ 0506Fh
+_band_wait__30 equ 05070h
+_id_ahead__30 equ 05072h
+_id_curve_cm__30 equ 050F2h
+_wide_k0__30 equ 050F4h
+_rally_of__30 equ 050F5h
+_rally_src__30 equ 052F6h
+_rally_used__30 equ 054F4h
+_rally_scanned__30 equ 054F5h
+_band_col__30 equ 054F6h
+_road_dma_live__30 equ 054FEh
+_road_dma_depth__30 equ 054FFh
+_id_curve_dx__30 equ 05500h
+_scn_phase__31 equ 05580h
+_scn_frac__31 equ 05582h
+_scn_passed__31 equ 05584h
+_scn_mode__31 equ 05585h
+_ovl_grid equ 05586h
+_ovl_prev__32 equ 0582Eh
+_m_r1__32 equ 05AD6h
+_m_c0__32 equ 05AD7h
+_m_c1__32 equ 05AD8h
+_fl__32 equ 05ADAh
+_fl_ready__32 equ 05AE8h
+_pano_base__33 equ 05AEAh
+_obj_base__33 equ 05AECh
+_obj_end__33 equ 05AEEh
+_pano_end__33 equ 05AF0h
+_objmap__33 equ 05AF2h
+_kind_l__33 equ 05CF2h
+_kind_r__33 equ 05CF3h
+_cur_pals__33 equ 05CF4h
+_cur_backdrop__33 equ 05D5Ch
+_cur_road__33 equ 05D5Eh
+_cur_band__33 equ 05D66h
+_cur_spr__33 equ 05D6Eh
+_next_slot__33 equ 05D9Eh
+_cars__34 equ 05DA0h
+_trf_tiles__34 equ 05E02h
+_car_d__34 equ 05E04h
+_half_wheel__34 equ 05E06h
+_dens_min__34 equ 05E07h
+_dens_max__34 equ 05E08h
+_target__34 equ 05E09h
+_cooldown__34 equ 05E0Ah
+_hard__34 equ 05E0Bh
+_car_tuned__0 equ 05E0Ch
+_roll_loaded__0 equ 05E1Ah
+_hiscore__0 equ 05E1Ch
+_eng_attn__10 equ 05E2Ch
+_bb_r0__12 equ 05E2Dh
+_sig_prev__12 equ 05E2Eh
+_s_current__13 equ 05E30h
+_s_last_slot__13 equ 05E31h
+_ngpc_pad_held equ 05E32h
+_ngpc_pad_pressed equ 05E33h
+_ngpc_pad_released equ 05E34h
+_ngpc_pad_repeat equ 05E35h
+_s_pad_prev__14 equ 05E36h
+_s_repeat_delay__14 equ 05E37h
+_s_repeat_rate__14 equ 05E38h
+_s_vbl_down__14 equ 05E39h
+_s_vbl_prev__14 equ 05E3Ah
+_g_vb_counter equ 05E3Bh
+_s_is_color__15 equ 05E3Ch
+_s_language__15 equ 05E3Dh
+_s_power_hold__16_L2382 equ 05E3Eh
+_track_seg equ 05E40h
+_free_seed equ 05E44h
+_seed__19 equ 05E46h
+_cur_song__22 equ 05E48h
+_h_time__26 equ 05E49h
+_h_kmh__26 equ 05E4Ah
+_h_gear__26 equ 05E4Bh
+_h_prog__26 equ 05E4Ch
+_h_stage__26 equ 05E4Dh
+_id_spr_priority equ 05E4Eh
+_car_at_x__29 equ 05E50h
+_car_stand__30 equ 05E52h
+_grade_hi__30 equ 05E53h
+_grade_lo__30 equ 05E54h
+_band_first__30 equ 05E55h
+_band_count__30 equ 05E56h
+_band_bg_end__30 equ 05E57h
+_road_top__30 equ 05E59h
+_road_plane0__30 equ 05E5Ah
+_road_bottom__30 equ 05E5Bh
+_road_lines__30 equ 05E5Ch
+_road_base_x__30 equ 05E5Dh
+_id_xy__30 equ 05E5Eh
+_id_xy_live__30 equ 05E62h
+_id_bandcol__30 equ 05E66h
+_road_band_pal__30 equ 05E6Ah
+_bc_rest__30 equ 05E6Ch
+_m_r0__32 equ 05E70h
+_rng__34 equ 05E72h
+_trf_cap__34 equ 05E74h
+_trf_spr_end equ 05E75h

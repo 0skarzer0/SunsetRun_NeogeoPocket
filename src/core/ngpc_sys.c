@@ -83,14 +83,27 @@ void ngpc_set_vblank_hook(NgpcVblankFn fn)
     g_vb_hook = fn;
 }
 
+/* SUNSET RUN: the finished frame's sprites (see id_player.c) */
+extern u16 spr_shadow[128];
+extern u16 spr_pal_shadow[32];
+extern volatile u8 spr_ready;
+extern void ngpc_memcpy_w(u32 dst_addr, u32 src_addr, u32 words);
+extern void ovl_vblank(void);
+
 static void __interrupt isr_vblank(void)
 {
     HW_WATCHDOG = WATCHDOG_CLEAR;
+    if (spr_ready) {
+        ngpc_memcpy_w(0x8800ul, (u32)spr_shadow, 128ul);
+        ngpc_memcpy_w(0x8C00ul, (u32)spr_pal_shadow, 32ul);
+        spr_ready = 0u;
+    }
     /* Shutdown handling is performed in ngpc_vsync() (main context). */
 
     if (g_vb_hook) {
         g_vb_hook();
     }
+    ovl_vblank();            /* SUNSET RUN: bridges and gantry, after the DMA re-arm */
 
     /* Execute queued VRAM writes during VBlank. */
     ngpc_vramq_flush();

@@ -4,8 +4,13 @@
 #include "id_road.h"
 #include "id_fleet.h"
 #include "spr_cells.h"
-#define SPR_TABLE  0x8800u      
-#define SPR_PALS   0x8C00u      
+/* SUNSET RUN: sprites are written to a RAM copy of the sprite table; the
+ * VBlank interrupt copies it to the K2GE once the frame is complete
+ * (frame_commit in main.c), so a sprite never moves while the screen is
+ * being drawn. */
+u16 spr_shadow[128];            /* 64 x (tile, attr, x, y) */
+u16 spr_pal_shadow[32];         /* 64 palette numbers */
+volatile u8 spr_ready;
 #define CAR_PAL     0u
 #define CAR_PAL2    5u
 static IdBody body;
@@ -15,24 +20,24 @@ static u16 car_tile_base;
 u8 id_spr_priority = SPR_FRONT;
 void id_spr_put(u8 id, u8 x, u8 y, u16 tile, u8 pal, u8 flip)
 {
-    volatile u8 *s = (volatile u8 *)(SPR_TABLE + ((u16)id << 2));
+    u8 *s = (u8 *)spr_shadow + ((u16)id << 2);
     s[0] = (u8)(tile & 0x00FFu);
     s[1] = (u8)(flip | id_spr_priority | (u8)((tile >> 8) & 1u));
     s[2] = x;
     s[3] = y;
-    *(volatile u8 *)(SPR_PALS + (u16)id) = (u8)(pal & 0x0Fu);
+    ((u8 *)spr_pal_shadow)[id] = (u8)(pal & 0x0Fu);
 }
 void id_spr_hide_range(u8 from, u8 to)
 {
-    volatile u8 *s;
+    u8 *s;
     u8 n;
     if (from >= to) {
         return;
     }
-    s = (volatile u8 *)(SPR_TABLE + 1u + ((u16)from << 2));
+    s = (u8 *)spr_shadow + 1u + ((u16)from << 2);
     n = (u8)(to - from);
     do {
-        *s = (u8)(*s & (u8)~(3u << 3));          
+        *s = 0u;                /* priority 0: hidden (a drawn sprite rewrites it all) */
         s += 4;
     } while (--n != 0u);
 }

@@ -29,6 +29,7 @@ void id_road_frame(s16 lateral, s16 curve, s16 heading);
 const u16 *id_road_ahead(void);
 u8 id_road_lines(void);
 void id_road_frame_ahead(s16 lateral, const s16 *bend, s16 heading);
+void id_road_ready(void);    /* publish the table just written (next VBlank) */
 s16 id_road_centre_at(u8 line);
 u8 id_road_half_at(u8 line);
 void id_road_set_hill(s8 grade);

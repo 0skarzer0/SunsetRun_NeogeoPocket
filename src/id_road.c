@@ -707,6 +707,7 @@ extern void id_road_shear_asm(RoadShearWalk *s);
  * far enough that a row's plain copy would wrap around, show the copy stored
  * ID_ROUTE_VSHIFT px to that side instead (same picture, other map rows). */
 #define WIDE_SAFE 46
+#ifdef WIDE_C
 static void wide_rows(u16 *xy, u8 base_x, u8 plane0, s16 above, s16 lateral)
 {
     u8 scr = road_bottom;
@@ -746,6 +747,32 @@ static void wide_rows(u16 *xy, u8 base_x, u8 plane0, s16 above, s16 lateral)
         scr--;
     }
 }
+#else
+typedef struct {
+    u16 *xy;                /* &xy[road_bottom] */
+    const u8 *lim;          /* id_route_lim0 */
+    u8 k;                   /* road_bottom - plane0 */
+    u8 n;                   /* rows to look at (> 0) */
+    u8 thr;                 /* d >= thr: the row is shifted to the left */
+    u8 base_x;
+} RoadWide;
+typedef char road_wide_is_12[(sizeof(RoadWide) == 12u) ? 1 : -1];
+extern void id_road_wide_asm(RoadWide *w);
+static void wide_rows(u16 *xy, u8 base_x, u8 plane0, s16 above, s16 lateral)
+{
+    RoadWide w;
+    s16 stop = (s16)(above + 1);
+    if (stop < 0) stop = 0;
+    if (stop > (s16)road_bottom) stop = (s16)road_bottom;
+    w.xy = &xy[road_bottom];
+    w.lim = id_route_lim0;
+    w.k = (u8)(road_bottom - plane0);
+    w.n = (u8)(road_bottom - (u8)stop + 1u);
+    w.thr = (u8)((lateral >= 0) ? 0x90u : 0x71u);
+    w.base_x = base_x;
+    id_road_wide_asm(&w);
+}
+#endif
 static void id_road_write(s16 lateral, s16 heading)
 {
     u16 line;
@@ -1141,7 +1168,8 @@ void id_road_frame_ahead(s16 lateral, const s16 *bend, s16 heading)
     }
 #endif
     id_road_write(lateral, heading);
-    id_road_ready();
+    /* SUNSET RUN: id_road_ready() is called by the game when the whole
+     * frame (road and sprites) is finished, see frame_commit() in main.c */
 }
 static void id_fill_hud_band(void)
 {

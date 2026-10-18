@@ -22,17 +22,24 @@ INCLUDES = ['src', 'src/core', 'src/gfx', 'src/fx', 'GraphX']
 EXE = '.exe' if os.name == 'nt' else ''
 
 
+# the Windows package of AS calls the assembler asw.exe
+ALIASES = {'asl': ('asl', 'asw'), 'p2bin': ('p2bin',)}
+
+
 def find_tool(name, env):
     if os.environ.get(env):
         return os.environ[env]
+    names = ALIASES.get(name, (name,))
+    wanted = {n + '.exe' for n in names} | set(names)
     for base in (os.path.join(ROOT, 'tools', 'win'), os.path.join(ROOT, 'tools', 'asl')):
         for dirpath, dirs, files in os.walk(base):
             for f in files:
-                if f.lower() in (name + EXE, name):
+                if f.lower() in wanted:
                     return os.path.join(dirpath, f)
-    p = shutil.which(name)
-    if p:
-        return p
+    for n in names:
+        p = shutil.which(n)
+        if p:
+            return p
     if os.path.isfile('/root/asl/' + name):
         return '/root/asl/' + name
     return None
@@ -67,7 +74,7 @@ def main():
     asl, p2bin = find_tool('asl', 'ASL'), find_tool('p2bin', 'P2BIN')
     if not asl or not p2bin:
         raise SystemExit(
-            'The assembler (asl and p2bin) was not found.\n'
+            'The assembler (asl/asw and p2bin) was not found.\n'
             'Windows: download the AS package\n'
             '  http://john.ccac.rwth-aachen.de:8000/ftp/as/precompiled/i386-unknown-win32/aswcurr.zip\n'
             'and unzip it into the folder tools\\win\\ of this project, then run build.bat again.')

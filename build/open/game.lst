@@ -1,4 +1,4 @@
- AS V1.42 Beta [Bld 306] - Source File game.asm - Page 1 - 10/17/26 23:22:59
+ AS V1.42 Beta [Bld 306] - Source File game.asm - Page 1 - 10/18/26 00:25:49
 
 
     1/     0 :                          	cpu 96c141
@@ -43513,7 +43513,7 @@
 36768/22A324 : =57CCH                   _trf_cap__33 equ 057CCh
 36769/22A324 : =57CDH                   _trf_spr_end equ 057CDh
 36770/22A324 :                          
- AS V1.42 Beta [Bld 306] - Source File game.asm - Page 2 - 10/17/26 23:22:59
+ AS V1.42 Beta [Bld 306] - Source File game.asm - Page 2 - 10/18/26 00:25:49
 
 
   Symbol Table (* = unused):
@@ -43533,7 +43533,7 @@
 *CASESENSITIVE :                  1 - | *CONSTPI :     3.141592653589793239 - |
  C_BEND :                         0 - |  C_CM :                           8 - |
  C_N :                           0A - |  C_OUT :                          4 - |
-*DATE :                  "10/17/26" - |  DMA_MODE_SINC1 :                 8 - |
+*DATE :                  "10/18/26" - |  DMA_MODE_SINC1 :                 8 - |
  DMA_MODE_SINC2 :                 9 - |  DMA_MODE_SINC4 :                0A - |
 *FALSE :                          0 - |  FLASH_BUS_CTRL :                6E - |
  FLASH_RAM :                   6E00 - |  FLASH_WD :                      6F - |
@@ -44947,7 +44947,7 @@
  SL_GRADE :                      40 - |  S_CV :                           4 - |
  S_LAT :                         10 - |  S_MX :                           8 - |
  S_N :                           12 - |  S_SH :                          0C - |
- S_W :                            0 - | *TIME :                  "23:22:59" - |
+ S_W :                            0 - | *TIME :                  "00:25:49" - |
 *TRUE :                           1 - | *VERSION :                     142F - |
  V_BAND :                         4 - |  V_BASEX :                       24 - |
  V_BCOL :                        18 - |  V_HALF :                        20 - |
@@ -45500,7 +45500,7 @@
    3917 symbols
     856 unused symbols
 
- AS V1.42 Beta [Bld 306] - Source File game.asm - Page 3 - 10/17/26 23:22:59
+ AS V1.42 Beta [Bld 306] - Source File game.asm - Page 3 - 10/18/26 00:25:49
 
 
   Code Pages:
@@ -45510,7 +45510,7 @@ STANDARD (0 changed characters)
 
 1 code page
 
-0.28 seconds assembly time
+0.32 seconds assembly time
 
   36770 lines source file
       3 passes

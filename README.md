@@ -109,11 +109,13 @@ Etapa 5:  AUTOPISTA   CAÑÓN       LAGO      PUEBLO COSTERO   RUINAS
 
 1. Instala **Python 3** desde https://www.python.org/downloads/ (marca la casilla
    *Add python.exe to PATH*).
-2. Descarga el ensamblador **AS** para Windows
-   (http://john.ccac.rwth-aachen.de:8000/ftp/as/precompiled/i386-unknown-win32/aswcurr.zip)
-   y descomprímelo dentro de la carpeta `tools\win\`.
-3. Haz doble clic en **`build.bat`**. La primera vez instala solo `pycparser` y
-   `pillow`. La ROM queda en `bin\sunsetrun.ngc`.
+2. Haz doble clic en **`build.bat`**. La primera vez instala `pycparser` y `pillow` y
+   descarga el ensamblador **AS** (`asw.exe` y `p2bin.exe`) en `tools\win\`. La ROM
+   queda en `bin\sunsetrun.ngc`.
+
+Si la descarga automática falla (sin Internet, cortafuegos...), baja a mano
+http://john.ccac.rwth-aachen.de:8000/ftp/as/precompiled/i386-unknown-win32/aswcurr.zip
+y descomprímelo dentro de `tools\win\`.
 
 No hace falta gcc ni nada más: el compilador de C (`tools/c900`) y su
 preprocesador están escritos en Python.

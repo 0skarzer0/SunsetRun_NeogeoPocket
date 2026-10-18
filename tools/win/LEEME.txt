@@ -1,6 +1,10 @@
-Descomprime aqui el paquete de Windows del Macroassembler AS:
+Aqui va el ensamblador Macroassembler AS para Windows.
+
+build.bat lo descarga y lo descomprime solo la primera vez. Si tu ordenador no
+puede descargarlo, bajalo a mano:
 
   http://john.ccac.rwth-aachen.de:8000/ftp/as/precompiled/i386-unknown-win32/aswcurr.zip
 
-(da igual la estructura de carpetas: build.bat busca asl.exe y p2bin.exe en
-cualquier subcarpeta de tools\win y los ficheros *.msg que los acompanan).
+y descomprimelo en esta carpeta (tools\win\). Da igual la estructura de
+carpetas: se busca asw.exe (o asl.exe) y p2bin.exe en cualquier subcarpeta, y
+los ficheros *.msg que los acompanan.

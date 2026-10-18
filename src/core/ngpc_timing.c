@@ -9,7 +9,6 @@
 #include "ngpc_sys.h"
 #include "ngpc_timing.h"
 #if NGP_ENABLE_DEBUG && !NGP_PROFILE_RELEASE
-#include "ngpc_vramq.h"
 #include "ngpc_assert.h"
 #endif
 
@@ -25,14 +24,6 @@ void ngpc_vsync(void)
     u8 prev = g_vb_counter;
     while (g_vb_counter == prev)
         ;
-
-#if NGP_ENABLE_DEBUG && !NGP_PROFILE_RELEASE
-    /* DBG-1: catch VRAMQ overflow — too many commands queued in one frame.
-     * The assert fires once and halts (with file/line on screen) so you can
-     * identify the offending frame. Raise VRAMQ_MAX_CMDS or reduce writes. */
-    NGPC_ASSERT(ngpc_vramq_dropped() == 0);
-    ngpc_vramq_clear_dropped();
-#endif
 
     /* LE SYSTEME DEMANDE L'EXTINCTION, ET C'EST LE SEUL ENDROIT QUI LA DECIDE.
      *

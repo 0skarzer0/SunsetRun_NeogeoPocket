@@ -24,7 +24,6 @@
 #include "../GraphX/gfx_font.h"
 #include "game_audio.h"
 #include "audio/player.h"
-#include "../GraphX/gfx_logo.h"
 #include "../GraphX/gfx_extra.h"
 #include "audio/music_data.h"
 #include "../GraphX/gfx_title.h"

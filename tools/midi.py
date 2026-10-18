@@ -2,7 +2,8 @@
 
 Drop .mid files into the `music/` folder and run the build: each file becomes
 one radio station (in file-name order, up to MAX_SONGS).  A file whose name
-starts with "goal" replaces the ending theme played at the finish.
+starts with "goal" replaces the finish theme, one starting with "over" the
+game over / results theme.
 
 How a MIDI file is mapped onto the NGPC sound chip (3 square-wave voices and
 one noise channel):
@@ -304,16 +305,19 @@ def convert(path, noise_ctl, noise_inst, noise_attn):
 
 
 def load_folder(folder, noise_ctl, noise_inst, noise_attn):
-    """-> (radio songs, goal song or None); each = (name, streams)"""
+    """-> (radio songs, {'goal'/'over': song}); each song = (name, streams)"""
+    radio, extra = [], {}
     if not os.path.isdir(folder):
-        return [], None
+        return radio, extra
     files = sorted(f for f in os.listdir(folder) if f.lower().endswith(('.mid', '.midi')))
-    radio, goal = [], None
     for f in files:
         name, streams, secs = convert(os.path.join(folder, f), noise_ctl, noise_inst, noise_attn)
         print('  music/%s -> "%s" (%.0f s, %d bytes)' % (f, name, secs, sum(len(s) for s in streams)))
-        if f.lower().startswith('goal'):
-            goal = (name, streams)
+        low = f.lower()
+        if low.startswith(('goal', 'over')):
+            extra[low[:4]] = (name, streams)
         elif len(radio) < MAX_SONGS:
             radio.append((name, streams))
-    return radio, goal
+        else:
+            print('  (only %d radio stations: %s is left out)' % (MAX_SONGS, f))
+    return radio, extra

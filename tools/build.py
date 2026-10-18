@@ -94,13 +94,13 @@ def main():
         for dirpath, _, names in os.walk(os.path.join(ROOT, top)):
             for n in names:
                 rel = os.path.relpath(os.path.join(dirpath, n), ROOT)
-                if n.endswith('.c') and n not in ('main.c', 'ngpc_runtime.c'):
+                if n.endswith('.c') and n != 'main.c':
                     files.append(rel)
     c_files = [files[0]] + sorted(files[1:])
     asm_files = []
     for dirpath, _, names in os.walk(os.path.join(ROOT, 'src')):
         for n in names:
-            if n.endswith('.asm') and n != 'ngpc_runtime_alias.asm':
+            if n.endswith('.asm'):
                 asm_files.append(os.path.relpath(os.path.join(dirpath, n), ROOT))
     os.makedirs(os.path.join(ROOT, 'bin'), exist_ok=True)
     cmd = [py, os.path.join('tools', 'c900', 'build900.py'), '-o', os.path.join('bin', a.o),

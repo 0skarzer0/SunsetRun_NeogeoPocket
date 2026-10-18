@@ -2,12 +2,10 @@
 
 Un arcade de carretera al estilo de **OutRun** para **Neo Geo Pocket Color**:
 contrarreloj con checkpoints, cinco etapas con bifurcaciones (15 tramos y 5 metas),
-tráfico, radio con tres temas originales y el clásico "elige izquierda o derecha".
+tráfico, una radio con tus propias canciones MIDI y el clásico "elige izquierda o derecha".
 
-Proyecto homebrew, gratuito y de código abierto. No está afiliado a SEGA; nombre,
-gráficos y música son originales.
-
-![gameplay](media/gameplay.gif)
+Proyecto homebrew, gratuito y de código abierto. No está afiliado a SEGA; nombre y
+gráficos son originales. La música de la radio la pones tú (`music/`, ver abajo).
 
 ## Jugar
 
@@ -129,13 +127,10 @@ en `tools/asl/` o indicados con las variables `ASL` y `P2BIN`
 ### Detalles
 
 `tools/c900/` es un compilador C89 → TLCS-900/H escrito para este proyecto (sobre
-`pycparser`) que genera ensamblador para el Macroassembler AS. Se validó con miles
-de expresiones aleatorias comparadas contra gcc (`tools/c900/fuzz.py`), ejecutando
-el motor de OVER REV (idéntico al ROM oficial fotograma a fotograma) y el driver de
-sonido. El preprocesador en Python (`tools/c900/cpp.py`) produce exactamente los
-mismos tokens que `gcc -E` en todos los ficheros del juego, y la ROM sale idéntica
-byte a byte. El camino oficial de Toshiba (cc900, `python build.py --thome ...`)
-sigue disponible si tienes ese SDK.
+`pycparser`) que genera ensamblador para el Macroassembler AS; se validó contra gcc
+con miles de expresiones aleatorias y ejecutando el motor de OVER REV fotograma a
+fotograma. El preprocesador en Python (`tools/c900/cpp.py`) produce los mismos
+tokens que `gcc -E`, así que la ROM sale idéntica byte a byte con o sin gcc.
 
 ## Estructura
 
@@ -148,6 +143,7 @@ sigue disponible si tienes ese SDK.
 | `src/theme.c` | Panorama, colores de carretera y objetos de cada tramo |
 | `src/id_scenery.c` | Objetos de arcén, señales de bifurcación y banderas |
 | `src/bridge.c` | Puentes de piedra (SCR1 en perspectiva, colisión con los pilares) |
+| `src/ovl.c` | Capa SCR1 de puentes y pancartas: se dibuja en RAM y se envía en el VBlank |
 | `src/hud.c` | Marcadores (tiempo, etapa, barra de progreso, velocidad y cambio, arriba) |
 | `src/game_audio.c`, `src/audio/player.c` | Música y efectos (reproductor PSG ligero) |
 | `src/spr_cells_asm.asm` | Escritura de sprites en ensamblador (coche, tráfico, objetos) |
@@ -157,10 +153,8 @@ sigue disponible si tienes ese SDK.
 | `tools/gen_course.py` | Genera los 15 tramos fijos y la tabla de paisajes (el modo FREE usa las mismas reglas en `course.c`) |
 | `tools/gen_title.py` | Pantalla de título |
 | `tools/gen_map.py` | Mapa del recorrido (fondo y miniaturas sacadas de los panoramas) |
-| `tools/gen_music.py` | Partituras originales → streams del driver de sonido |
+| `tools/gen_music.py`, `tools/midi.py` | Tus MIDI de `music/` → emisoras; los dos temas cortos (meta y fin de partida) |
 | `tools/objart.py` | Objetos del arcén dibujados por código (palmeras, molinos, árboles, columnas, señales) |
-| `media/` | GIF de juego, grabaciones de las tres canciones y una carrera con el motor |
-| `tools/classical.py`, `tools/lyparse.py`, `music/classical/` | Radio: partituras de dominio público y su arreglo |
 
 ### Personalizar
 
@@ -170,15 +164,26 @@ sigue disponible si tienes ese SDK.
 * **Gráficos**: los sprites son rejillas de texto en `tools/art.py`; los fondos se
   dibujan en `tools/pano.py`. Si prefieres dibujar PNGs, `tools/conv.py`
   (`convert_plane`) convierte cualquier imagen 256×88 a tiles con ≤8 paletas.
-* **Música**: copia archivos MIDI en `music/` y compila (instrucciones en
-  `music/LEEME.txt`); sin MIDIs se usan los temas escritos en `tools/gen_music.py`
-  (notación sencilla: `C5/4` = do5 negra). El conversor es `tools/midi.py`.
+* **Música**: copia tus archivos MIDI en `music/` y compila (instrucciones en
+  `music/LEEME.txt`). Cada uno es una emisora (hasta 8, por orden alfabético) y al
+  final siempre está SILENCIO. `goal*.mid` sustituye la fanfarria de la meta y
+  `over*.mid` el tema de fin de partida; sin ellos suenan los dos temas cortos de
+  `tools/gen_music.py`. Los `.mid` no se suben al repositorio (`.gitignore`): solo
+  acaban en tu ROM. El reproductor gasta muy poca CPU (<0,5 % de un fotograma), así
+  que las canciones no afectan a la fluidez.
 
 ## Estado y límites conocidos
 
+* **Fluidez**: 30 imágenes por segundo fijas. Cada imagen se prepara entera fuera de
+  pantalla y se publica de golpe en el VBlank: la tabla de raster de la carretera, una
+  copia en RAM de la tabla de sprites y la capa de puentes/pancartas (`src/ovl.c`, solo
+  las celdas que cambian). Así no hay sprites a medio mover ni puentes a medio
+  dibujar, y cada imagen dura exactamente dos VBlanks aunque se haya terminado antes
+  (si no, el movimiento daría tirones). Margen medido en el emulador: aguanta 30 fps
+  con la CPU un 60 % más lenta; en una carrera normal la CPU está ociosa ~45 % del tiempo.
 * La lógica del juego va en tiempo real aunque la máquina no llegue a 30 imágenes por
   segundo: si un fotograma tarda más, el coche, el tráfico y el reloj se ponen al día
-  (hasta 3 pasos por imagen). En un emulador lento se verá menos fluido, pero no más lento.
+  (hasta 3 pasos por imagen).
 
 * Probado en emulador (Mednafen/Beetle NGP) con un piloto automático de pruebas
   (`-D AUTOPILOT=1`) que recorre las cinco etapas hasta la meta. **No probado aún en
@@ -207,14 +212,8 @@ sonidos de ningún juego comercial: todo se genera con los scripts de `tools/`.
 * Carretera de 4 carriles en gris claro; el horizonte coincide con su punto de fuga.
 * Coche con la zaga de lamas y pilotos, el chico castaño a la izquierda y la chica
   rubia a la derecha; tráfico en colores vivos (morado, amarillo, rosa, verde, celeste).
-* Música: Scott Joplin, el rey del ragtime (todas sus obras son de dominio público),
-  en arreglos chiptune sacados de las partituras para piano del Mutopia Project
-  (`music/classical/`, ver su LEEME). Emisoras: **THE ENTERTAINER** (1902, 3:18),
-  **MAPLE LEAF RAG** (1899, 3:02), **PINE APPLE RAG** (1908, 3:05) y **PEACHERINE RAG**
-  (1901, 3:05), más SILENCIO. Al acabarse el tiempo y en los resultados suena **Solace**
-  (1909), su serenata lenta. Melodía, bajo, armonía y batería salen de la partitura
-  (`tools/lyparse.py` lee LilyPond, `tools/classical.py` hace el arreglo); en la meta,
-  la fanfarria. Hay grabaciones en `media/`.
+* Música: la radio son tus MIDI (`music/`). Incluidos: una fanfarria para la meta y un
+  tema lento en la menor para el fin de partida, ambos originales y cortos.
 * Salida con pancarta START y público animando con ropa de colores (rojo, azul, verde),
   que suelta globos al dar la salida; meta con pancarta FINISH, público y
   trofeo en la pantalla final.
@@ -225,6 +224,7 @@ sonidos de ningún juego comercial: todo se genera con los scripts de `tools/`.
 * El fondo se desplaza en una sola capa al girar (antes la franja alta iba más lenta y
   las cimas se separaban de la montaña); detrás de los marcadores hay una franja de
   cielo liso.
+* Sin parpadeos: el choque contra el arcén ya no hace parpadear el coche (trompea).
 * Vuelco: 12 fotogramas generados girando la vista trasera del coche (girar la vista
   trasera es justo lo que se ve en una vuelta de campana); los fotogramas boca abajo
   muestran los bajos. La vuelta hacia delante proyecta las caras del coche (trasera,
@@ -245,9 +245,7 @@ sonidos de ningún juego comercial: todo se genera con los scripts de `tools/`.
 * Reproductor de música propio (`src/audio/player.c`); el pequeño programa Z80 que vuelca
   los comandos al PSG procede de NGPC_sound_driver_custom (NgpCraft, MIT).
 * Fuente de texto: fuente "dash" de OVER REV (MIT), con sombra añadida.
-* Juego, gráficos, arreglos, toolchain abierta: este proyecto, MIT.
-* Música: obras de Scott Joplin (dominio público), a partir de ediciones del Mutopia
-  Project puestas en el dominio público por sus transcriptores (ver
-  `music/classical/LEEME.txt`).
+* Juego, gráficos, jingles, toolchain abierta: este proyecto, MIT.
+* La música que pongas en `music/` es tuya y no forma parte de este repositorio.
 * Mecánicas inspiradas en OutRun (SEGA, 1986). Referencias de jugabilidad
   consultadas en Cannonball (djyt); no se ha copiado su código ni datos.

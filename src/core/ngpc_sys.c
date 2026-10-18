@@ -10,7 +10,6 @@
 #if NGP_ENABLE_DEBUG
 #include "ngpc_log.h"
 #endif
-#include "ngpc_vramq.h"
 #include "ngpc_input.h"   /* ngpc_input_vblank() */
 
 /* ---- State ---- */
@@ -19,7 +18,7 @@ volatile u8 g_vb_counter = 0;
 static u8 s_is_color = 0;
 static u8 s_language = 0;
 
-/* Linker symbols from ngpc.lcf (runtime init tables). */
+/* Image symbols (runtime init tables), defined by tools/c900/build900.py. */
 extern const u8 _DataROM_START;
 extern const u8 _DataROM_END;
 extern u8 _DataRAM_START;
@@ -105,8 +104,6 @@ static void __interrupt isr_vblank(void)
     }
     ovl_vblank();            /* SUNSET RUN: bridges and gantry, after the DMA re-arm */
 
-    /* Execute queued VRAM writes during VBlank. */
-    ngpc_vramq_flush();
 
     g_vb_counter++;
 
@@ -148,7 +145,6 @@ void ngpc_init(void)
 #endif
 
     /* Reset queued VRAM update system. */
-    ngpc_vramq_init();
 
     /* Install interrupt vectors.
      * ngpcspec.txt: vectors at 0x6FB8-0x6FFC, 32-bit pointers.

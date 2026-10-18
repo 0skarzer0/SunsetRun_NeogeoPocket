@@ -153,4 +153,30 @@ of_same:
         pop     xiz
         ret
 
+        
+; ================================================================
+; void id_spr_hide_range(u8 from, u8 to);   (SUNSET RUN)
+;
+; Hides sprites from .. to-1 in the RAM sprite table (priority 0).
+        public  _id_spr_hide_range
+
+_id_spr_hide_range:
+        ld      a,(xsp+0x4)             ; from
+        ld      c,(xsp+0x8)             ; to
+        cp      a,c
+        jr      nc,hr_done
+        sub     c,a                     ; count
+        ld      l,a
+        extz    hl
+        sll     0x2,hl
+        add     hl,_spr_shadow+1        ; attribute byte
+        extz    xhl
+hr_loop:
+        ldb     (xhl),0x0
+        inc     0x4,xhl
+        dec     0x1,c
+        jr      nz,hr_loop
+hr_done:
+        ret
+
         end

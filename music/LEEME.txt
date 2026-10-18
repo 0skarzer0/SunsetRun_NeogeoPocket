@@ -3,10 +3,13 @@ o python3 tools/build.py (Linux/macOS).
 
 - Cada archivo es una emisora de radio, en orden alfabético (máximo 8).
   Un número delante ordena sin salir en pantalla: "01_mi_cancion.mid" -> "MI CANCION".
-- Un archivo cuyo nombre empiece por "goal" sustituye al tema de la meta.
+- Un archivo cuyo nombre empiece por "goal" sustituye al tema de la meta, y uno
+  que empiece por "over" al de fin de partida / resultados.
 - Siempre se añade al final la emisora SILENCIO (solo motor y efectos).
-- Si la carpeta no tiene ningún .mid, se usan las canciones propias del juego
-  (tools/gen_music.py).
+- Si la carpeta no tiene ningún .mid, la radio solo tiene SILENCIO (los temas
+  cortos de meta y fin de partida vienen incluidos en tools/gen_music.py).
+- Estos archivos son tuyos: no se suben al repositorio (.gitignore), solo
+  acaban dentro de tu ROM.
 
 Cómo se reparte la canción en el chip de sonido (3 voces + ruido):
 - canal 10 (batería GM)  -> percusión (bombo, caja, charles)

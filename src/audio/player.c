@@ -58,8 +58,9 @@ typedef struct {
     const u8 *start;
     u16 wait;          /* vblanks until the next event */
     u16 div;           /* tone divider or noise control */
-    u8  age;           /* vblanks since note on (saturates) */
     u8  attn;          /* base attenuation */
+    u8  add;           /* attenuation added by the decay so far */
+    u8  acc;           /* vblanks towards the next decay step */
     u8  inst;
     u8  on;            /* note sounding */
     u8  trig;          /* noise: retrigger pending */
@@ -134,7 +135,8 @@ void player_start(const u8 *v0, const u8 *v1, const u8 *v2, const u8 *vn)
         voice[i].attn = 2u;
         voice[i].inst = 0u;
         voice[i].on = 0u;
-        voice[i].age = 0u;
+        voice[i].add = 0u;
+        voice[i].acc = 0u;
         voice[i].trig = 0u;
     }
     playing = 1u;
@@ -180,7 +182,8 @@ static void voice_events(Voice *v, u8 ch)
         }
         v->wait = *v->ptr++;
         v->on = 1u;
-        v->age = 0u;
+        v->add = 0u;
+        v->acc = 0u;
         if (ch == 3u) {
             v->div = (u16)((b - 1u) & 7u);
             v->trig = 1u;
@@ -252,12 +255,19 @@ void player_update(void)
                 v->wait = 0u;
                 voice_events(v, ch);
             }
-            if (v->age < 250u) v->age = (u8)(v->age + e);
             if (v->on) {
+                /* decay: one attenuation step every in->rate vblanks, up to
+                 * in->depth (counted, no division) */
                 const Inst *in = &inst_tab[v->inst];
-                u8 add = (u8)(v->age / in->rate);
-                if (add > in->depth) add = in->depth;
-                attn = (u8)(v->attn + add);
+                if (v->add < in->depth) {
+                    u8 acc = (u8)(v->acc + e);
+                    while (acc >= in->rate && v->add < in->depth) {
+                        acc = (u8)(acc - in->rate);
+                        v->add++;
+                    }
+                    v->acc = acc;
+                }
+                attn = (u8)(v->attn + v->add);
                 if (attn > 15u) attn = 15u;
                 div = v->div;
                 if (ch == 3u && v->trig) {

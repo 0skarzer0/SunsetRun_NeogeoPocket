@@ -78,7 +78,7 @@ u8   ngpc_flash_erase(void)                { return 0u; }
 extern void ngpc_flash_erase_asm(u32 abs_block);
 extern void ngpc_flash_write_bios(const void *src, u32 offset, u32 pages);
 
-/* End of the linked image (ngpc.lcf). It must stay below BOTH banks, which
+/* End of the linked image (build900.py). It must stay below BOTH banks, which
  * on a 4 or 8 Mbit cart sit well inside the 0x1F0000 the linker allows. */
 extern u8 NGP_FAR _DataROM_END;
 

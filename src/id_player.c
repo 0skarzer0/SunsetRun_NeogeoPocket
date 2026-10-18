@@ -27,20 +27,7 @@ void id_spr_put(u8 id, u8 x, u8 y, u16 tile, u8 pal, u8 flip)
     s[3] = y;
     ((u8 *)spr_pal_shadow)[id] = (u8)(pal & 0x0Fu);
 }
-void id_spr_hide_range(u8 from, u8 to)
-{
-    u8 *s;
-    u8 n;
-    if (from >= to) {
-        return;
-    }
-    s = (u8 *)spr_shadow + 1u + ((u16)from << 2);
-    n = (u8)(to - from);
-    do {
-        *s = 0u;                /* priority 0: hidden (a drawn sprite rewrites it all) */
-        s += 4;
-    } while (--n != 0u);
-}
+/* id_spr_hide_range(): spr_cells_asm.asm */
 static void mesure_roues(void)
 {
     u8 layer, i;

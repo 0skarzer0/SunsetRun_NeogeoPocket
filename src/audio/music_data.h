@@ -3,11 +3,11 @@
 #define MUSIC_DATA_H
 #include "ngpc_types.h"
 typedef struct { const u8 *v0; const u8 *v1; const u8 *v2; const u8 *vn; u8 loop; } MusicSong;
-#define MUSIC_COUNT 7
-#define MUSIC_RADIO 5
-#define MUSIC_GOAL 5
-#define MUSIC_OVER 6
-#define MUSIC_NAMES "THE ENTERTAINER", "MAPLE LEAF RAG", "PINE APPLE RAG", "PEACHERINE RAG", "SILENCIO"
+#define MUSIC_COUNT 3
+#define MUSIC_RADIO 1
+#define MUSIC_GOAL 1
+#define MUSIC_OVER 2
+#define MUSIC_NAMES "SILENCIO"
 extern const unsigned char NOTE_TABLE[102];
 extern const MusicSong music_songs[MUSIC_COUNT];
 #endif

@@ -128,20 +128,27 @@ void id_scenery_draw(void)
     s16 haut = (s16)id_road_visible_top();
     u16 off_near = (u16)(r_bottom - (s16)r_top);
     /* the nearest object has the largest phase; walk from it downwards */
-    n0 = 0u;
-    for (i = 1u; i < SCN_COUNT; i++) {
-        if (obj_phase(i) > obj_phase(n0)) {
-            n0 = i;
+    {
+        /* the objects are SCN_GAP apart: obj_phase(i) without the multiply */
+        u8 best = scn_phase, p = scn_phase;
+        n0 = 0u;
+        for (i = 1u; i < SCN_COUNT; i++) {
+            p = (u8)(p + SCN_GAP);
+            if (p > best) {
+                best = p;
+                n0 = i;
+            }
         }
     }
     for (i = 0u; i < SCN_COUNT; i++) {
-        u8 j = (u8)((n0 + SCN_COUNT - i) % SCN_COUNT);
+        u8 j = n0;
         u8 ph = obj_phase(j);
         u8 right, kind, pal, rung, line, draw, flip;
         u16 q, off;
         s16 x;
         IdRoadSpriteSample geometry;
         const SprFrame *f;
+        n0 = (u8)(n0 ? n0 - 1u : SCN_COUNT - 1u);     /* next: the one behind */
         q = (u16)(((u16)ph * (u16)ph) >> 8);
         off = (u16)(SCN_OFF_MIN + (u16)((q * (u16)(off_near - SCN_OFF_MIN)) >> 8));
         if (off > off_near) {

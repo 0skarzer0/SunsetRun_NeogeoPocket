@@ -53,7 +53,7 @@
  * interleave with the ISR's VRAM writes and corrupt tile data.
  *
  * Usage — call at the TOP of any code that touches VRAM during VBlank,
- * before ngpc_vramq_flush() or any direct VRAM write, then re-arm:
+ * before any direct VRAM write, then re-arm:
  *
  *   HW_DMA_STOP_ALL;          // disable all DMA channels
  *   ... VRAM writes ...

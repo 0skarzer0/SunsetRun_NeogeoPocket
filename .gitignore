@@ -1,0 +1,9 @@
+music/*.mid
+music/*.MID
+music/*.midi
+__pycache__/
+build/
+tools/win/*
+!tools/win/LEEME.txt
+bin/*
+!bin/sunsetrun.ngc

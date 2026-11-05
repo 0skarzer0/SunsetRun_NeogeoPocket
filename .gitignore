@@ -7,3 +7,6 @@ tools/win/*
 !tools/win/LEEME.txt
 bin/*
 !bin/sunsetrun.ngc
+tools/test/bin/
+music/*.vgm
+music/*.vgz

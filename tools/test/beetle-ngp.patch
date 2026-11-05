@@ -1,0 +1,45 @@
+diff --git a/libretro.c b/libretro.c
+index ef01e22..f6973f0 100644
+--- a/libretro.c
++++ b/libretro.c
+@@ -92,6 +92,17 @@ static int32 z80_runtime;
+ 
+ extern int32_t ngpc_soundTS;
+ 
++/* SUNSET RUN tools: CPU slowdown (CPUSLOW=n/16 extra) and a PC-sampling profiler */
++#include <stdlib.h>
++static int prof_slow = -1;
++unsigned int prof_hist[0x20000];
++unsigned int prof_total;
++void prof_dump(const char *path)
++{
++   FILE *f = fopen(path, "wb");
++   if (f) { fwrite(prof_hist, 4, 0x20000, f); fclose(f); }
++}
++void prof_reset(void) { memset(prof_hist, 0, sizeof prof_hist); }
+ static void Emulate(EmulateSpecStruct *espec, int16_t *sound_buf)
+ {
+    bool MeowMeow        = false;
+@@ -107,7 +118,11 @@ static void Emulate(EmulateSpecStruct *espec, int16_t *sound_buf)
+ 
+    do
+    {
++      uint32 pc0 = pc;
+       int32 timetime = (uint8)TLCS900h_interpret();
++      if (prof_slow < 0) { const char *e = getenv("CPUSLOW"); prof_slow = e ? atoi(e) : 0; }
++      if (prof_slow) timetime += (timetime * prof_slow) >> 4;
++      if (pc0 >= 0x200000 && pc0 < 0x280000) prof_hist[(pc0 - 0x200000) >> 2] += timetime;
+       MeowMeow |= updateTimers(espec->surface, timetime);
+       z80_runtime += timetime;
+ 
+diff --git a/link.T b/link.T
+index b0c262d..b87fb6c 100644
+--- a/link.T
++++ b/link.T
+@@ -1,5 +1,6 @@
+ {
+    global: retro_*;
++      prof_*;
+    local: *;
+ };
+ 

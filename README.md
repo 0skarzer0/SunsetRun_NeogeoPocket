@@ -132,6 +132,14 @@ con miles de expresiones aleatorias y ejecutando el motor de OVER REV fotograma 
 fotograma. El preprocesador en Python (`tools/c900/cpp.py`) produce los mismos
 tokens que `gcc -E`, así que la ROM sale idéntica byte a byte con o sin gcc.
 
+## Documentación del desarrollo
+
+* `CLAUDE.md`: memoria del proyecto (reglas, estado, pendientes) para retomar el
+  trabajo en una sesión nueva.
+* `docs/HISTORIAL.md`: todo lo pedido y decidido, en orden.
+* `docs/ARQUITECTURA.md`: cómo funciona el código.
+* `docs/PRUEBAS.md`: emulador sin pantalla (`tools/test/`), guiones, perfilado y cifras.
+
 ## Estructura
 
 | Ruta | Contenido |
@@ -154,6 +162,7 @@ tokens que `gcc -E`, así que la ROM sale idéntica byte a byte con o sin gcc.
 | `tools/gen_title.py` | Pantalla de título |
 | `tools/gen_map.py` | Mapa del recorrido (fondo y miniaturas sacadas de los panoramas) |
 | `tools/gen_music.py`, `tools/midi.py` | Tus MIDI de `music/` → emisoras; los dos temas cortos (meta y fin de partida) |
+| `tools/test/` | Emulador de pruebas sin pantalla (Beetle NGP + parche), guiones de conducción, perfilado |
 | `tools/objart.py` | Objetos del arcén dibujados por código (palmeras, molinos, árboles, columnas, señales) |
 
 ### Personalizar
